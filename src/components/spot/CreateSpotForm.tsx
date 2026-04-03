@@ -1,0 +1,657 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { MapPin, Upload, X, Wind, Sailboat, Mountain } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { KiteMap } from "@/components/map/KiteMap";
+import { MONTHS } from "@/lib/utils";
+import type { WindStation } from "@/lib/stations";
+
+// ─── Schema ────────────────────────────────────────────────────────────────────
+
+const schema = z
+  .object({
+    name: z.string().min(2, "Minimum 2 caractères"),
+    description: z.string().optional(),
+    latitude: z.number({ error: "Cliquez sur la carte" }),
+    longitude: z.number({ error: "Cliquez sur la carte" }),
+    country: z.string().optional(),
+    region: z.string().optional(),
+    sportType: z.enum(["KITE", "PARAGLIDE"]),
+    difficulty: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]),
+    waterType: z.enum(["FLAT", "CHOP", "WAVES", "MIXED"]),
+    minWindKmh: z.number().min(0).max(100),
+    maxWindKmh: z.number().min(0).max(150),
+    bestMonths: z.array(z.string()),
+    hazards: z.string().optional(),
+    access: z.string().optional(),
+    nearestStationId: z.string().optional(),
+  })
+  .refine((d) => d.maxWindKmh >= d.minWindKmh, {
+    message: "Le vent max doit être ≥ au vent min",
+    path: ["maxWindKmh"],
+  });
+
+type FormData = z.infer<typeof schema>;
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+const toKts = (kmh: number) => Math.round(kmh / 1.852);
+const toKmh = (kts: number) => Math.round(kts * 1.852);
+
+type StationWithDist = WindStation & { dist: number };
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+
+export function CreateSpotForm() {
+  const router = useRouter();
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [useKnots, setUseKnots] = useState(true);
+  const [nearbyStations, setNearbyStations] = useState<StationWithDist[]>([]);
+  const [loadingStations, setLoadingStations] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    control,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      sportType: "KITE",
+      difficulty: "INTERMEDIATE",
+      waterType: "CHOP",
+      minWindKmh: 15,
+      maxWindKmh: 35,
+      bestMonths: [],
+    },
+  });
+
+  const lat = watch("latitude");
+  const lng = watch("longitude");
+  const sportType = watch("sportType");
+  const minWind = watch("minWindKmh");
+  const maxWind = watch("maxWindKmh");
+
+  // ── Fetch nearby stations when location changes ──────────────────────────
+  const fetchNearbyStations = useCallback(async (lt: number, ln: number) => {
+    setLoadingStations(true);
+    try {
+      const res = await fetch("/api/stations");
+      if (!res.ok) return;
+      const all: WindStation[] = await res.json();
+      const withDist: StationWithDist[] = all.map((s) => {
+        const dLat = ((s.lat - lt) * Math.PI) / 180;
+        const dLng = ((s.lng - ln) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos((lt * Math.PI) / 180) *
+            Math.cos((s.lat * Math.PI) / 180) *
+            Math.sin(dLng / 2) ** 2;
+        const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return { ...s, dist };
+      });
+      withDist.sort((a, b) => a.dist - b.dist);
+      setNearbyStations(withDist.slice(0, 5));
+    } catch {
+      // silent
+    } finally {
+      setLoadingStations(false);
+    }
+  }, []);
+
+  // ── Handle map click ─────────────────────────────────────────────────────
+  const handlePickLocation = useCallback(
+    async (latitude: number, longitude: number) => {
+      setValue("latitude", parseFloat(latitude.toFixed(6)), {
+        shouldValidate: true,
+      });
+      setValue("longitude", parseFloat(longitude.toFixed(6)), {
+        shouldValidate: true,
+      });
+
+      // Reverse geocode with Nominatim
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=10`,
+          { headers: { "Accept-Language": "fr" } },
+        );
+        const data = await res.json();
+        const addr = data.address || {};
+        const country = addr.country || "";
+        const region =
+          addr.state || addr.county || addr.city || addr.town || "";
+        if (country) setValue("country", country);
+        if (region) setValue("region", region);
+      } catch {
+        // silent — user can fill manually
+      }
+
+      fetchNearbyStations(latitude, longitude);
+    },
+    [setValue, fetchNearbyStations],
+  );
+
+  // ── Image handling ───────────────────────────────────────────────────────
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImages((prev) => [...prev, ...files].slice(0, 5));
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) =>
+        setImagePreviews((prev) =>
+          [...prev, ev.target?.result as string].slice(0, 5),
+        );
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removeImage = (i: number) => {
+    setImages((prev) => prev.filter((_, idx) => idx !== i));
+    setImagePreviews((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
+  // ── Submit ───────────────────────────────────────────────────────────────
+  const onSubmit = async (data: FormData) => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/spots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        setError(
+          typeof err.error === "string"
+            ? err.error
+            : "Erreur lors de la création du spot",
+        );
+        return;
+      }
+
+      const spot = await res.json();
+
+      // Upload images
+      if (images.length > 0) {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        const bucket = process.env.NEXT_PUBLIC_STORAGE_BUCKET || "spot-images";
+
+        for (const file of images) {
+          const ext = file.name.split(".").pop();
+          const path = `${spot.id}/${Date.now()}.${ext}`;
+          const { data: upload, error: uploadErr } = await supabase.storage
+            .from(bucket)
+            .upload(path, file);
+          if (upload && !uploadErr) {
+            const {
+              data: { publicUrl },
+            } = supabase.storage.from(bucket).getPublicUrl(path);
+            await fetch(`/api/spots/${spot.id}/images`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: publicUrl }),
+            });
+          }
+        }
+      }
+
+      router.push(`/spots/${spot.id}`);
+    } catch {
+      setError("Erreur réseau, veuillez réessayer");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const windDisplay = (kmh: number) => (useKnots ? toKts(kmh) : kmh);
+  const windUnit = useKnots ? "kts" : "km/h";
+
+  const inputClass =
+    "w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-sky-500 transition-colors";
+  const labelClass = "block text-xs font-medium text-gray-500 mb-1";
+  const errorClass = "text-xs text-red-500 mt-1";
+
+  return (
+    <div
+      className="flex flex-col lg:flex-row bg-white text-gray-900"
+      style={{ height: "calc(100vh - 56px)" }}
+    >
+      {/* ── LEFT: Map ────────────────────────────────────────────────────── */}
+      <div className="lg:flex-1 h-64 lg:h-full relative">
+        <KiteMap
+          spots={[]}
+          pickMode={true}
+          onPickLocation={handlePickLocation}
+        />
+        {lat && lng && (
+          <div className="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-600 shadow-lg">
+            <MapPin className="inline h-3 w-3 mr-1 text-sky-500" />
+            {lat.toFixed(5)}, {lng.toFixed(5)}
+          </div>
+        )}
+      </div>
+
+      {/* ── RIGHT: Form ──────────────────────────────────────────────────── */}
+      <div className="w-full lg:w-[480px] overflow-y-auto border-l border-gray-100">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">
+                Ajouter un spot
+              </h1>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Cliquez sur la carte pour placer le spot
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Error banner */}
+          {error && (
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+
+          {/* Sport type toggle */}
+          <div>
+            <label className={labelClass}>Type de sport</label>
+            <Controller
+              control={control}
+              name="sportType"
+              render={({ field }) => (
+                <div className="flex rounded-lg overflow-hidden border border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => field.onChange("KITE")}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                      field.value === "KITE"
+                        ? "bg-sky-600 text-white"
+                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Sailboat className="h-4 w-4" />
+                    Kitesurf
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => field.onChange("PARAGLIDE")}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                      field.value === "PARAGLIDE"
+                        ? "bg-sky-600 text-white"
+                        : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Mountain className="h-4 w-4" />
+                    Parapente
+                  </button>
+                </div>
+              )}
+            />
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className={labelClass}>Nom du spot *</label>
+            <input
+              {...register("name")}
+              placeholder="Ex: Tarifa Est"
+              className={inputClass}
+            />
+            {errors.name && <p className={errorClass}>{errors.name.message}</p>}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className={labelClass}>Description</label>
+            <textarea
+              {...register("description")}
+              rows={2}
+              placeholder="Décris le spot, l'ambiance, les conditions..."
+              className={inputClass}
+            />
+          </div>
+
+          {/* Country / Region (auto-filled) */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Pays</label>
+              <input
+                {...register("country")}
+                placeholder="Auto-rempli"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Région</label>
+              <input
+                {...register("region")}
+                placeholder="Auto-rempli"
+                className={inputClass}
+              />
+            </div>
+          </div>
+          {errors.latitude && (
+            <p className={errorClass}>
+              <MapPin className="inline h-3 w-3 mr-1" />
+              {errors.latitude.message}
+            </p>
+          )}
+
+          {/* Difficulty + Water type */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Difficulté</label>
+              <select {...register("difficulty")} className={inputClass}>
+                <option value="BEGINNER">Débutant</option>
+                <option value="INTERMEDIATE">Intermédiaire</option>
+                <option value="ADVANCED">Avancé</option>
+                <option value="EXPERT">Expert</option>
+              </select>
+            </div>
+            {sportType === "KITE" && (
+              <div>
+                <label className={labelClass}>Type d&apos;eau</label>
+                <select {...register("waterType")} className={inputClass}>
+                  <option value="FLAT">Plat</option>
+                  <option value="CHOP">Chop</option>
+                  <option value="WAVES">Vagues</option>
+                  <option value="MIXED">Mixte</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Wind range with unit toggle */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className={labelClass + " mb-0"}>
+                Plage de vent idéale
+              </label>
+              <div className="flex rounded-full overflow-hidden border border-gray-200 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => setUseKnots(false)}
+                  className={`px-2 py-0.5 transition-colors ${
+                    !useKnots
+                      ? "bg-sky-600 text-white"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  km/h
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUseKnots(true)}
+                  className={`px-2 py-0.5 transition-colors ${
+                    useKnots
+                      ? "bg-sky-600 text-white"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  kts
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Controller
+                  control={control}
+                  name="minWindKmh"
+                  render={({ field }) => (
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={windDisplay(field.value)}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value) || 0;
+                        field.onChange(useKnots ? toKmh(v) : v);
+                      }}
+                      className={inputClass}
+                      placeholder={`Min (${windUnit})`}
+                    />
+                  )}
+                />
+                <span className="text-[10px] text-gray-400 mt-0.5 block">
+                  Min : {windDisplay(minWind)} {windUnit}
+                </span>
+              </div>
+              <div>
+                <Controller
+                  control={control}
+                  name="maxWindKmh"
+                  render={({ field }) => (
+                    <input
+                      type="number"
+                      min={0}
+                      max={150}
+                      value={windDisplay(field.value)}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value) || 0;
+                        field.onChange(useKnots ? toKmh(v) : v);
+                      }}
+                      className={inputClass}
+                      placeholder={`Max (${windUnit})`}
+                    />
+                  )}
+                />
+                <span className="text-[10px] text-gray-400 mt-0.5 block">
+                  Max : {windDisplay(maxWind)} {windUnit}
+                </span>
+              </div>
+            </div>
+            {errors.maxWindKmh && (
+              <p className={errorClass}>{errors.maxWindKmh.message}</p>
+            )}
+          </div>
+
+          {/* Nearest station picker */}
+          <div>
+            <label className={labelClass}>
+              Balise la plus proche
+              <span className="text-gray-400 font-normal ml-1">
+                (vent en direct + prévisions)
+              </span>
+            </label>
+            {!lat || !lng ? (
+              <p className="text-xs text-gray-400 italic">
+                Placez le spot sur la carte pour voir les balises proches
+              </p>
+            ) : loadingStations ? (
+              <p className="text-xs text-gray-400 animate-pulse">
+                Recherche des balises...
+              </p>
+            ) : nearbyStations.length === 0 ? (
+              <p className="text-xs text-gray-400">
+                Aucune balise trouvée à proximité
+              </p>
+            ) : (
+              <Controller
+                control={control}
+                name="nearestStationId"
+                render={({ field }) => (
+                  <div className="space-y-1.5">
+                    {nearbyStations.map((s) => {
+                      const selected = field.value === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() =>
+                            field.onChange(selected ? undefined : s.id)
+                          }
+                          className={`w-full flex items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${
+                            selected
+                              ? "border-sky-500 bg-sky-50"
+                              : "border-gray-200 hover:border-gray-300 bg-white"
+                          }`}
+                        >
+                          <Wind
+                            className={`h-4 w-4 shrink-0 ${selected ? "text-sky-500" : "text-gray-400"}`}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div
+                              className={`text-sm font-medium truncate ${selected ? "text-sky-700" : "text-gray-700"}`}
+                            >
+                              {s.name}
+                            </div>
+                            <div className="text-[10px] text-gray-400">
+                              {s.dist < 1
+                                ? `${Math.round(s.dist * 1000)} m`
+                                : `${s.dist.toFixed(1)} km`}{" "}
+                              · {s.altitudeM}m alt. ·{" "}
+                              {Math.round(s.windSpeedKmh / 1.852)} kts ·{" "}
+                              {s.source === "pioupiou"
+                                ? "OpenWindMap"
+                                : "MeteoSwiss"}
+                            </div>
+                          </div>
+                          {selected && (
+                            <span className="text-xs text-sky-600 font-medium shrink-0">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              />
+            )}
+          </div>
+
+          {/* Best months */}
+          <div>
+            <label className={labelClass}>Meilleurs mois</label>
+            <Controller
+              control={control}
+              name="bestMonths"
+              render={({ field }) => (
+                <div className="flex flex-wrap gap-1.5">
+                  {MONTHS.map((month, i) => {
+                    const val = String(i + 1);
+                    const selected = field.value.includes(val);
+                    return (
+                      <button
+                        key={month}
+                        type="button"
+                        onClick={() => {
+                          field.onChange(
+                            selected
+                              ? field.value.filter((m) => m !== val)
+                              : [...field.value, val],
+                          );
+                        }}
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                          selected
+                            ? "bg-sky-600 text-white"
+                            : "bg-gray-100 text-gray-500 hover:text-gray-900"
+                        }`}
+                      >
+                        {month.slice(0, 3)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            />
+          </div>
+
+          {/* Hazards + Access */}
+          <div className="grid grid-cols-1 gap-3">
+            <div>
+              <label className={labelClass}>Dangers / Précautions</label>
+              <input
+                {...register("hazards")}
+                placeholder="Rochers, courant fort..."
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Accès</label>
+              <input
+                {...register("access")}
+                placeholder="Parking, temps de marche..."
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          {/* Images */}
+          <div>
+            <label className={labelClass}>Photos (max 5)</label>
+            <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-dashed border-gray-300 px-4 py-3 hover:border-sky-500 transition-colors text-gray-500 hover:text-gray-900 text-sm">
+              <Upload className="h-4 w-4" />
+              Ajouter des photos
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            </label>
+            {imagePreviews.length > 0 && (
+              <div className="flex gap-2 mt-3 flex-wrap">
+                {imagePreviews.map((src, i) => (
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt=""
+                      className="h-20 w-20 rounded-lg object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(i)}
+                      className="absolute -top-1.5 -right-1.5 rounded-full bg-white border border-gray-200 p-0.5 text-gray-400 hover:text-gray-900"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Submit */}
+          <Button
+            type="submit"
+            disabled={submitting}
+            size="lg"
+            className="w-full"
+          >
+            {submitting ? "Création en cours..." : "Créer le spot"}
+          </Button>
+
+          <p className="text-[10px] text-gray-400 text-center">
+            Toutes les informations sont publiques et modifiables par tous.
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}

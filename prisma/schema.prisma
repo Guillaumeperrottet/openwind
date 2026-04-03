@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum WaterType {
+  FLAT
+  CHOP
+  WAVES
+  MIXED
+}
+
+enum SportType {
+  KITE
+  PARAGLIDE
+}
+
+model Spot {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  latitude    Float
+  longitude   Float
+  country     String?
+  region      String?
+  difficulty  Difficulty  @default(INTERMEDIATE)
+  waterType   WaterType   @default(CHOP)
+  minWindKmh  Int         @default(15)
+  maxWindKmh  Int         @default(35)
+  bestMonths  String[]
+  hazards     String?
+  access      String?
+  sportType   SportType  @default(KITE)
+  nearestStationId String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  images      SpotImage[]
+  reports     WindReport[]
+}
+
+model SpotImage {
+  id        String   @id @default(cuid())
+  spotId    String
+  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
+}
+
+model WindReport {
+  id             String   @id @default(cuid())
+  spotId         String
+  spot           Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  date           DateTime @default(now())
+  windSpeedKmh   Float
+  windDirection  Int      // degrees 0-360
+  gustsKmh       Float?
+  isKitable      Boolean  @default(true)
+  comment        String?
+  rating         Int      @default(3) // 1-5
+  createdAt      DateTime @default(now())
+}
