@@ -4,170 +4,339 @@ import { useRef, useEffect, useState } from "react";
 import { windCellStyle, roundKnots } from "@/lib/forecast";
 import { windDirectionLabel } from "@/lib/utils";
 import type { HistoryPoint } from "@/types";
+import type { HourlyPoint } from "@/lib/forecast";
 
 interface Props {
   history: HistoryPoint[];
+  forecast?: HourlyPoint[];
   useKnots: boolean;
+  /** IANA timezone for display, e.g. "Europe/Zurich" */
+  timezone?: string;
 }
 
-export function WindHistoryChart({ history, useKnots }: Props) {
+export function WindHistoryChart({
+  history,
+  forecast,
+  useKnots,
+  timezone = "UTC",
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  // Measure container width responsively
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      setContainerWidth(entries[0].contentRect.width);
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
   if (history.length === 0) return null;
 
-  // ── Helper: convert "YYYY-MM-DDTHH:mm" UTC to local timezone ──────────
-  const pad2 = (n: number) => String(n).padStart(2, "0");
-  const toLocal = (utcTime: string) => {
-    const d = new Date(utcTime + ":00Z");
-    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-  };
-
   // ── Layout constants ──────────────────────────────────────────────────────
-  const BAR_W = 2;
-  const BAR_GAP = 1;
-  const BAR_SLOT = BAR_W + BAR_GAP;
   const CHART_H = 230;
   const DAY_H = 16;
   const TIME_H = 13;
   const AXIS_W = 30;
   const totalH = DAY_H + TIME_H + CHART_H;
-  const totalW = AXIS_W + history.length * BAR_SLOT + 4;
+
+  // ── Timezone helper: UTC "YYYY-MM-DDTHH:mm" → location-local "YYYY-MM-DDTHH:mm" ──────
+  const toTZ = (utcTime: string): string => {
+    const d = new Date(utcTime + ":00Z");
+    return new Intl.DateTimeFormat("sv-SE", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .format(d)
+      .replace(" ", "T");
+  };
+
+  // ── Time boundaries (location TZ) ──────────────────────────────────────────
+  const nowInTZ = toTZ(new Date().toISOString().slice(0, 16));
+  const todayInTZ = nowInTZ.slice(0, 10); // "YYYY-MM-DD" in location TZ
+  const [ty, tm, td] = todayInTZ.split("-").map(Number);
+
+  // Yesterday midnight in location TZ → start of the 48h window
+  const yesterdayMidnightInTZ =
+    new Intl.DateTimeFormat("sv-SE", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(Date.UTC(ty, tm - 1, td - 1))) + "T00:00";
+
+  // Tomorrow midnight in location TZ → end of the forecast extension
+  const tomorrowMidnightInTZ =
+    new Intl.DateTimeFormat("sv-SE", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(Date.UTC(ty, tm - 1, td + 1))) + "T00:00";
+
+  // Filter history to start from yesterday midnight (local TZ) → true 48h window
+  const filteredHistory = history.filter(
+    (p) => toTZ(p.time) >= yesterdayMidnightInTZ,
+  );
+
+  // Use filteredHistory everywhere below instead of raw history
+  const lastHistoryTZ =
+    filteredHistory.length > 0
+      ? toTZ(filteredHistory[filteredHistory.length - 1].time)
+      : yesterdayMidnightInTZ;
+
+  const futureForecast: HourlyPoint[] = forecast
+    ? forecast.filter(
+        (pt) => pt.time > lastHistoryTZ && pt.time <= tomorrowMidnightInTZ,
+      )
+    : [];
+
+  // ── Time-proportional X positioning ───────────────────────────────────────
+  // Parse a local TZ string "YYYY-MM-DDTHH:mm" into epoch ms for proportional placement
+  const tzToMs = (s: string) => Date.parse(s + ":00Z"); // treat as UTC for relative math
+  const timeStart = tzToMs(yesterdayMidnightInTZ);
+  const timeEnd = tzToMs(tomorrowMidnightInTZ);
+  const timeSpan = timeEnd - timeStart || 1;
+
+  // Responsive: fill the container width; fallback 600px before first measure
+  const effectiveW = containerWidth > 0 ? containerWidth : 600;
+  const DRAW_W = effectiveW - AXIS_W - 4;
+
+  // Time → X coordinate (proportional to position within the 48h window)
+  const timeToX = (localTimeStr: string) =>
+    AXIS_W + ((tzToMs(localTimeStr) - timeStart) / timeSpan) * DRAW_W;
+
+  // Bar width: based on average interval of history data
+  const avgIntervalMs =
+    filteredHistory.length > 1
+      ? (tzToMs(toTZ(filteredHistory[filteredHistory.length - 1].time)) -
+          tzToMs(toTZ(filteredHistory[0].time))) /
+        (filteredHistory.length - 1)
+      : 10 * 60_000; // default 10 min
+  const BAR_W = Math.max(
+    1,
+    Math.round((avgIntervalMs / timeSpan) * DRAW_W) - 1,
+  );
+  const totalW = Math.round(effectiveW);
+
+  // X position helper: history uses UTC→TZ conversion, forecast is already local
+  const histX = (i: number) => timeToX(toTZ(filteredHistory[i].time));
+  const fcstX = (i: number) => timeToX(futureForecast[i].time);
 
   // ── Wind Y scale ──────────────────────────────────────────────────────────
   const toDisp = (kmh: number) => (useKnots ? roundKnots(kmh) : kmh);
   const dataMax = Math.max(
-    ...history.flatMap((p) => [toDisp(p.windSpeedKmh), toDisp(p.gustsKmh)]),
+    ...filteredHistory.flatMap((p) => [
+      toDisp(p.windSpeedKmh),
+      toDisp(p.gustsKmh),
+    ]),
+    ...futureForecast.flatMap((p) => [
+      toDisp(p.windSpeedKmh),
+      toDisp(p.gustsKmh),
+    ]),
     useKnots ? 5 : 10,
   );
   const yMax = Math.ceil(dataMax / 5) * 5 + 5;
   const bH = (kmh: number) => Math.max((toDisp(kmh) / yMax) * CHART_H, 1);
   const bY = (kmh: number) => DAY_H + TIME_H + CHART_H - bH(kmh);
 
-  // ── Temperature Y scale ───────────────────────────────────────────────────
-  const validTemps = history
-    .map((p) => p.temperatureC)
-    .filter((t) => isFinite(t));
-  const tempMin = validTemps.length
-    ? Math.floor(Math.min(...validTemps) - 2)
-    : 0;
-  const tempMax = validTemps.length
-    ? Math.ceil(Math.max(...validTemps) + 2)
-    : 30;
-  const tempRange = tempMax - tempMin || 1;
-  const tempY = (c: number) =>
-    DAY_H + TIME_H + CHART_H - ((c - tempMin) / tempRange) * CHART_H;
-
-  // ── Day groups (by local date) ────────────────────────────────────────────
-  type DayGroup = { date: string; startIdx: number; count: number };
-  const dayGroups: DayGroup[] = [];
-  let prevDay = "";
-  history.forEach((p, i) => {
-    const day = toLocal(p.time).slice(0, 10);
-    if (day !== prevDay) {
-      dayGroups.push({ date: day, startIdx: i, count: 1 });
-      prevDay = day;
-    } else {
-      dayGroups[dayGroups.length - 1].count++;
+  // ── Day groups (time-based) ────────────────────────────────────────────────
+  // Collect unique days in order, then compute their X spans from midnight-to-midnight
+  const allDays: string[] = [];
+  const seenDays = new Set<string>();
+  for (const p of filteredHistory) {
+    const day = toTZ(p.time).slice(0, 10);
+    if (!seenDays.has(day)) {
+      seenDays.add(day);
+      allDays.push(day);
     }
+  }
+  for (const p of futureForecast) {
+    const day = p.time.slice(0, 10);
+    if (!seenDays.has(day)) {
+      seenDays.add(day);
+      allDays.push(day);
+    }
+  }
+  type DayGroup = { date: string; x: number; w: number };
+  const dayGroups: DayGroup[] = allDays.map((d, i) => {
+    const dayStart = timeToX(d + "T00:00");
+    const nextDay = allDays[i + 1];
+    const dayEnd = nextDay ? timeToX(nextDay + "T00:00") : AXIS_W + DRAW_W;
+    return {
+      date: d,
+      x: Math.max(dayStart, AXIS_W),
+      w: dayEnd - Math.max(dayStart, AXIS_W),
+    };
   });
 
   const fmtDay = (d: string) => {
-    const dt = new Date(d + "T12:00:00Z");
+    const [y, m, dv] = d.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, dv, 12));
     const days = ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"];
-    return `${days[dt.getUTCDay()]} ${dt.getUTCDate()}.${dt.getUTCMonth() + 1}`;
+    return `${days[dt.getUTCDay()]} ${dv}.${m}`;
   };
-
-  // ── Now index ─────────────────────────────────────────────────────────────
-  const nowStr = new Date().toISOString().slice(0, 16);
-  let nowIdx = -1;
-  for (let i = history.length - 1; i >= 0; i--) {
-    if (history[i].time <= nowStr) {
-      nowIdx = i;
-      break;
-    }
-  }
 
   // ── Y ticks ───────────────────────────────────────────────────────────────
   const yTicks: number[] = [];
   for (let v = 0; v <= yMax; v += 5) yTicks.push(v);
 
-  // ── Temperature polyline ──────────────────────────────────────────────────
-  const tempPolyline = history
-    .map((p, i) => {
-      const x = AXIS_W + i * BAR_SLOT + BAR_W / 2;
-      const y = tempY(p.temperatureC);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
+  // Auto-scroll removed: chart now fills container width (no scroll needed)
+
+  // ── Polyline helpers (wind speed + gusts) ─────────────────────────────────
+  const ptYmid = (kmh: number) => bY(kmh) + bH(kmh) / 2;
+
+  // History polylines
+  const histWindPoly = filteredHistory
+    .map(
+      (p, i) => `${histX(i).toFixed(1)},${ptYmid(p.windSpeedKmh).toFixed(1)}`,
+    )
+    .join(" ");
+  const histGustPoly = filteredHistory
+    .map((p, i) => `${histX(i).toFixed(1)},${ptYmid(p.gustsKmh).toFixed(1)}`)
     .join(" ");
 
-  // ── Auto-scroll to show "now" at 80% from left ────────────────────────────
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    if (!containerRef.current || nowIdx < 0) return;
-    const nowX = AXIS_W + nowIdx * BAR_SLOT;
-    const visible = containerRef.current.clientWidth;
-    containerRef.current.scrollLeft = Math.max(0, nowX - visible * 0.8);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Forecast polylines (anchored on last history point for continuity)
+  const fcstWindPoly = [
+    ...(filteredHistory.length > 0
+      ? [
+          `${histX(filteredHistory.length - 1).toFixed(1)},${ptYmid(filteredHistory[filteredHistory.length - 1].windSpeedKmh).toFixed(1)}`,
+        ]
+      : []),
+    ...futureForecast.map(
+      (p, i) => `${fcstX(i).toFixed(1)},${ptYmid(p.windSpeedKmh).toFixed(1)}`,
+    ),
+  ].join(" ");
+  const fcstGustPoly = [
+    ...(filteredHistory.length > 0
+      ? [
+          `${histX(filteredHistory.length - 1).toFixed(1)},${ptYmid(filteredHistory[filteredHistory.length - 1].gustsKmh).toFixed(1)}`,
+        ]
+      : []),
+    ...futureForecast.map(
+      (p, i) => `${fcstX(i).toFixed(1)},${ptYmid(p.gustsKmh).toFixed(1)}`,
+    ),
+  ].join(" ");
+
+  // "Now" X position: time-proportional
+  const nowX = timeToX(nowInTZ);
 
   // ── Mouse handlers ────────────────────────────────────────────────────────
+  // Build a sorted array of all X positions + data for quick lookup on hover
+  const allPoints: Array<{
+    x: number;
+    isForecast: boolean;
+    histIdx?: number;
+    fcstIdx?: number;
+  }> = [
+    ...filteredHistory.map((_, i) => ({
+      x: histX(i),
+      isForecast: false,
+      histIdx: i,
+    })),
+    ...futureForecast.map((_, i) => ({
+      x: fcstX(i),
+      isForecast: true,
+      fcstIdx: i,
+    })),
+  ];
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const svgRect = e.currentTarget.getBoundingClientRect();
-    const svgX = e.clientX - svgRect.left;
-    const idx = Math.floor((svgX - AXIS_W) / BAR_SLOT);
-    if (idx >= 0 && idx < history.length) {
-      setHoveredIdx(idx);
+    const svgX =
+      (e.clientX - svgRect.left) * (totalW / (svgRect.width || totalW));
+    // Find closest point
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    for (let i = 0; i < allPoints.length; i++) {
+      const dist = Math.abs(allPoints[i].x - svgX);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    if (bestIdx >= 0 && bestDist < 20) {
+      setHoveredIdx(bestIdx);
       const container = containerRef.current!;
       const containerRect = container.getBoundingClientRect();
       setTooltipPos({
-        x: e.clientX - containerRect.left + container.scrollLeft,
+        x: e.clientX - containerRect.left,
         y: e.clientY - containerRect.top,
       });
     }
   };
 
-  const hovPoint = hoveredIdx !== null ? history[hoveredIdx] : null;
+  // Hover point: history or forecast?
+  const hovPt = hoveredIdx !== null ? allPoints[hoveredIdx] : null;
+  const isHoverForecast = hovPt?.isForecast ?? false;
+  const hovHistPoint =
+    hovPt && !hovPt.isForecast && hovPt.histIdx !== undefined
+      ? filteredHistory[hovPt.histIdx]
+      : null;
+  const hovFcstPoint =
+    hovPt?.isForecast && hovPt.fcstIdx !== undefined
+      ? futureForecast[hovPt.fcstIdx]
+      : null;
+  const hovPoint = hovHistPoint ?? null;
   const TTW = 190;
 
   return (
     <div
       ref={containerRef}
-      className="relative overflow-x-auto"
+      className="relative overflow-hidden"
       onMouseLeave={() => setHoveredIdx(null)}
     >
       {/* ── Hover tooltip ───────────────────────────────────────────────── */}
-      {hovPoint &&
+      {(hovPoint ?? hovFcstPoint) &&
         (() => {
-          const style = windCellStyle(hovPoint.windSpeedKmh);
+          const pt = (hovPoint ?? hovFcstPoint)!;
+          const isFcst = hovFcstPoint !== null;
+          const style = windCellStyle(pt.windSpeedKmh);
           const container = containerRef.current;
           const containerW = container?.clientWidth ?? 0;
-          const scrollLeft = container?.scrollLeft ?? 0;
-          const visibleX = tooltipPos.x - scrollLeft;
           const tipX = Math.max(
-            scrollLeft + 4,
+            4,
             Math.min(
-              visibleX + 14 + TTW > containerW
+              tooltipPos.x + 14 + TTW > containerW
                 ? tooltipPos.x - TTW - 6
                 : tooltipPos.x + 14,
-              scrollLeft + containerW - TTW - 4,
+              containerW - TTW - 4,
             ),
           );
           const tipY = Math.max(tooltipPos.y - 110, 4);
+          // Format time: history uses UTC string, forecast uses local string
+          const displayTime = isFcst
+            ? pt.time
+            : toTZ((pt as HistoryPoint).time);
 
           return (
             <div
               className="absolute z-20 bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-2.5 pointer-events-none"
               style={{ left: tipX, top: tipY, width: TTW }}
             >
+              {isFcst && (
+                <div className="text-[9px] font-semibold text-sky-500 mb-1 uppercase tracking-wide">
+                  Prévision
+                </div>
+              )}
               <div className="text-[10px] text-gray-400 font-medium mb-2">
-                {new Date(hovPoint.time + ":00Z").toLocaleDateString("fr", {
+                {new Date(
+                  displayTime.slice(0, 10) + "T12:00:00Z",
+                ).toLocaleDateString("fr", {
                   weekday: "short",
                   day: "numeric",
                   month: "short",
+                  timeZone: "UTC",
                 })}{" "}
-                — {toLocal(hovPoint.time).slice(11, 16)}
+                — {displayTime.slice(11, 16)}
               </div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-500">Vent moyen</span>
@@ -176,31 +345,22 @@ export function WindHistoryChart({ history, useKnots }: Props) {
                   style={{ background: style.background, color: style.color }}
                 >
                   {useKnots
-                    ? roundKnots(hovPoint.windSpeedKmh)
-                    : Math.round(hovPoint.windSpeedKmh)}{" "}
+                    ? roundKnots(pt.windSpeedKmh)
+                    : Math.round(pt.windSpeedKmh)}{" "}
                   {useKnots ? "kts" : "km/h"}
                 </span>
               </div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs text-gray-500">Rafales</span>
                 <span className="text-xs font-semibold tabular-nums text-gray-600">
-                  {useKnots
-                    ? roundKnots(hovPoint.gustsKmh)
-                    : Math.round(hovPoint.gustsKmh)}{" "}
+                  {useKnots ? roundKnots(pt.gustsKmh) : Math.round(pt.gustsKmh)}{" "}
                   {useKnots ? "kts" : "km/h"}
-                </span>
-              </div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-gray-500">T°</span>
-                <span className="text-xs text-rose-400 font-medium">
-                  {Math.round(hovPoint.temperatureC)}°C
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-gray-500">Direction</span>
                 <span className="text-xs text-gray-600">
-                  {windDirectionLabel(hovPoint.windDirection)}{" "}
-                  {hovPoint.windDirection}°
+                  {windDirectionLabel(pt.windDirection)} {pt.windDirection}°
                 </span>
               </div>
             </div>
@@ -209,14 +369,11 @@ export function WindHistoryChart({ history, useKnots }: Props) {
 
       {/* ── Main SVG chart ───────────────────────────────────────────────── */}
       <svg
-        width={totalW}
+        width="100%"
         height={totalH}
         viewBox={`0 0 ${totalW} ${totalH}`}
-        style={{
-          display: "block",
-          cursor: "crosshair",
-          minWidth: `${totalW}px`,
-        }}
+        preserveAspectRatio="none"
+        style={{ display: "block", cursor: "crosshair" }}
         onMouseMove={handleMouseMove}
       >
         {/* Grid lines + Y-axis labels */}
@@ -264,22 +421,20 @@ export function WindHistoryChart({ history, useKnots }: Props) {
 
         {/* Day separators + labels */}
         {dayGroups.map((g, gi) => {
-          const x = AXIS_W + g.startIdx * BAR_SLOT;
-          const w = g.count * BAR_SLOT;
           return (
             <g key={g.date}>
               {gi > 0 && (
                 <line
-                  x1={x}
+                  x1={g.x}
                   y1={0}
-                  x2={x}
+                  x2={g.x}
                   y2={totalH}
                   stroke="#e5e7eb"
                   strokeWidth="1"
                 />
               )}
               <text
-                x={x + w / 2}
+                x={g.x + g.w / 2}
                 y={DAY_H / 2 + 5}
                 textAnchor="middle"
                 fontSize="10"
@@ -294,13 +449,13 @@ export function WindHistoryChart({ history, useKnots }: Props) {
         })}
 
         {/* Hour labels: every 3h (local time) */}
-        {history.map((p, i) => {
-          const local = toLocal(p.time);
+        {filteredHistory.map((p, i) => {
+          const local = toTZ(p.time);
           const minStr = local.slice(14, 16);
           const hourStr = local.slice(11, 13);
           const hour = parseInt(hourStr, 10);
           if (minStr !== "00" || hour % 3 !== 0) return null;
-          const x = AXIS_W + i * BAR_SLOT + BAR_W / 2;
+          const x = histX(i);
           return (
             <text
               key={`t-${i}`}
@@ -317,23 +472,26 @@ export function WindHistoryChart({ history, useKnots }: Props) {
         })}
 
         {/* Hover column highlight */}
-        {hoveredIdx !== null && (
+        {hovPt && (
           <rect
-            x={AXIS_W + hoveredIdx * BAR_SLOT - BAR_GAP / 2}
+            x={hovPt.x - BAR_W}
             y={DAY_H + TIME_H}
-            width={BAR_SLOT}
+            width={BAR_W * 2}
             height={CHART_H}
-            fill="rgba(0,0,0,0.06)"
+            fill={
+              isHoverForecast ? "rgba(14,165,233,0.08)" : "rgba(0,0,0,0.06)"
+            }
             rx="1"
             style={{ pointerEvents: "none" }}
           />
         )}
 
         {/* Wind + gust bars */}
-        {history.map((p, i) => {
+        {filteredHistory.map((p, i) => {
           const style = windCellStyle(p.windSpeedKmh);
           const color = style.background;
-          const x = AXIS_W + i * BAR_SLOT;
+          const gustColor = windCellStyle(p.gustsKmh).background;
+          const x = histX(i);
           const windH_ = bH(p.windSpeedKmh);
           const gustH_ = bH(p.gustsKmh);
           const baseY = DAY_H + TIME_H + CHART_H;
@@ -341,17 +499,17 @@ export function WindHistoryChart({ history, useKnots }: Props) {
             <g key={`b-${i}`}>
               {p.gustsKmh > p.windSpeedKmh && (
                 <rect
-                  x={x}
+                  x={x - BAR_W / 2}
                   y={baseY - gustH_}
                   width={BAR_W}
                   height={gustH_ - windH_}
-                  fill={color}
-                  opacity={0.3}
+                  fill={gustColor}
+                  opacity={0.35}
                   rx="0.5"
                 />
               )}
               <rect
-                x={x}
+                x={x - BAR_W / 2}
                 y={baseY - windH_}
                 width={BAR_W}
                 height={windH_}
@@ -362,27 +520,37 @@ export function WindHistoryChart({ history, useKnots }: Props) {
           );
         })}
 
-        {/* Temperature polyline */}
-        <polyline
-          points={tempPolyline}
-          fill="none"
-          stroke="#fca5a5"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          opacity="0.85"
-        />
-
-        {/* Temperature dots at each hour (local time) */}
-        {history.map((p, i) => {
-          if (toLocal(p.time).slice(14, 16) !== "00") return null;
+        {/* Forecast bars (semi-transparent) */}
+        {futureForecast.map((p, i) => {
+          const style = windCellStyle(p.windSpeedKmh);
+          const color = style.background;
+          const gustColor = windCellStyle(p.gustsKmh).background;
+          const x = fcstX(i);
+          const windH_ = bH(p.windSpeedKmh);
+          const gustH_ = bH(p.gustsKmh);
+          const baseY = DAY_H + TIME_H + CHART_H;
           return (
-            <circle
-              key={`td-${i}`}
-              cx={AXIS_W + i * BAR_SLOT + BAR_W / 2}
-              cy={tempY(p.temperatureC)}
-              r={2.5}
-              fill="#f87171"
-            />
+            <g key={`fb-${i}`} opacity={0.45}>
+              {p.gustsKmh > p.windSpeedKmh && (
+                <rect
+                  x={x - BAR_W / 2}
+                  y={baseY - gustH_}
+                  width={BAR_W}
+                  height={gustH_ - windH_}
+                  fill={gustColor}
+                  opacity={0.35}
+                  rx="0.5"
+                />
+              )}
+              <rect
+                x={x - BAR_W / 2}
+                y={baseY - windH_}
+                width={BAR_W}
+                height={windH_}
+                fill={color}
+                rx="0.5"
+              />
+            </g>
           );
         })}
 
@@ -396,38 +564,153 @@ export function WindHistoryChart({ history, useKnots }: Props) {
           strokeWidth="1"
         />
 
-        {/* Now vertical line */}
-        {nowIdx >= 0 && (
+        {/* ── Gusts polyline (history: solid, forecast: dashed) ────────── */}
+        {histGustPoly && (
+          <polyline
+            points={histGustPoly}
+            fill="none"
+            stroke="#fca5a5"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+            opacity="0.85"
+          />
+        )}
+        {futureForecast.length > 0 && (
+          <polyline
+            points={fcstGustPoly}
+            fill="none"
+            stroke="#fca5a5"
+            strokeWidth="1.8"
+            strokeDasharray="6 3"
+            strokeLinejoin="round"
+            opacity="0.7"
+          />
+        )}
+        {/* Gusts dots every 3h (history) */}
+        {filteredHistory.map((p, i) => {
+          const local = toTZ(p.time);
+          if (local.slice(14, 16) !== "00") return null;
+          const hour = parseInt(local.slice(11, 13), 10);
+          if (hour % 3 !== 0) return null;
+          return (
+            <circle
+              key={`gd-${i}`}
+              cx={histX(i)}
+              cy={ptYmid(p.gustsKmh)}
+              r={3}
+              fill="#fca5a5"
+              stroke="#fff"
+              strokeWidth="1"
+            />
+          );
+        })}
+        {/* Gusts dots every hour (forecast) */}
+        {futureForecast.map((p, i) => {
+          const hour = parseInt(p.time.slice(11, 13), 10);
+          if (hour % 3 !== 0) return null;
+          return (
+            <circle
+              key={`fgd-${i}`}
+              cx={fcstX(i)}
+              cy={ptYmid(p.gustsKmh)}
+              r={3}
+              fill="#fca5a5"
+              stroke="#fff"
+              strokeWidth="1"
+              opacity={0.7}
+            />
+          );
+        })}
+
+        {/* ── Wind speed polyline (history: solid, forecast: dashed) ───── */}
+        {histWindPoly && (
+          <polyline
+            points={histWindPoly}
+            fill="none"
+            stroke="#67e8f9"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+            opacity="0.9"
+          />
+        )}
+        {futureForecast.length > 0 && (
+          <polyline
+            points={fcstWindPoly}
+            fill="none"
+            stroke="#67e8f9"
+            strokeWidth="1.8"
+            strokeDasharray="6 3"
+            strokeLinejoin="round"
+            opacity="0.75"
+          />
+        )}
+        {/* Wind dots every 3h (history) */}
+        {filteredHistory.map((p, i) => {
+          const local = toTZ(p.time);
+          if (local.slice(14, 16) !== "00") return null;
+          const hour = parseInt(local.slice(11, 13), 10);
+          if (hour % 3 !== 0) return null;
+          return (
+            <circle
+              key={`wd-${i}`}
+              cx={histX(i)}
+              cy={ptYmid(p.windSpeedKmh)}
+              r={3}
+              fill="#67e8f9"
+              stroke="#fff"
+              strokeWidth="1"
+            />
+          );
+        })}
+        {/* Wind dots every 3h (forecast) */}
+        {futureForecast.map((p, i) => {
+          const hour = parseInt(p.time.slice(11, 13), 10);
+          if (hour % 3 !== 0) return null;
+          return (
+            <circle
+              key={`fwd-${i}`}
+              cx={fcstX(i)}
+              cy={ptYmid(p.windSpeedKmh)}
+              r={3}
+              fill="#67e8f9"
+              stroke="#fff"
+              strokeWidth="1"
+              opacity={0.75}
+            />
+          );
+        })}
+
+        {/* ── NOW vertical line ────────────────────────────────────────── */}
+        {futureForecast.length > 0 && (
           <line
-            x1={AXIS_W + nowIdx * BAR_SLOT + BAR_W / 2}
+            x1={nowX}
             y1={DAY_H}
-            x2={AXIS_W + nowIdx * BAR_SLOT + BAR_W / 2}
+            x2={nowX}
             y2={DAY_H + TIME_H + CHART_H}
-            stroke="#ef4444"
-            strokeWidth="1.5"
-            strokeDasharray="4 3"
+            stroke="#f97316"
+            strokeWidth="3"
+            strokeDasharray="8 4"
+            opacity="0.85"
           />
         )}
       </svg>
 
       {/* ── Legend ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-4 mt-2 px-1 text-[10px] text-gray-400">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 px-1 text-[10px] text-gray-400">
         <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-2 rounded-sm bg-[#5cb85c]" />
+          <span className="inline-block w-4 border-t-2 border-[#67e8f9]" />
           Vent moyen
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-2 rounded-sm bg-[#5cb85c] opacity-30" />
+          <span className="inline-block w-4 border-t-2 border-[#fca5a5]" />
           Rafales
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-4 border-t-2 border-[#f87171]" />
-          Température
-        </span>
-        <span className="flex items-center gap-1 ml-auto">
-          <span className="inline-block w-4 border-t-2 border-dashed border-red-500" />
-          Maintenant
-        </span>
+        {futureForecast.length > 0 && (
+          <span className="flex items-center gap-1">
+            <span className="inline-block w-3 h-3 border-l-[3px] border-dashed border-orange-400" />
+            Maintenant
+          </span>
+        )}
       </div>
     </div>
   );

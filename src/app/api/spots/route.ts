@@ -17,6 +17,7 @@ const createSpotSchema = z.object({
   minWindKmh: z.number().min(0).max(100).default(15),
   maxWindKmh: z.number().min(0).max(150).default(35),
   bestMonths: z.array(z.string()).default([]),
+  bestWindDirections: z.array(z.string()).default([]),
   hazards: z.string().optional(),
   access: z.string().optional(),
   nearestStationId: z.string().optional(),

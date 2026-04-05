@@ -16,8 +16,14 @@ import {
   Sailboat,
   Mountain,
   TrendingUp,
+  Pencil,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Images,
 } from "lucide-react";
 import { WindCompass } from "@/components/spot/WindCompass";
+import { WindDirectionRose } from "@/components/spot/WindDirectionRose";
 import { WindChart } from "@/components/spot/WindChart";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import { ForecastTable } from "@/components/spot/ForecastTable";
@@ -53,6 +59,7 @@ interface SpotData {
   minWindKmh: number;
   maxWindKmh: number;
   bestMonths: string[];
+  bestWindDirections: string[];
   hazards: string | null;
   access: string | null;
   nearestStationId: string | null;
@@ -79,7 +86,26 @@ interface Props {
 export function SpotPageClient({ spot, wind, forecast, history }: Props) {
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const router = useRouter();
+
+  // Close lightbox on Escape, navigate with arrow keys
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowRight")
+        setLightboxIndex((i) =>
+          i !== null ? (i + 1) % spot.images.length : null,
+        );
+      if (e.key === "ArrowLeft")
+        setLightboxIndex((i) =>
+          i !== null ? (i - 1 + spot.images.length) % spot.images.length : null,
+        );
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [lightboxIndex, spot.images.length]);
 
   // Auto-refresh every 10 min
   useEffect(() => {
@@ -121,9 +147,21 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
 
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {spot.name}
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900">{spot.name}</h1>
+              {spot.bestWindDirections.length > 0 && (
+                <div
+                  title={`Meilleures directions : ${spot.bestWindDirections.join(", ")}`}
+                >
+                  <WindDirectionRose
+                    bestDirections={spot.bestWindDirections}
+                    currentDirection={wind?.windDirection}
+                    size={52}
+                    showLabels={false}
+                  />
+                </div>
+              )}
+            </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
               {(spot.country || spot.region) && (
                 <span className="flex items-center gap-1">
@@ -206,7 +244,43 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
               {condLabel}
             </div>
           )}
+          <Link
+            href={`/spots/${spot.id}/edit`}
+            className="shrink-0 inline-flex items-center gap-1.5 text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 hover:text-gray-900 hover:border-gray-400 transition-colors"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Modifier
+          </Link>
         </div>
+
+        {/* ── Header photo strip ───────────────────────────────────── */}
+        {spot.images.length > 0 && (
+          <div className="mt-5 grid grid-cols-3 gap-2 h-48 sm:h-56">
+            {spot.images.slice(0, 3).map((img, idx) => (
+              <button
+                key={img.id}
+                onClick={() => setLightboxIndex(idx)}
+                className="relative overflow-hidden rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-400"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img.url}
+                  alt={img.caption || spot.name}
+                  className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                />
+                {/* "+N photos" overlay on the 3rd tile when there are more */}
+                {idx === 2 && spot.images.length > 3 && (
+                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1">
+                    <Images className="h-5 w-5 text-white" />
+                    <span className="text-white font-semibold text-sm">
+                      +{spot.images.length - 3} photos
+                    </span>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Main content ─────────────────────────────────────────── */}
@@ -377,7 +451,12 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
             </div>
             <div className="px-3 py-2">
               {history && history.length > 0 ? (
-                <WindHistoryChart history={history} useKnots={useKnots} />
+                <WindHistoryChart
+                  history={history}
+                  forecast={forecast?.hourly}
+                  useKnots={useKnots}
+                  timezone={forecast?.timezone ?? "UTC"}
+                />
               ) : (
                 <div className="flex items-center justify-center h-28 text-sm text-gray-500">
                   Historique temporairement indisponible
@@ -387,27 +466,101 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
           </div>
         </div>
 
-        {/* ── Photo gallery ──────────────────────────────────────── */}
-        {spot.images.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-base font-semibold text-gray-900 mb-3">
-              Photos
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {spot.images.map((img) => (
-                <div
-                  key={img.id}
-                  className="aspect-video rounded-xl overflow-hidden border border-gray-200"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={img.caption || spot.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
+        {/* ── Lightbox modal ─────────────────────────────────────── */}
+        {lightboxIndex !== null && spot.images.length > 0 && (
+          <div
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+            onClick={() => setLightboxIndex(null)}
+          >
+            {/* Close */}
+            <button
+              className="absolute top-4 right-4 text-white/70 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+              onClick={() => setLightboxIndex(null)}
+              aria-label="Fermer"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            {/* Counter */}
+            <span className="absolute top-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+              {lightboxIndex + 1} / {spot.images.length}
+            </span>
+
+            {/* Prev */}
+            {spot.images.length > 1 && (
+              <button
+                className="absolute left-4 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex(
+                    (lightboxIndex - 1 + spot.images.length) %
+                      spot.images.length,
+                  );
+                }}
+                aria-label="Précédent"
+              >
+                <ChevronLeft className="h-7 w-7" />
+              </button>
+            )}
+
+            {/* Image */}
+            <div
+              className="max-w-4xl max-h-[85vh] mx-16 flex flex-col items-center gap-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={spot.images[lightboxIndex].url}
+                alt={spot.images[lightboxIndex].caption || spot.name}
+                className="max-h-[78vh] max-w-full object-contain rounded-lg"
+              />
+              {spot.images[lightboxIndex].caption && (
+                <p className="text-white/60 text-sm text-center">
+                  {spot.images[lightboxIndex].caption}
+                </p>
+              )}
             </div>
+
+            {/* Next */}
+            {spot.images.length > 1 && (
+              <button
+                className="absolute right-4 text-white/70 hover:text-white p-3 rounded-full hover:bg-white/10 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex((lightboxIndex + 1) % spot.images.length);
+                }}
+                aria-label="Suivant"
+              >
+                <ChevronRight className="h-7 w-7" />
+              </button>
+            )}
+
+            {/* Thumbnail strip */}
+            {spot.images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto px-2">
+                {spot.images.map((img, idx) => (
+                  <button
+                    key={img.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIndex(idx);
+                    }}
+                    className={`shrink-0 w-14 h-10 rounded-md overflow-hidden border-2 transition-colors ${
+                      idx === lightboxIndex
+                        ? "border-sky-400"
+                        : "border-transparent opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

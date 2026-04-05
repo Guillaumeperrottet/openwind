@@ -210,7 +210,11 @@ export function StationPopup({
               Chargement de l&apos;historique…
             </div>
           ) : history && history.length > 0 ? (
-            <WindHistoryChart history={history} useKnots={useKnots} />
+            <WindHistoryChart
+              history={history}
+              useKnots={useKnots}
+              timezone={isPioupiou ? "UTC" : "Europe/Zurich"}
+            />
           ) : (
             <div className="flex items-center justify-center h-24 text-xs text-gray-400">
               Historique indisponible

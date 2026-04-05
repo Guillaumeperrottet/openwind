@@ -349,10 +349,13 @@ export async function fetchWindHistoryStation(
     })
     .sort((a, b) => a.time.localeCompare(b.time));
 
-  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000)
+  // Midnight UTC 2 days ago → chart always starts at 00:00
+  const now = new Date();
+  const cutoff = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 2),
+  )
     .toISOString()
-    .slice(0, 16)
-    .replace("T", "T"); // "YYYY-MM-DDTHH:mm"
+    .slice(0, 16); // "YYYY-MM-DDT00:00"
   return all.filter((p) => p.time >= cutoff);
 }
 
@@ -374,7 +377,7 @@ export async function fetchWindHistory(
   );
   url.searchParams.set("wind_speed_unit", "kmh");
   url.searchParams.set("past_days", "2");
-  url.searchParams.set("forecast_days", "0");
+  url.searchParams.set("forecast_days", "1");
   url.searchParams.set("timezone", "UTC");
 
   const res = await fetch(url.toString(), { next: { revalidate: 600 } });
@@ -395,11 +398,16 @@ export async function fetchWindHistory(
     wind_direction_10m: number[];
   };
 
-  return time.map((t, i) => ({
-    time: t,
-    windSpeedKmh: wind_speed_10m[i] ?? 0,
-    windDirection: wind_direction_10m[i] ?? 0,
-    gustsKmh: wind_gusts_10m[i] ?? 0,
-    temperatureC: temperature_2m[i] ?? 0,
-  }));
+  // Only keep past data points (up to now) — future points come from the forecast prop
+  const nowUtc = new Date().toISOString().slice(0, 16);
+
+  return time
+    .map((t, i) => ({
+      time: t,
+      windSpeedKmh: wind_speed_10m[i] ?? 0,
+      windDirection: wind_direction_10m[i] ?? 0,
+      gustsKmh: wind_gusts_10m[i] ?? 0,
+      temperatureC: temperature_2m[i] ?? 0,
+    }))
+    .filter((p) => p.time <= nowUtc);
 }

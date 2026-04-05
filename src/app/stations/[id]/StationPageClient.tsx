@@ -297,7 +297,12 @@ export function StationPageClient({
             </div>
             <div className="px-3 py-2">
               {history && history.length > 0 ? (
-                <WindHistoryChart history={history} useKnots={useKnots} />
+                <WindHistoryChart
+                  history={history}
+                  forecast={forecast?.hourly}
+                  useKnots={useKnots}
+                  timezone="Europe/Zurich"
+                />
               ) : (
                 <div className="flex items-center justify-center h-28 text-sm text-gray-500">
                   Historique temporairement indisponible

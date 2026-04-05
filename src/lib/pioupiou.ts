@@ -104,7 +104,15 @@ export async function fetchPioupiouHistory(
 ): Promise<HistoryPoint[]> {
   // Pioupiou archive max = 31 days, we want 2 days
   const stop = new Date().toISOString();
-  const start = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  // Midnight UTC 2 days ago → chart always starts at 00:00
+  const nowDate = new Date();
+  const start = new Date(
+    Date.UTC(
+      nowDate.getUTCFullYear(),
+      nowDate.getUTCMonth(),
+      nowDate.getUTCDate() - 2,
+    ),
+  ).toISOString();
 
   const url = `${PIOUPIOU_ARCHIVE}/${pioupiouId}?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`;
 

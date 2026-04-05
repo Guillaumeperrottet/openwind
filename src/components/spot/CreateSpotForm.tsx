@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { MapPin, Upload, X, Wind, Sailboat, Mountain } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { KiteMap } from "@/components/map/KiteMap";
+import { WindDirectionPicker } from "@/components/spot/WindDirectionRose";
 import { MONTHS } from "@/lib/utils";
 import type { WindStation } from "@/lib/stations";
 
@@ -27,6 +28,7 @@ const schema = z
     minWindKmh: z.number().min(0).max(100),
     maxWindKmh: z.number().min(0).max(150),
     bestMonths: z.array(z.string()),
+    bestWindDirections: z.array(z.string()),
     hazards: z.string().optional(),
     access: z.string().optional(),
     nearestStationId: z.string().optional(),
@@ -45,9 +47,34 @@ const toKmh = (kts: number) => Math.round(kts * 1.852);
 
 type StationWithDist = WindStation & { dist: number };
 
+export interface SpotInitialData {
+  id: string;
+  name: string;
+  description: string | null;
+  latitude: number;
+  longitude: number;
+  country: string | null;
+  region: string | null;
+  sportType: "KITE" | "PARAGLIDE";
+  difficulty: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
+  waterType: "FLAT" | "CHOP" | "WAVES" | "MIXED";
+  minWindKmh: number;
+  maxWindKmh: number;
+  bestMonths: string[];
+  bestWindDirections: string[];
+  hazards: string | null;
+  access: string | null;
+  nearestStationId: string | null;
+}
+
+interface Props {
+  initialData?: SpotInitialData;
+}
+
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-export function CreateSpotForm() {
+export function CreateSpotForm({ initialData }: Props = {}) {
+  const isEditMode = Boolean(initialData);
   const router = useRouter();
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -66,14 +93,34 @@ export function CreateSpotForm() {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      sportType: "KITE",
-      difficulty: "INTERMEDIATE",
-      waterType: "CHOP",
-      minWindKmh: 15,
-      maxWindKmh: 35,
-      bestMonths: [],
-    },
+    defaultValues: initialData
+      ? {
+          name: initialData.name,
+          description: initialData.description ?? undefined,
+          latitude: initialData.latitude,
+          longitude: initialData.longitude,
+          country: initialData.country ?? undefined,
+          region: initialData.region ?? undefined,
+          sportType: initialData.sportType,
+          difficulty: initialData.difficulty,
+          waterType: initialData.waterType,
+          minWindKmh: initialData.minWindKmh,
+          maxWindKmh: initialData.maxWindKmh,
+          bestMonths: initialData.bestMonths,
+          bestWindDirections: initialData.bestWindDirections,
+          hazards: initialData.hazards ?? undefined,
+          access: initialData.access ?? undefined,
+          nearestStationId: initialData.nearestStationId ?? undefined,
+        }
+      : {
+          sportType: "KITE",
+          difficulty: "INTERMEDIATE",
+          waterType: "CHOP",
+          minWindKmh: 15,
+          maxWindKmh: 35,
+          bestMonths: [],
+          bestWindDirections: [],
+        },
   });
 
   const lat = watch("latitude");
@@ -166,8 +213,11 @@ export function CreateSpotForm() {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/spots", {
-        method: "POST",
+      const url = isEditMode ? `/api/spots/${initialData!.id}` : "/api/spots";
+      const method = isEditMode ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
@@ -177,15 +227,17 @@ export function CreateSpotForm() {
         setError(
           typeof err.error === "string"
             ? err.error
-            : "Erreur lors de la création du spot",
+            : isEditMode
+              ? "Erreur lors de la sauvegarde"
+              : "Erreur lors de la création du spot",
         );
         return;
       }
 
       const spot = await res.json();
 
-      // Upload images
-      if (images.length > 0) {
+      // Upload new images (create mode only for now)
+      if (!isEditMode && images.length > 0) {
         const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
         const bucket = process.env.NEXT_PUBLIC_STORAGE_BUCKET || "spot-images";
@@ -253,10 +305,12 @@ export function CreateSpotForm() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                Ajouter un spot
+                {isEditMode ? "Modifier le spot" : "Ajouter un spot"}
               </h1>
               <p className="text-xs text-gray-400 mt-0.5">
-                Cliquez sur la carte pour placer le spot
+                {isEditMode
+                  ? initialData!.name
+                  : "Cliquez sur la carte pour placer le spot"}
               </p>
             </div>
             <button
@@ -543,6 +597,22 @@ export function CreateSpotForm() {
             )}
           </div>
 
+          {/* Best wind directions */}
+          <div>
+            <label className={labelClass}>Meilleures directions de vent</label>
+            <Controller
+              control={control}
+              name="bestWindDirections"
+              render={({ field }) => (
+                <WindDirectionPicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  size={130}
+                />
+              )}
+            />
+          </div>
+
           {/* Best months */}
           <div>
             <label className={labelClass}>Meilleurs mois</label>
@@ -644,7 +714,13 @@ export function CreateSpotForm() {
             size="lg"
             className="w-full"
           >
-            {submitting ? "Création en cours..." : "Créer le spot"}
+            {submitting
+              ? isEditMode
+                ? "Sauvegarde..."
+                : "Création en cours..."
+              : isEditMode
+                ? "Sauvegarder les modifications"
+                : "Créer le spot"}
           </Button>
 
           <p className="text-[10px] text-gray-400 text-center">

@@ -47,8 +47,8 @@ function WindArrow({ direction }: { direction: number }) {
   const rotation = (direction + 180) % 360;
   return (
     <svg
-      width="16"
-      height="16"
+      width="13"
+      height="13"
       viewBox="0 0 16 16"
       style={{ display: "block", margin: "0 auto" }}
       aria-hidden="true"
@@ -105,14 +105,14 @@ export function ForecastTable({ forecast, light = true }: Props) {
   const allPoints = days.flatMap((d) => d.points);
 
   const LABEL_CELL = light
-    ? "sticky left-0 z-10 bg-white text-[11px] text-gray-500 font-medium px-3 py-1.5 text-right whitespace-nowrap border-r border-gray-100 select-none"
-    : "sticky left-0 z-10 bg-zinc-900 text-[11px] text-zinc-400 font-medium px-3 py-1.5 text-right whitespace-nowrap border-r border-white/10 select-none";
+    ? "sticky left-0 z-10 bg-white text-[10px] text-gray-500 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-gray-100 select-none"
+    : "sticky left-0 z-10 bg-zinc-900 text-[10px] text-zinc-400 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-white/10 select-none";
   const DATA_CELL = light
-    ? "text-center text-[11px] font-bold tabular-nums px-0.5 py-1.5 min-w-[60px] border-b border-gray-50"
-    : "text-center text-[11px] font-bold tabular-nums px-0.5 py-1.5 min-w-[60px] border-b border-white/5";
+    ? "text-center text-[10px] font-bold tabular-nums px-0 py-1 min-w-[30px] border-b border-gray-50"
+    : "text-center text-[10px] font-bold tabular-nums px-0 py-1 min-w-[30px] border-b border-white/5";
   const DAY_BORDER = light
-    ? "border-l border-gray-200"
-    : "border-l border-white/20";
+    ? "border-l-2 border-gray-300"
+    : "border-l-2 border-white/30";
   const ROW_BORDER = light
     ? "border-b border-gray-100"
     : "border-b border-white/10";
@@ -136,7 +136,7 @@ export function ForecastTable({ forecast, light = true }: Props) {
                 rowSpan={2}
               >
                 <span
-                  className={`${light ? "text-gray-400" : "text-zinc-600"} text-[9px] font-normal tracking-wide uppercase`}
+                  className={`${light ? "text-gray-400" : "text-zinc-600"} text-[8px] font-normal tracking-wide uppercase`}
                 >
                   kn · °C
                 </span>
@@ -146,7 +146,7 @@ export function ForecastTable({ forecast, light = true }: Props) {
                 <th
                   key={day.date}
                   colSpan={day.points.length}
-                  className={`text-center text-[11px] font-semibold ${light ? "text-gray-700" : "text-zinc-200"} px-2 py-1.5 ${ROW_BORDER} ${light ? "border-l border-gray-200" : "border-l border-white/10"}`}
+                  className={`text-center text-[10px] font-semibold ${light ? "text-gray-700" : "text-zinc-200"} px-1 py-1 ${ROW_BORDER} ${light ? "border-l-2 border-gray-300" : "border-l-2 border-white/30"}`}
                 >
                   {day.label}
                 </th>
@@ -160,7 +160,7 @@ export function ForecastTable({ forecast, light = true }: Props) {
                 return (
                   <td
                     key={i}
-                    className={`text-center text-[10px] ${light ? "text-gray-400" : "text-zinc-500"} px-1 py-1 ${ROW_BORDER} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
+                    className={`text-center text-[9px] ${light ? "text-gray-400" : "text-zinc-500"} px-0 py-0.5 ${ROW_BORDER} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                   >
                     {hourStr}
                   </td>

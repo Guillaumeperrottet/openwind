@@ -217,6 +217,7 @@ export function KiteMap({
 
     const geolocate = new maplibregl.GeolocateControl({
       trackUserLocation: false,
+      positionOptions: { enableHighAccuracy: true },
       fitBoundsOptions: { maxZoom: 10 },
     });
     map.addControl(new maplibregl.NavigationControl(), "top-right");
@@ -281,36 +282,32 @@ export function KiteMap({
         });
       }
 
-      // ── Kite icon (SDF) — simplified kite shape ──────────────────────────
+      // ── Kite icon (SDF) — from kitesurfing.png ────────────────────────────
       {
-        const s = 48;
-        const c2 = document.createElement("canvas");
-        c2.width = s;
-        c2.height = s;
-        const cx = c2.getContext("2d")!;
-        cx.fillStyle = "white";
-        // Diamond-shaped kite body
-        cx.beginPath();
-        cx.moveTo(24, 4); // top
-        cx.lineTo(38, 22); // right
-        cx.lineTo(24, 44); // bottom
-        cx.lineTo(10, 22); // left
-        cx.closePath();
-        cx.fill();
-        // Cross lines
-        cx.strokeStyle = "white";
-        cx.lineWidth = 2;
-        cx.beginPath();
-        cx.moveTo(24, 4);
-        cx.lineTo(24, 44);
-        cx.moveTo(10, 22);
-        cx.lineTo(38, 22);
-        cx.stroke();
-        if (!map.hasImage("spot-kite")) {
-          map.addImage("spot-kite", cx.getImageData(0, 0, s, s), {
-            sdf: true,
-          });
-        }
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const s = 64;
+          const c2 = document.createElement("canvas");
+          c2.width = s;
+          c2.height = s;
+          const cx = c2.getContext("2d")!;
+          cx.drawImage(img, 0, 0, s, s);
+          // Convert all opaque pixels to white for SDF recoloring
+          const imageData = cx.getImageData(0, 0, s, s);
+          const d = imageData.data;
+          for (let i = 0; i < d.length; i += 4) {
+            if (d[i + 3] > 0) {
+              d[i] = 255;
+              d[i + 1] = 255;
+              d[i + 2] = 255;
+            }
+          }
+          if (!map.hasImage("spot-kite")) {
+            map.addImage("spot-kite", imageData, { sdf: true });
+          }
+        };
+        img.src = "/kitesurfing.png";
       }
 
       // ── Paraglide icon (SDF) — parachute+pilot shape ─────────────────────
@@ -645,6 +642,9 @@ export function KiteMap({
           minWindKmh: Number(p.minWindKmh ?? 0),
           maxWindKmh: Number(p.maxWindKmh ?? 50),
           bestMonths: p.bestMonths ? JSON.parse(String(p.bestMonths)) : [],
+          bestWindDirections: p.bestWindDirections
+            ? JSON.parse(String(p.bestWindDirections))
+            : [],
           hazards: p.hazards ? String(p.hazards) : null,
           access: p.access ? String(p.access) : null,
           sportType: String(p.sportType ?? "KITE") as Spot["sportType"],

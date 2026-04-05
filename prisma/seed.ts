@@ -714,6 +714,77 @@ async function main() {
   console.log(
     `✓ Created ${created} spots (${spots.length - created} already existed).`,
   );
+
+  // ─── Update best wind directions for all known spots ──────────────────────
+  const windDirs: Record<string, string[]> = {
+    // Lake Geneva – kitesurf
+    Excenevex: ["N", "NNE", "NE", "ENE"],
+    "Boiron / Lake Geneva": ["N", "NNE", "NE", "SW", "WSW"],
+    "Corseaux / Lake Geneva": ["N", "NNE", "NE"],
+    "Promenthoux / Lake Geneva": ["SSW", "SW", "WSW", "W", "WNW"],
+    Silvaplana: ["W", "WSW", "WNW", "SW"],
+    // Jura lakes
+    "Lac des Rousses": ["N", "NNE", "NE", "ENE", "E"],
+    "Les Rousses": ["N", "NNE", "NE", "ENE"],
+    "Le Brassus \u2013 Vall\u00e9e de Joux": ["NNE", "NE", "ENE", "E"],
+    "Lac de Joux": ["NE", "ENE", "E"],
+    // Fribourg pre-Alps
+    Semsales: ["N", "NNE", "NE", "ENE"],
+    "Le Niremont": ["W", "WNW", "NW", "E", "ENE", "NE"],
+    "Les Alpettes": ["N", "NNE", "NE"],
+    "La Br\u00e9vine": ["N", "NNE", "NE", "ENE"],
+    // Bernese Oberland + Valais
+    Jaunpass: ["N", "NNW", "NW", "WNW", "NNE"],
+    Grimselpass: ["N", "NNE", "S", "SSW", "SW"],
+    // Auvergne-Rhône-Alpes
+    "Le Sal\u00e8ve": [
+      "N",
+      "NNE",
+      "NE",
+      "ENE",
+      "E",
+      "ESE",
+      "SE",
+      "WSW",
+      "W",
+      "WNW",
+      "NW",
+      "NNW",
+    ],
+    "Crozet Lelex": ["N", "NNW", "NW", "WNW", "W", "NNE", "NE"],
+    // Europe
+    Tarifa: ["E", "ENE", "ESE", "W", "WSW", "WNW"],
+    "Fuerteventura \u2013 Sotavento": ["N", "NNE", "NE", "ENE"],
+    Essaouira: ["N", "NNE", "NE"],
+    // Africa & Indian Ocean
+    "Dakhla Lagoon": ["N", "NNE", "NE", "ENE"],
+    "Le Morne \u2013 Mauritius": ["SE", "ESE", "SSE", "E"],
+    "Paje Beach \u2013 Zanzibar": ["NNE", "NE", "ENE", "SE", "SSE", "ESE"],
+    "Langebaan Lagoon": ["SE", "SSE", "ESE"],
+    "El Gouna \u2013 Red Sea": ["N", "NNW", "NW", "WNW"],
+    // Americas
+    Cabarete: ["NNE", "NE", "ENE", "E"],
+    Cumbuco: ["SE", "SSE", "ESE", "E"],
+    Jericoacoara: ["SE", "SSE", "ESE"],
+    "Hood River \u2013 Columbia River Gorge": ["W", "WNW", "WSW"],
+    "Maui \u2013 Kite Beach (Kanaha)": ["N", "NNE", "NE", "ENE"],
+    // Asia-Pacific
+    "Mui Ne": ["NNE", "NE", "ENE", "E"],
+    "Boracay \u2013 Bulabog Beach": ["N", "NNE", "NE", "ENE"],
+    Kalpitiya: ["SW", "SSW", "WSW", "NE", "NNE", "ENE"],
+    // Oceania
+    "Perth \u2013 Safety Bay": ["SW", "SSW", "WSW", "S"],
+  };
+
+  let updated = 0;
+  for (const [name, dirs] of Object.entries(windDirs)) {
+    const r = await prisma.spot.updateMany({
+      where: { name },
+      data: { bestWindDirections: dirs },
+    });
+    if (r.count > 0) updated++;
+  }
+  console.log(`✓ Updated wind directions for ${updated} spots.`);
 }
 
 main()

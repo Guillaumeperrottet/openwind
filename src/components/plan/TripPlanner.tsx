@@ -60,6 +60,8 @@ export function TripPlanner() {
         data.address?.city ||
           data.address?.town ||
           data.address?.village ||
+          data.address?.hamlet ||
+          data.address?.municipality ||
           data.address?.county ||
           null,
       );
@@ -88,7 +90,7 @@ export function TripPlanner() {
         setGeoLoading(false);
       },
       () => setGeoLoading(false),
-      { timeout: 8000 },
+      { timeout: 10000, enableHighAccuracy: true },
     );
   };
 

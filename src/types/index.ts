@@ -15,6 +15,7 @@ export interface Spot {
   minWindKmh: number;
   maxWindKmh: number;
   bestMonths: string[];
+  bestWindDirections: string[];
   hazards: string | null;
   access: string | null;
   sportType: SportType;
