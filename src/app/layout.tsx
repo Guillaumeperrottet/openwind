@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://openkite.ch"),
+  verification: {
+    google: "FrgnqrjCcdKM8osAeIP4IbH-c7HKmZWLvk2rgTlhgX0",
+  },
   title: {
     default: "OpenKite — Carte des spots de kitesurf et parapente",
     template: "%s — OpenKite",
