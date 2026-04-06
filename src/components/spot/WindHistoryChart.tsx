@@ -255,6 +255,33 @@ export function WindHistoryChart({
     }
   };
 
+  // Touch handler for mobile (same logic)
+  const handleSvgTouch = (e: React.TouchEvent<SVGSVGElement>) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    const svgRect = e.currentTarget.getBoundingClientRect();
+    const svgX =
+      (touch.clientX - svgRect.left) * (totalW / (svgRect.width || totalW));
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    for (let i = 0; i < allPoints.length; i++) {
+      const dist = Math.abs(allPoints[i].x - svgX);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    if (bestIdx >= 0) {
+      setHoveredIdx(bestIdx);
+      const container = containerRef.current!;
+      const containerRect = container.getBoundingClientRect();
+      setTooltipPos({
+        x: touch.clientX - containerRect.left,
+        y: touch.clientY - containerRect.top,
+      });
+    }
+  };
+
   // Hover point: history or forecast?
   const hovPt = hoveredIdx !== null ? allPoints[hoveredIdx] : null;
   const isHoverForecast = hovPt?.isForecast ?? false;
@@ -274,6 +301,8 @@ export function WindHistoryChart({
       ref={containerRef}
       className="relative overflow-hidden"
       onMouseLeave={() => setHoveredIdx(null)}
+      onTouchEnd={() => setHoveredIdx(null)}
+      onTouchCancel={() => setHoveredIdx(null)}
     >
       {/* ── Hover tooltip ───────────────────────────────────────────────── */}
       {(hovPoint ?? hovFcstPoint) &&
@@ -356,6 +385,8 @@ export function WindHistoryChart({
         preserveAspectRatio="none"
         style={{ display: "block", cursor: "crosshair" }}
         onMouseMove={handleMouseMove}
+        onTouchStart={handleSvgTouch}
+        onTouchMove={handleSvgTouch}
       >
         {/* Grid lines + Y-axis labels */}
         {yTicks.map((tick) => {

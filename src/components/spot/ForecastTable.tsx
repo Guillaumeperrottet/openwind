@@ -92,8 +92,8 @@ export function ForecastTable({ forecast, light = true }: Props) {
   const allPoints = days.flatMap((d) => d.points);
 
   const LABEL_CELL = light
-    ? "sticky left-0 z-10 bg-white text-[10px] text-gray-500 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-gray-100 select-none"
-    : "sticky left-0 z-10 bg-zinc-900 text-[10px] text-zinc-400 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-white/10 select-none";
+    ? "hidden sm:table-cell sticky left-0 z-10 bg-white text-[10px] text-gray-500 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-gray-100 select-none"
+    : "hidden sm:table-cell sticky left-0 z-10 bg-zinc-900 text-[10px] text-zinc-400 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-white/10 select-none";
   const DATA_CELL = light
     ? "text-center text-[10px] font-bold tabular-nums px-0 py-1 min-w-[30px] border-b border-gray-50"
     : "text-center text-[10px] font-bold tabular-nums px-0 py-1 min-w-[30px] border-b border-white/5";
@@ -283,9 +283,9 @@ export function ForecastTable({ forecast, light = true }: Props) {
         </table>
       </div>
 
-      {/* Footer — wind color legend */}
+      {/* Footer — wind color legend (hidden on mobile) */}
       <div
-        className={`px-4 py-2.5 border-t ${light ? "border-gray-100" : "border-white/10"}`}
+        className={`hidden sm:block px-4 py-2.5 border-t ${light ? "border-gray-100" : "border-white/10"}`}
       >
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
           {[

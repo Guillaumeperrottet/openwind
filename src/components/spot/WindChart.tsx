@@ -297,12 +297,26 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
     }
   };
 
+  // Touch handler for mobile (same logic)
+  const handleSvgTouch = (e: React.TouchEvent<SVGSVGElement>) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const svgX = touch.clientX - rect.left;
+    const idx = Math.floor((svgX - Y_AXIS_W) / BAR_SLOT);
+    if (idx >= 0 && idx < points.length) {
+      setHoveredIdx(idx);
+    }
+  };
+
   return (
     <div className="flex gap-4 items-start">
       {/* Left: scrollable bar chart */}
       <div
         className="flex-1 min-w-0 overflow-x-auto"
         onMouseLeave={() => setHoveredIdx(null)}
+        onTouchEnd={() => setHoveredIdx(null)}
+        onTouchCancel={() => setHoveredIdx(null)}
       >
         <div style={{ minWidth: `${totalW}px` }}>
           <svg
@@ -311,6 +325,8 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
             viewBox={`0 0 ${totalW} ${totalH}`}
             style={{ display: "block", cursor: "crosshair" }}
             onMouseMove={handleSvgMouseMove}
+            onTouchStart={handleSvgTouch}
+            onTouchMove={handleSvgTouch}
           >
             {/* Gridlines + Y-axis labels */}
             {yTicks.map((tick) => {
@@ -471,6 +487,37 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
               );
             })}
           </svg>
+
+          {/* Mobile touch tooltip */}
+          {hoveredIdx !== null && (
+            <div className="sm:hidden flex items-center gap-3 px-3 py-2 mt-1.5 bg-gray-50 border border-gray-100 rounded-lg text-xs">
+              <span className="text-[10px] text-gray-400">
+                {dateLabel} {timeLabel}
+              </span>
+              <span
+                className="w-2.5 h-2.5 rounded-full shrink-0 border border-gray-200"
+                style={{
+                  background: windCellStyle(activePoint.windSpeedKmh)
+                    .background,
+                }}
+              />
+              <span className="font-bold tabular-nums text-gray-900">
+                {useKnots
+                  ? activePoint.windSpeedKnots
+                  : Math.round(activePoint.windSpeedKmh)}{" "}
+                {useKnots ? "kts" : "km/h"}
+              </span>
+              <span className="text-gray-500 tabular-nums">
+                ↑
+                {useKnots
+                  ? activePoint.gustsKnots
+                  : Math.round(activePoint.gustsKmh)}
+              </span>
+              <span className="text-gray-400">
+                {windDirectionLabel(activePoint.windDirection)}
+              </span>
+            </div>
+          )}
 
           {/* Legend */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 ml-10 text-[9px] text-gray-400">
