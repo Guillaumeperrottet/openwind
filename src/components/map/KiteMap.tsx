@@ -1294,10 +1294,9 @@ export function KiteMap({
         const lats = batch.map((s) => s.latitude).join(",");
         const lons = batch.map((s) => s.longitude).join(",");
         try {
-          const r = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=wind_speed_10m&wind_speed_unit=kmh`,
-            { signal: controller.signal },
-          );
+          const r = await fetch(`/api/wind/grid?lats=${lats}&lngs=${lons}`, {
+            signal: controller.signal,
+          });
           if (!r.ok) continue;
           const raw: unknown = await r.json();
           const data = Array.isArray(raw)

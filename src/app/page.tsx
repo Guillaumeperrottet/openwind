@@ -2,7 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { KiteMap } from "@/components/map/KiteMap";
 import type { Spot } from "@/types";
 
-export const dynamic = "force-dynamic";
+// ISR: spots change rarely — cache HTML for 10 min, revalidate in background.
+// This eliminates a Prisma query on every single homepage load.
+export const revalidate = 600;
 
 export default async function HomePage() {
   let spots: Spot[] = [];

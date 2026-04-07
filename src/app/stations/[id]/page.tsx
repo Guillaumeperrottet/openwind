@@ -9,7 +9,8 @@ import {
 import { fetchFullForecast } from "@/lib/forecast";
 import { StationPageClient } from "./StationPageClient";
 
-export const dynamic = "force-dynamic";
+// No force-dynamic — params already makes this route dynamic.
+// Removing it lets internal fetch() calls use their ISR cache (revalidate settings).
 
 interface Props {
   params: Promise<{ id: string }>;

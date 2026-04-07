@@ -43,16 +43,34 @@ export function StationPageClient({
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const router = useRouter();
 
-  // Auto-refresh server data every 10 minutes (MeteoSwiss update frequency)
+  // Auto-refresh when tab becomes visible after being hidden for 10+ min.
+  // Avoids polling in background tabs, saving ~4 API calls per cycle.
   useEffect(() => {
-    const id = setInterval(
-      () => {
+    let hiddenSince = 0;
+    const onVisibility = () => {
+      if (document.hidden) {
+        hiddenSince = Date.now();
+      } else if (hiddenSince && Date.now() - hiddenSince > 10 * 60 * 1000) {
         router.refresh();
         setLastRefreshed(new Date());
+        hiddenSince = 0;
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    // Also refresh every 10 min while actively viewing
+    const id = setInterval(
+      () => {
+        if (!document.hidden) {
+          router.refresh();
+          setLastRefreshed(new Date());
+        }
       },
       10 * 60 * 1000,
     );
-    return () => clearInterval(id);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      clearInterval(id);
+    };
   }, [router]);
 
   // Derived display values

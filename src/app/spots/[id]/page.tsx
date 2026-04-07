@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fetchCurrentWind, fetchWindHistory } from "@/lib/wind";
@@ -8,6 +9,18 @@ import { SpotPageClient } from "./SpotPageClient";
 // Without it, the internal fetch() calls honor their { next: { revalidate } }
 // settings, so Open-Meteo data is ISR-cached instead of fetched on every request.
 
+// Deduplicated Prisma query: shared across generateMetadata() and SpotPage()
+// within the same request, so the DB is hit only once.
+const getSpot = cache(async (id: string) => {
+  return prisma.spot.findUnique({
+    where: { id },
+    include: {
+      images: true,
+      reports: { orderBy: { createdAt: "desc" }, take: 10 },
+    },
+  });
+});
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -15,17 +28,7 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
   try {
-    const spot = await prisma.spot.findUnique({
-      where: { id },
-      select: {
-        name: true,
-        country: true,
-        region: true,
-        difficulty: true,
-        sportType: true,
-        images: { select: { url: true }, take: 1 },
-      },
-    });
+    const spot = await getSpot(id);
     if (!spot) return { title: "Spot introuvable" };
     const location = [spot.region, spot.country].filter(Boolean).join(", ");
     const sport = spot.sportType === "KITE" ? "kitesurf" : "parapente";
@@ -49,13 +52,7 @@ export default async function SpotPage({ params }: Props) {
 
   let spot;
   try {
-    spot = await prisma.spot.findUnique({
-      where: { id },
-      include: {
-        images: true,
-        reports: { orderBy: { createdAt: "desc" }, take: 10 },
-      },
-    });
+    spot = await getSpot(id);
   } catch {
     notFound();
   }

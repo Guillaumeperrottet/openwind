@@ -104,16 +104,34 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [lightboxIndex, spot.images.length]);
 
-  // Auto-refresh every 10 min
+  // Auto-refresh when tab becomes visible after being hidden for 10+ min.
+  // Avoids polling every 10 min in background tabs, saving ~3 API calls per cycle.
   useEffect(() => {
-    const id = setInterval(
-      () => {
+    let hiddenSince = 0;
+    const onVisibility = () => {
+      if (document.hidden) {
+        hiddenSince = Date.now();
+      } else if (hiddenSince && Date.now() - hiddenSince > 10 * 60 * 1000) {
         router.refresh();
         setLastRefreshed(new Date());
+        hiddenSince = 0;
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    // Also refresh every 10 min while actively viewing
+    const id = setInterval(
+      () => {
+        if (!document.hidden) {
+          router.refresh();
+          setLastRefreshed(new Date());
+        }
       },
       10 * 60 * 1000,
     );
-    return () => clearInterval(id);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      clearInterval(id);
+    };
   }, [router]);
 
   const speedKmh = wind?.windSpeedKmh ?? 0;
