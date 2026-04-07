@@ -39,6 +39,8 @@ export function KiteMap({
   const windCanvasRef = useRef<HTMLCanvasElement>(null);
   const windColorCanvasRef = useRef<HTMLCanvasElement>(null);
   const particleAnimRef = useRef<number | null>(null);
+  /** All loaded stations (MeteoSwiss + Pioupiou) for nearest-station wind lookup */
+  const stationsRef = useRef<WindStation[]>([]);
 
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [selectedWind, setSelectedWind] = useState<WindData | null>(null);
@@ -80,6 +82,43 @@ export function KiteMap({
   const fetchWind = useCallback(async (spot: Spot) => {
     setLoadingWind(true);
     setSelectedWind(null);
+
+    // 1) Try nearest station from already-loaded station data (instant, no API call)
+    const stations = stationsRef.current;
+    if (stations.length > 0) {
+      let best: WindStation | null = null;
+      let bestDist = Infinity;
+
+      // If spot has a nearestStationId, find it directly
+      if (spot.nearestStationId) {
+        best = stations.find((s) => s.id === spot.nearestStationId) ?? null;
+      }
+
+      // Otherwise (or if not found), find closest by distance
+      if (!best) {
+        for (const s of stations) {
+          const dLat = s.lat - spot.latitude;
+          const dLng = s.lng - spot.longitude;
+          const dist = dLat * dLat + dLng * dLng;
+          if (dist < bestDist) {
+            bestDist = dist;
+            best = s;
+          }
+        }
+      }
+
+      if (best) {
+        // Estimate gusts as ~1.3× mean (standard approximation)
+        const gustsKmh = Math.round(best.windSpeedKmh * 1.3);
+        setSelectedWind(
+          getWindData(best.windSpeedKmh, best.windDirection, gustsKmh),
+        );
+        setLoadingWind(false);
+        return;
+      }
+    }
+
+    // 2) Fallback: call Open-Meteo via /api/wind/grid
     try {
       const lat = spot.latitude.toFixed(2);
       const lng = spot.longitude.toFixed(2);
@@ -195,6 +234,7 @@ export function KiteMap({
       const res = await fetch("/api/stations");
       if (!res.ok) throw new Error("fetch failed");
       const stations: WindStation[] = await res.json();
+      stationsRef.current = stations;
       renderStations(stations);
       if (stations.length > 0) {
         setStationsUpdatedAt(
