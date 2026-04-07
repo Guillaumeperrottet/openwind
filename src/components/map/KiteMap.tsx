@@ -39,7 +39,6 @@ export function KiteMap({
   const pulseFrameRef = useRef<number | null>(null);
   const piouSocketRef = useRef<Socket | null>(null);
   const windCanvasRef = useRef<HTMLCanvasElement>(null);
-  const windColorCanvasRef = useRef<HTMLCanvasElement>(null);
   /** All loaded stations (MeteoSwiss + Pioupiou) for nearest-station wind lookup */
   const stationsRef = useRef<WindStation[]>([]);
 
@@ -944,14 +943,8 @@ export function KiteMap({
     };
   }, [showStations, mapLoaded, renderStations]);
 
-  // Wind particle animation + color field (extracted hook)
-  useWindOverlay(
-    mapRef,
-    windCanvasRef,
-    windColorCanvasRef,
-    showWindOverlay,
-    mapLoaded,
-  );
+  // GPU-accelerated wind particle overlay
+  useWindOverlay(mapRef, windCanvasRef, showWindOverlay, mapLoaded);
 
   // Push spots to GeoJSON layer (no wind fetch — wind is loaded on click)
   useEffect(() => {
@@ -985,12 +978,7 @@ export function KiteMap({
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" />
-      {/* Color field canvas — below particles */}
-      <canvas
-        ref={windColorCanvasRef}
-        className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 4 }}
-      />
+      {/* WebGL wind particle canvas */}
       <canvas
         ref={windCanvasRef}
         className="absolute inset-0 pointer-events-none"
@@ -1044,29 +1032,27 @@ export function KiteMap({
         </button>
 
         {/* Wind overlay toggle */}
-        {process.env.NEXT_PUBLIC_OWM_API_KEY && (
-          <button
-            onClick={() => setShowWindOverlay((v) => !v)}
-            className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg border transition-all ${
-              showWindOverlay
-                ? "bg-violet-600 border-violet-400 text-white"
-                : "bg-white/95 border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300"
-            }`}
+        <button
+          onClick={() => setShowWindOverlay((v) => !v)}
+          className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg border transition-all ${
+            showWindOverlay
+              ? "bg-violet-600 border-violet-400 text-white"
+              : "bg-white/95 border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300"
+          }`}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            >
-              <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
-            </svg>
-            Vent live
-          </button>
-        )}
+            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
+          </svg>
+          Vent live
+        </button>
       </div>
 
       {/* Wind legend + unit toggle — hidden on mobile in pickMode (sheet covers it) */}
