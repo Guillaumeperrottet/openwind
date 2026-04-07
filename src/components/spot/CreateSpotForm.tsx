@@ -151,6 +151,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
   const maxWind = watch("maxWindKmh");
 
   // ── Fetch nearby stations when location changes ──────────────────────────
+  // Also runs on mount when editing a spot with existing coordinates.
   const fetchNearbyStations = useCallback(async (lt: number, ln: number) => {
     setLoadingStations(true);
     try {
@@ -176,6 +177,14 @@ export function CreateSpotForm({ initialData }: Props = {}) {
       setLoadingStations(false);
     }
   }, []);
+
+  // Load nearby stations on mount when editing a spot with existing coordinates
+  useEffect(() => {
+    if (lat && lng) {
+      fetchNearbyStations(lat, lng);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally run only on mount
 
   // ── Handle map click ─────────────────────────────────────────────────────
   const handlePickLocation = useCallback(
