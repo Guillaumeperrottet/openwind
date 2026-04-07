@@ -5,7 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Spot, WindData } from "@/types";
 import type { WindStation } from "@/lib/stations";
-import { windColor, windDirectionLabel } from "@/lib/utils";
+import { windColor, windDirectionLabel, getWindData } from "@/lib/utils";
 import { SpotPopup } from "./SpotPopup";
 import { StationPopup } from "./StationPopup";
 
@@ -58,6 +58,9 @@ export function KiteMap({
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
 
+  /** Cached full WindData per spot ID, populated by batch spot-coloring fetch */
+  const spotWindCacheRef = useRef<Map<string, WindData>>(new Map());
+
   // Station popup state (React-based with history chart)
   const [selectedStation, setSelectedStation] = useState<{
     id: string;
@@ -78,6 +81,13 @@ export function KiteMap({
   } | null>(null);
 
   const fetchWind = useCallback(async (spot: Spot) => {
+    // Use cached wind data from the batch spot-coloring fetch if available
+    const cached = spotWindCacheRef.current.get(spot.id);
+    if (cached) {
+      setSelectedWind(cached);
+      setLoadingWind(false);
+      return;
+    }
     setLoadingWind(true);
     setSelectedWind(null);
     try {
@@ -1100,10 +1110,13 @@ export function KiteMap({
       else step = 0.35;
 
       const pad = step * 2;
-      const bLat0 = Math.max(-85, bounds.getSouth() - pad);
-      const bLat1 = Math.min(85, bounds.getNorth() + pad);
-      const bLng0 = Math.max(-180, bounds.getWest() - pad);
-      const bLng1 = Math.min(180, bounds.getEast() + pad);
+      // Snap bounds to the step grid so the URL stays identical for
+      // small pans, enabling Vercel CDN cache hits.
+      const snap = (v: number, s: number) => Math.round(v / s) * s;
+      const bLat0 = Math.max(-85, snap(bounds.getSouth() - pad, step));
+      const bLat1 = Math.min(85, snap(bounds.getNorth() + pad, step));
+      const bLng0 = Math.max(-180, snap(bounds.getWest() - pad, step));
+      const bLng1 = Math.min(180, snap(bounds.getEast() + pad, step));
 
       // Clamp to ≤ 200 points to stay well under Open-Meteo rate limits
       let newNLats = Math.max(2, Math.round((bLat1 - bLat0) / step) + 1);
@@ -1118,18 +1131,21 @@ export function KiteMap({
       const lons: number[] = [];
       for (let i = 0; i < newNLats; i++)
         for (let j = 0; j < newNLngs; j++) {
-          lats.push(+(bLat0 + i * step).toFixed(4));
-          lons.push(+(bLng0 + j * step).toFixed(4));
+          lats.push(+(bLat0 + i * step).toFixed(1));
+          lons.push(+(bLng0 + j * step).toFixed(1));
         }
 
       fetch(`/api/wind/grid?lats=${lats.join(",")}&lngs=${lons.join(",")}`, {
         signal,
       })
         .then((r) => {
-          if (r.status === 429) {
-            // Rate limited — retry after a delay, keep existing data visible
+          if (r.status === 429 || r.status === 502) {
+            // Rate limited or upstream error — retry after a longer delay
             if (animating) {
-              refetchTimer = setTimeout(fetchWindForViewport, 5000);
+              refetchTimer = setTimeout(
+                fetchWindForViewport,
+                r.status === 429 ? 10000 : 5000,
+              );
             }
             return null;
           }
@@ -1205,9 +1221,9 @@ export function KiteMap({
         return;
       }
       renderColorField(4);
-      // Debounced refetch after pan (2 s)
+      // Debounced refetch after pan (3 s)
       if (refetchTimer) clearTimeout(refetchTimer);
-      refetchTimer = setTimeout(fetchWindForViewport, 2000);
+      refetchTimer = setTimeout(fetchWindForViewport, 3000);
     };
     const onZoomStart = () => {
       isZooming = true;
@@ -1240,8 +1256,8 @@ export function KiteMap({
         }
       }
 
-      // Debounced fetch — wait 800ms for user to finish zooming before calling API
-      refetchTimer = setTimeout(fetchWindForViewport, 800);
+      // Debounced fetch — wait 1.5s for user to finish zooming before calling API
+      refetchTimer = setTimeout(fetchWindForViewport, 1500);
     };
     const onResize = () => {
       setupCanvas();
@@ -1300,11 +1316,34 @@ export function KiteMap({
           if (!r.ok) continue;
           const raw: unknown = await r.json();
           const data = Array.isArray(raw)
-            ? (raw as Array<{ current: { wind_speed_10m: number } }>)
-            : [raw as { current: { wind_speed_10m: number } }];
+            ? (raw as Array<{
+                current: {
+                  wind_speed_10m: number;
+                  wind_direction_10m: number;
+                  wind_gusts_10m: number;
+                };
+              }>)
+            : [
+                raw as {
+                  current: {
+                    wind_speed_10m: number;
+                    wind_direction_10m: number;
+                    wind_gusts_10m: number;
+                  };
+                },
+              ];
           data.forEach((d, j) => {
             if (batch[j] && d?.current) {
               windMap.set(batch[j].id, d.current.wind_speed_10m);
+              // Cache full WindData for instant popup display on click
+              spotWindCacheRef.current.set(
+                batch[j].id,
+                getWindData(
+                  d.current.wind_speed_10m,
+                  d.current.wind_direction_10m,
+                  d.current.wind_gusts_10m,
+                ),
+              );
             }
           });
           // Progressive update — re-render after each batch
