@@ -152,8 +152,14 @@ export async function fetchFullForecast(
   marineUrl.searchParams.set("forecast_days", "7");
 
   const [weatherRes, marineRes] = await Promise.allSettled([
-    fetch(weatherUrl.toString(), { next: { revalidate: 1800 } }),
-    fetch(marineUrl.toString(), { next: { revalidate: 1800 } }),
+    fetch(weatherUrl.toString(), {
+      next: { revalidate: 1800 },
+      signal: AbortSignal.timeout(6000),
+    }),
+    fetch(marineUrl.toString(), {
+      next: { revalidate: 1800 },
+      signal: AbortSignal.timeout(6000),
+    }),
   ]);
 
   if (weatherRes.status !== "fulfilled" || !weatherRes.value.ok) {

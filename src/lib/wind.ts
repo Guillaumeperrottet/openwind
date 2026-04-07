@@ -570,10 +570,14 @@ async function fetchWindHistoryStationCsv(
 
   // Fetch today's file (small ~10 KB) + tail of recent file (~100 KB covers 3+ days)
   const [nowRes, recentRes] = await Promise.all([
-    fetch(`${base}now.csv`, { next: { revalidate: 600 } }),
+    fetch(`${base}now.csv`, {
+      next: { revalidate: 600 },
+      signal: AbortSignal.timeout(6000),
+    }),
     fetch(`${base}recent.csv`, {
       headers: { Range: "bytes=-100000" },
       next: { revalidate: 600 },
+      signal: AbortSignal.timeout(6000),
     }),
   ]);
 
@@ -736,7 +740,10 @@ export async function fetchWindForecast15min(
   url.searchParams.set("forecast_days", "2");
   url.searchParams.set("timezone", "UTC");
 
-  const res = await fetch(url.toString(), { next: { revalidate: 600 } });
+  const res = await fetch(url.toString(), {
+    next: { revalidate: 600 },
+    signal: AbortSignal.timeout(6000),
+  });
   if (!res.ok) throw new Error(`Open-Meteo forecast error: ${res.status}`);
 
   const data = await res.json();
