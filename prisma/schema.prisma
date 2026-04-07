@@ -73,3 +73,21 @@ model WindReport {
   rating         Int      @default(3) // 1-5
   createdAt      DateTime @default(now())
 }
+
+/// Stores live station wind measurements every 10 minutes (via cron).
+/// Used to build a real-time 48h history chart without relying on the
+/// ~2-hour-delayed MeteoSwiss OGD CSV files.
+model StationMeasurement {
+  id             String   @id @default(cuid())
+  stationId      String   // e.g. "MAS", "BER", "piou-110"
+  time           DateTime // measurement timestamp (UTC)
+  windSpeedKmh   Float
+  windDirection  Float    // degrees 0-360
+  gustsKmh       Float?
+  temperatureC   Float?
+  source         String   @default("meteoswiss") // "meteoswiss" | "pioupiou"
+  createdAt      DateTime @default(now())
+
+  @@unique([stationId, time])
+  @@index([stationId, time])
+}

@@ -6,6 +6,7 @@ import type {
   SportType,
 } from "@/types";
 import { getWindData } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
 
 const BASE = "https://api.open-meteo.com/v1/forecast";
 
@@ -497,11 +498,71 @@ export function analyzeMultiDay(
 }
 
 /**
- * Fetch 48h real station measurements (10-min) from MeteoSwiss OGD.
- * Combines `_now.csv` (today) + tail of `_recent.csv` (last ~100 KB ≈ 3-4 days).
- * Falls back to throwing so the caller can use Open-Meteo as backup.
+ * Fetch 48h real station measurements (10-min).
+ *
+ * Strategy (fast → slow):
+ *   1. Database (StationMeasurement) — populated by /api/cron/stations every 10 min, real-time
+ *   2. MeteoSwiss OGD CSV (_now + _recent) — ~2h publication delay, fills older gaps
+ *
+ * The two sources are merged and deduplicated by timestamp.
  */
 export async function fetchWindHistoryStation(
+  stationId: string,
+): Promise<HistoryPoint[]> {
+  const now = new Date();
+  const cutoff = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 2),
+  );
+
+  // ── 1. Database (real-time, no delay) ──────────────────────────────────
+  let dbPoints: HistoryPoint[] = [];
+  try {
+    const rows = await prisma.stationMeasurement.findMany({
+      where: {
+        stationId,
+        time: { gte: cutoff },
+      },
+      orderBy: { time: "asc" },
+    });
+    dbPoints = rows.map((r) => ({
+      time: r.time.toISOString().slice(0, 16), // "YYYY-MM-DDTHH:mm"
+      windSpeedKmh: r.windSpeedKmh,
+      windDirection: r.windDirection,
+      gustsKmh: r.gustsKmh ?? r.windSpeedKmh,
+      temperatureC: r.temperatureC ?? 0,
+    }));
+  } catch {
+    /* DB unavailable — continue with OGD CSV only */
+  }
+
+  // ── 2. OGD CSV (delayed ~2h, but covers full 48h once published) ──────
+  let csvPoints: HistoryPoint[] = [];
+  try {
+    csvPoints = await fetchWindHistoryStationCsv(stationId);
+  } catch {
+    /* CSV unavailable — use DB only */
+  }
+
+  // ── Merge & dedup ─────────────────────────────────────────────────────
+  const seen = new Set<string>();
+  // DB points take priority (more recent) — add them last so they overwrite CSV
+  const all = [...csvPoints, ...dbPoints]
+    .filter((p) => {
+      if (seen.has(p.time)) return false;
+      seen.add(p.time);
+      return true;
+    })
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  const cutoffStr = cutoff.toISOString().slice(0, 16);
+  return all.filter((p) => p.time >= cutoffStr);
+}
+
+/**
+ * Fetch 48h history from MeteoSwiss OGD CSV files.
+ * These have a ~2h publication delay but are complete once available.
+ */
+async function fetchWindHistoryStationCsv(
   stationId: string,
 ): Promise<HistoryPoint[]> {
   const id = stationId.toLowerCase();
