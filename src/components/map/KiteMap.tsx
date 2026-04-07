@@ -1122,10 +1122,9 @@ export function KiteMap({
           lons.push(+(bLng0 + j * step).toFixed(4));
         }
 
-      fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lats.join(",")}&longitude=${lons.join(",")}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh`,
-        { signal },
-      )
+      fetch(`/api/wind/grid?lats=${lats.join(",")}&lngs=${lons.join(",")}`, {
+        signal,
+      })
         .then((r) => {
           if (r.status === 429) {
             // Rate limited — retry after a delay, keep existing data visible
@@ -1134,6 +1133,7 @@ export function KiteMap({
             }
             return null;
           }
+          if (!r.ok) return null;
           return r.json();
         })
         .then((raw: unknown) => {
