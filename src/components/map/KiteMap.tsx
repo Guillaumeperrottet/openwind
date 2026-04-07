@@ -1435,8 +1435,10 @@ export function KiteMap({
         style={{ zIndex: 5 }}
       />
 
-      {/* Live stations toggle + wind overlay toggle */}
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+      {/* Live stations toggle + wind overlay toggle — hidden in pickMode (trip planner) */}
+      <div
+        className={`absolute top-4 left-4 z-10 flex flex-col gap-1.5 ${pickMode ? "hidden" : ""}`}
+      >
         {/* Balises live */}
         <button
           onClick={() => setShowStations((v) => !v)}
@@ -1505,8 +1507,10 @@ export function KiteMap({
         )}
       </div>
 
-      {/* Wind legend + unit toggle */}
-      <div className="absolute bottom-8 left-4 z-10">
+      {/* Wind legend + unit toggle — hidden on mobile in pickMode (sheet covers it) */}
+      <div
+        className={`absolute bottom-8 left-4 z-10 ${pickMode ? "hidden lg:block" : ""}`}
+      >
         {legendOpen ? (
           <div className="rounded-xl bg-white/90 backdrop-blur p-3 border border-gray-200 text-xs text-gray-600 shadow-lg">
             <div className="flex items-center justify-between gap-3 mb-2.5">
@@ -1607,8 +1611,9 @@ export function KiteMap({
         )}
       </div>
 
+      {/* Pick toast — hidden on mobile where the TripPlanner controls provide guidance */}
       {pickMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-amber-500/90 text-zinc-900 text-sm font-medium px-4 py-2 rounded-full shadow-lg">
+        <div className="hidden lg:block absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-amber-500/90 text-zinc-900 text-sm font-medium px-4 py-2 rounded-full shadow-lg">
           🎯 Cliquez sur la carte pour choisir votre destination
         </div>
       )}
