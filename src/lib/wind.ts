@@ -41,13 +41,22 @@ async function fetchWithRetry(
   url: string,
   init?: RequestInit,
 ): Promise<Response> {
-  const res = await fetch(url, init);
-  if (res.status === 429 || res.status >= 500) {
-    // Wait briefly, then retry once
-    await new Promise((r) => setTimeout(r, 800));
-    return fetch(url, init);
+  const opts: RequestInit = {
+    ...init,
+    signal: AbortSignal.timeout(6000),
+  };
+  try {
+    const res = await fetch(url, opts);
+    if (res.status === 429 || res.status >= 500) {
+      await new Promise((r) => setTimeout(r, 500));
+      return fetch(url, { ...init, signal: AbortSignal.timeout(6000) });
+    }
+    return res;
+  } catch {
+    // Network/timeout error — retry once
+    await new Promise((r) => setTimeout(r, 500));
+    return fetch(url, { ...init, signal: AbortSignal.timeout(6000) });
   }
-  return res;
 }
 
 /**

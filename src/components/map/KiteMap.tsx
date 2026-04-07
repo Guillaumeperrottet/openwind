@@ -5,7 +5,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Spot, WindData } from "@/types";
 import type { WindStation } from "@/lib/stations";
-import { windColor, windDirectionLabel, getWindData } from "@/lib/utils";
+import { windColor, windDirectionLabel } from "@/lib/utils";
 import { SpotPopup } from "./SpotPopup";
 import { StationPopup } from "./StationPopup";
 
@@ -58,9 +58,6 @@ export function KiteMap({
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
 
-  /** Cached full WindData per spot ID, populated by batch spot-coloring fetch */
-  const spotWindCacheRef = useRef<Map<string, WindData>>(new Map());
-
   // Station popup state (React-based with history chart)
   const [selectedStation, setSelectedStation] = useState<{
     id: string;
@@ -81,13 +78,6 @@ export function KiteMap({
   } | null>(null);
 
   const fetchWind = useCallback(async (spot: Spot) => {
-    // Use cached wind data from the batch spot-coloring fetch if available
-    const cached = spotWindCacheRef.current.get(spot.id);
-    if (cached) {
-      setSelectedWind(cached);
-      setLoadingWind(false);
-      return;
-    }
     setLoadingWind(true);
     setSelectedWind(null);
     try {
@@ -1287,75 +1277,10 @@ export function KiteMap({
     };
   }, [showWindOverlay, mapLoaded]);
 
-  // Push spots to GeoJSON layer + fetch wind for coloring
+  // Push spots to GeoJSON layer (no wind fetch — wind is loaded on click)
   useEffect(() => {
     if (!mapLoaded) return;
-    if (!spots.length) {
-      renderSpots([]);
-      return;
-    }
-
-    // Initial render (gray — no wind data yet)
     renderSpots(spots);
-
-    // Fetch current wind in batches of 50 (Open-Meteo URL length limit)
-    const BATCH = 50;
-    const controller = new AbortController();
-    const windMap = new Map<string, number>();
-
-    const fetchBatches = async () => {
-      for (let i = 0; i < spots.length; i += BATCH) {
-        if (controller.signal.aborted) return;
-        const batch = spots.slice(i, i + BATCH);
-        const lats = batch.map((s) => s.latitude).join(",");
-        const lons = batch.map((s) => s.longitude).join(",");
-        try {
-          const r = await fetch(`/api/wind/grid?lats=${lats}&lngs=${lons}`, {
-            signal: controller.signal,
-          });
-          if (!r.ok) continue;
-          const raw: unknown = await r.json();
-          const data = Array.isArray(raw)
-            ? (raw as Array<{
-                current: {
-                  wind_speed_10m: number;
-                  wind_direction_10m: number;
-                  wind_gusts_10m: number;
-                };
-              }>)
-            : [
-                raw as {
-                  current: {
-                    wind_speed_10m: number;
-                    wind_direction_10m: number;
-                    wind_gusts_10m: number;
-                  };
-                },
-              ];
-          data.forEach((d, j) => {
-            if (batch[j] && d?.current) {
-              windMap.set(batch[j].id, d.current.wind_speed_10m);
-              // Cache full WindData for instant popup display on click
-              spotWindCacheRef.current.set(
-                batch[j].id,
-                getWindData(
-                  d.current.wind_speed_10m,
-                  d.current.wind_direction_10m,
-                  d.current.wind_gusts_10m,
-                ),
-              );
-            }
-          });
-          // Progressive update — re-render after each batch
-          renderSpots(spots, windMap);
-        } catch {
-          /* keep gray markers on failure */
-        }
-      }
-    };
-    fetchBatches();
-
-    return () => controller.abort();
   }, [spots, mapLoaded, renderSpots]);
 
   // Highlight a spot on hover from external panel (e.g. TripPlanner results)
