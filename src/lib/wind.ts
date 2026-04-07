@@ -43,19 +43,19 @@ async function fetchWithRetry(
 ): Promise<Response> {
   const opts: RequestInit = {
     ...init,
-    signal: AbortSignal.timeout(6000),
+    signal: AbortSignal.timeout(4000),
   };
   try {
     const res = await fetch(url, opts);
     if (res.status === 429 || res.status >= 500) {
-      await new Promise((r) => setTimeout(r, 500));
-      return fetch(url, { ...init, signal: AbortSignal.timeout(6000) });
+      await new Promise((r) => setTimeout(r, 300));
+      return fetch(url, { ...init, signal: AbortSignal.timeout(4000) });
     }
     return res;
   } catch {
     // Network/timeout error — retry once
-    await new Promise((r) => setTimeout(r, 500));
-    return fetch(url, { ...init, signal: AbortSignal.timeout(6000) });
+    await new Promise((r) => setTimeout(r, 300));
+    return fetch(url, { ...init, signal: AbortSignal.timeout(4000) });
   }
 }
 

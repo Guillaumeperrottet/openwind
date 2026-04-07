@@ -81,9 +81,11 @@ export function KiteMap({
     setLoadingWind(true);
     setSelectedWind(null);
     try {
-      const res = await fetch(
-        `/api/wind?lat=${spot.latitude}&lng=${spot.longitude}`,
-      );
+      // Round to 2 decimals (~1 km) — wind doesn't vary over 1 km
+      // and it allows Vercel CDN cache hits across clicks
+      const lat = spot.latitude.toFixed(2);
+      const lng = spot.longitude.toFixed(2);
+      const res = await fetch(`/api/wind?lat=${lat}&lng=${lng}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       setSelectedWind(data);
