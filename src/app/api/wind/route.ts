@@ -15,9 +15,15 @@ export async function GET(request: NextRequest) {
   try {
     const wind = await fetchCurrentWind(lat, lng);
     return NextResponse.json(wind, {
-      headers: { "Cache-Control": "public, s-maxage=600" },
+      headers: {
+        "Cache-Control": "public, s-maxage=600, stale-while-revalidate=120",
+      },
     });
-  } catch {
+  } catch (err) {
+    console.error(
+      `[/api/wind] lat=${lat} lng=${lng}`,
+      err instanceof Error ? err.message : err,
+    );
     return NextResponse.json(
       { error: "Wind data unavailable" },
       { status: 502 },

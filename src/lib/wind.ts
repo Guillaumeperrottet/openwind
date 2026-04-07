@@ -35,6 +35,22 @@ function swissLocalToUtc(localIso: string): string {
 }
 
 /**
+ * Fetch with a single retry on transient errors (429, 5xx, network).
+ */
+async function fetchWithRetry(
+  url: string,
+  init?: RequestInit,
+): Promise<Response> {
+  const res = await fetch(url, init);
+  if (res.status === 429 || res.status >= 500) {
+    // Wait briefly, then retry once
+    await new Promise((r) => setTimeout(r, 800));
+    return fetch(url, init);
+  }
+  return res;
+}
+
+/**
  * Fetch current wind at a lat/lng from Open-Meteo (no API key needed).
  */
 export async function fetchCurrentWind(
@@ -49,10 +65,11 @@ export async function fetchCurrentWind(
     "wind_speed_10m,wind_direction_10m,wind_gusts_10m",
   );
   url.searchParams.set("wind_speed_unit", "kmh");
-  // default timeformat is ISO strings ("2026-04-01T14:45")
 
-  const res = await fetch(url.toString(), { next: { revalidate: 600 } }); // cache 10 min
-  if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`);
+  const res = await fetchWithRetry(url.toString(), {
+    next: { revalidate: 600 },
+  } as RequestInit);
+  if (!res.ok) throw new Error(`Open-Meteo ${res.status}: ${res.statusText}`);
 
   const data = await res.json();
   const c = data.current;

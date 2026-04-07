@@ -223,18 +223,58 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Layout constants (needed by hooks below) ─────────────────────────────
+  const BAR_W = 7;
+  const BAR_GAP = 1;
+  const BAR_SLOT = BAR_W + BAR_GAP;
+  const Y_AXIS_W = 38;
+
+  // Touch handler for mobile — floating tooltip
+  const handleSvgTouch = useCallback(
+    (e: TouchEvent) => {
+      e.preventDefault(); // block scroll — scroll only via bottom scrollbar
+      const touch = e.touches[0];
+      if (!touch) return;
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const svgX = touch.clientX - rect.left;
+      const idx = Math.floor((svgX - Y_AXIS_W) / BAR_SLOT);
+      if (idx >= 0 && idx < points.length) {
+        setHoveredIdx(idx);
+        const container = containerRef.current;
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          setTooltipPos({
+            x: touch.clientX - containerRect.left,
+            y: touch.clientY - containerRect.top,
+          });
+        }
+      }
+    },
+    [points.length, BAR_SLOT],
+  );
+
+  // Attach non-passive touch listeners so preventDefault works
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    svg.addEventListener("touchstart", handleSvgTouch, { passive: false });
+    svg.addEventListener("touchmove", handleSvgTouch, { passive: false });
+    return () => {
+      svg.removeEventListener("touchstart", handleSvgTouch);
+      svg.removeEventListener("touchmove", handleSvgTouch);
+    };
+  }, [handleSvgTouch]);
+
   if (points.length === 0) return null;
 
   // Active point: hovered > now > first
   const activeIdx = hoveredIdx !== null ? hoveredIdx : nowIdx >= 0 ? nowIdx : 0;
   const activePoint = points[activeIdx];
 
-  // ── Layout constants ──────────────────────────────────────────────────────
-  const BAR_W = 7;
-  const BAR_GAP = 1;
-  const BAR_SLOT = BAR_W + BAR_GAP;
+  // ── Remaining layout constants ────────────────────────────────────────────
   const CHART_H = 150;
-  const Y_AXIS_W = 38;
   const DAY_H = 24;
   const TIME_H = 18;
   const KITE_H = 14;
@@ -299,44 +339,6 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
       setHoveredIdx(idx);
     }
   };
-
-  // Touch handler for mobile — floating tooltip
-  const handleSvgTouch = useCallback(
-    (e: TouchEvent) => {
-      e.preventDefault(); // block scroll — scroll only via bottom scrollbar
-      const touch = e.touches[0];
-      if (!touch) return;
-      const svg = svgRef.current;
-      if (!svg) return;
-      const rect = svg.getBoundingClientRect();
-      const svgX = touch.clientX - rect.left;
-      const idx = Math.floor((svgX - Y_AXIS_W) / BAR_SLOT);
-      if (idx >= 0 && idx < points.length) {
-        setHoveredIdx(idx);
-        const container = containerRef.current;
-        if (container) {
-          const containerRect = container.getBoundingClientRect();
-          setTooltipPos({
-            x: touch.clientX - containerRect.left,
-            y: touch.clientY - containerRect.top,
-          });
-        }
-      }
-    },
-    [points.length, BAR_SLOT],
-  );
-
-  // Attach non-passive touch listeners so preventDefault works
-  useEffect(() => {
-    const svg = svgRef.current;
-    if (!svg) return;
-    svg.addEventListener("touchstart", handleSvgTouch, { passive: false });
-    svg.addEventListener("touchmove", handleSvgTouch, { passive: false });
-    return () => {
-      svg.removeEventListener("touchstart", handleSvgTouch);
-      svg.removeEventListener("touchmove", handleSvgTouch);
-    };
-  }, [handleSvgTouch]);
 
   const TTW = 190;
 

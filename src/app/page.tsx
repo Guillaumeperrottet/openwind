@@ -17,8 +17,11 @@ export default async function HomePage() {
         createdAt: img.createdAt.toISOString(),
       })),
     }));
-  } catch {
-    // DB not yet configured — map shows empty
+  } catch (err) {
+    console.error(
+      "[HomePage] DB error:",
+      err instanceof Error ? err.message : err,
+    );
   }
 
   return (

@@ -12,27 +12,51 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const spot = await prisma.spot.findUnique({
-    where: { id },
-    select: { latitude: true, longitude: true },
-  });
+  let spot;
+  try {
+    spot = await prisma.spot.findUnique({
+      where: { id },
+      select: { latitude: true, longitude: true },
+    });
+  } catch (err) {
+    console.error(
+      "[/api/spots/archives] DB error:",
+      err instanceof Error ? err.message : err,
+    );
+    return NextResponse.json(
+      { error: "Base de données injoignable" },
+      { status: 503 },
+    );
+  }
 
   if (!spot) {
     return NextResponse.json({ error: "Spot not found" }, { status: 404 });
   }
 
-  const data = await fetchWindArchives(spot.latitude, spot.longitude);
+  try {
+    const data = await fetchWindArchives(spot.latitude, spot.longitude);
 
-  if (!data) {
+    if (!data) {
+      return NextResponse.json(
+        { error: "Archives indisponibles" },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control":
+          "public, s-maxage=604800, stale-while-revalidate=86400",
+      },
+    });
+  } catch (err) {
+    console.error(
+      "[/api/spots/archives] Archive fetch error:",
+      err instanceof Error ? err.message : err,
+    );
     return NextResponse.json(
       { error: "Archives indisponibles" },
       { status: 502 },
     );
   }
-
-  return NextResponse.json(data, {
-    headers: {
-      "Cache-Control": "public, s-maxage=604800, stale-while-revalidate=86400",
-    },
-  });
 }

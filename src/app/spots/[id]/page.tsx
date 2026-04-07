@@ -4,7 +4,9 @@ import { fetchCurrentWind, fetchWindHistory } from "@/lib/wind";
 import { fetchFullForecast } from "@/lib/forecast";
 import { SpotPageClient } from "./SpotPageClient";
 
-export const dynamic = "force-dynamic";
+// No force-dynamic — params already makes this route dynamic.
+// Without it, the internal fetch() calls honor their { next: { revalidate } }
+// settings, so Open-Meteo data is ISR-cached instead of fetched on every request.
 
 interface Props {
   params: Promise<{ id: string }>;

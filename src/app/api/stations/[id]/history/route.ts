@@ -7,7 +7,8 @@ import {
 import { fetchMeteoSwissStations } from "@/lib/stations";
 import { fetchPioupiouHistory } from "@/lib/pioupiou";
 
-export const dynamic = "force-dynamic";
+// No force-dynamic — params already makes this route dynamic,
+// and removing it lets internal fetch() calls use their ISR cache.
 
 /**
  * GET /api/stations/:id/history
