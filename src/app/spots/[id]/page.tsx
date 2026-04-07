@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fetchCurrentWind, fetchWindHistory } from "@/lib/wind";
 import { fetchFullForecast } from "@/lib/forecast";
+import { getWindData } from "@/lib/utils";
+import { fetchMeteoSwissStations } from "@/lib/stations";
+import { fetchPioupiouStations } from "@/lib/pioupiou";
+import type { WindData } from "@/types";
 import { SpotPageClient } from "./SpotPageClient";
 
 // No force-dynamic — params already makes this route dynamic.
@@ -59,9 +63,44 @@ export default async function SpotPage({ params }: Props) {
 
   if (!spot) notFound();
 
-  // Fetch current wind + 7-day forecast + 48h history in parallel
-  const [windResult, forecastResult, historyResult] = await Promise.allSettled([
-    fetchCurrentWind(spot.latitude, spot.longitude),
+  // ── Current wind: prefer nearest station (instant, no Open-Meteo) ──────
+  let wind: WindData | null = null;
+
+  // Try to get wind from the nearest station (MeteoSwiss + Pioupiou)
+  if (spot.nearestStationId) {
+    try {
+      const [meteo, piou] = await Promise.allSettled([
+        fetchMeteoSwissStations(),
+        fetchPioupiouStations(),
+      ]);
+      const allStations = [
+        ...(meteo.status === "fulfilled" ? meteo.value : []),
+        ...(piou.status === "fulfilled" ? piou.value : []),
+      ];
+      const station = allStations.find((s) => s.id === spot.nearestStationId);
+      if (station) {
+        wind = getWindData(
+          station.windSpeedKmh,
+          station.windDirection,
+          Math.round(station.windSpeedKmh * 1.3),
+        );
+      }
+    } catch {
+      /* fallback below */
+    }
+  }
+
+  // Fallback: Open-Meteo (if no station found)
+  if (!wind) {
+    try {
+      wind = await fetchCurrentWind(spot.latitude, spot.longitude);
+    } catch {
+      /* wind stays null */
+    }
+  }
+
+  // Forecast + history in parallel (both from Open-Meteo, non-blocking)
+  const [forecastResult, historyResult] = await Promise.allSettled([
     fetchFullForecast(spot.latitude, spot.longitude),
     fetchWindHistory(spot.latitude, spot.longitude),
   ]);
@@ -69,7 +108,7 @@ export default async function SpotPage({ params }: Props) {
   return (
     <SpotPageClient
       spot={JSON.parse(JSON.stringify(spot))}
-      wind={windResult.status === "fulfilled" ? windResult.value : null}
+      wind={wind}
       forecast={
         forecastResult.status === "fulfilled" ? forecastResult.value : null
       }

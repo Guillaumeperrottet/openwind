@@ -4,6 +4,26 @@ const OPEN_METEO = "https://api.open-meteo.com/v1/forecast";
 /** Max locations per Open-Meteo request (keeps response time < 3s). */
 const SUB_BATCH = 10;
 
+// ── Simple sliding-window rate limiter (per Vercel instance) ────────────
+// Tracks Open-Meteo sub-batch calls to stay within free-tier limits.
+const WINDOW_MS = 60_000; // 1 minute
+const MAX_PER_WINDOW = 80; // leave headroom below Open-Meteo's 600/min
+const callTimestamps: number[] = [];
+
+function canMakeCall(count: number): boolean {
+  const now = Date.now();
+  // Prune old entries
+  while (callTimestamps.length > 0 && callTimestamps[0] < now - WINDOW_MS) {
+    callTimestamps.shift();
+  }
+  return callTimestamps.length + count <= MAX_PER_WINDOW;
+}
+
+function recordCalls(count: number) {
+  const now = Date.now();
+  for (let i = 0; i < count; i++) callTimestamps.push(now);
+}
+
 /**
  * GET /api/wind/grid?lats=46.5,47.0&lngs=6.5,7.0
  *
@@ -28,6 +48,15 @@ export async function GET(request: NextRequest) {
 
   if (n === 0) {
     return NextResponse.json({ error: "empty coordinates" }, { status: 400 });
+  }
+
+  // Rate-limit check: how many sub-batches would this request need?
+  const subBatchCount = Math.ceil(n / SUB_BATCH);
+  if (!canMakeCall(subBatchCount)) {
+    return NextResponse.json(
+      { error: "Rate limited — try again in a minute" },
+      { status: 429, headers: { "Retry-After": "60" } },
+    );
   }
 
   try {
@@ -67,6 +96,7 @@ export async function GET(request: NextRequest) {
     }
 
     await Promise.all(promises);
+    recordCalls(subBatchCount);
 
     // Check if we got at least some data
     const hasData = results.some((r) => r !== null);

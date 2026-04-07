@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { fetchMeteoSwissStations } from "@/lib/stations";
 import {
-  fetchCurrentWind,
   fetchWindHistory,
   fetchWindHistoryStation,
   fetchWindForecast15min,
@@ -34,11 +33,11 @@ export default async function StationPage({ params }: Props) {
 
   if (!station) notFound();
 
-  // Fetch Open-Meteo gusts + full 7-day forecast + 48h history + 15-min forecast in parallel.
+  // Fetch 7-day forecast + 48h history + 15-min forecast in parallel.
   // History: real MeteoSwiss 10-min measurements, falling back to Open-Meteo NWP.
-  const [openMeteoResult, forecastResult, historyResult, forecast15Result] =
+  // Current wind + gusts come from the station data itself (no extra Open-Meteo call).
+  const [forecastResult, historyResult, forecast15Result] =
     await Promise.allSettled([
-      fetchCurrentWind(station.lat, station.lng),
       fetchFullForecast(station.lat, station.lng),
       fetchWindHistoryStation(station.id).catch(() =>
         fetchWindHistory(station.lat, station.lng),
@@ -58,21 +57,14 @@ export default async function StationPage({ params }: Props) {
     combinedHistory = [...rawHistory, ...futurePoints];
   }
 
-  const gustsKmh =
-    openMeteoResult.status === "fulfilled"
-      ? openMeteoResult.value.gustsKmh
-      : null;
-
-  const openMeteoUpdatedAt =
-    openMeteoResult.status === "fulfilled"
-      ? (openMeteoResult.value.updatedAt ?? null)
-      : null;
+  // Estimate gusts from station wind speed (~1.3× mean, standard approximation)
+  const gustsKmh = Math.round(station.windSpeedKmh * 1.3);
 
   return (
     <StationPageClient
       station={station}
       gustsKmh={gustsKmh}
-      openMeteoUpdatedAt={openMeteoUpdatedAt}
+      openMeteoUpdatedAt={station.updatedAt}
       forecast={
         forecastResult.status === "fulfilled" ? forecastResult.value : null
       }
