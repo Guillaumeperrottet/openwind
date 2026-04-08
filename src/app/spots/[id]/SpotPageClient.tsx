@@ -234,8 +234,10 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
                 </Badge>
               )}
               <Badge className="bg-gray-100 text-gray-700">
-                <Wind className="h-3 w-3 mr-1" /> {spot.minWindKmh}–
-                {spot.maxWindKmh} km/h
+                <Wind className="h-3 w-3 mr-1" />{" "}
+                {useKnots
+                  ? `${roundKnots(spot.minWindKmh)}–${roundKnots(spot.maxWindKmh)} kts`
+                  : `${spot.minWindKmh}–${spot.maxWindKmh} km/h`}
               </Badge>
             </div>
 
