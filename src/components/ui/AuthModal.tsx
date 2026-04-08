@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Mail } from "lucide-react";
+import { X, Mail, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 interface AuthModalProps {
@@ -10,30 +10,77 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onClose }: AuthModalProps) {
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [signupDone, setSignupDone] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   if (!open) return null;
 
-  const handleMagicLink = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`;
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectTo },
-    });
 
+    if (mode === "signup") {
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`;
+      const { error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: redirectTo },
+      });
+      setLoading(false);
+      if (authError) {
+        setError(authError.message);
+      } else {
+        setSignupDone(true);
+      }
+    } else {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      setLoading(false);
+      if (authError) {
+        if (authError.message === "Invalid login credentials") {
+          setError("Email ou mot de passe incorrect.");
+        } else {
+          setError(authError.message);
+        }
+      } else {
+        // Sync user to Prisma
+        try {
+          await fetch("/api/auth/sync", { method: "POST" });
+        } catch {
+          // Non-blocking
+        }
+        onClose();
+        window.location.reload();
+      }
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/reset-password`;
+    const { error: authError } = await supabase.auth.resetPasswordForEmail(
+      email,
+      { redirectTo },
+    );
     setLoading(false);
     if (authError) {
       setError(authError.message);
     } else {
-      setSent(true);
+      setResetSent(true);
     }
   };
 
@@ -61,21 +108,79 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           <X className="h-5 w-5" />
         </button>
 
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Connexion</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-1">
+          {mode === "login"
+            ? "Connexion"
+            : mode === "signup"
+              ? "Créer un compte"
+              : "Mot de passe oublié"}
+        </h2>
         <p className="text-sm text-gray-500 mb-5">
-          Connectez-vous pour sauvegarder vos spots favoris.
+          {mode === "login"
+            ? "Connectez-vous pour accéder à vos favoris et au forum."
+            : mode === "signup"
+              ? "Inscrivez-vous pour sauvegarder vos spots favoris."
+              : "Entrez votre email pour recevoir un lien de réinitialisation."}
         </p>
 
-        {sent ? (
+        {resetSent ? (
           <div className="text-center py-4">
             <Mail className="h-8 w-8 text-sky-500 mx-auto mb-2" />
             <p className="text-sm text-gray-700 font-medium">
               Lien envoyé à <span className="text-sky-600">{email}</span>
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Vérifiez votre boîte mail et cliquez sur le lien.
+              Vérifiez votre boîte mail et cliquez sur le lien pour définir un
+              nouveau mot de passe.
             </p>
           </div>
+        ) : signupDone ? (
+          <div className="text-center py-4">
+            <Mail className="h-8 w-8 text-sky-500 mx-auto mb-2" />
+            <p className="text-sm text-gray-700 font-medium">
+              Email de confirmation envoyé à{" "}
+              <span className="text-sky-600">{email}</span>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Vérifiez votre boîte mail et cliquez sur le lien pour activer
+              votre compte.
+            </p>
+          </div>
+        ) : mode === "forgot" ? (
+          <>
+            <form onSubmit={handleForgotPassword} className="space-y-3">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="votre@email.com"
+                required
+                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
+              />
+              {error && <p className="text-xs text-red-500">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex items-center justify-center gap-2 w-full rounded-lg bg-sky-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
+              >
+                {loading && (
+                  <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                )}
+                Envoyer le lien
+              </button>
+            </form>
+            <p className="text-xs text-center text-gray-500 mt-4">
+              <button
+                onClick={() => {
+                  setMode("login");
+                  setError(null);
+                }}
+                className="text-sky-600 hover:underline font-medium"
+              >
+                Retour à la connexion
+              </button>
+            </p>
+          </>
         ) : (
           <>
             {/* OAuth buttons */}
@@ -125,8 +230,8 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
-            {/* Magic link */}
-            <form onSubmit={handleMagicLink}>
+            {/* Email + Password form */}
+            <form onSubmit={handleSubmit} className="space-y-3">
               <input
                 type="email"
                 value={email}
@@ -135,20 +240,85 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 required
                 className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
-              {error && <p className="text-xs text-red-500 mt-1.5">{error}</p>}
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mot de passe"
+                  required
+                  minLength={6}
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+
+              {error && <p className="text-xs text-red-500">{error}</p>}
+
+              {mode === "login" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("forgot");
+                    setError(null);
+                  }}
+                  className="text-xs text-sky-600 hover:underline"
+                >
+                  Mot de passe oublié ?
+                </button>
+              )}
+
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-3 flex items-center justify-center gap-2 w-full rounded-lg bg-sky-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 w-full rounded-lg bg-sky-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
               >
-                {loading ? (
+                {loading && (
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                ) : (
-                  <Mail className="h-4 w-4" />
                 )}
-                Envoyer un lien magique
+                {mode === "login" ? "Se connecter" : "Créer mon compte"}
               </button>
             </form>
+
+            <p className="text-xs text-center text-gray-500 mt-4">
+              {mode === "login" ? (
+                <>
+                  Pas encore de compte ?{" "}
+                  <button
+                    onClick={() => {
+                      setMode("signup");
+                      setError(null);
+                    }}
+                    className="text-sky-600 hover:underline font-medium"
+                  >
+                    S&apos;inscrire
+                  </button>
+                </>
+              ) : (
+                <>
+                  Déjà un compte ?{" "}
+                  <button
+                    onClick={() => {
+                      setMode("login");
+                      setError(null);
+                    }}
+                    className="text-sky-600 hover:underline font-medium"
+                  >
+                    Se connecter
+                  </button>
+                </>
+              )}
+            </p>
           </>
         )}
       </div>
