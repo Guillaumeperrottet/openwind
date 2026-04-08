@@ -300,7 +300,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
       </div>
 
       {/* ── RIGHT: Form ──────────────────────────────────────────────────── */}
-      <div className="w-full lg:w-[480px] overflow-y-auto border-l border-gray-100">
+      <div className="w-full lg:w-120 overflow-y-auto border-l border-gray-100">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
           {/* Header */}
           <div className="flex items-center justify-between">

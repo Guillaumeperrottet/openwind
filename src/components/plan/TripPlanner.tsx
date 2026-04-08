@@ -119,6 +119,9 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
   // Score detail popover (tap-to-toggle for touch)
   const [scoreDetailId, setScoreDetailId] = useState<string | null>(null);
 
+  // Help tooltip ("?" on each card)
+  const [helpTooltipId, setHelpTooltipId] = useState<string | null>(null);
+
   // Auto-search on mount if URL had params
   const [didAutoSearch, setDidAutoSearch] = useState(false);
 
@@ -251,8 +254,8 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
         setGeoLoading(false);
         setError(
           err.code === err.PERMISSION_DENIED
-            ? "Autorisez la localisation dans les r\u00e9glages de votre navigateur."
-            : "Impossible d'obtenir votre position. R\u00e9essayez.",
+            ? "Autorisez la localisation dans les réglages de votre navigateur."
+            : "Impossible d'obtenir votre position. Réessayez.",
         );
       },
       { timeout: 10000, enableHighAccuracy: true },
@@ -346,15 +349,13 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
   const filterSummary = [
     locationName ||
-      (hasLocation
-        ? `${lat!.toFixed(1)}\u00B0, ${lng!.toFixed(1)}\u00B0`
-        : null),
-    `${formatDateShort(startDate)} \u2013 ${formatDateShort(endDate)}`,
+      (hasLocation ? `${lat!.toFixed(1)}°, ${lng!.toFixed(1)}°` : null),
+    `${formatDateShort(startDate)} – ${formatDateShort(endDate)}`,
     hasLocation ? `${radius} km` : null,
     sport !== "ALL" ? (sport === "KITE" ? "Kite" : "Para") : null,
   ]
     .filter(Boolean)
-    .join(" \u00B7 ");
+    .join(" · ");
 
   // ── Fluid bottom sheet drag ──
   const handleDragStart = (clientY: number) => {
@@ -444,8 +445,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 >
                   <MapPin className="h-3.5 w-3.5 text-sky-500 shrink-0" />
                   <span className="truncate text-gray-700 text-sm flex-1">
-                    {locationName ||
-                      `${lat!.toFixed(3)}\u00B0, ${lng!.toFixed(3)}\u00B0`}
+                    {locationName || `${lat!.toFixed(3)}°, ${lng!.toFixed(3)}°`}
                   </span>
                   <button
                     type="button"
@@ -474,7 +474,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                       onFocus={() =>
                         deskGeoResults.length && setDeskGeoOpen(true)
                       }
-                      placeholder="Ville, lieu\u2026 ou laissez vide"
+                      placeholder="Ville, lieu… ou laissez vide"
                       className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
                     />
                   </div>
@@ -544,9 +544,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
           <div>
             <label className="text-xs text-gray-500 mb-1 block">
               Rayon
-              {!hasLocation && (
-                <span className="text-gray-400"> (ignor\u00E9)</span>
-              )}
+              {!hasLocation && <span className="text-gray-400"> (ignoré)</span>}
             </label>
             <select
               value={radius}
@@ -594,7 +592,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               disabled={loading}
               className="h-9.5 self-end w-full sm:w-auto"
             >
-              {loading ? "Recherche\u2026" : "Trouver"}
+              {loading ? "Recherche…" : "Trouver"}
             </Button>
           ) : (
             <div className="flex gap-2 self-end w-full sm:w-auto">
@@ -605,9 +603,9 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 variant="secondary"
               >
                 {geoLoading ? (
-                  "Localisation\u2026"
+                  "Localisation…"
                 ) : loading ? (
-                  "Recherche\u2026"
+                  "Recherche…"
                 ) : (
                   <>
                     <Locate className="h-3.5 w-3.5 mr-1" />
@@ -621,7 +619,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 className="h-9.5 flex-1 sm:flex-none"
               >
                 {loading ? (
-                  "Recherche\u2026"
+                  "Recherche…"
                 ) : (
                   <>
                     <Globe className="h-3.5 w-3.5 mr-1" />
@@ -647,19 +645,18 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             <>
               <Archive className="h-3.5 w-3.5 shrink-0" />
               <span>
-                <strong>Donn\u00E9es historiques</strong> {"\u2014"} Les dates
-                s\u00E9lectionn\u00E9es d\u00E9passent les 16 jours de
-                pr\u00E9vision. Les scores sont bas\u00E9s sur les archives
-                m\u00E9t\u00E9o des 5 derni\u00E8res ann\u00E9es.
+                <strong>Données historiques</strong> {"—"} Les dates
+                sélectionnées dépassent les 16 jours de prévision. Les scores
+                sont basés sur les archives météo des 5 dernières années.
               </span>
             </>
           ) : (
             <>
               <Info className="h-3.5 w-3.5 shrink-0" />
               <span>
-                <strong>Pr\u00E9visions temps r\u00E9el</strong> {"\u2014"}{" "}
-                Jusqu&apos;\u00E0 16 jours. Au-del\u00E0, les scores se baseront
-                sur les archives annuelles.
+                <strong>Prévisions temps réel</strong> {"—"} Jusqu&apos;à 16
+                jours. Au-delà, les scores se baseront sur les archives
+                annuelles.
               </span>
             </>
           )}
@@ -733,12 +730,12 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
               <span>
                 {loading
-                  ? "Recherche\u2026"
+                  ? "Recherche…"
                   : results.length > 0
                     ? `${results.length} spot${results.length > 1 ? "s" : ""}`
                     : searched
-                      ? "Aucun r\u00E9sultat"
-                      : "R\u00E9sultats"}
+                      ? "Aucun résultat"
+                      : "Résultats"}
               </span>
               <ChevronUp
                 className={`h-3.5 w-3.5 transition-transform ${sheetFrac > SNAP_HALF + 0.05 ? "rotate-180" : ""}`}
@@ -765,7 +762,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                       .filter(Boolean)
                       .join(", ")}
                     {hasLocation &&
-                      ` \u00B7 ${Math.round(firstResult.distanceKm)} km`}
+                      ` · ${Math.round(firstResult.distanceKm)} km`}
                   </p>
                 </div>
                 {results.length > 1 && (
@@ -835,7 +832,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                       disabled={loading}
                       className="h-10 flex-1"
                     >
-                      {loading ? "Recherche\u2026" : "Trouver"}
+                      {loading ? "Recherche…" : "Trouver"}
                     </Button>
                   ) : (
                     <>
@@ -846,7 +843,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                         variant="secondary"
                       >
                         {geoLoading ? (
-                          "Localisation\u2026"
+                          "Localisation…"
                         ) : (
                           <>
                             <Locate className="h-3.5 w-3.5 mr-1" />
@@ -882,15 +879,14 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 <>
                   <Archive className="h-3.5 w-3.5 shrink-0" />
                   <span>
-                    <strong>Donn\u00E9es historiques</strong> {"\u2014"}{" "}
-                    archives m\u00E9t\u00E9o
+                    <strong>Données historiques</strong> {"—"} archives météo
                   </span>
                 </>
               ) : (
                 <>
                   <Info className="h-3.5 w-3.5 shrink-0" />
                   <span>
-                    <strong>Pr\u00E9visions temps r\u00E9el</strong>
+                    <strong>Prévisions temps réel</strong>
                   </span>
                 </>
               )}
@@ -927,7 +923,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 {results.filter((r) => r.forecastError).length > 0 && (
                   <span className="text-orange-400 ml-1">
                     ({results.filter((r) => r.forecastError).length} sans
-                    pr\u00E9vision)
+                    prévision)
                   </span>
                 )}
                 <button
@@ -1000,11 +996,11 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                     Aucun spot dans un rayon de {radius} km.
                     <br />
                     <span className="text-xs opacity-60">
-                      \u00C9largissez le rayon ou changez de destination.
+                      Élargissez le rayon ou changez de destination.
                     </span>
                   </>
                 ) : (
-                  "Aucun spot trouv\u00E9."
+                  "Aucun spot trouvé."
                 )}
               </div>
             )}
@@ -1042,11 +1038,11 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                               .join(", ")}
                             {hasLocation && (
                               <>
-                                {" \u00B7 "}
+                                {" · "}
                                 {Math.round(spot.distanceKm)} km
                               </>
                             )}
-                            {" \u00B7 "}
+                            {" · "}
                             {spot.sportType === "KITE" ? "🪁" : "🪂"}
                             {spot.dataSource === "archive" && (
                               <span className="text-amber-500 ml-0.5">
@@ -1088,7 +1084,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                           {showDetail && bestDay?.breakdown && (
                             <div className="absolute right-0 top-full mt-1 z-50 bg-gray-900 text-white text-[11px] rounded-lg p-2.5 shadow-xl w-44">
                               <div className="font-semibold mb-1.5 text-xs">
-                                D\u00E9tails du score
+                                Détails du score
                               </div>
                               {(spot.sportType === "PARAGLIDE"
                                 ? [
@@ -1108,12 +1104,12 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                                 : [
                                     ["Heures", bestDay.breakdown.hours, "35%"],
                                     [
-                                      "Qualit\u00E9 vent",
+                                      "Qualité vent",
                                       bestDay.breakdown.quality,
                                       "25%",
                                     ],
                                     [
-                                      "R\u00E9gularit\u00E9",
+                                      "Régularité",
                                       bestDay.breakdown.regularity,
                                       "20%",
                                     ],
@@ -1162,14 +1158,83 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                       {isForecastError && (
                         <div className="text-xs text-gray-400 flex items-center gap-1.5">
                           <AlertTriangle className="h-3 w-3 text-orange-400" />
-                          Pr\u00E9visions indisponibles
+                          Prévisions indisponibles
                         </div>
                       )}
 
                       {/* Wind summary */}
                       {bestDay && (
                         <>
-                          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-1.5">
+                          <div className="flex items-center gap-3 rounded-lg bg-gray-50 px-3 py-1.5 relative">
+                            {/* Help tooltip */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setHelpTooltipId(
+                                  helpTooltipId === spot.id ? null : spot.id,
+                                );
+                              }}
+                              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-[8px] text-gray-500 z-10 transition-colors"
+                            >
+                              ?
+                            </button>
+                            {helpTooltipId === spot.id && (
+                              <div className="absolute right-0 top-full mt-1 z-50 bg-gray-900 text-white text-[10px] rounded-lg p-2.5 shadow-xl w-52 leading-relaxed">
+                                <div className="font-semibold mb-1">
+                                  Lecture rapide
+                                </div>
+                                <div className="space-y-0.5">
+                                  <p>
+                                    <span className="text-sky-300 font-medium">
+                                      {spot.sportType === "PARAGLIDE"
+                                        ? "Chiffre"
+                                        : "Chiffre"}
+                                    </span>{" "}
+                                    —{" "}
+                                    {spot.sportType === "PARAGLIDE"
+                                      ? "vent moyen en km/h"
+                                      : "vent en pointe (nœuds)"}
+                                  </p>
+                                  <p>
+                                    <span className="text-sky-300 font-medium">
+                                      Score /100
+                                    </span>{" "}
+                                    — qualité globale de la journée
+                                  </p>
+                                  <p>
+                                    <span className="text-sky-300 font-medium">
+                                      Heures
+                                    </span>{" "}
+                                    — durée{" "}
+                                    {spot.sportType === "PARAGLIDE"
+                                      ? "calme favorable"
+                                      : "de vent kitable"}
+                                  </p>
+                                  <p>
+                                    <span className="text-sky-300 font-medium">
+                                      Barre colorée
+                                    </span>{" "}
+                                    — force du vent heure par heure (6h–21h)
+                                  </p>
+                                  {spot.sportType !== "PARAGLIDE" && (
+                                    <p>
+                                      <span className="text-orange-400 font-medium">
+                                        ×rafales
+                                      </span>{" "}
+                                      — irrégularité (1.0 = stable)
+                                    </p>
+                                  )}
+                                  <p>
+                                    <span className="text-sky-300 font-medium">
+                                      Cercles
+                                    </span>{" "}
+                                    — scores par jour sur la période
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                             <div
                               className="text-xl font-bold tabular-nums leading-none"
                               style={{
@@ -1185,13 +1250,13 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                             >
                               {spot.sportType === "PARAGLIDE"
                                 ? Math.round(bestDay.avgWindKmh)
-                                : Math.round(bestDay.peakWindKmh)}
+                                : Math.round(bestDay.peakWindKmh / 1.852)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="text-[10px] text-gray-400 uppercase tracking-wide">
                                 {spot.sportType === "PARAGLIDE"
                                   ? "Moy. km/h"
-                                  : "Pic km/h"}
+                                  : "Pic kts"}
                               </div>
                               <div
                                 className="text-xs font-medium"
@@ -1208,12 +1273,12 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                               >
                                 {spot.sportType === "PARAGLIDE"
                                   ? bestDay.avgWindKmh < 10
-                                    ? "Calme id\u00E9al"
+                                    ? "Calme idéal"
                                     : bestDay.avgWindKmh < 15
                                       ? "Acceptable"
                                       : "Venteux"
                                   : windConditionLabel(bestDay.peakWindKmh) ||
-                                    "\u2014"}
+                                    "—"}
                               </div>
                             </div>
                             <div className="text-right space-y-0.5">
@@ -1229,9 +1294,27 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                               )}
                               {spot.sportType !== "PARAGLIDE" &&
                                 bestDay.gustFactor > 1.35 && (
-                                  <div className="flex items-center gap-0.5 text-[10px] text-orange-500 justify-end">
-                                    <AlertTriangle className="h-2.5 w-2.5" />
-                                    \u00D7{bestDay.gustFactor.toFixed(1)}
+                                  <div className="relative group/gust">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                      className="flex items-center gap-0.5 text-[10px] text-orange-500 justify-end cursor-help"
+                                    >
+                                      <AlertTriangle className="h-2.5 w-2.5" />×
+                                      {bestDay.gustFactor.toFixed(1)}
+                                    </button>
+                                    <div className="invisible group-hover/gust:visible group-focus-within/gust:visible absolute right-0 bottom-full mb-1 z-50 bg-gray-900 text-white text-[10px] rounded-md px-2 py-1.5 shadow-lg w-40 leading-snug pointer-events-none">
+                                      Rafales {bestDay.gustFactor.toFixed(1)}×
+                                      plus fortes que la moyenne —{" "}
+                                      {bestDay.gustFactor < 1.6
+                                        ? "légèrement irrégulier"
+                                        : bestDay.gustFactor < 2
+                                          ? "irrégulier"
+                                          : "très irrégulier"}
+                                    </div>
                                   </div>
                                 )}
                             </div>
@@ -1248,7 +1331,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                                     style={{
                                       background: windColor(h.windSpeedKmh),
                                     }}
-                                    title={`${new Date(h.time).getHours()}h : ${Math.round(h.windSpeedKmh)} km/h`}
+                                    title={`${new Date(h.time).getHours()}h : ${spot.sportType === "PARAGLIDE" ? `${Math.round(h.windSpeedKmh)} km/h` : `${Math.round(h.windSpeedKmh / 1.852)} kts`}`}
                                   />
                                 ))}
                               </div>
@@ -1295,9 +1378,9 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                                         : "none",
                                       outlineOffset: "1px",
                                     }}
-                                    title={`${day.date} \u2014 ${day.score}/100 \u00B7 ${day.kitableHours}h`}
+                                    title={`${day.date} — ${day.score}/100 · ${day.kitableHours}h`}
                                   >
-                                    {day.score > 0 ? day.score : "\u00B7"}
+                                    {day.score > 0 ? day.score : "·"}
                                   </div>
                                 </div>
                               );

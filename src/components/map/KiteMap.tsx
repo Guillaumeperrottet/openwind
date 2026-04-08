@@ -58,6 +58,10 @@ export function KiteMap({
   const useKnotsRef = useRef(true);
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
+  /** Sport filter: "ALL" | "KITE" | "PARAGLIDE" */
+  const [sportFilter, setSportFilter] = useState<"ALL" | "KITE" | "PARAGLIDE">(
+    "ALL",
+  );
 
   // Station popup state (React-based with history chart)
   const [selectedStation, setSelectedStation] = useState<{
@@ -516,8 +520,8 @@ export function KiteMap({
         data: { type: "FeatureCollection", features: [] },
         // Disable clustering in pick/plan mode (few results, need individual spots)
         cluster: !pickMode,
-        clusterMaxZoom: 12,
-        clusterRadius: 50,
+        clusterMaxZoom: 8,
+        clusterRadius: 40,
       });
 
       // ── Cluster layers ──────────────────────────────────────────────────
@@ -992,8 +996,12 @@ export function KiteMap({
   // Push spots to GeoJSON layer (no wind fetch — wind is loaded on click)
   useEffect(() => {
     if (!mapLoaded) return;
-    renderSpots(spots);
-  }, [spots, mapLoaded, renderSpots]);
+    const filtered =
+      sportFilter === "ALL"
+        ? spots
+        : spots.filter((s) => s.sportType === sportFilter);
+    renderSpots(filtered);
+  }, [spots, mapLoaded, renderSpots, sportFilter]);
 
   // Highlight a spot on hover from external panel (e.g. TripPlanner results)
   useEffect(() => {
@@ -1067,6 +1075,27 @@ export function KiteMap({
             </svg>
           )}
         </button>
+
+        {/* Sport filter toggle */}
+        <div className="flex items-center rounded-full bg-white/95 shadow-lg border border-gray-200 p-0.5 text-[11px] font-semibold">
+          {(["ALL", "KITE", "PARAGLIDE"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setSportFilter(v)}
+              className={`px-2.5 py-1 rounded-full transition-all ${
+                sportFilter === v
+                  ? v === "KITE"
+                    ? "bg-green-500 text-white"
+                    : v === "PARAGLIDE"
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-700 text-white"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              {v === "ALL" ? "Tous" : v === "KITE" ? "Kite" : "Para"}
+            </button>
+          ))}
+        </div>
 
         {/* Wind overlay toggle — temporarily hidden
         <button
