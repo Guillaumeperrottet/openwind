@@ -309,34 +309,66 @@ export function KiteMap({
         `;
         document.head.appendChild(s);
       }
-      // Draw an upward-pointing arrow on a canvas and register it as a map image
-      const size = 32;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d")!;
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(16, 27);
-      ctx.lineTo(16, 9);
-      ctx.stroke();
-      ctx.fillStyle = "white";
-      ctx.beginPath();
-      ctx.moveTo(16, 3);
-      ctx.lineTo(10, 13);
-      ctx.lineTo(22, 13);
-      ctx.closePath();
-      ctx.fill();
-      if (!map.hasImage("wind-arrow")) {
-        map.addImage("wind-arrow", ctx.getImageData(0, 0, size, size));
+      // ── Windguru-style direction tail ──────────────────────────────────
+      // A thin line + small arrowhead drawn from center toward the top of
+      // the canvas. When rotated by (windDir+180)%360 it points where wind
+      // blows TO. The circle layer is rendered ON TOP so only the part
+      // sticking out beyond the circle radius is visible.
+      const tailSize = 64;
+      const tailCanvas = document.createElement("canvas");
+      tailCanvas.width = tailSize;
+      tailCanvas.height = tailSize;
+      const tCtx = tailCanvas.getContext("2d")!;
+      const tc = tailSize / 2; // center
+
+      // Tail line: from center outward to top
+      tCtx.strokeStyle = "#333";
+      tCtx.lineWidth = 2.5;
+      tCtx.lineCap = "round";
+      tCtx.beginPath();
+      tCtx.moveTo(tc, tc);
+      tCtx.lineTo(tc, 6);
+      tCtx.stroke();
+      // Small arrowhead at the tip
+      tCtx.fillStyle = "#333";
+      tCtx.beginPath();
+      tCtx.moveTo(tc, 2);
+      tCtx.lineTo(tc - 5, 10);
+      tCtx.lineTo(tc + 5, 10);
+      tCtx.closePath();
+      tCtx.fill();
+
+      if (!map.hasImage("wind-tail")) {
+        map.addImage("wind-tail", tCtx.getImageData(0, 0, tailSize, tailSize));
       }
-      // Same arrow registered as SDF so icon-color expression works
+
+      // SDF version of the tail for the wind-grid layer
+      const sdfSize = 48;
+      const sdfCanvas = document.createElement("canvas");
+      sdfCanvas.width = sdfSize;
+      sdfCanvas.height = sdfSize;
+      const sdfCtx = sdfCanvas.getContext("2d")!;
+      const sc = sdfSize / 2;
+      sdfCtx.strokeStyle = "white";
+      sdfCtx.lineWidth = 2.5;
+      sdfCtx.lineCap = "round";
+      sdfCtx.beginPath();
+      sdfCtx.moveTo(sc, sc);
+      sdfCtx.lineTo(sc, 4);
+      sdfCtx.stroke();
+      sdfCtx.fillStyle = "white";
+      sdfCtx.beginPath();
+      sdfCtx.moveTo(sc, 1);
+      sdfCtx.lineTo(sc - 5, 9);
+      sdfCtx.lineTo(sc + 5, 9);
+      sdfCtx.closePath();
+      sdfCtx.fill();
       if (!map.hasImage("wind-arrow-sdf")) {
-        map.addImage("wind-arrow-sdf", ctx.getImageData(0, 0, size, size), {
-          sdf: true,
-        });
+        map.addImage(
+          "wind-arrow-sdf",
+          sdfCtx.getImageData(0, 0, sdfSize, sdfSize),
+          { sdf: true },
+        );
       }
 
       // ── Spot icons removed — spots use plain colored circles ──────────────
@@ -393,13 +425,24 @@ export function KiteMap({
         data: { type: "FeatureCollection", features: [] },
       });
 
-      // Circle background — color driven by windSpeedKmh property
+      // Circle background — Windguru-style palette (thresholds in km/h)
+      // The Windguru palette maps kn ranges; thresholds below are in km/h.
       map.addLayer({
         id: "stations-circle",
         type: "circle",
         source: "stations-source",
         paint: {
-          "circle-radius": 11,
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            3,
+            5,
+            7,
+            9,
+            10,
+            11,
+          ],
           "circle-color": [
             "step",
             ["get", "windSpeedKmh"],
@@ -423,22 +466,68 @@ export function KiteMap({
         },
       });
 
-      // Arrow symbol — rotated per-feature via "rotation" property
+      // Direction tail — sits BELOW the circle; only the part outside the
+      // circle radius is visible, creating the Windguru "pointer" effect.
+      map.addLayer(
+        {
+          id: "stations-tail",
+          type: "symbol",
+          source: "stations-source",
+          layout: {
+            "icon-image": "wind-tail",
+            "icon-rotate": ["get", "rotation"],
+            "icon-rotation-alignment": "map",
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+            "icon-size": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              3,
+              0.3,
+              7,
+              0.45,
+              10,
+              0.55,
+            ],
+          },
+        },
+        "stations-circle", // insert BELOW stations-circle
+      );
+
+      // Wind speed in kts — displayed INSIDE the circle (Windguru style)
       map.addLayer({
-        id: "stations-arrow",
+        id: "stations-speed-label",
         type: "symbol",
         source: "stations-source",
         layout: {
-          "icon-image": "wind-arrow",
-          "icon-rotate": ["get", "rotation"],
-          "icon-rotation-alignment": "map",
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
-          "icon-size": 0.6,
+          "text-field": [
+            "to-string",
+            ["round", ["/", ["get", "windSpeedKmh"], 1.852]],
+          ],
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-size": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            3,
+            6,
+            7,
+            8,
+            10,
+            10,
+          ],
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: {
+          "text-color": "#fff",
+          "text-halo-color": "rgba(0,0,0,0.35)",
+          "text-halo-width": 1,
         },
       });
 
-      // Pulse ring — only for stations with wind >= Léger (~22 km/h = 12 kts)
+      // Pulse ring — only for stations with wind >= Kitable (~22 km/h ≈ 12 kts)
       map.addLayer(
         {
           id: "stations-pulse",
@@ -446,12 +535,20 @@ export function KiteMap({
           source: "stations-source",
           filter: [">=", ["get", "windSpeedKmh"], 22],
           paint: {
-            "circle-radius": 11,
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              3,
+              5,
+              7,
+              9,
+              10,
+              11,
+            ],
             "circle-color": [
               "step",
               ["get", "windSpeedKmh"],
-              "#a8bdd4",
-              22,
               "#6a9cbd",
               30,
               "#3a7fa8",
@@ -464,7 +561,7 @@ export function KiteMap({
             "circle-stroke-width": 0,
           },
         },
-        "stations-circle", // insert below main circle so it doesn't cover the arrow
+        "stations-tail", // insert below the tail
       );
 
       // rAF pulse animation
@@ -679,10 +776,13 @@ export function KiteMap({
         const t = ((performance.now() - pulseStart) / 1000) * Math.PI * 1.4;
         const wave = (Math.sin(t) + 1) / 2;
         if (map.getLayer("stations-pulse")) {
+          // Zoom-aware base radius matching stations-circle
+          const z = map.getZoom();
+          const stBase = z <= 3 ? 5 : z >= 10 ? 11 : 5 + ((z - 3) / 7) * 6;
           map.setPaintProperty(
             "stations-pulse",
             "circle-radius",
-            11 + wave * 9,
+            stBase + wave * 8,
           );
           map.setPaintProperty(
             "stations-pulse",

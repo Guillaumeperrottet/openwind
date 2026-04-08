@@ -178,7 +178,7 @@ model Spot {
 4. **Server Components par défaut** — n'ajouter `"use client"` que si nécessaire (interactivité, hooks)
 5. **API routes** : toujours retourner `NextResponse.json()`, gérer les erreurs avec les bons codes HTTP
 6. **Images Supabase** : passer par le bucket `spot-images`, utiliser le service role key côté serveur uniquement
-7. **Pas de migration Prisma** (`prisma migrate`) — utiliser `prisma db push` (DB Supabase cloud)
+7. **Utiliser `prisma migrate dev`** pour les changements de schéma (pas `db push`)
 
 ---
 

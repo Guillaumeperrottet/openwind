@@ -2724,6 +2724,45 @@ async function main() {
     if (r.count > 0) updated++;
   }
   console.log(`✓ Updated wind directions for ${updated} spots.`);
+
+  // ─── Forum categories ─────────────────────────────────────
+  const categories = [
+    {
+      name: "Le projet Openwind",
+      slug: "projet",
+      description: "Annonces, idées, roadmap et discussions sur le projet",
+      icon: "MessageCircle",
+      order: 0,
+    },
+    {
+      name: "Spots",
+      slug: "spots",
+      description: "Discussions sur les spots de kite et parapente",
+      icon: "MapPin",
+      order: 1,
+    },
+    {
+      name: "Matos",
+      slug: "matos",
+      description: "Ailes, boards, sellettes, harnais, avis et questions",
+      icon: "Sailboat",
+      order: 2,
+    },
+  ];
+
+  let catCreated = 0;
+  for (const cat of categories) {
+    const existing = await prisma.forumCategory.findUnique({
+      where: { slug: cat.slug },
+    });
+    if (!existing) {
+      await prisma.forumCategory.create({ data: cat });
+      catCreated++;
+    }
+  }
+  console.log(
+    `✓ Forum: ${catCreated} categories created (${categories.length - catCreated} already existed).`,
+  );
 }
 
 main()

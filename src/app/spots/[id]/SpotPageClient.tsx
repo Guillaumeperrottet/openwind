@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Images,
+  Star,
 } from "lucide-react";
 import { WindCompass } from "@/components/spot/WindCompass";
 import { WindDirectionRose } from "@/components/spot/WindDirectionRose";
@@ -31,6 +32,7 @@ import { ForecastTable } from "@/components/spot/ForecastTable";
 import { WindArchives } from "@/components/spot/WindArchives";
 import { windConditionLabel, windDirectionLabel, MONTHS } from "@/lib/utils";
 import { roundKnots } from "@/lib/forecast";
+import { useFavContext } from "@/lib/FavContext";
 import {
   Badge,
   DIFFICULTY_COLORS,
@@ -85,6 +87,8 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const router = useRouter();
+  const { favoriteIds, toggleFavorite } = useFavContext();
+  const isFav = favoriteIds.has(spot.id);
 
   // Close lightbox on Escape, navigate with arrow keys
   useEffect(() => {
@@ -159,13 +163,27 @@ export function SpotPageClient({ spot, wind, forecast, history }: Props) {
             <ArrowLeft className="h-4 w-4" />
             Retour à la carte
           </Link>
-          <Link
-            href={`/spots/${spot.id}/edit`}
-            className="inline-flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
-            title="Modifier"
-          >
-            <Pencil className="h-4 w-4" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => toggleFavorite(spot.id)}
+              className="inline-flex items-center justify-center text-gray-400 hover:text-amber-500 transition-colors"
+              title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+            >
+              <Star
+                className="h-5 w-5"
+                fill={isFav ? "currentColor" : "none"}
+                strokeWidth={isFav ? 0 : 2}
+                style={isFav ? { color: "#f59e0b" } : undefined}
+              />
+            </button>
+            <Link
+              href={`/spots/${spot.id}/edit`}
+              className="inline-flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
+              title="Modifier"
+            >
+              <Pencil className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start justify-between gap-4">

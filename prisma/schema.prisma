@@ -49,6 +49,32 @@ model Spot {
   updatedAt   DateTime    @updatedAt
   images      SpotImage[]
   reports     WindReport[]
+  favorites   Favorite[]
+}
+
+/// Synced from Supabase Auth on first login.
+model User {
+  id        String     @id // Supabase auth.users.id (UUID)
+  email     String     @unique
+  name      String?
+  avatarUrl String?
+  createdAt DateTime   @default(now())
+  favorites Favorite[]
+  topics    ForumTopic[]
+  posts     ForumPost[]
+  votes     ForumVote[]
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  spotId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, spotId])
+  @@index([userId])
 }
 
 model SpotImage {
@@ -90,4 +116,71 @@ model StationMeasurement {
 
   @@unique([stationId, time])
   @@index([stationId, time])
+}
+
+// ─── Forum ────────────────────────────────────────────────
+
+model ForumCategory {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  description String?
+  order       Int          @default(0)
+  icon        String?      // lucide icon name
+  topics      ForumTopic[]
+}
+
+model ForumTopic {
+  id         String       @id @default(cuid())
+  title      String
+  slug       String
+  body       String       // markdown
+  pinned     Boolean      @default(false)
+  locked     Boolean      @default(false)
+  authorId   String
+  categoryId String
+  author     User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  posts      ForumPost[]
+  votes      ForumVote[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([categoryId, createdAt])
+  @@index([authorId])
+}
+
+model ForumPost {
+  id        String      @id @default(cuid())
+  body      String      // markdown
+  authorId  String
+  topicId   String
+  parentId  String?     // null = direct reply to topic, else = nested reply
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  topic     ForumTopic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  parent    ForumPost?  @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  children  ForumPost[] @relation("PostReplies")
+  votes     ForumVote[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([topicId, createdAt])
+  @@index([parentId])
+}
+
+model ForumVote {
+  id       String      @id @default(cuid())
+  value    Int         // +1 or -1
+  userId   String
+  topicId  String?
+  postId   String?
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic    ForumTopic? @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  post     ForumPost?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@unique([userId, topicId])
+  @@unique([userId, postId])
+  @@index([topicId])
+  @@index([postId])
 }

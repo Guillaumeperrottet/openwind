@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { X, Wind, Waves, ExternalLink } from "lucide-react";
+import { X, Wind, Waves, ExternalLink, Star } from "lucide-react";
 import type { Spot, WindData } from "@/types";
 import { windArrow, windDirectionLabel } from "@/lib/utils";
+import { useFavContext } from "@/lib/FavContext";
 import {
   Badge,
   DIFFICULTY_COLORS,
@@ -29,6 +30,9 @@ export function SpotPopup({
   position,
   onClose,
 }: SpotPopupProps) {
+  const { favoriteIds, toggleFavorite } = useFavContext();
+  const isFav = favoriteIds.has(spot.id);
+
   /** Format a km/h value in the preferred unit */
   const fmt = (kmh: number) =>
     useKnots ? `${Math.round(kmh / 1.852)} kts` : `${Math.round(kmh)} km/h`;
@@ -114,12 +118,26 @@ export function SpotPopup({
               </p>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-900 shrink-0 mt-0.5"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1 shrink-0 mt-0.5">
+            <button
+              onClick={() => toggleFavorite(spot.id)}
+              className="text-gray-400 hover:text-amber-500 transition-colors"
+              title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+            >
+              <Star
+                className="h-4 w-4"
+                fill={isFav ? "currentColor" : "none"}
+                strokeWidth={isFav ? 0 : 2}
+                style={isFav ? { color: "#f59e0b" } : undefined}
+              />
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-900"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Badges */}

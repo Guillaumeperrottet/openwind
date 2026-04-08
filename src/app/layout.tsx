@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { Navbar } from "@/components/ui/Navbar";
+import { FavProvider } from "@/lib/FavContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -68,8 +69,10 @@ export default function RootLayout({
         className={`${inter.className} antialiased`}
         suppressHydrationWarning
       >
-        <Navbar />
-        <main className="pt-14">{children}</main>
+        <FavProvider>
+          <Navbar />
+          <main className="pt-14">{children}</main>
+        </FavProvider>
         <Analytics />
       </body>
     </html>
