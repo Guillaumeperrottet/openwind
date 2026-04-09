@@ -22,9 +22,10 @@ Ouvre une issue avec le label `enhancement` avant de coder. Ça évite le travai
 git clone https://github.com/Guillaumeperrottet/openwind.git
 cd openwind
 pnpm install
-cp .env.local.example .env.local
-# Configure ton Supabase dans .env.local
-pnpm exec prisma migrate dev --name init
+cp .env.example .env
+cp .env.example .env.local
+# Configure tes credentials Supabase dans les deux fichiers
+pnpm exec prisma migrate dev
 pnpm dev
 ```
 
@@ -56,20 +57,20 @@ Tu connais des spots pas encore dans la base ? [Ajoute-les directement](http://l
 
 ### Code
 
-| Zone          | Fichiers               | Description              |
-| ------------- | ---------------------- | ------------------------ |
-| Carte         | `src/components/map/`  | MapLibre, markers, popup |
-| Vent          | `src/lib/wind.ts`      | Open-Meteo API           |
-| Spots         | `src/components/spot/` | Formulaire de création   |
-| Planificateur | `src/components/plan/` | Trip planner             |
-| API           | `src/app/api/`         | Endpoints REST           |
-| DB            | `prisma/schema.prisma` | Schéma Prisma            |
+| Zone          | Fichiers                                       | Description                           |
+| ------------- | ---------------------------------------------- | ------------------------------------- |
+| Carte         | `src/components/map/`                          | MapLibre GL, clustering, wind overlay |
+| Vent          | `src/lib/wind*.ts`                             | Fetch, scoring, historique            |
+| Stations      | `src/lib/stations.ts, pioupiou.ts, netatmo.ts` | 3 réseaux de mesures                  |
+| Spots         | `src/components/spot/`                         | Prévisions, boussole, archives        |
+| Planificateur | `src/components/plan/`                         | Trip planner multi-sport              |
+| Forum         | `src/components/forum/`                        | Topics, posts threadés, votes         |
+| API           | `src/app/api/`                                 | Endpoints REST                        |
+| DB            | `prisma/schema.prisma`                         | 12 modèles + 3 enums                  |
 
 ### Idées de contributions bienvenues
 
 - [ ] Filtres sur la carte (difficulté, type d'eau, vent actuel)
-- [ ] Graphique vent 24h sur la fiche spot
-- [ ] Système de favoris (localStorage ou Supabase Auth)
 - [ ] Prévisions vague surf (API Stormglass open tier)
 - [ ] Mode PWA / offline-first
 - [ ] Import/export de données spots (JSON/GeoJSON)
@@ -78,6 +79,8 @@ Tu connais des spots pas encore dans la base ? [Ajoute-les directement](http://l
 - [ ] Dark mode toggle
 - [ ] Webcams (liens vers webcams publiques)
 - [ ] Carte hors-ligne pour zones remote
+- [ ] Nouvelles sources de stations vent (voir [docs/contributing-guide.md](./docs/contributing-guide.md))
+- [ ] Nouveaux types de sport — windsurf, wing foil (voir [docs/contributing-guide.md](./docs/contributing-guide.md))
 
 ## 🏗️ Architecture décisions
 

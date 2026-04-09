@@ -119,8 +119,16 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
   // Score detail popover (tap-to-toggle for touch)
   const [scoreDetailId, setScoreDetailId] = useState<string | null>(null);
 
+  // Selected day override per spot (click day circle → see that day's data)
+  const [selectedDayMap, setSelectedDayMap] = useState<Record<string, number>>(
+    {},
+  );
+
   // Help tooltip ("?" on each card)
   const [helpTooltipId, setHelpTooltipId] = useState<string | null>(null);
+
+  // Hovered forecast bar cell: "spotId-hourIndex" → show inline label
+  const [hoveredBarCell, setHoveredBarCell] = useState<string | null>(null);
 
   // Auto-search on mount if URL had params
   const [didAutoSearch, setDidAutoSearch] = useState(false);
@@ -242,6 +250,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
           if (!res.ok) throw new Error(`Erreur ${res.status}`);
           const data: SpotWithForecast[] = await res.json();
           setResults(data);
+          setSelectedDayMap({});
           if (data.length > 0) setSheetFrac(SNAP_HALF);
         } catch {
           setError("Impossible de récupérer les prévisions. Réessayez.");
@@ -289,6 +298,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
       if (!res.ok) throw new Error(`Erreur ${res.status}`);
       const data: SpotWithForecast[] = await res.json();
       setResults(data);
+      setSelectedDayMap({});
       if (data.length > 0) setSheetFrac(SNAP_HALF);
     } catch {
       setError("Impossible de récupérer les prévisions. Réessayez.");
@@ -1008,8 +1018,11 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             {/* Result cards */}
             {!loading &&
               sorted.map((spot) => {
-                const bestDay = spot.days?.[spot.bestDayIndex ?? 0];
-                const sc = spot.bestScore ?? 0;
+                const activeDayIdx =
+                  selectedDayMap[spot.id] ?? spot.bestDayIndex ?? 0;
+                const activeDay = spot.days?.[activeDayIdx];
+                const bestDay = activeDay;
+                const sc = activeDay?.score ?? spot.bestScore ?? 0;
                 const isForecastError = spot.forecastError;
                 const showDetail = scoreDetailId === spot.id;
 
@@ -1322,22 +1335,55 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
                           {/* Mini forecast bar */}
                           {bestDay.forecast.length > 0 && (
-                            <div className="mt-1.5">
+                            <div
+                              className="mt-1.5"
+                              onMouseLeave={() => setHoveredBarCell(null)}
+                            >
                               <div className="flex gap-px h-3 rounded overflow-hidden">
-                                {bestDay.forecast.slice(6, 22).map((h, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex-1"
-                                    style={{
-                                      background: windColor(h.windSpeedKmh),
-                                    }}
-                                    title={`${new Date(h.time).getHours()}h : ${spot.sportType === "PARAGLIDE" ? `${Math.round(h.windSpeedKmh)} km/h` : `${Math.round(h.windSpeedKmh / 1.852)} kts`}`}
-                                  />
-                                ))}
+                                {bestDay.forecast.slice(6, 22).map((h, i) => {
+                                  const cellKey = `${spot.id}-${i}`;
+                                  const isHovered = hoveredBarCell === cellKey;
+                                  return (
+                                    <div
+                                      key={i}
+                                      className={`flex-1 transition-opacity ${hoveredBarCell && !isHovered ? "opacity-50" : ""}`}
+                                      style={{
+                                        background: windColor(h.windSpeedKmh),
+                                      }}
+                                      onMouseEnter={() =>
+                                        setHoveredBarCell(cellKey)
+                                      }
+                                    />
+                                  );
+                                })}
                               </div>
                               <div className="flex justify-between text-[9px] text-gray-400 mt-0.5 px-0.5">
-                                <span>6h</span>
-                                <span>21h</span>
+                                {hoveredBarCell?.startsWith(spot.id) ? (
+                                  (() => {
+                                    const idx = parseInt(
+                                      hoveredBarCell.split("-").pop()!,
+                                    );
+                                    const h = bestDay.forecast.slice(6, 22)[
+                                      idx
+                                    ];
+                                    if (!h) return <span>6h</span>;
+                                    const hour = new Date(h.time).getHours();
+                                    const wind =
+                                      spot.sportType === "PARAGLIDE"
+                                        ? `${Math.round(h.windSpeedKmh)} km/h`
+                                        : `${Math.round(h.windSpeedKmh / 1.852)} kts`;
+                                    return (
+                                      <span className="w-full text-center text-gray-500 font-medium">
+                                        {hour}h · {wind}
+                                      </span>
+                                    );
+                                  })()
+                                ) : (
+                                  <>
+                                    <span>6h</span>
+                                    <span>21h</span>
+                                  </>
+                                )}
                               </div>
                             </div>
                           )}
@@ -1358,11 +1404,21 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                           >
                             {spot.days.map((day, i) => {
                               const isBest = i === (spot.bestDayIndex ?? 0);
+                              const isSelected = i === activeDayIdx;
                               const dayDate = new Date(day.date + "T12:00:00Z");
                               return (
-                                <div
+                                <button
+                                  type="button"
                                   key={day.date}
-                                  className="flex-1 flex flex-col items-center gap-0.5 min-w-[1.75rem]"
+                                  className="flex-1 flex flex-col items-center gap-0.5 min-w-[1.75rem] cursor-pointer"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedDayMap((prev) => ({
+                                      ...prev,
+                                      [spot.id]: i,
+                                    }));
+                                  }}
                                 >
                                   <span className="text-[8px] text-gray-400 uppercase">
                                     {dayDate.toLocaleDateString("fr", {
@@ -1370,19 +1426,27 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                                     })}
                                   </span>
                                   <div
-                                    className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
+                                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white transition-all ${isSelected ? "ring-2 ring-offset-1" : ""}`}
                                     style={{
                                       background: scoreColor(day.score),
-                                      outline: isBest
-                                        ? `2px solid ${scoreColor(day.score)}`
-                                        : "none",
-                                      outlineOffset: "1px",
+                                      ...(isBest && !isSelected
+                                        ? {
+                                            outline: `2px solid ${scoreColor(day.score)}`,
+                                            outlineOffset: "1px",
+                                          }
+                                        : {}),
+                                      ...(isSelected
+                                        ? {
+                                            ["--tw-ring-color" as string]:
+                                              scoreColor(day.score),
+                                          }
+                                        : {}),
                                     }}
                                     title={`${day.date} — ${day.score}/100 · ${day.kitableHours}h`}
                                   >
                                     {day.score > 0 ? day.score : "·"}
                                   </div>
-                                </div>
+                                </button>
                               );
                             })}
                           </div>

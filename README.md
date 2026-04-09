@@ -1,39 +1,42 @@
-# OpenWind 🪁
+# OpenWind
 
-**La carte open source des spots de kitesurf et snowkite.**
+**Carte open source des spots de kitesurf et parapente — vent en direct, prévisions, archives, planificateur de voyages.**
 
-Vent en direct · Spots communautaires · Planificateur de voyages · 100% gratuit — pour toujours.
+[openwind.ch](https://openwind.ch)
 
-![OpenWind Map](https://img.shields.io/badge/status-alpha-orange)
+![Status](https://img.shields.io/badge/status-alpha-orange)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 
 ---
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
-- 🗺️ **Carte interactive** — tous les spots du monde sur une carte MapLibre + OpenStreetMap (0€)
-- 💨 **Vent en direct** — données Open-Meteo actualisées, sans clé API
-- 📍 **Ajouter un spot** — formulaire complet avec photos, difficulté, conditions idéales
-- 🧳 **Planificateur de voyage** — "je serai là le XX/XX" → spots proches + prévisions vent J+7
-- 🎨 **Palette blanc-gris** — indicateurs de vent intuitifs, du blanc (calme) au rouge (danger)
+- **Carte interactive** — spots et stations de vent sur une carte MapLibre GL (clustering WebGL)
+- **Vent en direct** — 3 réseaux combinés : MeteoSwiss (154 stations), Pioupiou (~600 mondiales), Netatmo
+- **Prévisions 7 jours** — tableau Windguru-style avec scoring kite/parapente (Open-Meteo)
+- **Archives 5 ans** — roses des vents mensuelles, fréquences et directions dominantes
+- **Planificateur de voyage** — lieu + dates + sport → spots proches triés par score
+- **Forum communautaire** — catégories, topics, réponses threadées, votes
+- **Ajouter un spot** — formulaire avec photos, difficulté, type d'eau, directions idéales
+- **Multi-sport** — kitesurf et parapente, scoring adapté par discipline
+- **100 % gratuit** — 0 € d'infrastructure (free tiers uniquement)
 
-## 🛠️ Stack technique
+## Stack technique
 
-| Technologie                            | Usage                       | Coût                |
-| -------------------------------------- | --------------------------- | ------------------- |
-| [Next.js 16](https://nextjs.org)       | Framework fullstack         | Gratuit             |
-| [MapLibre GL](https://maplibre.org)    | Carte interactive           | Open source         |
-| [OpenFreeMap](https://openfreemap.org) | Tuiles de carte             | Gratuit             |
-| [Open-Meteo](https://open-meteo.com)   | API météo/vent              | Gratuit, sans clé   |
-| [Supabase](https://supabase.com)       | PostgreSQL + Auth + Storage | Gratuit (free tier) |
-| [Prisma](https://prisma.io)            | ORM                         | Open source         |
-| [Vercel](https://vercel.com)           | Hosting                     | Gratuit (free tier) |
-| [Nominatim/OSM](https://nominatim.org) | Géocodage inverse           | Gratuit             |
+| Technologie                              | Usage                            | Coût              |
+| ---------------------------------------- | -------------------------------- | ----------------- |
+| [Next.js 16](https://nextjs.org)         | Framework fullstack (App Router) | Gratuit           |
+| [TypeScript](https://typescriptlang.org) | Typage strict                    | —                 |
+| [Tailwind v4](https://tailwindcss.com)   | Styles                           | —                 |
+| [MapLibre GL 5](https://maplibre.org)    | Carte WebGL                      | Open source       |
+| [OpenFreeMap](https://openfreemap.org)   | Tuiles de carte                  | Gratuit           |
+| [Open-Meteo](https://open-meteo.com)     | Prévisions + archives vent       | Gratuit, sans clé |
+| [Prisma 7](https://prisma.io)            | ORM PostgreSQL                   | Open source       |
+| [Supabase](https://supabase.com)         | PostgreSQL + Auth + Storage      | Free tier         |
+| [Vercel](https://vercel.com)             | Hosting + Cron                   | Free tier         |
 
-**Total coût d'infrastructure : 0€/mois** pour un usage raisonnable.
-
-## 🚀 Démarrage rapide
+## Démarrage rapide
 
 ### Prérequis
 
@@ -52,21 +55,23 @@ pnpm install
 ### Configuration
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env
+cp .env.example .env.local
 ```
 
-Remplis `.env.local` avec tes credentials Supabase :
+Remplis les deux fichiers avec tes credentials :
 
 1. Crée un projet sur [supabase.com](https://supabase.com)
-2. Va dans **Settings > API** pour récupérer l'URL et les clés
-3. Va dans **Settings > Database** pour la `DATABASE_URL`
-4. Active l'extension **PostGIS** dans l'éditeur SQL : `CREATE EXTENSION postgis;` (optionnel, pour requêtes géo avancées)
-5. Crée un bucket `spot-images` dans **Storage** (cocher "Public bucket")
+2. **Settings > API** → `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_DEFAULT_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+3. **Settings > Database** → `DATABASE_URL` (pooler) et `DIRECT_URL` (direct)
+4. Crée un bucket `spot-images` dans **Storage** (Public bucket)
+
+Voir [.env.example](.env.example) pour la liste complète des variables.
 
 ### Base de données
 
 ```bash
-pnpm exec prisma migrate dev --name init
+pnpm exec prisma migrate dev
 pnpm exec prisma generate
 ```
 
@@ -78,73 +83,52 @@ pnpm dev
 
 Ouvre [http://localhost:3000](http://localhost:3000).
 
-## 📁 Structure du projet
+## Structure du projet
 
 ```
 src/
-├── app/
-│   ├── page.tsx              # Carte principale (full-screen)
-│   ├── plan/page.tsx         # Planificateur de voyage
-│   ├── spots/
-│   │   ├── new/page.tsx      # Créer un spot
-│   │   └── [id]/page.tsx     # Fiche d'un spot (vent live + infos)
-│   └── api/
-│       ├── spots/            # CRUD spots + images
-│       └── plan/             # Endpoint planificateur
-├── components/
-│   ├── map/                  # KiteMap, SpotPopup
-│   ├── spot/                 # CreateSpotForm
-│   ├── plan/                 # TripPlanner
-│   └── ui/                   # Button, Badge, Navbar
-├── lib/
-│   ├── wind.ts               # Open-Meteo helpers
-│   ├── utils.ts              # cn(), haversine, windColor…
-│   ├── prisma.ts             # Singleton Prisma client
-│   └── supabase/             # Client/Server Supabase
-└── types/                    # Types TypeScript partagés
+  app/                        # Next.js App Router
+    api/
+      spots/                  # CRUD spots (Prisma + Supabase Storage)
+      stations/               # MeteoSwiss + Pioupiou + Netatmo combinés
+      wind/                   # Vent courant + grille batch
+      plan/                   # Planificateur de voyages (scoring multi-sport)
+      favorites/              # Toggle favoris utilisateur
+      preferences/            # Préférences UI (sport, unités)
+      forum/                  # Categories, topics, posts, votes
+      auth/sync/              # Sync Supabase Auth → Prisma User
+      cron/stations/          # Cron Vercel 10min → StationMeasurement
+    spots/[id]/               # Détail spot (prévisions + boussole + archives)
+    plan/                     # Trip planner
+    forum/                    # Forum communautaire
+    stations/[id]/            # Détail station + historique 48h
+  components/
+    map/                      # KiteMap (GL), SpotPopup, StationPopup, windgl/
+    spot/                     # ForecastTable, WindChart, WindCompass, WindArchives
+    plan/                     # TripPlanner, PlanFilters
+    forum/                    # NewTopicForm, PostThread, ReplyForm, VoteButtons
+    ui/                       # AuthModal, Badge, Button, Navbar, SearchBar
+  lib/
+    stations.ts               # MeteoSwiss SwissMetNet (LV95 → WGS84)
+    pioupiou.ts               # Pioupiou OpenWindMap + WebSocket
+    netatmo.ts                # Netatmo OAuth2 + token rotation
+    forecast.ts               # Open-Meteo 7j (scoring kite/parapente)
+    wind*.ts                  # Fetch, scoring, historique vent
+    archives.ts               # Archives 5 ans (cache 7j)
+    prisma.ts                 # Singleton PrismaClient
+    supabase/                 # Client/Server Supabase
+  types/                      # Types TypeScript partagés
 prisma/
-└── schema.prisma             # Schéma DB (Spot, SpotImage, WindReport)
+  schema.prisma               # 12 modèles + 3 enums
+  migrations/                 # Historique migrations SQL
 ```
 
-## 🤝 Contribuer
+Pour plus de détails, voir la [documentation architecture](./docs/architecture.md).
+
+## Contribuer
 
 Voir [CONTRIBUTING.md](./CONTRIBUTING.md) — toute aide est la bienvenue !
 
-## 📄 Licence
+## Licence
 
-MIT — libre à utiliser, modifier, héberger.
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](./LICENSE) — libre d'utiliser, modifier et héberger.
