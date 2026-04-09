@@ -23,6 +23,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate
+
       - name: TypeScript
         run: pnpm exec tsc --noEmit
 

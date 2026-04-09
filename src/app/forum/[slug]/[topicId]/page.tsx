@@ -52,7 +52,10 @@ export default async function TopicPage({ params }: Props) {
       author: p.author,
       parentId: p.parentId,
       createdAt: p.createdAt.toISOString(),
-      score: p.votes.reduce((s, v) => s + v.value, 0),
+      score: p.votes.reduce(
+        (s: number, v: { value: number }) => s + v.value,
+        0,
+      ),
       votes: p.votes,
       children: [],
     });
@@ -76,7 +79,10 @@ export default async function TopicPage({ params }: Props) {
     authorId: topic.authorId,
     author: topic.author,
     category: topic.category,
-    score: topic.votes.reduce((s, v) => s + v.value, 0),
+    score: topic.votes.reduce(
+      (s: number, v: { value: number }) => s + v.value,
+      0,
+    ),
     votes: topic.votes,
     createdAt: topic.createdAt.toISOString(),
     posts: roots,

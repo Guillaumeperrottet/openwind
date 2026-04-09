@@ -27,9 +27,12 @@ export async function GET(request: NextRequest) {
     prisma.forumTopic.count({ where }),
   ]);
 
-  const enriched = topics.map((t) => ({
+  const enriched = topics.map((t: (typeof topics)[number]) => ({
     ...t,
-    score: t.votes.reduce((sum, v) => sum + v.value, 0),
+    score: t.votes.reduce(
+      (sum: number, v: { value: number }) => sum + v.value,
+      0,
+    ),
     votes: undefined,
   }));
 

@@ -22,7 +22,9 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ spotIds: favorites.map((f) => f.spotId) });
+  return NextResponse.json({
+    spotIds: favorites.map((f: { spotId: string }) => f.spotId),
+  });
 }
 
 /**

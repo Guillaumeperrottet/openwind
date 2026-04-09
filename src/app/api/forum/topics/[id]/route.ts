@@ -30,7 +30,10 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "Topic introuvable" }, { status: 404 });
   }
 
-  const topicScore = topic.votes.reduce((s, v) => s + v.value, 0);
+  const topicScore = topic.votes.reduce(
+    (s: number, v: { value: number }) => s + v.value,
+    0,
+  );
 
   // Build nested tree from flat posts
   interface PostNode {
@@ -58,7 +61,10 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
       parentId: p.parentId,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
-      score: p.votes.reduce((s, v) => s + v.value, 0),
+      score: p.votes.reduce(
+        (s: number, v: { value: number }) => s + v.value,
+        0,
+      ),
       votes: p.votes,
       children: [],
     };

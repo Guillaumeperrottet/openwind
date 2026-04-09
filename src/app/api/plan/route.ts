@@ -54,12 +54,15 @@ export async function GET(request: NextRequest) {
     });
 
     nearby = allSpots
-      .map((spot) => ({
+      .map((spot: (typeof allSpots)[number]) => ({
         ...spot,
         distanceKm: haversineKm(lat, lng, spot.latitude, spot.longitude),
       }))
-      .filter((s) => s.distanceKm <= radius)
-      .sort((a, b) => a.distanceKm - b.distanceKm)
+      .filter((s: { distanceKm: number }) => s.distanceKm <= radius)
+      .sort(
+        (a: { distanceKm: number }, b: { distanceKm: number }) =>
+          a.distanceKm - b.distanceKm,
+      )
       .slice(0, LIMIT);
   } else {
     // No location — return a global sample of spots (spread geographically)
@@ -70,9 +73,9 @@ export async function GET(request: NextRequest) {
     // Pick up to LIMIT evenly distributed spots
     const step = Math.max(1, Math.floor(allSpots.length / LIMIT));
     nearby = allSpots
-      .filter((_, i) => i % step === 0)
+      .filter((_: unknown, i: number) => i % step === 0)
       .slice(0, LIMIT)
-      .map((spot) => ({ ...spot, distanceKm: 0 }));
+      .map((spot: (typeof allSpots)[number]) => ({ ...spot, distanceKm: 0 }));
   }
 
   // Determine if dates are within Open-Meteo forecast range (≤16 days)

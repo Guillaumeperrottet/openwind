@@ -26,7 +26,7 @@ export default async function CategoryPage({ params }: Props) {
     },
   });
 
-  const enriched = topics.map((t) => ({
+  const enriched = topics.map((t: (typeof topics)[number]) => ({
     id: t.id,
     title: t.title,
     slug: t.slug,
@@ -34,7 +34,7 @@ export default async function CategoryPage({ params }: Props) {
     locked: t.locked,
     author: t.author,
     postCount: t._count.posts,
-    score: t.votes.reduce((s, v) => s + v.value, 0),
+    score: t.votes.reduce((s: number, v: { value: number }) => s + v.value, 0),
     createdAt: t.createdAt.toISOString(),
   }));
 

@@ -85,13 +85,13 @@ export async function DELETE(
 
   // Delete from Supabase Storage
   const storagePaths = images
-    .map((img) => {
+    .map((img: { url: string }) => {
       // URL format: .../storage/v1/object/public/spot-images/SPOT_ID/FILENAME
       const bucketPrefix = `/storage/v1/object/public/${BUCKET}/`;
       const idx = img.url.indexOf(bucketPrefix);
       return idx >= 0 ? img.url.slice(idx + bucketPrefix.length) : null;
     })
-    .filter((p): p is string => p !== null);
+    .filter((p: string | null): p is string => p !== null);
 
   if (storagePaths.length > 0) {
     await supabaseAdmin.storage.from(BUCKET).remove(storagePaths);

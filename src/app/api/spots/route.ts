@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const lng0 = parseFloat(lng);
 
     const nearby = spots
-      .map((spot) => {
+      .map((spot: (typeof spots)[number]) => {
         const dLat = toRad(spot.latitude - lat0);
         const dLng = toRad(spot.longitude - lng0);
         const a =
@@ -52,8 +52,11 @@ export async function GET(request: NextRequest) {
           6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return { ...spot, distanceKm };
       })
-      .filter((s) => s.distanceKm <= radius)
-      .sort((a, b) => a.distanceKm - b.distanceKm);
+      .filter((s: { distanceKm: number }) => s.distanceKm <= radius)
+      .sort(
+        (a: { distanceKm: number }, b: { distanceKm: number }) =>
+          a.distanceKm - b.distanceKm,
+      );
 
     return NextResponse.json(nearby);
   }

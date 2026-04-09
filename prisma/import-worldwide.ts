@@ -172,7 +172,7 @@ async function main() {
         longitude: spot.longitude,
       });
       created++;
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(`  ✗ Failed to create "${spot.name}":`, err);
     }
   }
@@ -184,7 +184,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch((e: unknown) => {
     console.error(e);
     process.exit(1);
   })

@@ -58,7 +58,7 @@ export async function fetchWindHistoryStation(
       },
       orderBy: { time: "asc" },
     });
-    dbPoints = rows.map((r) => ({
+    dbPoints = rows.map((r: (typeof rows)[number]) => ({
       time: r.time.toISOString().slice(0, 16),
       windSpeedKmh: r.windSpeedKmh,
       windDirection: r.windDirection,

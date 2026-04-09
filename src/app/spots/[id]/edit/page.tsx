@@ -48,7 +48,7 @@ export default async function EditSpotPage({ params }: Props) {
     hazards: spot.hazards,
     access: spot.access,
     nearestStationId: spot.nearestStationId,
-    existingImages: spot.images.map((img) => ({
+    existingImages: spot.images.map((img: (typeof spot.images)[number]) => ({
       id: img.id,
       url: img.url,
       caption: img.caption,

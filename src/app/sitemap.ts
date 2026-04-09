@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const spots = await prisma.spot.findMany({
       select: { id: true, updatedAt: true },
     });
-    spotPages = spots.map((spot) => ({
+    spotPages = spots.map((spot: (typeof spots)[number]) => ({
       url: `${baseUrl}/spots/${spot.id}`,
       lastModified: spot.updatedAt,
       changeFrequency: "weekly" as const,
@@ -46,7 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const categories = await prisma.forumCategory.findMany({
       select: { slug: true },
     });
-    forumPages = categories.map((cat) => ({
+    forumPages = categories.map((cat: (typeof categories)[number]) => ({
       url: `${baseUrl}/forum/${cat.slug}`,
       changeFrequency: "daily" as const,
       priority: 0.7,

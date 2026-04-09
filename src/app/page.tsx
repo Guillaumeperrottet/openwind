@@ -10,11 +10,11 @@ export default async function HomePage() {
   let spots: Spot[] = [];
   try {
     const raw = await prisma.spot.findMany({ include: { images: true } });
-    spots = raw.map((s) => ({
+    spots = raw.map((s: (typeof raw)[number]) => ({
       ...s,
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),
-      images: s.images.map((img) => ({
+      images: s.images.map((img: (typeof s.images)[number]) => ({
         ...img,
         createdAt: img.createdAt.toISOString(),
       })),

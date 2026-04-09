@@ -34,7 +34,7 @@ export default async function ForumPage() {
     .filter(Boolean);
   const isAdmin = !!user && adminIds.includes(user.id);
 
-  const serialized = categories.map((cat) => ({
+  const serialized = categories.map((cat: (typeof categories)[number]) => ({
     id: cat.id,
     name: cat.name,
     slug: cat.slug,
