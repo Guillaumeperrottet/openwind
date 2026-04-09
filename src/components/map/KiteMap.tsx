@@ -58,7 +58,8 @@ export function KiteMap({
     null,
   );
   const [showStations, setShowStations] = useState(!pickMode);
-  const [stationsUpdatedAt, setStationsUpdatedAt] = useState<string | null>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_stationsUpdatedAt, setStationsUpdatedAt] = useState<string | null>(
     null,
   );
   const [loadingStations, setLoadingStations] = useState(false);
@@ -74,6 +75,7 @@ export function KiteMap({
       body: JSON.stringify({ useKnots: v }),
     }).catch(() => {});
   }, []);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
   /** Sport filter: "ALL" | "KITE" | "PARAGLIDE" */
@@ -956,6 +958,7 @@ export function KiteMap({
       map.remove();
       mapRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Track spot popup position on map move — close if off-screen

@@ -56,10 +56,7 @@ export class WindParticleLayer implements CustomLayerInterface {
     );
   }
 
-  render(
-    _gl: WebGLRenderingContext | WebGL2RenderingContext,
-    _options: CustomRenderMethodInput,
-  ) {
+  render() {
     if (!this._windgl?.hasWind) return;
     this._windgl.render();
 
@@ -67,10 +64,7 @@ export class WindParticleLayer implements CustomLayerInterface {
     this._map?.triggerRepaint();
   }
 
-  onRemove(
-    _map: MapLibreMap,
-    _gl: WebGLRenderingContext | WebGL2RenderingContext,
-  ) {
+  onRemove() {
     this._map?.off("resize", this._onResize);
     this._windgl?.destroy();
     this._windgl = null;

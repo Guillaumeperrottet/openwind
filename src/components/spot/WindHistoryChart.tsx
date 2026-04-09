@@ -166,7 +166,6 @@ export function WindHistoryChart({
   );
   const yMax = Math.ceil(dataMax / 5) * 5 + 5;
   const bH = (kmh: number) => Math.max((toDisp(kmh) / yMax) * CHART_H, 1);
-  const bY = (kmh: number) => DAY_H + TIME_H + CHART_H - bH(kmh);
 
   // ── Day groups (full 48h window) ───────────────────────────────────────────
   // Generate all days covering the entire window, regardless of data availability

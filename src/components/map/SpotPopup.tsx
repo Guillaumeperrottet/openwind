@@ -38,18 +38,14 @@ export function SpotPopup({
     useKnots ? `${Math.round(kmh / 1.852)} kts` : `${Math.round(kmh)} km/h`;
   const ref = useRef<HTMLDivElement>(null);
   const [flipBelow, setFlipBelow] = useState(false);
-  const [popupH, setPopupH] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-  }, []);
+  const [isMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false,
+  );
 
   // Measure popup height and flip below if not enough room above
   useEffect(() => {
     if (!ref.current) return;
     const h = ref.current.offsetHeight;
-    setPopupH(h);
     // Check against parent container height (absolute positioned within map)
     setFlipBelow(position.y - 8 - h < 10);
   }, [position.y, wind, loadingWind]);

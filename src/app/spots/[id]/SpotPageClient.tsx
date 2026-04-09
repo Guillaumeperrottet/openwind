@@ -24,7 +24,8 @@ import {
   Star,
 } from "lucide-react";
 import { WindCompass } from "@/components/spot/WindCompass";
-import { WindDirectionRose } from "@/components/spot/WindDirectionRose";
+// WindDirectionRose available for future use
+// import { WindDirectionRose } from "@/components/spot/WindDirectionRose";
 import { WindFrequencyRose } from "@/components/spot/WindFrequencyRose";
 import { WindChart } from "@/components/spot/WindChart";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";

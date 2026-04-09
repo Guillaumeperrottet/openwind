@@ -35,6 +35,7 @@ interface Props {
 export function StationPageClient({
   station,
   gustsKmh,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   openMeteoUpdatedAt,
   forecast,
   history,
@@ -89,8 +90,6 @@ export function StationPageClient({
     day: "numeric",
     month: "long",
   });
-
-  const openMeteoTime = openMeteoUpdatedAt?.slice(11, 16) ?? null;
 
   // WindCompass uses MeteoSwiss speed + direction, Open-Meteo gusts (fallback to speed)
   const wind = {

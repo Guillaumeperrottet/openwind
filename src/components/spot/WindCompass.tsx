@@ -21,20 +21,12 @@ interface Props {
  *   windDirection = 270° (FROM west) → arrow points east (→)
  *   Rotation formula: arrowRotation = (windDirection + 180) % 360
  */
-export function WindCompass({
-  wind,
-  size = 200,
-  light = false,
-  sourceLabel = "Open-Meteo · NWP",
-}: Props) {
+export function WindCompass({ wind, size = 200, light = false }: Props) {
   const speedKnots = roundKnots(wind.windSpeedKmh);
   const gustsKnots = roundKnots(wind.gustsKmh);
   const arrowRotation = (wind.windDirection + 180) % 360;
   const color = wind.color; // use pre-computed color from server to avoid hydration mismatch
   const dirLabel = windDirectionLabel(wind.windDirection);
-
-  // Format "14:45" from "2026-04-01T14:45"
-  const updateTime = wind.updatedAt?.slice(11, 16) ?? null;
 
   // Build cardinal + intercardinal labels
   const cardinals = [

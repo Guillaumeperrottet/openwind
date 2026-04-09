@@ -38,11 +38,9 @@ export function StationPopup({
   const ref = useRef<HTMLDivElement>(null);
   const [flipBelow, setFlipBelow] = useState(false);
   const [popupH, setPopupH] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 768);
-  }, []);
+  const [isMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false,
+  );
 
   // Fetch 48h history (API now returns combined past + 15-min forecast)
   useEffect(() => {
