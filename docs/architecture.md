@@ -51,7 +51,7 @@ prisma/
 
 ## Sources de données vent
 
-L'application combine **3 réseaux de stations en temps réel** et **1 API de prévisions/archives**.
+L'application combine **4 réseaux de stations en temps réel** et **1 API de prévisions/archives**.
 
 ### MeteoSwiss SwissMetNet (`lib/stations.ts`)
 
@@ -73,6 +73,15 @@ L'application combine **3 réseaux de stations en temps réel** et **1 API de pr
 - Stations publiques avec anémomètre (module NAModule2)
 - Token rotation automatique : `refresh_token` persisté en DB `SystemConfig`
 - Zones configurées : Suisse + Sud de la France (extensible)
+
+### Météo-France SYNOP (`lib/meteofrance.ts`)
+
+- API REST : `public-api.meteofrance.fr/public/DPObs/v1/synop`
+- ~185 stations SYNOP en France, mise à jour toutes les 3 heures
+- Auth par header `apikey` (clé permanente ~2 ans)
+- Données : ff (vent m/s → km/h), dd (direction), raf10 (rafales), t (temp Kelvin → °C)
+- ID préfixé `mf-{numer_sta}` pour éviter les collisions
+- Historique : DB (cron 10min) + fallback Open-Meteo grille
 
 ### Open-Meteo (`lib/forecast.ts`, `lib/windFetch.ts`, `lib/archives.ts`)
 
@@ -252,7 +261,7 @@ Les posts utilisent `parentId` (self-referential). L'arbre est construit côté 
 
 `GET /api/cron/stations` — exécuté toutes les **10 minutes** par Vercel Cron.
 
-1. Fetch 3 réseaux via `Promise.allSettled()`
+1. Fetch 4 réseaux via `Promise.allSettled()`
 2. Filtre les valeurs invalides (vitesse > 500, direction > 360)
 3. Insert batch par chunks de 500 (`skipDuplicates`)
 4. Prune les enregistrements > 3 jours

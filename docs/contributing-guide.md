@@ -50,6 +50,7 @@ const [meteo, piou, netatmo, aemet] = await Promise.allSettled([
   fetchMeteoSwissStations(),
   fetchPioupiouStations(),
   fetchNetatmoStations(),
+  fetchMeteoFranceStations(), // Réseau Météo-France existant
   fetchAemetStations(), // Nouveau réseau
 ]);
 ```

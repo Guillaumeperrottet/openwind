@@ -24,12 +24,57 @@ import type { HistoryPoint } from "@/types";
 
 interface Props {
   station: WindStation;
-  /** Gusts from Open-Meteo (MeteoSwiss doesn't provide gusts) */
+  /** Gusts (estimated or from source) */
   gustsKmh: number | null;
   /** ISO timestamp from Open-Meteo current data, e.g. "2026-04-02T09:15" */
   openMeteoUpdatedAt: string | null;
   forecast: FullForecast | null;
   history: HistoryPoint[] | null;
+}
+
+/* ── Source metadata for dynamic labels ─────────────────────────── */
+const SOURCE_META: Record<
+  string,
+  { label: string; freq: string; url: string; attribution: string }
+> = {
+  meteoswiss: {
+    label: "MeteoSwiss SwissMetNet",
+    freq: "10 min",
+    url: "https://www.meteoswiss.admin.ch",
+    attribution:
+      "154 stations météo automatiques en Suisse, mesures vent toutes les 10 min.",
+  },
+  pioupiou: {
+    label: "Pioupiou OpenWindMap",
+    freq: "~4 min",
+    url: "https://www.pioupiou.fr",
+    attribution: "~600 stations communautaires mondiales, données ouvertes.",
+  },
+  netatmo: {
+    label: "Netatmo",
+    freq: "~10 min",
+    url: "https://weathermap.netatmo.com",
+    attribution:
+      "Stations météo personnelles avec anémomètre, données publiques.",
+  },
+  meteofrance: {
+    label: "Météo-France SYNOP",
+    freq: "3 h",
+    url: "https://donneespubliques.meteofrance.fr",
+    attribution:
+      "~185 stations SYNOP en France, observations toutes les 3 heures.",
+  },
+};
+
+function getSourceMeta(source: string) {
+  return (
+    SOURCE_META[source] ?? {
+      label: source,
+      freq: "—",
+      url: "#",
+      attribution: "",
+    }
+  );
 }
 
 export function StationPageClient({
@@ -43,6 +88,8 @@ export function StationPageClient({
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const router = useRouter();
+
+  const srcMeta = getSourceMeta(station.source);
 
   // Auto-refresh when tab becomes visible after being hidden for 10+ min.
   // Avoids polling in background tabs, saving ~4 API calls per cycle.
@@ -91,7 +138,7 @@ export function StationPageClient({
     month: "long",
   });
 
-  // WindCompass uses MeteoSwiss speed + direction, Open-Meteo gusts (fallback to speed)
+  // WindCompass uses station speed + direction, estimated gusts (fallback to speed)
   const wind = {
     windSpeedKmh: station.windSpeedKmh,
     windDirection: station.windDirection,
@@ -190,19 +237,19 @@ export function StationPageClient({
               wind={wind}
               size={170}
               light
-              sourceLabel="MeteoSwiss · 10 min"
+              sourceLabel={`${srcMeta.label} · ${srcMeta.freq}`}
             />
             <p className="text-[10px] text-gray-500 text-center leading-snug">
               <a
-                href="https://www.meteoswiss.admin.ch"
+                href={srcMeta.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gray-700 inline-flex items-center gap-0.5"
               >
-                MeteoSwiss SwissMetNet
+                {srcMeta.label}
                 <ExternalLink className="h-2 w-2 ml-0.5" />
               </a>
-              {" · mesure 10 min"}
+              {` · mesure ${srcMeta.freq}`}
             </p>
           </div>
 
@@ -318,12 +365,12 @@ export function StationPageClient({
                 Historique · 48h
               </h2>
               <a
-                href="https://www.meteoswiss.admin.ch/services-and-publications/applications/measured-values.html"
+                href={srcMeta.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[10px] text-gray-500 hover:text-gray-700 inline-flex items-center gap-0.5"
               >
-                MeteoSwiss SwissMetNet · 10 min
+                {srcMeta.label} · {srcMeta.freq}
                 <ExternalLink className="h-2.5 w-2.5 ml-0.5" />
               </a>
             </div>
@@ -391,20 +438,16 @@ export function StationPageClient({
           </p>
           <div className="flex flex-col gap-2 text-[11px] text-gray-500 leading-relaxed">
             <p>
-              <span className="font-medium text-gray-700">
-                MeteoSwiss SwissMetNet
-              </span>{" "}
-              — 154 stations météo automatiques en Suisse, mesures vent toutes
-              les 10 min.{" "}
+              <span className="font-medium text-gray-700">{srcMeta.label}</span>{" "}
+              — {srcMeta.attribution}{" "}
               <a
-                href="https://opendata.swiss/fr/dataset/automatische-wetterstationen-aktuelle-messwerte"
+                href={srcMeta.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
               >
-                opendata.swiss
-              </a>{" "}
-              · Licence CC BY
+                {srcMeta.url.replace(/^https?:\/\//, "")}
+              </a>
             </p>
             <p>
               <span className="font-medium text-gray-700">Open-Meteo</span> —

@@ -1,5 +1,5 @@
 /**
- * Wind history — station measurements (DB + MeteoSwiss CSV + Pioupiou)
+ * Wind history — station measurements (DB + MeteoSwiss CSV + Pioupiou + Météo-France)
  * and 15-minute Open-Meteo history/forecast.
  */
 import type { HistoryPoint } from "@/types";

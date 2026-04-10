@@ -4,7 +4,7 @@
 
 ## Vue d'ensemble
 
-Application open source de cartographie interactive des spots de kitesurf et parapente, avec données de vent en direct (3 réseaux de stations), prévisions météo 7 jours, archives historiques 5 ans, planificateur de voyages multi-sport et forum communautaire.
+Application open source de cartographie interactive des spots de kitesurf et parapente, avec données de vent en direct (4 réseaux de stations), prévisions météo 7 jours, archives historiques 5 ans, planificateur de voyages multi-sport et forum communautaire.
 
 - **URL prod** : `https://openwind.ch`
 - **URL locale** : `http://localhost:3000`
@@ -34,7 +34,7 @@ src/
   app/                  # Next.js App Router
     api/
       spots/            # CRUD spots (Prisma + Supabase)
-      stations/         # GET → MeteoSwiss + Pioupiou + Netatmo combinés
+      stations/         # GET → MeteoSwiss + Pioupiou + Netatmo + Météo-France combinés
       wind/             # Vent courant + grille batch
       plan/             # Planificateur de voyages (scoring multi-sport)
       favorites/        # Toggle favoris utilisateur
@@ -88,6 +88,7 @@ src/
     stations.ts         # fetchMeteoSwissStations() + lv95ToWgs84()
     pioupiou.ts         # fetchPioupiouStations() + archive 48h
     netatmo.ts          # fetchNetatmoStations() + token rotation OAuth2
+    meteofrance.ts      # fetchMeteoFranceStations() + SYNOP API
     forecast.ts         # Open-Meteo 7j (HourlyPoint, FullForecast, kitableScore)
     wind.ts             # Barrel re-export (windFetch + windScoring + windHistory)
     windFetch.ts        # fetchCurrentWind(), fetchForecastBatch()
@@ -136,6 +137,15 @@ prisma/
 - **Stations publiques** avec anémomètre (NAModule2)
 - **Token rotation** : refresh_token persisté en DB `SystemConfig`
 - **Zones** : CH + Sud de la France (extensible)
+
+### Météo-France SYNOP (`lib/meteofrance.ts`)
+
+- **Endpoint** : `https://public-api.meteofrance.fr/public/DPObs/v1/synop`
+- **~185 stations** SYNOP en France, mise à jour toutes les **3 heures**
+- **Auth** : header `apikey` (clé permanente ~2 ans)
+- **Données** : ff (vent m/s → km/h), dd (direction °), raf10 (rafales m/s), t (temp Kelvin → °C)
+- **ID préfixé** : `mf-{numer_sta}` (ex: `mf-07005`)
+- **Historique** : DB (cron 10min) + fallback Open-Meteo grille
 
 ### Open-Meteo
 
@@ -279,7 +289,7 @@ prisma/
 ## Cron Jobs
 
 - `/api/cron/stations` — Toutes les **10 minutes** via Vercel Cron
-  - Fetch MeteoSwiss + Pioupiou + Netatmo
+  - Fetch MeteoSwiss + Pioupiou + Netatmo + Météo-France
   - Store en StationMeasurement
   - Prune > 3 jours
   - Protégé par `CRON_SECRET` (Bearer token)
@@ -322,6 +332,7 @@ ADMIN_USER_IDS=uuid1,uuid2           # Admins forum
 NETATMO_CLIENT_ID=...
 NETATMO_CLIENT_SECRET=...
 NETATMO_REFRESH_TOKEN=...            # Initial, ensuite rotaté via DB
+METEOFRANCE_API_KEY=...              # Clé API permanente (portail-api.meteofrance.fr)
 ```
 
 > **⚠️ Ne jamais committer `.env` ou `.env.local`** — utiliser `.env.example` comme template.

@@ -52,7 +52,7 @@ export function KiteMap({
   );
   const pulseFrameRef = useRef<number | null>(null);
   const piouSocketRef = useRef<Socket | null>(null);
-  /** All loaded stations (MeteoSwiss + Pioupiou) for nearest-station wind lookup */
+  /** All loaded stations (MeteoSwiss + Pioupiou + Netatmo + Météo-France) for nearest-station wind lookup */
   const stationsRef = useRef<WindStation[]>([]);
   /** GeoJSON features refs for the combined clustered source */
   const stationFeaturesRef = useRef<GeoJSON.Feature[]>([]);

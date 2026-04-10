@@ -74,7 +74,7 @@ Suppression d'images. Body : `{ imageIds: string[] }`.
 
 ### `GET /api/stations`
 
-Toutes les stations combinées (MeteoSwiss + Pioupiou + Netatmo). Cache 10 min.
+Toutes les stations combinées (MeteoSwiss + Pioupiou + Netatmo + Météo-France). Cache 10 min.
 
 **Réponse** : `WindStation[]`
 
@@ -98,6 +98,7 @@ Historique 48h + prévisions futures. Le préfixe de l'ID détermine la source :
 
 - `piou-*` → Pioupiou (DB + Archive API)
 - `ntm-*` → Netatmo (DB + Open-Meteo fallback)
+- `mf-*` → Météo-France (DB + Open-Meteo fallback)
 - Autre → MeteoSwiss (DB + CSV OGD)
 
 **Réponse** : `HistoryPoint[]`. Cache 10 min.
@@ -247,6 +248,6 @@ Toggle : même valeur = suppression, valeur différente = mise à jour.
 
 **Auth** : Bearer `CRON_SECRET`. Exécuté toutes les 10 min par Vercel Cron.
 
-Fetch les 3 réseaux → insert batch en DB → prune > 3 jours.
+Fetch les 4 réseaux → insert batch en DB → prune > 3 jours.
 
 **Réponse** : `{ ok, stations, inserted, pruned }`.
