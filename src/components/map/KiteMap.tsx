@@ -887,8 +887,11 @@ export function KiteMap({
 
       {/* Pick toast — hidden on mobile where the TripPlanner controls provide guidance */}
       {pickMode && (
-        <div className="hidden lg:block absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-amber-500/90 text-zinc-900 text-sm font-medium px-4 py-2 rounded-full shadow-lg">
-          🎯 Cliquez sur la carte pour choisir votre destination
+        <div className="hidden lg:flex flex-col items-center absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-amber-500/90 text-zinc-900 text-sm font-medium px-5 py-2.5 rounded-2xl shadow-lg">
+          <span>🎯 Cliquez sur la carte pour choisir votre destination</span>
+          <span className="text-xs font-normal opacity-75 mt-0.5">
+            ou laissez vide et utilisez « Autour de moi » ou « Meilleurs spots »
+          </span>
         </div>
       )}
 
