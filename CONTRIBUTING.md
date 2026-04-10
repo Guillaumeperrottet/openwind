@@ -57,16 +57,16 @@ Tu connais des spots pas encore dans la base ? [Ajoute-les directement](http://l
 
 ### Code
 
-| Zone          | Fichiers                                                       | Description                           |
-| ------------- | -------------------------------------------------------------- | ------------------------------------- |
-| Carte         | `src/components/map/`                                          | MapLibre GL, clustering, wind overlay |
-| Vent          | `src/lib/wind*.ts`                                             | Fetch, scoring, historique            |
-| Stations      | `src/lib/stations.ts, pioupiou.ts, netatmo.ts, meteofrance.ts` | 4 réseaux de mesures                  |
-| Spots         | `src/components/spot/`                                         | Prévisions, boussole, archives        |
-| Planificateur | `src/components/plan/`                                         | Trip planner multi-sport              |
-| Forum         | `src/components/forum/`                                        | Topics, posts threadés, votes         |
-| API           | `src/app/api/`                                                 | Endpoints REST                        |
-| DB            | `prisma/schema.prisma`                                         | 12 modèles + 3 enums                  |
+| Zone          | Fichiers                                                                    | Description                           |
+| ------------- | --------------------------------------------------------------------------- | ------------------------------------- |
+| Carte         | `src/components/map/`                                                       | MapLibre GL, clustering, wind overlay |
+| Vent          | `src/lib/wind*.ts`                                                          | Fetch, scoring, historique            |
+| Stations      | `src/lib/stations.ts, pioupiou.ts, netatmo.ts, meteofrance.ts, windball.ts` | 5 réseaux de mesures                  |
+| Spots         | `src/components/spot/`                                                      | Prévisions, boussole, archives        |
+| Planificateur | `src/components/plan/`                                                      | Trip planner multi-sport              |
+| Forum         | `src/components/forum/`                                                     | Topics, posts threadés, votes         |
+| API           | `src/app/api/`                                                              | Endpoints REST                        |
+| DB            | `prisma/schema.prisma`                                                      | 12 modèles + 3 enums                  |
 
 ### Idées de contributions bienvenues
 

@@ -51,7 +51,7 @@ prisma/
 
 ## Sources de données vent
 
-L'application combine **4 réseaux de stations en temps réel** et **1 API de prévisions/archives**.
+L'application combine **5 réseaux de stations en temps réel** et **1 API de prévisions/archives**.
 
 ### MeteoSwiss SwissMetNet (`lib/stations.ts`)
 
@@ -82,6 +82,15 @@ L'application combine **4 réseaux de stations en temps réel** et **1 API de pr
 - Données : ff (vent m/s → km/h), dd (direction), raf10 (rafales), t (temp Kelvin → °C)
 - ID préfixé `mf-{numer_sta}` pour éviter les collisions
 - Historique : DB (cron 10min) + fallback Open-Meteo grille
+
+### Windball / Windfox (`lib/windball.ts`)
+
+- ~15–25 stations LoRa en Suisse romande (Fribourg / Vaud)
+- API publique : `server.windball.ch/device/all` + `/device/one/{id}`
+- Mesures toutes les ~10 minutes (LoRaWAN)
+- Données : windSpeed & windBurst (km/h), windDir (°), temperature (°C)
+- ID préfixé `windball-{deviceId}` (ex: `windball-wb-05`)
+- Historique : 60 dernières mesures (~10h) via l'API, complété par DB (cron)
 
 ### Open-Meteo (`lib/forecast.ts`, `lib/windFetch.ts`, `lib/archives.ts`)
 
@@ -261,7 +270,7 @@ Les posts utilisent `parentId` (self-referential). L'arbre est construit côté 
 
 `GET /api/cron/stations` — exécuté toutes les **10 minutes** par Vercel Cron.
 
-1. Fetch 4 réseaux via `Promise.allSettled()`
+1. Fetch 5 réseaux via `Promise.allSettled()`
 2. Filtre les valeurs invalides (vitesse > 500, direction > 360)
 3. Insert batch par chunks de 500 (`skipDuplicates`)
 4. Prune les enregistrements > 3 jours

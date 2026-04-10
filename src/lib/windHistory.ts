@@ -1,10 +1,11 @@
 /**
- * Wind history — station measurements (DB + MeteoSwiss CSV + Pioupiou + Météo-France)
+ * Wind history — station measurements (DB + MeteoSwiss CSV + Pioupiou + Météo-France + Windball)
  * and 15-minute Open-Meteo history/forecast.
  */
 import type { HistoryPoint } from "@/types";
 import { prisma } from "@/lib/prisma";
 import { fetchPioupiouHistory } from "@/lib/pioupiou";
+import { fetchWindballHistory } from "@/lib/windball";
 
 const BASE = "https://api.open-meteo.com/v1/forecast";
 
@@ -47,6 +48,7 @@ export async function fetchWindHistoryStation(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 2),
   );
   const isPioupiou = stationId.startsWith("piou-");
+  const isWindball = stationId.startsWith("windball-");
 
   // ── 1. Database (real-time, no delay) ──────────────────────────────────
   let dbPoints: HistoryPoint[] = [];
@@ -75,6 +77,15 @@ export async function fetchWindHistoryStation(
     if (isPioupiou) {
       const piouId = parseInt(stationId.replace("piou-", ""), 10);
       archivePoints = await fetchPioupiouHistory(piouId);
+    } else if (isWindball) {
+      const measures = await fetchWindballHistory(stationId);
+      archivePoints = measures.map((m) => ({
+        time: new Date(m.updatedAt).toISOString().slice(0, 16),
+        windSpeedKmh: m.windSpeed ?? 0,
+        windDirection: m.windDir ?? 0,
+        gustsKmh: m.windBurst ?? m.windSpeed ?? 0,
+        temperatureC: m.temperature ?? 0,
+      }));
     } else {
       archivePoints = await fetchWindHistoryStationCsv(stationId);
     }

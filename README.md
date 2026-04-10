@@ -13,7 +13,7 @@
 ## Fonctionnalités
 
 - **Carte interactive** — spots et stations de vent sur une carte MapLibre GL (clustering WebGL)
-- **Vent en direct** — 4 réseaux combinés : MeteoSwiss (154 stations), Pioupiou (~600 mondiales), Netatmo, Météo-France (~185 SYNOP)
+- **Vent en direct** — 5 réseaux combinés : MeteoSwiss (154 stations), Pioupiou (~600 mondiales), Netatmo, Météo-France (~185 SYNOP), Windball (~15–25 LoRa en Suisse romande)
 - **Prévisions 7 jours** — tableau Windguru-style avec scoring kite/parapente (Open-Meteo)
 - **Archives 5 ans** — roses des vents mensuelles, fréquences et directions dominantes
 - **Planificateur de voyage** — lieu + dates + sport → spots proches triés par score
@@ -90,7 +90,7 @@ src/
   app/                        # Next.js App Router
     api/
       spots/                  # CRUD spots (Prisma + Supabase Storage)
-      stations/               # MeteoSwiss + Pioupiou + Netatmo + Météo-France combinés
+      stations/               # MeteoSwiss + Pioupiou + Netatmo + Météo-France + Windball combinés
       wind/                   # Vent courant + grille batch
       plan/                   # Planificateur de voyages (scoring multi-sport)
       favorites/              # Toggle favoris utilisateur

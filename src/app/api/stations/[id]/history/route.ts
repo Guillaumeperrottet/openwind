@@ -6,6 +6,7 @@ import {
 } from "@/lib/wind";
 import { fetchMeteoSwissStations } from "@/lib/stations";
 import { fetchMeteoFranceStations } from "@/lib/meteofrance";
+import { fetchWindballStations } from "@/lib/windball";
 
 // No force-dynamic — params already makes this route dynamic,
 // and removing it lets internal fetch() calls use their ISR cache.
@@ -15,7 +16,8 @@ import { fetchMeteoFranceStations } from "@/lib/meteofrance";
  *
  * Returns 48h wind history for a station.
  * Supports MeteoSwiss (e.g. "BER"), Pioupiou (e.g. "piou-110"),
- * Netatmo (e.g. "ntm-70:ee:50:b9:01:56"), and Météo-France (e.g. "mf-07245") stations.
+ * Netatmo (e.g. "ntm-70:ee:50:b9:01:56"), Météo-France (e.g. "mf-07245"),
+ * and Windball (e.g. "windball-wb-05") stations.
  */
 export async function GET(
   _req: Request,
@@ -142,6 +144,50 @@ export async function GET(
     } catch {
       return NextResponse.json(
         { error: "Météo-France history temporarily unavailable" },
+        { status: 503 },
+      );
+    }
+  }
+
+  // ── Windball / Windfox station (DB history + API archive + Open-Meteo forecast) ──
+  if (stationId.startsWith("windball-")) {
+    try {
+      const history = await fetchWindHistoryStation(stationId);
+
+      // Get station coords for Open-Meteo forecast
+      const stations = await fetchWindballStations().catch(() => []);
+      const station = stations.find((s) => s.id === stationId);
+
+      if (history.length > 0 && station) {
+        const forecast = await fetchWindForecast15min(
+          station.lat,
+          station.lng,
+        ).catch(() => []);
+        const lastTime = history[history.length - 1].time;
+        const futurePoints = forecast.filter((p) => p.time > lastTime);
+        return NextResponse.json([...history, ...futurePoints], {
+          headers: cacheHeaders,
+        });
+      }
+
+      // If no DB/API data yet, fallback to Open-Meteo grid history
+      if (station) {
+        const [omHistory, forecast] = await Promise.all([
+          fetchWindHistory(station.lat, station.lng),
+          fetchWindForecast15min(station.lat, station.lng).catch(() => []),
+        ]);
+        const lastTime =
+          omHistory.length > 0 ? omHistory[omHistory.length - 1].time : "";
+        const futurePoints = forecast.filter((p) => p.time > lastTime);
+        return NextResponse.json([...omHistory, ...futurePoints], {
+          headers: cacheHeaders,
+        });
+      }
+
+      return NextResponse.json(history, { headers: cacheHeaders });
+    } catch {
+      return NextResponse.json(
+        { error: "Windball history temporarily unavailable" },
         { status: 503 },
       );
     }

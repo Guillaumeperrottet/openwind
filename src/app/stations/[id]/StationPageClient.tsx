@@ -64,6 +64,13 @@ const SOURCE_META: Record<
     attribution:
       "~185 stations SYNOP en France, observations toutes les 3 heures.",
   },
+  windball: {
+    label: "Windball / Windfox",
+    freq: "~10 min",
+    url: "https://windball.ch",
+    attribution:
+      "Anémomètres LoRa communautaires en Suisse romande, données publiques.",
+  },
 };
 
 function getSourceMeta(source: string) {

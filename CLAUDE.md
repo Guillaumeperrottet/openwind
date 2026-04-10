@@ -4,7 +4,7 @@
 
 ## Vue d'ensemble
 
-Application open source de cartographie interactive des spots de kitesurf et parapente, avec données de vent en direct (4 réseaux de stations), prévisions météo 7 jours, archives historiques 5 ans, planificateur de voyages multi-sport et forum communautaire.
+Application open source de cartographie interactive des spots de kitesurf et parapente, avec données de vent en direct (5 réseaux de stations), prévisions météo 7 jours, archives historiques 5 ans, planificateur de voyages multi-sport et forum communautaire.
 
 - **URL prod** : `https://openwind.ch`
 - **URL locale** : `http://localhost:3000`
@@ -34,7 +34,7 @@ src/
   app/                  # Next.js App Router
     api/
       spots/            # CRUD spots (Prisma + Supabase)
-      stations/         # GET → MeteoSwiss + Pioupiou + Netatmo + Météo-France combinés
+      stations/         # GET → MeteoSwiss + Pioupiou + Netatmo + Météo-France + Windball combinés
       wind/             # Vent courant + grille batch
       plan/             # Planificateur de voyages (scoring multi-sport)
       favorites/        # Toggle favoris utilisateur
@@ -89,11 +89,12 @@ src/
     pioupiou.ts         # fetchPioupiouStations() + archive 48h
     netatmo.ts          # fetchNetatmoStations() + token rotation OAuth2
     meteofrance.ts      # fetchMeteoFranceStations() + SYNOP API
+    windball.ts         # fetchWindballStations() + fetchWindballHistory()
     forecast.ts         # Open-Meteo 7j (HourlyPoint, FullForecast, kitableScore)
     wind.ts             # Barrel re-export (windFetch + windScoring + windHistory)
     windFetch.ts        # fetchCurrentWind(), fetchForecastBatch()
     windScoring.ts      # analyzeForecast(), scoreDayForecast(), analyzeMultiDay()
-    windHistory.ts      # fetchWindHistoryStation() (DB + CSV + Pioupiou merge)
+    windHistory.ts      # fetchWindHistoryStation() (DB + CSV + Pioupiou + Windball merge)
     archives.ts         # fetchWindArchives() (5 ans, cache 7j)
     utils.ts            # windColor(), windConditionLabel(), haversineKm(), cn()
     forum.ts            # timeAgo(), slugify()
@@ -146,6 +147,16 @@ prisma/
 - **Données** : ff (vent m/s → km/h), dd (direction °), raf10 (rafales m/s), t (temp Kelvin → °C)
 - **ID préfixé** : `mf-{numer_sta}` (ex: `mf-07005`)
 - **Historique** : DB (cron 10min) + fallback Open-Meteo grille
+
+### Windball / Windfox (`lib/windball.ts`)
+
+- **Endpoint** : `https://server.windball.ch/device/all` + `/device/one/{id}`
+- **~15–25 stations** LoRa en Suisse romande (Fribourg / Vaud), mise à jour toutes les **~10 minutes**
+- **Auth** : aucune (API publique, pas de clé)
+- **Données** : windSpeed & windBurst (km/h), windDir (°), temperature (°C)
+- **ID préfixé** : `windball-{deviceId}` (ex: `windball-wb-05`)
+- **Historique** : 60 dernières mesures (~10h) via `/device/one/{id}`, complété par DB (cron)
+- **Types** : Windball (anémomètre à balle) et Windfox (girouette/coupelles)
 
 ### Open-Meteo
 
@@ -289,7 +300,7 @@ prisma/
 ## Cron Jobs
 
 - `/api/cron/stations` — Toutes les **10 minutes** via Vercel Cron
-  - Fetch MeteoSwiss + Pioupiou + Netatmo + Météo-France
+  - Fetch MeteoSwiss + Pioupiou + Netatmo + Météo-France + Windball
   - Store en StationMeasurement
   - Prune > 3 jours
   - Protégé par `CRON_SECRET` (Bearer token)

@@ -3,6 +3,7 @@ import { fetchMeteoSwissStations } from "@/lib/stations";
 import { fetchPioupiouStations } from "@/lib/pioupiou";
 import { fetchNetatmoStations } from "@/lib/netatmo";
 import { fetchMeteoFranceStations } from "@/lib/meteofrance";
+import { fetchWindballStations } from "@/lib/windball";
 import {
   fetchWindHistory,
   fetchWindHistoryStation,
@@ -41,18 +42,20 @@ export default async function StationPage({ params }: Props) {
   const { id } = await params;
   const stationId = decodeURIComponent(id);
 
-  // Fetch all 4 networks to find the station
-  const [meteo, piou, ntm, mf] = await Promise.allSettled([
+  // Fetch all 5 networks to find the station
+  const [meteo, piou, ntm, mf, wb] = await Promise.allSettled([
     fetchMeteoSwissStations(),
     fetchPioupiouStations(),
     fetchNetatmoStations(),
     fetchMeteoFranceStations(),
+    fetchWindballStations(),
   ]);
   const allStations = [
     ...(meteo.status === "fulfilled" ? meteo.value : []),
     ...(piou.status === "fulfilled" ? piou.value : []),
     ...(ntm.status === "fulfilled" ? ntm.value : []),
     ...(mf.status === "fulfilled" ? mf.value : []),
+    ...(wb.status === "fulfilled" ? wb.value : []),
   ];
   const station = allStations.find((s) => s.id === stationId);
 

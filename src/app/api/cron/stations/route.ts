@@ -4,12 +4,13 @@ import { fetchMeteoSwissStations } from "@/lib/stations";
 import { fetchPioupiouStations } from "@/lib/pioupiou";
 import { fetchNetatmoStations } from "@/lib/netatmo";
 import { fetchMeteoFranceStations } from "@/lib/meteofrance";
+import { fetchWindballStations } from "@/lib/windball";
 
 /**
  * GET /api/cron/stations
  *
  * Called by Vercel Cron every 10 minutes.
- * Fetches live wind readings from MeteoSwiss + Pioupiou + Netatmo + Météo-France and stores them
+ * Fetches live wind readings from MeteoSwiss + Pioupiou + Netatmo + Météo-France + Windball and stores them
  * in StationMeasurement so we can build a real-time 48h history chart.
  *
  * Protected by CRON_SECRET header (Vercel injects this automatically).
@@ -22,12 +23,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [meteoResult, piouResult, netatmoResult, mfResult] =
+    const [meteoResult, piouResult, netatmoResult, mfResult, wbResult] =
       await Promise.allSettled([
         fetchMeteoSwissStations(),
         fetchPioupiouStations(),
         fetchNetatmoStations(),
         fetchMeteoFranceStations(),
+        fetchWindballStations(),
       ]);
 
     const meteoStations =
@@ -37,12 +39,14 @@ export async function GET(request: NextRequest) {
     const netatmoStations =
       netatmoResult.status === "fulfilled" ? netatmoResult.value : [];
     const mfStations = mfResult.status === "fulfilled" ? mfResult.value : [];
+    const wbStations = wbResult.status === "fulfilled" ? wbResult.value : [];
 
     const allStations = [
       ...meteoStations,
       ...piouStations,
       ...netatmoStations,
       ...mfStations,
+      ...wbStations,
     ];
 
     if (allStations.length === 0) {

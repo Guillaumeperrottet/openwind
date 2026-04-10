@@ -12,6 +12,7 @@ import { fetchMeteoSwissStations } from "@/lib/stations";
 import { fetchPioupiouStations } from "@/lib/pioupiou";
 import { fetchNetatmoStations } from "@/lib/netatmo";
 import { fetchMeteoFranceStations } from "@/lib/meteofrance";
+import { fetchWindballStations } from "@/lib/windball";
 import type { WindData } from "@/types";
 import { SpotPageClient } from "./SpotPageClient";
 
@@ -80,17 +81,19 @@ export default async function SpotPage({ params }: Props) {
   // Try to get wind from the nearest station (all 4 networks)
   if (spot.nearestStationId) {
     try {
-      const [meteo, piou, ntm, mf] = await Promise.allSettled([
+      const [meteo, piou, ntm, mf, wb] = await Promise.allSettled([
         fetchMeteoSwissStations(),
         fetchPioupiouStations(),
         fetchNetatmoStations(),
         fetchMeteoFranceStations(),
+        fetchWindballStations(),
       ]);
       const allStations = [
         ...(meteo.status === "fulfilled" ? meteo.value : []),
         ...(piou.status === "fulfilled" ? piou.value : []),
         ...(ntm.status === "fulfilled" ? ntm.value : []),
         ...(mf.status === "fulfilled" ? mf.value : []),
+        ...(wb.status === "fulfilled" ? wb.value : []),
       ];
       const station = allStations.find((s) => s.id === spot.nearestStationId);
       if (station) {

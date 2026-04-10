@@ -634,7 +634,9 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                                   ? "Netatmo"
                                   : s.source === "meteofrance"
                                     ? "Météo-France"
-                                    : "MeteoSwiss"}
+                                    : s.source === "windball"
+                                      ? "Windball"
+                                      : "MeteoSwiss"}
                             </div>
                           </div>
                           {selected && (
