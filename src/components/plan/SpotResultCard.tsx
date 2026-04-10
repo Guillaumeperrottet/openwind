@@ -48,9 +48,9 @@ export function SpotResultCard({
       onMouseEnter={() => onHover(spot.id)}
       onMouseLeave={() => onHover(null)}
     >
-      <Link href={`/spots/${spot.id}`} className="block p-3">
+      <Link href={`/spots/${spot.id}`} className="block px-3 pt-3 pb-2">
         {/* Header */}
-        <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-gray-900 text-sm truncate">
               {spot.name}
@@ -70,37 +70,41 @@ export function SpotResultCard({
               )}
             </p>
           </div>
-          {/* Score badge — tap toggles detail */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowDetail(!showDetail);
-              }}
-              className="shrink-0 w-11 h-11 rounded-xl flex flex-col items-center justify-center text-white"
-              style={{
-                background: isForecastError ? "#9ca3af" : scoreColor(sc),
-              }}
-            >
-              {isForecastError ? (
-                <AlertTriangle className="h-4 w-4" />
-              ) : (
-                <>
-                  <span className="text-base font-bold leading-none">{sc}</span>
-                  <span className="text-[8px] opacity-80">/100</span>
-                </>
-              )}
-            </button>
-            {/* Score breakdown popover */}
-            {showDetail && bestDay?.breakdown && (
-              <ScoreBreakdown
-                breakdown={bestDay.breakdown}
-                sportType={spot.sportType}
-              />
+          {/* Score badge */}
+          <div
+            className="shrink-0 w-11 h-11 rounded-xl flex flex-col items-center justify-center text-white"
+            style={{
+              background: isForecastError ? "#9ca3af" : scoreColor(sc),
+            }}
+          >
+            {isForecastError ? (
+              <AlertTriangle className="h-4 w-4" />
+            ) : (
+              <>
+                <span className="text-base font-bold leading-none">{sc}</span>
+                <span className="text-[8px] opacity-80">/100</span>
+              </>
             )}
           </div>
+        </div>
+      </Link>
+
+      <div className="px-3 pb-3">
+        {/* Score detail toggle */}
+        <div className="flex justify-end mb-1 relative">
+          <button
+            type="button"
+            onClick={() => setShowDetail(!showDetail)}
+            className="text-[9px] text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            {showDetail ? "masquer" : "détails"}
+          </button>
+          {showDetail && bestDay?.breakdown && (
+            <ScoreBreakdown
+              breakdown={bestDay.breakdown}
+              sportType={spot.sportType}
+            />
+          )}
         </div>
 
         {/* Forecast error */}
@@ -144,7 +148,7 @@ export function SpotResultCard({
             onSelectDay={onSelectDay}
           />
         )}
-      </Link>
+      </div>
     </div>
   );
 }
@@ -235,11 +239,7 @@ function WindSummaryBar({
       {/* Help tooltip */}
       <button
         type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onToggleHelp();
-        }}
+        onClick={() => onToggleHelp()}
         className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-[8px] text-gray-500 z-10 transition-colors"
       >
         ?
@@ -303,10 +303,6 @@ function WindSummaryBar({
           <div className="relative group/gust">
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
               className="flex items-center gap-0.5 text-[10px] text-orange-500 justify-end cursor-help"
             >
               <AlertTriangle className="h-2.5 w-2.5" />×
@@ -462,11 +458,7 @@ function MultiDayStrip({
               type="button"
               key={day.date}
               className="flex-1 flex flex-col items-center gap-0.5 min-w-7 cursor-pointer"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onSelectDay(spotId, i);
-              }}
+              onClick={() => onSelectDay(spotId, i)}
             >
               <span className="text-[8px] text-gray-400 uppercase">
                 {dayDate.toLocaleDateString("fr", { weekday: "narrow" })}

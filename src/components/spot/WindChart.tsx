@@ -19,6 +19,7 @@ interface Props {
 export function WindChart({ hourly, timezone, useKnots }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const yAxisRef = useRef<HTMLDivElement>(null);
   const [nowIdx, setNowIdx] = useState(-1);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
@@ -94,6 +95,19 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
       svg.removeEventListener("touchmove", handleSvgTouch);
     };
   }, [handleSvgTouch]);
+
+  // Keep Y-axis labels pinned when scrolling horizontally
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const onScroll = () => {
+      if (yAxisRef.current) {
+        yAxisRef.current.style.transform = `translateX(${container.scrollLeft}px)`;
+      }
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, []);
 
   if (points.length === 0) return null;
 
@@ -193,47 +207,21 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
             }}
             onMouseMove={handleSvgMouseMove}
           >
-            {/* Gridlines + Y-axis labels */}
+            {/* Gridlines */}
             {yTicks.map((tick) => {
               const y = DAY_H + CHART_H - (tick / yMax) * CHART_H;
               return (
-                <g key={tick}>
-                  <line
-                    x1={Y_AXIS_W - 3}
-                    y1={y}
-                    x2={totalW}
-                    y2={y}
-                    stroke={tick === 0 ? "#e5e7eb" : "#f3f4f6"}
-                    strokeWidth="1"
-                  />
-                  {tick % 10 === 0 && (
-                    <text
-                      x={Y_AXIS_W - 7}
-                      y={y + 3.5}
-                      textAnchor="end"
-                      fontSize="9"
-                      fill="#d1d5db"
-                      fontFamily="system-ui, sans-serif"
-                    >
-                      {tick}
-                    </text>
-                  )}
-                </g>
+                <line
+                  key={tick}
+                  x1={Y_AXIS_W - 3}
+                  y1={y}
+                  x2={totalW}
+                  y2={y}
+                  stroke={tick === 0 ? "#e5e7eb" : "#f3f4f6"}
+                  strokeWidth="1"
+                />
               );
             })}
-
-            {/* Y-axis unit label */}
-            <text
-              x={7}
-              y={DAY_H + CHART_H / 2}
-              textAnchor="middle"
-              fontSize="8"
-              fill="#d1d5db"
-              fontFamily="system-ui, sans-serif"
-              transform={`rotate(-90, 7, ${DAY_H + CHART_H / 2})`}
-            >
-              {useKnots ? "kts" : "km/h"}
-            </text>
 
             {/* Day headers + vertical separators */}
             {dayGroups.map((g, gi) => {
@@ -352,6 +340,49 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
               );
             })}
           </svg>
+
+          {/* Sticky Y-axis overlay — stays visible when scrolling horizontally */}
+          <div
+            ref={yAxisRef}
+            className="absolute top-0 left-0 pointer-events-none"
+            style={{ zIndex: 6, width: 22, height: DAY_H + CHART_H }}
+          >
+            <svg
+              width={22}
+              height={DAY_H + CHART_H}
+              viewBox={`0 0 22 ${DAY_H + CHART_H}`}
+              style={{ display: "block" }}
+            >
+              <defs>
+                <linearGradient id="yaxis-fade" x1="0" x2="1" y1="0" y2="0">
+                  <stop offset="0%" stopColor="white" stopOpacity="1" />
+                  <stop offset="75%" stopColor="white" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="white" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <rect
+                width={22}
+                height={DAY_H + CHART_H}
+                fill="url(#yaxis-fade)"
+              />
+              {yTicks.map((tick) => {
+                const y = DAY_H + CHART_H - (tick / yMax) * CHART_H;
+                return tick % 10 === 0 ? (
+                  <text
+                    key={tick}
+                    x={16}
+                    y={y + 3.5}
+                    textAnchor="end"
+                    fontSize="9"
+                    fill="#d1d5db"
+                    fontFamily="system-ui, sans-serif"
+                  >
+                    {tick}
+                  </text>
+                ) : null;
+              })}
+            </svg>
+          </div>
 
           {/* Scroll grip — covers time labels + kite strip; allows horizontal swipe on mobile */}
           <div
