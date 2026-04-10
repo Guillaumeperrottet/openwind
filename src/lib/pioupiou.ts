@@ -12,14 +12,14 @@
 import type { WindStation } from "./stations";
 import type { HistoryPoint } from "@/types";
 
-const PIOUPIOU_LIVE_ALL = "https://api.pioupiou.fr/v1/live/all";
+const PIOUPIOU_LIVE_ALL = "https://api.pioupiou.fr/v1/live-with-meta/all";
 const PIOUPIOU_ARCHIVE = "https://api.pioupiou.fr/v1/archive";
 
 // ─── Types from the Pioupiou API ──────────────────────────────────────────────
 
 interface PioupiouStation {
   id: number;
-  meta: { name: string };
+  meta: { name: string; description?: string | null };
   location: {
     latitude: number | null;
     longitude: number | null;
@@ -82,6 +82,7 @@ export async function fetchPioupiouStations(): Promise<WindStation[]> {
     stations.push({
       id: `piou-${s.id}`,
       name: s.meta.name || `Pioupiou ${s.id}`,
+      description: s.meta.description || undefined,
       lat: s.location.latitude,
       lng: s.location.longitude,
       altitudeM: 0, // Pioupiou API doesn't provide altitude

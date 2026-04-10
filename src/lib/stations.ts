@@ -18,6 +18,8 @@ export interface WindStation {
   /** Station ID — MeteoSwiss e.g. "BER", Pioupiou e.g. "piou-110" */
   id: string;
   name: string;
+  /** Optional description (e.g. Pioupiou community notes) */
+  description?: string;
   lat: number;
   lng: number;
   /** Altitude above sea level in metres */

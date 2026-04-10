@@ -9,6 +9,7 @@ import type { HistoryPoint } from "@/types";
 interface StationInfo {
   id: string;
   name: string;
+  description?: string;
   windSpeedKmh: number;
   windDirection: number;
   altitudeM: number;
@@ -176,6 +177,11 @@ export function StationPopup({
               ? station.id.replace("piou-", "Pioupiou #")
               : `${station.id} · ${station.altitudeM} m alt.`}
           </p>
+          {station.description && (
+            <p className="text-[10px] text-gray-500 mt-0.5 italic line-clamp-2">
+              {station.description}
+            </p>
+          )}
         </div>
         <button
           onClick={onClose}

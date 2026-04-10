@@ -117,6 +117,7 @@ export function KiteMap({
   const [selectedStation, setSelectedStation] = useState<{
     id: string;
     name: string;
+    description?: string;
     windSpeedKmh: number;
     windDirection: number;
     altitudeM: number;
@@ -229,6 +230,7 @@ export function KiteMap({
           featureType: "station",
           id: s.id,
           name: s.name,
+          description: s.description ?? "",
           windSpeedKmh: s.windSpeedKmh,
           windDirection: s.windDirection,
           /** Rotated so arrow points where wind BLOWS TO */
@@ -404,6 +406,7 @@ export function KiteMap({
         setSelectedStation({
           id: String(p.id ?? ""),
           name: String(p.name ?? ""),
+          description: String(p.description ?? "") || undefined,
           windSpeedKmh: Number(p.windSpeedKmh ?? 0),
           windDirection: Number(p.windDirection ?? 0),
           altitudeM: Math.round(Number(p.altitudeM ?? 0)),
