@@ -11,7 +11,7 @@ export default function HomeLoading() {
       </div>
       {/* Fake nav controls top-right */}
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-1">
-        <div className="h-[72px] w-8 rounded-lg bg-white/80 shadow" />
+        <div className="h-18 w-8 rounded-lg bg-white/80 shadow" />
         <div className="h-8 w-8 rounded-full bg-white/80 shadow" />
       </div>
       {/* Center spinner */}

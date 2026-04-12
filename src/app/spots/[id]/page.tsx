@@ -80,7 +80,7 @@ export default async function SpotPage({ params }: Props) {
         where: { stationId: spot.nearestStationId },
         orderBy: { time: "desc" },
       });
-      if (latest && Date.now() - latest.time.getTime() < 30 * 60 * 1000) {
+      if (latest) {
         wind = getWindData(
           latest.windSpeedKmh,
           latest.windDirection,
