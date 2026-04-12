@@ -54,20 +54,22 @@ export function SpotPopup({
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-    // Use mousedown (not pointerdown) to avoid firing on every single
-    // touch event on mobile which caused jank and accidental closings.
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    // Detect clicks/taps outside the popup to close it.
+    // Use pointerdown (works for both mouse and touch) but skip events
+    // originating from the MapLibre canvas so map pan/zoom isn't disrupted.
+    const handleClickOutside = (e: PointerEvent) => {
+      // Ignore touch interactions on the map canvas (pan, zoom, etc.)
+      const target = e.target as HTMLElement;
+      if (target.tagName === "CANVAS") return;
+      if (ref.current && !ref.current.contains(target)) {
         onClose();
       }
     };
     window.addEventListener("keydown", handleKey);
-    window.addEventListener("mousedown", handleClickOutside);
-    window.addEventListener("touchend", handleClickOutside, { passive: true });
+    window.addEventListener("pointerdown", handleClickOutside);
     return () => {
       window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("touchend", handleClickOutside);
+      window.removeEventListener("pointerdown", handleClickOutside);
     };
   }, [onClose]);
 
