@@ -21,6 +21,8 @@ import { useAuth } from "@/lib/useAuth";
 
 interface KiteMapProps {
   spots: Spot[];
+  /** Pre-fetched stations from server (avoids client-side fetch delay) */
+  initialStations?: WindStation[];
   /** If true, clicking the map sets a location (for trip planner) */
   pickMode?: boolean;
   onPickLocation?: (lat: number, lng: number) => void;
@@ -38,6 +40,7 @@ const MAP_STYLE =
 
 export function KiteMap({
   spots,
+  initialStations,
   pickMode = false,
   onPickLocation,
   highlightSpotId,
@@ -52,6 +55,12 @@ export function KiteMap({
   );
   const pulseFrameRef = useRef<number | null>(null);
   const piouSocketRef = useRef<Socket | null>(null);
+  /** Keep props in refs so async callbacks (map.on('load')) always read fresh values */
+  const spotsRef = useRef(spots);
+  spotsRef.current = spots;
+  const initialStationsRef = useRef(initialStations);
+  initialStationsRef.current = initialStations;
+
   /** All loaded stations (MeteoSwiss + Pioupiou + Netatmo + Météo-France) for nearest-station wind lookup */
   const stationsRef = useRef<WindStation[]>([]);
   /** GeoJSON features refs for the combined clustered source */
@@ -346,7 +355,6 @@ export function KiteMap({
     let mounted = true;
     map.on("load", () => {
       if (!mounted) return; // effect was cleaned up before load fired
-      setMapLoaded(true);
       // Only auto-geolocate on very first visit (no saved position, no explicit center)
       if (!initialCenter && !restored) geolocate.trigger();
 
@@ -370,7 +378,83 @@ export function KiteMap({
       registerWindImages(map);
       addMapLayers(map, pickMode);
 
-      // Click on cluster → zoom in
+      // ── Push spots + stations into the GL source IMMEDIATELY ──────────
+      // This avoids waiting for React effects (1-2 frame delay).
+      try {
+        const curSpots = spotsRef.current;
+        const curStations = initialStationsRef.current;
+        const filteredSpots =
+          sportFilter === "ALL"
+            ? curSpots
+            : curSpots.filter((s) => s.sportType === sportFilter);
+        spotFeaturesRef.current = filteredSpots.map((s) => ({
+          type: "Feature" as const,
+          geometry: {
+            type: "Point" as const,
+            coordinates: [s.longitude, s.latitude],
+          },
+          properties: {
+            featureType: "spot",
+            id: s.id,
+            name: s.name,
+            description: s.description,
+            country: s.country,
+            region: s.region,
+            difficulty: s.difficulty,
+            waterType: s.waterType,
+            minWindKmh: s.minWindKmh,
+            maxWindKmh: s.maxWindKmh,
+            bestMonths: JSON.stringify(s.bestMonths),
+            hazards: s.hazards,
+            access: s.access,
+            sportType: s.sportType,
+            nearestStationId: s.nearestStationId,
+            createdAt: s.createdAt,
+            updatedAt: s.updatedAt,
+            images: JSON.stringify(s.images),
+            windSpeedKmh: 0,
+          },
+        }));
+
+        if (curStations && curStations.length > 0 && !pickMode) {
+          stationsRef.current = curStations;
+          stationFeaturesRef.current = curStations.map((s) => ({
+            type: "Feature" as const,
+            geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
+            properties: {
+              featureType: "station",
+              id: s.id,
+              name: s.name,
+              description: s.description ?? "",
+              windSpeedKmh: s.windSpeedKmh,
+              windDirection: s.windDirection,
+              rotation: (s.windDirection + 180) % 360,
+              altitudeM: s.altitudeM,
+              updatedAt: s.updatedAt,
+              colorHex: windColor(s.windSpeedKmh),
+              dirLabel: windDirectionLabel(s.windDirection),
+              source: s.source,
+            },
+          }));
+        }
+
+        const source = map.getSource("combined-source") as
+          | maplibregl.GeoJSONSource
+          | undefined;
+        if (source) {
+          source.setData({
+            type: "FeatureCollection",
+            features: [
+              ...stationFeaturesRef.current,
+              ...spotFeaturesRef.current,
+            ],
+          });
+        }
+      } catch (err) {
+        console.error("[KiteMap] Failed to push initial data:", err);
+      }
+
+      setMapLoaded(true);
       map.on("click", "spots-clusters", (e) => {
         const features = map.queryRenderedFeatures(e.point, {
           layers: ["spots-clusters"],
@@ -674,8 +758,33 @@ export function KiteMap({
       return;
     }
 
-    // Load immediately
-    loadStations();
+    // If stations were already pushed during map.on("load") (from initialStations),
+    // just update UI state. Otherwise fetch from the API.
+    if (stationsRef.current.length > 0) {
+      setLoadingStations(false);
+      const first = stationsRef.current[0];
+      if (first?.updatedAt) {
+        setStationsUpdatedAt(
+          new Date(first.updatedAt).toLocaleTimeString("fr", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        );
+      }
+    } else if (initialStations && initialStations.length > 0) {
+      stationsRef.current = initialStations;
+      renderStations(initialStations);
+      setLoadingStations(false);
+      setStationsUpdatedAt(
+        new Date(initialStations[0].updatedAt).toLocaleTimeString("fr", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+    } else {
+      // No server-side data — fetch client-side
+      loadStations();
+    }
 
     // Refresh every 10 minutes
     stationIntervalRef.current = setInterval(loadStations, 10 * 60 * 1000);
@@ -686,6 +795,7 @@ export function KiteMap({
         stationIntervalRef.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showStations, loadStations, mapLoaded, updateCombinedSource]);
 
   // ── Pioupiou Push API — live WebSocket updates for Pioupiou stations ──────

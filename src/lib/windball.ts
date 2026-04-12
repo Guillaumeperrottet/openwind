@@ -62,7 +62,7 @@ export async function fetchWindballStations(): Promise<WindStation[]> {
   // Step 1: Get all devices
   const listRes = await fetch(`${WINDBALL_API}/device/all`, {
     next: { revalidate: 600 },
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(8_000),
   });
 
   if (!listRes.ok) return [];
@@ -80,45 +80,53 @@ export async function fetchWindballStations(): Promise<WindStation[]> {
 
   if (active.length === 0) return [];
 
-  // Step 2: Fetch detail for each active device (parallel, with timeout)
-  const detailPromises = active.map(
-    async (device): Promise<WindStation | null> => {
-      try {
-        const res = await fetch(
-          `${WINDBALL_API}/device/one/${encodeURIComponent(device.deviceId)}`,
-          {
-            next: { revalidate: 600 },
-            signal: AbortSignal.timeout(10_000),
-          },
-        );
+  // Step 2: Fetch detail for each active device (max 5 concurrent, 5s timeout each)
+  const MAX_CONCURRENT = 5;
+  const stations: WindStation[] = [];
 
-        if (!res.ok) return null;
+  for (let i = 0; i < active.length; i += MAX_CONCURRENT) {
+    const batch = active.slice(i, i + MAX_CONCURRENT);
+    const batchResults = await Promise.allSettled(
+      batch.map(async (device): Promise<WindStation | null> => {
+        try {
+          const res = await fetch(
+            `${WINDBALL_API}/device/one/${encodeURIComponent(device.deviceId)}`,
+            {
+              next: { revalidate: 600 },
+              signal: AbortSignal.timeout(5_000),
+            },
+          );
 
-        const detail: WBDeviceDetail = await res.json();
+          if (!res.ok) return null;
 
-        if (!detail.measures || detail.measures.length === 0) return null;
+          const detail: WBDeviceDetail = await res.json();
 
-        const latest = detail.measures[0]; // measures[0] is the most recent
+          if (!detail.measures || detail.measures.length === 0) return null;
 
-        return {
-          id: `windball-${device.deviceId}`,
-          name: device.name || device.deviceId,
-          lat: device.latitude,
-          lng: device.longitude,
-          altitudeM: device.altitude || 0,
-          windSpeedKmh: latest.windSpeed ?? 0,
-          windDirection: latest.windDir ?? 0,
-          updatedAt: latest.updatedAt,
-          source: "windball" as const,
-        };
-      } catch {
-        return null;
-      }
-    },
-  );
+          const latest = detail.measures[0];
 
-  const results = await Promise.all(detailPromises);
-  return results.filter((s): s is WindStation => s !== null);
+          return {
+            id: `windball-${device.deviceId}`,
+            name: device.name || device.deviceId,
+            lat: device.latitude,
+            lng: device.longitude,
+            altitudeM: device.altitude || 0,
+            windSpeedKmh: latest.windSpeed ?? 0,
+            windDirection: latest.windDir ?? 0,
+            updatedAt: latest.updatedAt,
+            source: "windball" as const,
+          };
+        } catch {
+          return null;
+        }
+      }),
+    );
+    for (const r of batchResults) {
+      if (r.status === "fulfilled" && r.value) stations.push(r.value);
+    }
+  }
+
+  return stations;
 }
 
 /**

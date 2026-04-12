@@ -1,16 +1,23 @@
 import { prisma } from "@/lib/prisma";
-import { KiteMap } from "@/components/map/KiteMap";
+import { KiteMapLazy } from "@/components/map/KiteMapLazy";
 import type { Spot } from "@/types";
+import type { WindStation } from "@/lib/stations";
 
-// ISR: spots change rarely — cache HTML for 10 min, revalidate in background.
-// This eliminates a Prisma query on every single homepage load.
+// ISR: cache HTML for 10 min, revalidate in background.
 export const revalidate = 600;
 
 export default async function HomePage() {
+  // Fetch spots + cached stations in parallel from DB (both instant)
   let spots: Spot[] = [];
+  let initialStations: WindStation[] = [];
+
   try {
-    const raw = await prisma.spot.findMany({ include: { images: true } });
-    spots = raw.map((s: (typeof raw)[number]) => ({
+    const [rawSpots, stationsCache] = await Promise.all([
+      prisma.spot.findMany({ include: { images: true } }),
+      prisma.systemConfig.findUnique({ where: { key: "stations_cache" } }),
+    ]);
+
+    spots = rawSpots.map((s: (typeof rawSpots)[number]) => ({
       ...s,
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),
@@ -19,6 +26,13 @@ export default async function HomePage() {
         createdAt: img.createdAt.toISOString(),
       })),
     }));
+
+    if (stationsCache) {
+      const age = Date.now() - stationsCache.updatedAt.getTime();
+      if (age < 15 * 60 * 1000) {
+        initialStations = JSON.parse(stationsCache.value);
+      }
+    }
   } catch (err) {
     console.error(
       "[HomePage] DB error:",
@@ -32,7 +46,7 @@ export default async function HomePage() {
         Openwind — Balises vent en direct, carte des spots de kitesurf et
         parapente
       </h1>
-      <KiteMap spots={spots} />
+      <KiteMapLazy spots={spots} initialStations={initialStations} />
     </div>
   );
 }

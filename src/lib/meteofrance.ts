@@ -66,7 +66,7 @@ export async function fetchMeteoFranceStations(): Promise<WindStation[]> {
   const res = await fetch(`${MF_BASE}/v1/synop?${params}`, {
     headers: { apikey: apiKey },
     next: { revalidate: 600 },
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(8_000),
   } as RequestInit);
 
   if (!res.ok) {

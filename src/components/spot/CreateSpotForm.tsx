@@ -14,9 +14,19 @@ import {
   Mountain,
   Trash2,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/Button";
-import { KiteMap } from "@/components/map/KiteMap";
 import { WindDirectionPicker } from "@/components/spot/WindDirectionRose";
+
+const KiteMap = dynamic(
+  () => import("@/components/map/KiteMap").then((m) => m.KiteMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full bg-gray-100 animate-pulse rounded-xl" />
+    ),
+  },
+);
 import { MONTHS } from "@/lib/utils";
 import {
   useSpotImages,

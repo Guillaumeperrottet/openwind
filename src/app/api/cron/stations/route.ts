@@ -94,6 +94,14 @@ export async function GET(request: NextRequest) {
       where: { time: { lt: threeDaysAgo } },
     });
 
+    // Cache the full station list as JSON so /api/stations can serve it
+    // instantly from DB without calling external APIs.
+    await prisma.systemConfig.upsert({
+      where: { key: "stations_cache" },
+      update: { value: JSON.stringify(allStations) },
+      create: { key: "stations_cache", value: JSON.stringify(allStations) },
+    });
+
     return NextResponse.json({
       ok: true,
       stations: allStations.length,

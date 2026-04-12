@@ -2,8 +2,16 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { KiteMap } from "@/components/map/KiteMap";
+import dynamic from "next/dynamic";
 import { PlanFilters } from "@/components/plan/PlanFilters";
+
+const KiteMap = dynamic(
+  () => import("@/components/map/KiteMap").then((m) => m.KiteMap),
+  {
+    ssr: false,
+    loading: () => <div className="w-full h-full bg-gray-100 animate-pulse" />,
+  },
+);
 import { SpotResultCard } from "@/components/plan/SpotResultCard";
 import { SpotPreview } from "@/components/plan/SpotPreview";
 import {
