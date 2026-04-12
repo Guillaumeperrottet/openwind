@@ -390,15 +390,17 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
 
 /**
  * Start the combined pulse animation for station + spot pulse rings.
- * Returns a cleanup function to cancel the animation frame.
+ * Uses setTimeout (not requestAnimationFrame) so the animation runs as a
+ * macrotask completely outside MapLibre's render cycle — avoids the
+ * "Attempting to run(), but is already running" error.
  */
 export function startPulseAnimation(
   map: maplibregl.Map,
-  frameRef: { current: number | null },
+  timerRef: { current: number | null },
 ) {
   const pulseStart = performance.now();
 
-  const animate = () => {
+  const tick = () => {
     if (!map.getLayer("stations-pulse") && !map.getLayer("spots-pulse")) return;
     const t = ((performance.now() - pulseStart) / 1000) * Math.PI * 1.4;
     const wave = (Math.sin(t) + 1) / 2;
@@ -425,8 +427,16 @@ export function startPulseAnimation(
         0.4 * (1 - wave * 0.9),
       );
     }
-    frameRef.current = requestAnimationFrame(animate);
+    timerRef.current = window.setTimeout(tick, 50);
   };
 
-  frameRef.current = requestAnimationFrame(animate);
+  timerRef.current = window.setTimeout(tick, 50);
+}
+
+/** Cancel a running pulse animation. */
+export function stopPulseAnimation(timerRef: { current: number | null }) {
+  if (timerRef.current !== null) {
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+  }
 }

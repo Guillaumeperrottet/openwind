@@ -528,78 +528,59 @@ export function KiteMap({
   }, []);
 
   // Track spot popup position on map move — close if off-screen
-  // On mobile the popup uses position:fixed (centered), so skip tracking entirely
-  // to avoid ~18 wasted re-renders during panBy animation.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !selectedSpot) return;
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) return; // position:fixed — no tracking needed
 
-    let rafId: number | null = null;
     const updatePos = () => {
-      if (rafId !== null) return; // already scheduled
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const px = map.project([selectedSpot.longitude, selectedSpot.latitude]);
-        const { clientWidth: w, clientHeight: h } = map.getCanvas();
-        const margin = 60;
-        if (
-          px.x < -margin ||
-          px.x > w + margin ||
-          px.y < -margin ||
-          px.y > h + margin
-        ) {
-          setSelectedSpot(null);
-          setPopupPos(null);
-          return;
-        }
-        setPopupPos({ x: px.x, y: px.y });
-      });
+      const px = map.project([selectedSpot.longitude, selectedSpot.latitude]);
+      const { clientWidth: w, clientHeight: h } = map.getCanvas();
+      const margin = 60;
+      if (
+        px.x < -margin ||
+        px.x > w + margin ||
+        px.y < -margin ||
+        px.y > h + margin
+      ) {
+        setSelectedSpot(null);
+        setPopupPos(null);
+        return;
+      }
+      setPopupPos({ x: px.x, y: px.y });
     };
 
     map.on("move", updatePos);
     return () => {
       map.off("move", updatePos);
-      if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, [selectedSpot]);
 
   // Track station popup position on map move — close if off-screen
-  // On mobile the popup uses position:fixed, so skip tracking entirely.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !selectedStation) return;
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) return;
 
-    let rafId: number | null = null;
     const updateStationPos = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const px = map.project([selectedStation.lng, selectedStation.lat]);
-        const { clientWidth: w, clientHeight: h } = map.getCanvas();
-        const margin = 60;
-        if (
-          px.x < -margin ||
-          px.x > w + margin ||
-          px.y < -margin ||
-          px.y > h + margin
-        ) {
-          setSelectedStation(null);
-          setStationPopupPos(null);
-          return;
-        }
-        const rect = map.getCanvas().getBoundingClientRect();
-        setStationPopupPos({ x: rect.left + px.x, y: rect.top + px.y });
-      });
+      const px = map.project([selectedStation.lng, selectedStation.lat]);
+      const { clientWidth: w, clientHeight: h } = map.getCanvas();
+      const margin = 60;
+      if (
+        px.x < -margin ||
+        px.x > w + margin ||
+        px.y < -margin ||
+        px.y > h + margin
+      ) {
+        setSelectedStation(null);
+        setStationPopupPos(null);
+        return;
+      }
+      const rect = map.getCanvas().getBoundingClientRect();
+      setStationPopupPos({ x: rect.left + px.x, y: rect.top + px.y });
     };
 
     map.on("move", updateStationPos);
     return () => {
       map.off("move", updateStationPos);
-      if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, [selectedStation]);
 
@@ -626,38 +607,18 @@ export function KiteMap({
 
     map.on("click", handleMapClick);
 
-    // Close popups when user drags the map significantly (> 30px).
-    // A simple dragstart would close popups on the slightest finger movement
-    // on mobile, making them feel impossibly buggy.
-    let dragOrigin: { x: number; y: number } | null = null;
-    const handleDragStart = (e: maplibregl.MapMouseEvent) => {
-      dragOrigin = { x: e.point.x, y: e.point.y };
-    };
-    const handleDrag = (e: maplibregl.MapMouseEvent) => {
-      if (!dragOrigin) return;
-      const dx = e.point.x - dragOrigin.x;
-      const dy = e.point.y - dragOrigin.y;
-      if (dx * dx + dy * dy > 900) {
-        // 30px threshold
-        setSelectedSpot(null);
-        setPopupPos(null);
-        setSelectedStation(null);
-        setStationPopupPos(null);
-        dragOrigin = null;
-      }
-    };
-    const handleDragEnd = () => {
-      dragOrigin = null;
+    // Close popups when map is dragged
+    const handleDragStart = () => {
+      setSelectedSpot(null);
+      setPopupPos(null);
+      setSelectedStation(null);
+      setStationPopupPos(null);
     };
     map.on("dragstart", handleDragStart);
-    map.on("drag", handleDrag);
-    map.on("dragend", handleDragEnd);
 
     return () => {
       map.off("click", handleMapClick);
       map.off("dragstart", handleDragStart);
-      map.off("drag", handleDrag);
-      map.off("dragend", handleDragEnd);
     };
   }, [mapLoaded]);
 

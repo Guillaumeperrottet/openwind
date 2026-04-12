@@ -54,14 +54,8 @@ export function SpotPopup({
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-    // Detect clicks/taps outside the popup to close it.
-    // Use pointerdown (works for both mouse and touch) but skip events
-    // originating from the MapLibre canvas so map pan/zoom isn't disrupted.
-    const handleClickOutside = (e: PointerEvent) => {
-      // Ignore touch interactions on the map canvas (pan, zoom, etc.)
-      const target = e.target as HTMLElement;
-      if (target.tagName === "CANVAS") return;
-      if (ref.current && !ref.current.contains(target)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
         onClose();
       }
     };
@@ -95,15 +89,13 @@ export function SpotPopup({
       style={style}
       className="w-72 max-w-[calc(100vw-24px)] rounded-xl bg-white border border-gray-200 shadow-2xl text-sm text-gray-900 overflow-hidden"
     >
-      {/* Image — lazy loaded with fixed aspect ratio to prevent layout shift */}
+      {/* Image */}
       {spot.images[0] && (
-        <div className="h-28 overflow-hidden relative bg-gray-100">
+        <div className="h-28 overflow-hidden relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={spot.images[0].url}
             alt={spot.name}
-            loading="lazy"
-            decoding="async"
             className="w-full h-full object-cover"
           />
         </div>

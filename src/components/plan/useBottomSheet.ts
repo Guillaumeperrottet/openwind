@@ -31,32 +31,44 @@ export function useBottomSheet(initialFrac: number) {
   );
   // Track whether a content touch became a sheet drag
   const contentDragging = useRef(false);
+  // Ref mirror of sheetFrac to avoid stale closures in touch handlers
+  const sheetFracRef = useRef(initialFrac);
+  // RAF guard to avoid flooding React with setState during touch
+  const rafPending = useRef(false);
+
+  // Keep ref in sync
+  const setFrac = useCallback((v: number) => {
+    sheetFracRef.current = v;
+    setSheetFrac(v);
+  }, []);
 
   const updateViewportHeight = useCallback(() => {
     viewportH.current = window.innerHeight;
   }, []);
 
-  const handleDragStart = useCallback(
-    (clientY: number) => {
-      setIsDragging(true);
-      dragStartY.current = clientY;
-      dragStartFrac.current = sheetFrac;
-    },
-    [sheetFrac],
-  );
+  const handleDragStart = useCallback((clientY: number) => {
+    setIsDragging(true);
+    dragStartY.current = clientY;
+    dragStartFrac.current = sheetFracRef.current;
+  }, []);
 
   const handleDragMove = useCallback(
     (clientY: number) => {
       if (!isDragging) return;
-      const deltaY = dragStartY.current - clientY;
-      const deltaFrac = deltaY / viewportH.current;
-      const newFrac = Math.max(
-        SNAP_PEEK,
-        Math.min(SNAP_FULL, dragStartFrac.current + deltaFrac),
-      );
-      setSheetFrac(newFrac);
+      if (rafPending.current) return;
+      rafPending.current = true;
+      requestAnimationFrame(() => {
+        rafPending.current = false;
+        const deltaY = dragStartY.current - clientY;
+        const deltaFrac = deltaY / viewportH.current;
+        const newFrac = Math.max(
+          SNAP_PEEK,
+          Math.min(SNAP_FULL, dragStartFrac.current + deltaFrac),
+        );
+        setFrac(newFrac);
+      });
     },
-    [isDragging],
+    [isDragging, setFrac],
   );
 
   const handleDragEnd = useCallback(
@@ -65,37 +77,29 @@ export function useBottomSheet(initialFrac: number) {
       setIsDragging(false);
       const deltaY = dragStartY.current - clientY;
       const velocity = deltaY / viewportH.current;
-      const biasedFrac = sheetFrac + velocity * 0.3;
-      setSheetFrac(closestSnap(biasedFrac));
+      const biasedFrac = sheetFracRef.current + velocity * 0.3;
+      setFrac(closestSnap(biasedFrac));
     },
-    [isDragging, sheetFrac],
+    [isDragging, setFrac],
   );
 
   const handleSheetToggle = useCallback(() => {
-    if (sheetFrac < SNAP_HALF - 0.05) setSheetFrac(SNAP_HALF);
-    else if (sheetFrac < SNAP_FULL - 0.05) setSheetFrac(SNAP_FULL);
-    else setSheetFrac(SNAP_PEEK);
-  }, [sheetFrac]);
+    const cur = sheetFracRef.current;
+    if (cur < SNAP_HALF - 0.05) setFrac(SNAP_HALF);
+    else if (cur < SNAP_FULL - 0.05) setFrac(SNAP_FULL);
+    else setFrac(SNAP_PEEK);
+  }, [setFrac]);
 
   // ── Content area touch handlers ──
   // Allow swiping the sheet from the scrollable content area:
   // - Swipe DOWN when scrolled to top → collapse the sheet
   // - Swipe UP when sheet is not FULL → expand the sheet
   // - Otherwise let normal scroll happen
-  const contentTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      contentDragging.current = false;
-      const scrollEl = scrollRef.current;
-      const atTop = !scrollEl || scrollEl.scrollTop <= 0;
-      const isSwipeDown = atTop && dragStartY.current === 0; // will be set below
-      // Always record start position; we decide in move whether to take over
-      dragStartY.current = e.touches[0].clientY;
-      dragStartFrac.current = sheetFrac;
-      // If scrolled to top or sheet is below FULL, we may take over
-      void isSwipeDown;
-    },
-    [sheetFrac],
-  );
+  const contentTouchStart = useCallback((e: React.TouchEvent) => {
+    contentDragging.current = false;
+    dragStartY.current = e.touches[0].clientY;
+    dragStartFrac.current = sheetFracRef.current;
+  }, []);
 
   const contentTouchMove = useCallback(
     (e: React.TouchEvent) => {
@@ -105,37 +109,39 @@ export function useBottomSheet(initialFrac: number) {
       const atTop = !scrollEl || scrollEl.scrollTop <= 0;
 
       if (contentDragging.current) {
-        // Already took over — move the sheet
+        // Already took over — move the sheet (throttled via RAF)
         e.preventDefault();
-        const deltaFrac = deltaY / viewportH.current;
-        const newFrac = Math.max(
-          SNAP_PEEK,
-          Math.min(SNAP_FULL, dragStartFrac.current + deltaFrac),
-        );
-        setSheetFrac(newFrac);
+        if (rafPending.current) return;
+        rafPending.current = true;
+        requestAnimationFrame(() => {
+          rafPending.current = false;
+          const dy = dragStartY.current - clientY;
+          const deltaFrac = dy / viewportH.current;
+          const newFrac = Math.max(
+            SNAP_PEEK,
+            Math.min(SNAP_FULL, dragStartFrac.current + deltaFrac),
+          );
+          setFrac(newFrac);
+        });
         return;
       }
 
       // Decide whether to take over:
-      // 1) Swiping down and content is at top → collapse sheet
-      // 2) Swiping up and sheet is below FULL → expand sheet
       const threshold = 8; // px of movement before we decide
       if (Math.abs(deltaY) < threshold) return;
 
       const swipingUp = deltaY > 0;
       const swipingDown = deltaY < 0;
-      const sheetBelowFull = sheetFrac < SNAP_FULL - 0.05;
+      const sheetBelowFull = sheetFracRef.current < SNAP_FULL - 0.05;
 
       if ((swipingDown && atTop) || (swipingUp && sheetBelowFull)) {
-        // Take over — start dragging the sheet
         contentDragging.current = true;
         setIsDragging(true);
         e.preventDefault();
         return;
       }
-      // Otherwise let the scroll happen normally
     },
-    [sheetFrac, setSheetFrac, setIsDragging],
+    [setFrac],
   );
 
   const contentTouchEnd = useCallback(
@@ -148,14 +154,14 @@ export function useBottomSheet(initialFrac: number) {
       const velocity = deltaY / viewportH.current;
       const currentFrac = dragStartFrac.current + deltaY / viewportH.current;
       const biasedFrac = currentFrac + velocity * 0.3;
-      setSheetFrac(closestSnap(biasedFrac));
+      setFrac(closestSnap(biasedFrac));
     },
-    [setSheetFrac, setIsDragging],
+    [setFrac],
   );
 
   return {
     sheetFrac,
-    setSheetFrac,
+    setSheetFrac: setFrac,
     isDragging,
     sheetRef,
     scrollRef,

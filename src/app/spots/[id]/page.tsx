@@ -8,11 +8,7 @@ import {
 } from "@/lib/wind";
 import { fetchFullForecast } from "@/lib/forecast";
 import { getWindData } from "@/lib/utils";
-import { fetchMeteoSwissStations } from "@/lib/stations";
-import { fetchPioupiouStations } from "@/lib/pioupiou";
-import { fetchNetatmoStations } from "@/lib/netatmo";
-import { fetchMeteoFranceStations } from "@/lib/meteofrance";
-import { fetchWindballStations } from "@/lib/windball";
+import type { WindStation } from "@/lib/stations";
 import type { WindData } from "@/types";
 import { SpotPageClient } from "./SpotPageClient";
 
@@ -31,6 +27,27 @@ const getSpot = cache(async (id: string) => {
     },
   });
 });
+
+/** Fetch stations from the ISR-cached API route (0ms on cache hit)
+ *  instead of calling all 5 source modules individually. */
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
+
+async function fetchCachedStations(): Promise<WindStation[]> {
+  try {
+    const res = await fetch(`${SITE_URL}/api/stations`, {
+      next: { revalidate: 600 },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -75,48 +92,48 @@ export default async function SpotPage({ params }: Props) {
 
   if (!spot) notFound();
 
-  // ── Current wind: prefer nearest station (instant, no Open-Meteo) ──────
+  // ── Fetch everything in parallel: stations, forecast, history ──────────
+  // Previously stations were fetched via 5 individual source modules (~2-5s).
+  // Now we use the ISR-cached /api/stations (0ms on cache hit).
+  const historyPromise = spot.nearestStationId
+    ? fetchWindHistoryStation(spot.nearestStationId).catch(() =>
+        fetchWindHistory(spot.latitude, spot.longitude),
+      )
+    : fetchWindHistory(spot.latitude, spot.longitude);
+
+  const [stationsResult, forecastResult, historyResult] =
+    await Promise.allSettled([
+      fetchCachedStations(),
+      fetchFullForecast(spot.latitude, spot.longitude),
+      historyPromise,
+    ]);
+
+  // ── Current wind: prefer nearest station (instant lookup) ──────────────
   let wind: WindData | null = null;
   let windSource: { name: string; network: string } | null = null;
 
-  // Try to get wind from the nearest station (all 5 networks)
-  if (spot.nearestStationId) {
-    try {
-      const [meteo, piou, ntm, mf, wb] = await Promise.allSettled([
-        fetchMeteoSwissStations(),
-        fetchPioupiouStations(),
-        fetchNetatmoStations(),
-        fetchMeteoFranceStations(),
-        fetchWindballStations(),
-      ]);
-      const allStations = [
-        ...(meteo.status === "fulfilled" ? meteo.value : []),
-        ...(piou.status === "fulfilled" ? piou.value : []),
-        ...(ntm.status === "fulfilled" ? ntm.value : []),
-        ...(mf.status === "fulfilled" ? mf.value : []),
-        ...(wb.status === "fulfilled" ? wb.value : []),
-      ];
-      const station = allStations.find((s) => s.id === spot.nearestStationId);
-      if (station) {
-        wind = getWindData(
-          station.windSpeedKmh,
-          station.windDirection,
-          Math.round(station.windSpeedKmh * 1.3),
-        );
-        const NETWORK_LABELS: Record<string, string> = {
-          meteoswiss: "MeteoSwiss",
-          pioupiou: "Pioupiou",
-          netatmo: "Netatmo",
-          meteofrance: "Météo-France",
-          windball: "Windball",
-        };
-        windSource = {
-          name: station.name,
-          network: NETWORK_LABELS[station.source] ?? station.source,
-        };
-      }
-    } catch {
-      /* fallback below */
+  const allStations =
+    stationsResult.status === "fulfilled" ? stationsResult.value : [];
+
+  if (spot.nearestStationId && allStations.length > 0) {
+    const station = allStations.find((s) => s.id === spot.nearestStationId);
+    if (station) {
+      wind = getWindData(
+        station.windSpeedKmh,
+        station.windDirection,
+        Math.round(station.windSpeedKmh * 1.3),
+      );
+      const NETWORK_LABELS: Record<string, string> = {
+        meteoswiss: "MeteoSwiss",
+        pioupiou: "Pioupiou",
+        netatmo: "Netatmo",
+        meteofrance: "Météo-France",
+        windball: "Windball",
+      };
+      windSource = {
+        name: station.name,
+        network: NETWORK_LABELS[station.source] ?? station.source,
+      };
     }
   }
 
@@ -128,19 +145,6 @@ export default async function SpotPage({ params }: Props) {
       /* wind stays null */
     }
   }
-
-  // Forecast + history in parallel.
-  // History: prefer station DB (instant) over Open-Meteo (can timeout).
-  const historyPromise = spot.nearestStationId
-    ? fetchWindHistoryStation(spot.nearestStationId).catch(() =>
-        fetchWindHistory(spot.latitude, spot.longitude),
-      )
-    : fetchWindHistory(spot.latitude, spot.longitude);
-
-  const [forecastResult, historyResult] = await Promise.allSettled([
-    fetchFullForecast(spot.latitude, spot.longitude),
-    historyPromise,
-  ]);
 
   const sport = spot.sportType === "KITE" ? "kitesurf" : "parapente";
   const location = [spot.region, spot.country].filter(Boolean).join(", ");
