@@ -95,11 +95,15 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
     setSheetFrac,
     isDragging,
     sheetRef,
+    scrollRef,
     updateViewportHeight,
     handleDragStart,
     handleDragMove,
     handleDragEnd,
     handleSheetToggle,
+    contentTouchStart,
+    contentTouchMove,
+    contentTouchEnd,
   } = useBottomSheet(hasAutoSearch ? SNAP_PEEK : SNAP_FULL);
 
   // Mobile inline filters — open by default on fresh visit
@@ -703,15 +707,15 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 : "width 0.3s cubic-bezier(0.32,0.72,0,1)",
           }}
         >
-          {/* Drag handle */}
+          {/* Drag handle — tall touch target for easy swiping */}
           <div
-            className="lg:hidden flex flex-col items-center pt-2 pb-1 cursor-grab active:cursor-grabbing shrink-0 touch-none"
+            className="lg:hidden flex flex-col items-center pt-3 pb-2 cursor-grab active:cursor-grabbing shrink-0 touch-none"
             onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
             onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
             onTouchEnd={(e) => handleDragEnd(e.changedTouches[0].clientY)}
             onClick={handleSheetToggle}
           >
-            <div className="w-10 h-1 rounded-full bg-gray-300 mb-1" />
+            <div className="w-12 h-1.5 rounded-full bg-gray-300 mb-1.5" />
             <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
               <span>
                 {loading
@@ -928,6 +932,10 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
           {/* Results list */}
           <div
+            ref={scrollRef}
+            onTouchStart={contentTouchStart}
+            onTouchMove={contentTouchMove}
+            onTouchEnd={contentTouchEnd}
             className={`flex-1 overflow-y-auto p-4 ${panelExpanded ? "grid grid-cols-2 gap-3 auto-rows-min items-start" : "space-y-2.5"}`}
           >
             {/* Empty state — desktop only (mobile has the onboarding header + open filters) */}

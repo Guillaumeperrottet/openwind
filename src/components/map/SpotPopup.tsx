@@ -54,16 +54,20 @@ export function SpotPopup({
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
-    const handleClickOutside = (e: MouseEvent) => {
+    // Use mousedown (not pointerdown) to avoid firing on every single
+    // touch event on mobile which caused jank and accidental closings.
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         onClose();
       }
     };
     window.addEventListener("keydown", handleKey);
-    window.addEventListener("pointerdown", handleClickOutside);
+    window.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("touchend", handleClickOutside, { passive: true });
     return () => {
       window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("pointerdown", handleClickOutside);
+      window.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("touchend", handleClickOutside);
     };
   }, [onClose]);
 
@@ -89,13 +93,15 @@ export function SpotPopup({
       style={style}
       className="w-72 max-w-[calc(100vw-24px)] rounded-xl bg-white border border-gray-200 shadow-2xl text-sm text-gray-900 overflow-hidden"
     >
-      {/* Image */}
+      {/* Image — lazy loaded with fixed aspect ratio to prevent layout shift */}
       {spot.images[0] && (
-        <div className="h-28 overflow-hidden relative">
+        <div className="h-28 overflow-hidden relative bg-gray-100">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={spot.images[0].url}
             alt={spot.name}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
         </div>
