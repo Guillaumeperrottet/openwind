@@ -160,8 +160,11 @@ export function SpotPageClient({
     if (selectedStationId === historySource) return;
 
     let cancelled = false;
-    setHistoryLoading(true);
     const stationParam = encodeURIComponent(selectedStationId);
+    // Use a microtask to avoid synchronous setState inside effect body
+    queueMicrotask(() => {
+      if (!cancelled) setHistoryLoading(true);
+    });
     fetch(`/api/spots/${spot.id}/weather?stationId=${stationParam}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {

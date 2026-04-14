@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { windCellStyle, roundKnots } from "@/lib/forecast";
+import { roundKnots } from "@/lib/forecast";
 
 /**
  * Vibrant / neon color pair for history bars.
@@ -453,7 +453,7 @@ export function WindHistoryChart({
         {/* Wind + gust bars — history past (vibrant neon style) */}
         {filteredHistory.map((p, i) => {
           const [solid, light] = barColors(p.windSpeedKmh);
-          const [gustSolid, gustLight] = barColors(p.gustsKmh);
+          const [, gustLight] = barColors(p.gustsKmh);
           const x = histX(i);
           const windH_ = bH(p.windSpeedKmh);
           const gustH_ = bH(p.gustsKmh);
