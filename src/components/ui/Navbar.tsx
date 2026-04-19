@@ -243,7 +243,7 @@ export function Navbar() {
 
       {/* Mobile search — inline in a second row below the navbar */}
       {mobileSearch && (
-        <div className="fixed top-14 left-0 right-0 z-50 flex items-center h-12 px-3 gap-2 bg-white border-b border-gray-100 shadow-sm sm:hidden">
+        <div className="fixed top-14 left-0 right-0 z-40 flex items-center h-12 px-3 gap-2 bg-white border-b border-gray-100 shadow-sm sm:hidden">
           <div className="flex-1">
             <SearchBar
               favoriteIds={favoriteIds}
