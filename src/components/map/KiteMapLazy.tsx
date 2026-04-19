@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { Spot } from "@/types";
 import type { WindStation } from "@/lib/stations";
+import { AdBanner } from "@/components/ui/AdBanner";
 
 const KiteMap = dynamic(
   () => import("@/components/map/KiteMap").then((m) => m.KiteMap),
@@ -59,5 +60,10 @@ interface Props {
 }
 
 export function KiteMapLazy({ spots, initialStations }: Props) {
-  return <KiteMap spots={spots} initialStations={initialStations} />;
+  return (
+    <div className="relative w-full h-full">
+      <KiteMap spots={spots} initialStations={initialStations} />
+      <AdBanner />
+    </div>
+  );
 }

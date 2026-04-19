@@ -57,3 +57,17 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* Ad banner marquee */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 45s linear infinite;
+}
