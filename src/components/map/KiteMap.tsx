@@ -928,6 +928,7 @@ export function KiteMap({
             </button>
           ))}
         </div>
+      </div>
 
       {/* Wind legend + unit toggle */}
       <MapLegend
