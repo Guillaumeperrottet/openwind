@@ -118,9 +118,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Return single object for 1 location, array for multiple (Open-Meteo compat)
-    const response = n === 1 ? results[0] : results;
-    return NextResponse.json(response, {
+    // Transform to { lat, lon, speed, direction }[] for wind overlay
+    type WindPoint = {
+      lat: number;
+      lon: number;
+      speed: number;
+      direction: number;
+    };
+    type OpenMeteoResult = {
+      current?: { wind_speed_10m?: number; wind_direction_10m?: number };
+    } | null;
+    const windPoints: WindPoint[] = [];
+    for (let idx = 0; idx < n; idx++) {
+      const r = results[idx] as OpenMeteoResult;
+      if (
+        r?.current?.wind_speed_10m != null &&
+        r?.current?.wind_direction_10m != null
+      ) {
+        windPoints.push({
+          lat: parseFloat(allLats[idx]),
+          lon: parseFloat(allLngs[idx]),
+          speed: r.current.wind_speed_10m,
+          direction: r.current.wind_direction_10m,
+        });
+      }
+    }
+    return NextResponse.json(windPoints, {
       headers: {
         "Cache-Control": "public, s-maxage=600, stale-while-revalidate=120",
       },

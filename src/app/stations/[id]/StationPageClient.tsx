@@ -11,6 +11,7 @@ import {
   Zap,
   ExternalLink,
   TrendingUp,
+  Camera,
 } from "lucide-react";
 import { WindCompass } from "@/components/spot/WindCompass";
 import { WindChart } from "@/components/spot/WindChart";
@@ -202,8 +203,17 @@ export function StationPageClient({
               )}
             </div>
           </div>
-          <div className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full bg-gray-100 text-gray-700">
-            {condLabel}
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href={`/webcams?lat=${station.lat}&lng=${station.lng}&name=${encodeURIComponent(station.name)}&back=${encodeURIComponent(`/stations/${station.id}`)}`}
+              className="inline-flex items-center justify-center text-gray-400 hover:text-blue-500 transition-colors"
+              title="Webcams à proximité"
+            >
+              <Camera className="h-4 w-4" />
+            </Link>
+            <div className="text-xs font-bold px-3 py-1.5 rounded-full bg-gray-100 text-gray-700">
+              {condLabel}
+            </div>
           </div>
         </div>
       </div>

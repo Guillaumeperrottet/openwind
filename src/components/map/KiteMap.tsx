@@ -180,27 +180,17 @@ export function KiteMap({
       }
     }
 
-    // 2) Fallback: call Open-Meteo via /api/wind/grid
+    // 2) Fallback: call Open-Meteo via /api/wind
     try {
       const lat = spot.latitude.toFixed(2);
       const lng = spot.longitude.toFixed(2);
-      const res = await fetch(`/api/wind/grid?lats=${lat}&lngs=${lng}`, {
+      const res = await fetch(`/api/wind?lat=${lat}&lng=${lng}`, {
         signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) throw new Error();
-      const raw: unknown = await res.json();
-      const d = (Array.isArray(raw) ? raw[0] : raw) as {
-        current?: {
-          wind_speed_10m: number;
-          wind_direction_10m: number;
-          wind_gusts_10m: number;
-        };
-      } | null;
-      if (!d?.current) throw new Error();
-      const c = d.current;
-      setSelectedWind(
-        getWindData(c.wind_speed_10m, c.wind_direction_10m, c.wind_gusts_10m),
-      );
+      const d = (await res.json()) as WindData | null;
+      if (!d?.windSpeedKmh) throw new Error();
+      setSelectedWind(d);
     } catch {
       setSelectedWind(null);
     } finally {
@@ -938,31 +928,6 @@ export function KiteMap({
             </button>
           ))}
         </div>
-
-        {/* Wind overlay toggle — temporarily hidden
-        <button
-          onClick={() => setShowWindOverlay((v) => !v)}
-          className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg border transition-all ${
-            showWindOverlay
-              ? "bg-violet-600 border-violet-400 text-white"
-              : "bg-white/95 border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300"
-          }`}
-        >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          >
-            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
-          </svg>
-          Vent live
-        </button>
-        */}
-      </div>
 
       {/* Wind legend + unit toggle */}
       <MapLegend

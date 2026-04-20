@@ -20,6 +20,7 @@ import {
   Images,
   Star,
   Radio,
+  Camera,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { WindCompass } from "@/components/spot/WindCompass";
@@ -293,6 +294,14 @@ export function SpotPageClient({
                 )}
                 {isKite ? "Kitesurf" : "Parapente"}
               </span>
+              <span>·</span>
+              <Link
+                href={`/webcams?lat=${spot.latitude}&lng=${spot.longitude}&name=${encodeURIComponent(spot.name)}&back=${encodeURIComponent(`/spots/${spot.id}`)}`}
+                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <Camera className="h-3.5 w-3.5" />
+                Webcams
+              </Link>
               <span>·</span>
               <a
                 href="#balises"
