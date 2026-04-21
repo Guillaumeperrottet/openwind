@@ -3,6 +3,13 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getWindData } from "@/lib/utils";
 import { fetchCurrentWind } from "@/lib/windFetch";
+import {
+  buildSpotDescription,
+  buildArticleSchema,
+  buildPlaceSchema,
+  buildBreadcrumbSchema,
+  combineSchemas,
+} from "@/lib/seo";
 import type { WindData } from "@/types";
 import { SpotPageClient } from "./SpotPageClient";
 
@@ -27,9 +34,10 @@ export async function generateMetadata({ params }: Props) {
   try {
     const spot = await getSpot(id);
     if (!spot) return { title: "Spot introuvable" };
-    const location = [spot.region, spot.country].filter(Boolean).join(", ");
-    const sport = spot.sportType === "KITE" ? "kitesurf" : "parapente";
-    const description = `Spot de ${sport} ${spot.name}${location ? ` à ${location}` : ""}. Vent en direct, prévisions 7 jours et archives historiques.`;
+
+    // Build optimized, keyword-focused description
+    const description = buildSpotDescription(spot);
+
     return {
       title: spot.name,
       description,
@@ -41,7 +49,15 @@ export async function generateMetadata({ params }: Props) {
         description,
         url: `https://openwind.ch/spots/${id}`,
         type: "article",
-        ...(spot.images[0] && { images: [{ url: spot.images[0].url }] }),
+        // Dynamic og:image generated via /api/og endpoint
+        images: [
+          {
+            url: `https://openwind.ch/api/og?id=${id}`,
+            width: 1200,
+            height: 630,
+            alt: spot.name,
+          },
+        ],
       },
     };
   } catch {
@@ -115,18 +131,18 @@ export default async function SpotPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Place",
-            name: spot.name,
-            description: `Spot de ${sport}${location ? ` à ${location}` : ""}. Vent en direct et prévisions.`,
-            geo: {
-              "@type": "GeoCoordinates",
-              latitude: spot.latitude,
-              longitude: spot.longitude,
-            },
-            ...(spot.images[0] && { image: spot.images[0].url }),
-          }),
+          __html: JSON.stringify(
+            combineSchemas(
+              buildArticleSchema(spot),
+              buildPlaceSchema(spot),
+              buildBreadcrumbSchema(
+                spot.id,
+                spot.name,
+                spot.sportType,
+                spot.region,
+              ),
+            ),
+          ),
         }}
       />
       <SpotPageClient
