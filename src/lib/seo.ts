@@ -15,7 +15,6 @@ export function buildSpotDescription(
 ): string {
   const sport = spot.sportType === "KITE" ? "Kitesurf" : "Parapente";
   const location = [spot.region, spot.country].filter(Boolean).join(", ");
-  const difficultyLabel = getDifficultyLabel(spot.difficulty);
 
   // Tailored angle based on difficulty
   const angleMap: Record<string, string> = {
@@ -199,25 +198,20 @@ export function buildBreadcrumbSchema(
 }
 
 /**
- * Helper: Get readable difficulty label
- */
-function getDifficultyLabel(difficulty: string): string {
-  const labels: Record<string, string> = {
-    BEGINNER: "débutant",
-    INTERMEDIATE: "intermédiaire",
-    ADVANCED: "avancé",
-    EXPERT: "expert",
-  };
-  return labels[difficulty] || "intermédiaire";
-}
-
-/**
  * Combine multiple schemas into a @graph structure
  * Used in <script type="application/ld+json">
  */
+type JsonLike =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: JsonLike }
+  | JsonLike[];
+
 export function combineSchemas(
-  ...schemas: Record<string, any>[]
-): Record<string, any> {
+  ...schemas: Record<string, JsonLike>[]
+): Record<string, JsonLike> {
   if (schemas.length === 1) return schemas[0];
 
   return {

@@ -123,9 +123,6 @@ export default async function SpotPage({ params }: Props) {
     }
   }
 
-  const sport = spot.sportType === "KITE" ? "kitesurf" : "parapente";
-  const location = [spot.region, spot.country].filter(Boolean).join(", ");
-
   return (
     <>
       <script

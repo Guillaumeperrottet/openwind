@@ -73,11 +73,12 @@ export function KiteMap({
   const [popupPos, setPopupPos] = useState<{ x: number; y: number } | null>(
     null,
   );
-  const [showStations, setShowStations] = useState(!pickMode);
+  const [showStations] = useState(!pickMode);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_stationsUpdatedAt, setStationsUpdatedAt] = useState<string | null>(
     null,
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingStations, setLoadingStations] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   /** true = display speeds in knots (kn), false = km/h */
