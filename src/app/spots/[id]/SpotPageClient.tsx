@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -60,32 +60,25 @@ import type { WindStation } from "@/lib/stations";
 import type { HistoryPoint } from "@/types";
 import type { FullForecast } from "@/lib/forecast";
 
-/** Extract wind from the last real (non-future) point of a history array. */
-function windFromHistory(
+interface LiveStationSample {
+  stationId: string;
+  point: HistoryPoint;
+}
+
+function mergeLiveSample(
   history: HistoryPoint[],
-  stationId: string,
-): { wind: WindData; windSource: { name: string; network: string } } | null {
-  const nowUtc = new Date().toISOString().slice(0, 16);
-  // Walk backwards to find the last past point
-  for (let i = history.length - 1; i >= 0; i--) {
-    const p = history[i];
-    if (p.time <= nowUtc) {
-      const network = stationId.startsWith("piou-")
-        ? "Pioupiou"
-        : stationId.startsWith("ntm-")
-          ? "Netatmo"
-          : stationId.startsWith("mf-")
-            ? "Météo-France"
-            : stationId.startsWith("windball-")
-              ? "Windball"
-              : "MeteoSwiss";
-      return {
-        wind: getWindData(p.windSpeedKmh, p.windDirection, p.gustsKmh),
-        windSource: { name: stationId, network },
-      };
-    }
+  stationId: string | null,
+  live: LiveStationSample | null,
+): HistoryPoint[] {
+  if (!stationId || !live || live.stationId !== stationId) return history;
+  if (history.length === 0) return [live.point];
+
+  const last = history[history.length - 1];
+  if (live.point.time > last.time) return [...history, live.point];
+  if (live.point.time === last.time) {
+    return [...history.slice(0, -1), live.point];
   }
-  return null;
+  return history;
 }
 
 // Serialised spot from Prisma (dates are strings after JSON)
@@ -143,6 +136,7 @@ export function SpotPageClient({
   );
   const [historySource, setHistorySource] = useState<string | null>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const liveSampleRef = useRef<LiveStationSample | null>(null);
 
   // Fetch live station data — same source as map popup (overrides SSR wind)
   useEffect(() => {
@@ -186,20 +180,20 @@ export function SpotPageClient({
         );
         setWindSource({ name: best.id, network });
 
-        // Inject live point into history if it's newer than the last DB point
-        const liveTime = new Date(best.updatedAt).toISOString().slice(0, 16);
+        // Keep latest live sample so history fetches can merge it deterministically.
+        const livePoint = {
+          time: new Date(best.updatedAt).toISOString().slice(0, 16),
+          windSpeedKmh: best.windSpeedKmh,
+          windDirection: best.windDirection,
+          gustsKmh: best.gustsKmh ?? Math.round(best.windSpeedKmh * 1.3),
+          temperatureC: 0,
+        };
+        liveSampleRef.current = { stationId: best.id, point: livePoint };
+
+        // Inject live point into history if it's newer than the current tail.
         setHistory((prev) => {
           if (!prev || prev.length === 0) return prev;
-          const lastTime = prev[prev.length - 1].time;
-          if (liveTime <= lastTime) return prev; // already up to date
-          const livePoint = {
-            time: liveTime,
-            windSpeedKmh: best.windSpeedKmh,
-            windDirection: best.windDirection,
-            gustsKmh: best.gustsKmh ?? Math.round(best.windSpeedKmh * 1.3),
-            temperatureC: 0,
-          };
-          return [...prev, livePoint];
+          return mergeLiveSample(prev, best.id, liveSampleRef.current);
         });
       })
       .catch(() => {});
@@ -241,15 +235,13 @@ export function SpotPageClient({
         if (cancelled || !data) return;
         if (data.forecast) setForecast(data.forecast);
         if (data.history) {
-          setHistory(data.history);
-          // Derive wind from last real measurement — same source as the graph
-          if (data.stationId) {
-            const derived = windFromHistory(data.history, data.stationId);
-            if (derived) {
-              setWind(derived.wind);
-              setWindSource(derived.windSource);
-            }
-          }
+          setHistory(
+            mergeLiveSample(
+              data.history,
+              data.stationId,
+              liveSampleRef.current,
+            ),
+          );
         }
         if (data.stationId) setHistorySource(data.stationId);
       })
@@ -279,15 +271,13 @@ export function SpotPageClient({
       .then((data) => {
         if (cancelled || !data) return;
         if (data.history) {
-          setHistory(data.history);
-          // Update wind to match the newly selected station
-          if (data.stationId) {
-            const derived = windFromHistory(data.history, data.stationId);
-            if (derived) {
-              setWind(derived.wind);
-              setWindSource(derived.windSource);
-            }
-          }
+          setHistory(
+            mergeLiveSample(
+              data.history,
+              data.stationId,
+              liveSampleRef.current,
+            ),
+          );
         }
         if (data.stationId) setHistorySource(data.stationId);
       })
