@@ -59,9 +59,9 @@ function isRecent(isoDate: string): boolean {
  * Cached 10 minutes server-side via Next.js fetch cache.
  */
 export async function fetchWindballStations(): Promise<WindStation[]> {
-  // Step 1: Get all devices
+  // Step 1: Get all devices (60s cache so popup gets near-realtime data)
   const listRes = await fetch(`${WINDBALL_API}/device/all`, {
-    next: { revalidate: 600 },
+    next: { revalidate: 60 },
     signal: AbortSignal.timeout(8_000),
   });
 
@@ -92,7 +92,7 @@ export async function fetchWindballStations(): Promise<WindStation[]> {
           const res = await fetch(
             `${WINDBALL_API}/device/one/${encodeURIComponent(device.deviceId)}`,
             {
-              next: { revalidate: 600 },
+              next: { revalidate: 60 },
               signal: AbortSignal.timeout(5_000),
             },
           );
@@ -143,7 +143,7 @@ export async function fetchWindballHistory(
   const res = await fetch(
     `${WINDBALL_API}/device/one/${encodeURIComponent(rawId)}`,
     {
-      next: { revalidate: 600 },
+      next: { revalidate: 60 },
       signal: AbortSignal.timeout(10_000),
     },
   );

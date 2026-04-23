@@ -71,14 +71,64 @@ async function overlayLatestMeasurements(
 }
 
 /**
+ * Overlay fresh live data from networks that update faster than the cron
+ * (Windball ~10 min, Pioupiou ~4 min). Both client functions use a 60 s
+ * Next.js fetch cache, so this is essentially free on repeated requests
+ * but guarantees the popup always shows the latest available trame
+ * — not just what the 10-min cron last ingested.
+ */
+async function overlayLiveNetworks(
+  stations: WindStation[],
+): Promise<WindStation[]> {
+  const withTimeout = <T>(p: Promise<T>, ms = 6000): Promise<T> =>
+    Promise.race([
+      p,
+      new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error("timeout")), ms),
+      ),
+    ]);
+
+  const [wbRes, ppRes] = await Promise.allSettled([
+    withTimeout(fetchWindballStations()),
+    withTimeout(fetchPioupiouStations()),
+  ]);
+
+  const fresh = new Map<string, WindStation>();
+  if (wbRes.status === "fulfilled") {
+    for (const s of wbRes.value) fresh.set(s.id, s);
+  }
+  if (ppRes.status === "fulfilled") {
+    for (const s of ppRes.value) fresh.set(s.id, s);
+  }
+  if (fresh.size === 0) return stations;
+
+  const out = stations.map((s) => {
+    const f = fresh.get(s.id);
+    if (!f) return s;
+    // Keep the freshest of (snapshot/DB) vs (live API)
+    const snapshotTime = new Date(s.updatedAt).getTime();
+    const freshTime = new Date(f.updatedAt).getTime();
+    return freshTime > snapshotTime ? f : s;
+  });
+
+  // Append any live stations that weren't in the snapshot at all yet
+  const ids = new Set(stations.map((s) => s.id));
+  for (const [id, s] of fresh) {
+    if (!ids.has(id)) out.push(s);
+  }
+  return out;
+}
+
+/**
  * GET /api/stations
  *
  * Returns live wind measurements from all available station networks.
  *
  * **Fast path** (< 100ms): reads the cached JSON written by the cron job
  * every 10 minutes into `SystemConfig.stations_cache`, then overlays the
- * latest `StationMeasurement` rows so the response always matches the
- * 48h history chart on the spot pages.
+ * latest `StationMeasurement` rows + a fresh fetch of the high-frequency
+ * networks (Windball, Pioupiou) so the popup always shows the same
+ * trame as the spot page's 48h history chart.
  *
  * **Slow fallback**: if the cache is stale or missing, fetches live data
  * from all 5 networks (MeteoSwiss, Pioupiou, Netatmo, Météo-France,
@@ -96,11 +146,12 @@ export async function GET() {
       // Cache is fresh (< 15 min) — serve it instantly
       if (age < 15 * 60 * 1000) {
         const snapshot = JSON.parse(cached.value) as WindStation[];
-        const stations = await overlayLatestMeasurements(snapshot);
+        // Two overlays: latest DB rows (cron 10min) + live API trames (60s cache)
+        const withDb = await overlayLatestMeasurements(snapshot);
+        const stations = await overlayLiveNetworks(withDb);
         return NextResponse.json(stations, {
           headers: {
-            // Drop CDN caching to 60 s so the StationMeasurement overlay
-            // can refresh between cron runs (was 300 s before).
+            // CDN cache 60 s — matches the live overlay revalidate window
             "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
           },
         });

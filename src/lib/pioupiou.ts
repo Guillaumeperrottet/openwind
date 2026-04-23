@@ -48,7 +48,8 @@ interface PioupiouStation {
  */
 export async function fetchPioupiouStations(): Promise<WindStation[]> {
   const res = await fetch(PIOUPIOU_LIVE_ALL, {
-    next: { revalidate: 600 },
+    // 60s cache: Pioupiou pushes ~every 4 min, we want popups near-realtime
+    next: { revalidate: 60 },
     signal: AbortSignal.timeout(8000),
   } as RequestInit);
   if (!res.ok) {
@@ -122,7 +123,7 @@ export async function fetchPioupiouHistory(
   const url = `${PIOUPIOU_ARCHIVE}/${pioupiouId}?start=${encodeURIComponent(start)}&stop=${encodeURIComponent(stop)}`;
 
   const res = await fetch(url, {
-    next: { revalidate: 600 },
+    next: { revalidate: 60 },
     signal: AbortSignal.timeout(6000),
   });
   if (!res.ok) {
