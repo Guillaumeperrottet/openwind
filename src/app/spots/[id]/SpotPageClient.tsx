@@ -296,7 +296,18 @@ export function SpotPageClient({
   // the last bar of the 48h graph (no more 11/12 kts confusion).
   useEffect(() => {
     if (!history || history.length === 0) return;
-    const last = history[history.length - 1];
+    // history may contain 15-min forecast points appended after the last
+    // real station measurement — skip them and keep the latest *measured*
+    // point (otherwise the card shows a 2-hour-ahead forecast).
+    const nowIso = new Date().toISOString().slice(0, 16);
+    let last: HistoryPoint | null = null;
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].time <= nowIso) {
+        last = history[i];
+        break;
+      }
+    }
+    if (!last) last = history[history.length - 1];
     setWind(
       getWindData(
         last.windSpeedKmh,
