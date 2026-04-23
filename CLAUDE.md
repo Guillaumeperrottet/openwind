@@ -307,6 +307,46 @@ prisma/
 
 ---
 
+## Cohérence vent (popup carte ↔ page spot ↔ chart 48h)
+
+**Règle absolue** : la valeur affichée dans le popup carte, sur les cards "Vent moyen / Rafales / Direction" de la page spot et la **dernière barre du chart 48 h** doivent toujours être identiques (mêmes kts, même `il y a X min`).
+
+### Source unique : `/api/stations`
+
+- Le popup carte ET la page spot fetch le **même endpoint** `/api/stations` côté client (polling 60 s).
+- `SpotPageClient.tsx` : `liveStation` (state) ← `/api/stations`. Les cards dérivent `wind` via `useMemo(liveStation)`. Fallback SSR `initialWind`.
+- `chartHistory` (useMemo) : injecte le point `liveStation` à la queue de `history` quand la trame live est plus récente que la dernière trame du chart → dernière barre = cards.
+
+### Overlays dans `/api/stations`
+
+1. Snapshot `SystemConfig.stations_cache` (cron 10 min)
+2. `overlayLatestMeasurements()` — DB `StationMeasurement` ≤ 30 min
+3. `overlayLiveNetworks()` — re-fetch live Windball + Pioupiou (60 s)
+
+CDN : `s-maxage=60, stale-while-revalidate=300`.
+
+### SSR page spot
+
+- Lit `StationMeasurement` mais n'affiche que si **≤ 5 min**, sinon `wind = null` (placeholder).
+- Pas de fallback Open-Meteo (`fetchCurrentWind` n'est plus appelé côté `page.tsx`).
+
+### Caches calés sur 60 s
+
+Tous les TTL en bord de chaîne (Windball, Pioupiou, `/api/stations`, `/api/spots/[id]/weather`, `/api/stations/[id]/history`, polling client) sont à **60 s**.
+
+### Chart 48 h : bypass DB pour Windball/Pioupiou
+
+`fetchWindHistoryStation()` (dans `lib/windHistory.ts`) n'utilise **que l'API** pour ces deux réseaux (pas de merge DB+API) → plus de doubles barres.
+
+### Règles à respecter
+
+1. Ne jamais ajouter de fallback Open-Meteo sur la page spot pour le vent courant.
+2. Ne pas dériver les cards depuis `history` (ce qui re-introduirait un décalage avec le popup).
+3. Si tu touches au TTL d'un cache amont (`windball.ts`, `pioupiou.ts`, route handlers), garde 60 s pour ne pas désaligner les fenêtres CDN.
+4. Toute nouvelle UI affichant le vent courant d'une balise doit lire `/api/stations` côté client (jamais reconstruire à partir de l'historique).
+
+---
+
 ## Règles de développement
 
 1. **Ne jamais casser le build** — toujours vérifier avec `pnpm exec tsc --noEmit`
@@ -318,7 +358,7 @@ prisma/
 7. **Migrations** : `prisma migrate dev` (pas `db push`)
 8. **Validation** : Zod sur toutes les API POST/PATCH
 9. **GL layers** : jamais de DOM markers pour stations/spots en masse
-10. **ISR** : revalidate approprié (10min stations, 30min prévisions, 7j archives)
+10. **ISR / cache** : 60 s pour tout ce qui touche au vent courant (`/api/stations`, `/api/spots/[id]/weather`, `/api/stations/[id]/history`, `windball.ts`, `pioupiou.ts`). 30 min pour les prévisions, 7 j pour les archives. Voir « Cohérence vent » plus bas.
 
 ---
 
