@@ -81,6 +81,20 @@ export function registerWindImages(map: maplibregl.Map) {
       { sdf: true },
     );
   }
+
+  // Kite spot icon (loaded async — symbol layer renders once available)
+  if (!map.hasImage("spot-kite-icon")) {
+    map
+      .loadImage("/icon_kite.png")
+      .then((img) => {
+        if (img && !map.hasImage("spot-kite-icon")) {
+          map.addImage("spot-kite-icon", img.data);
+        }
+      })
+      .catch(() => {
+        // icon missing — fall back to plain circle
+      });
+  }
 }
 
 /**
@@ -363,6 +377,22 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
   });
 
   // ── Spot layers ──
+  // Wind-based color for KITE spots (matches the pulse palette).
+  // < 19 km/h shows neutral grey so the icon stays readable at calm conditions.
+  const KITE_WIND_COLOR: maplibregl.ExpressionSpecification = [
+    "step",
+    ["coalesce", ["to-number", ["get", "windSpeedKmh"]], 0],
+    "#9ca3af", // < 19 km/h (calm)        → neutral grey
+    19,
+    "#50d818", // 19–46 km/h (10–25 kts)  → green
+    46,
+    "#e6d620", // 46–56 km/h (25–30 kts)  → yellow
+    56,
+    "#f0a818", // 56–65 km/h (30–35 kts)  → orange
+    65,
+    "#e04010", // > 65 km/h (>35 kts)      → red
+  ];
+
   map.addLayer({
     id: "spots-circle",
     type: "circle",
@@ -373,19 +403,39 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
       ["==", ["get", "featureType"], "spot"],
     ],
     paint: {
-      "circle-radius": 8,
+      // Small wind-colored dot for KITE — sits behind/below the icon so the
+      // icon stays clearly visible while still showing the wind state.
+      "circle-radius": ["case", ["==", ["get", "sportType"], "KITE"], 6, 8],
       "circle-color": [
-        "match",
-        ["get", "sportType"],
-        "KITE",
-        "#22c55e",
-        "PARAGLIDE",
-        "#f97316",
-        "#22c55e",
+        "case",
+        ["==", ["get", "sportType"], "KITE"],
+        KITE_WIND_COLOR,
+        ["match", ["get", "sportType"], "PARAGLIDE", "#f97316", "#22c55e"],
       ],
-      "circle-stroke-color": "rgba(255,255,255,0.8)",
+      "circle-stroke-color": "rgba(255,255,255,0.85)",
       "circle-stroke-width": 1.5,
       "circle-opacity": 0.95,
+    },
+  });
+
+  // Kite icon layer (drawn on top of the wind-colored circle for KITE spots)
+  map.addLayer({
+    id: "spots-kite-icon",
+    type: "symbol",
+    source: "combined-source",
+    filter: [
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "featureType"], "spot"],
+      ["==", ["get", "sportType"], "KITE"],
+    ],
+    layout: {
+      "icon-image": "spot-kite-icon",
+      "icon-size": 0.03, // ~38px on screen for a 1280px source
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+      "icon-anchor": "center",
+      "icon-offset": [0, -14], // float the icon above the colored dot
     },
   });
 
