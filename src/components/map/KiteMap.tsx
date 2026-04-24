@@ -55,6 +55,15 @@ export function KiteMap({
   );
   const pulseFrameRef = useRef<number | null>(null);
   const piouSocketRef = useRef<Socket | null>(null);
+  /** Has the user manually moved the map yet? Used to avoid overriding
+   * an in-progress exploration when the DB-stored view arrives async. */
+  const userMovedRef = useRef(false);
+  /** Debounce timer for persisting map view to the server. */
+  const mapViewSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  /** Current authenticated user id (kept in a ref so GL handlers always read fresh). */
+  const userIdRef = useRef<string | null>(null);
   /** Keep props in refs so async callbacks (map.on('load')) always read fresh values */
   const spotsRef = useRef(spots);
   spotsRef.current = spots;
@@ -114,6 +123,7 @@ export function KiteMap({
   }, []);
   // Load saved preferences when user is available
   useEffect(() => {
+    userIdRef.current = user?.id ?? null;
     if (!user) return;
     fetch("/api/preferences")
       .then((r) => (r.ok ? r.json() : null))
@@ -122,8 +132,32 @@ export function KiteMap({
         if (data.sportFilter === "KITE" || data.sportFilter === "PARAGLIDE")
           _setSportFilter(data.sportFilter);
         if (typeof data.useKnots === "boolean") _setUseKnots(data.useKnots);
+
+        // Apply server-stored map view — but only if the user hasn't started
+        // exploring yet (avoid yanking the view out from under them) and
+        // no explicit initialCenter was passed (e.g. edit mode).
+        if (
+          data.mapView &&
+          !userMovedRef.current &&
+          !initialCenter &&
+          mapRef.current
+        ) {
+          const { center, zoom } = data.mapView as {
+            center: [number, number];
+            zoom: number;
+          };
+          if (
+            Array.isArray(center) &&
+            Number.isFinite(center[0]) &&
+            Number.isFinite(center[1]) &&
+            Number.isFinite(zoom)
+          ) {
+            mapRef.current.jumpTo({ center, zoom });
+          }
+        }
       })
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Station popup state (React-based with history chart)
@@ -386,11 +420,31 @@ export function KiteMap({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    // Restore last map position from sessionStorage (unless an explicit center is given)
-    const saved = !initialCenter && sessionStorage.getItem("map-view");
-    const restored = saved
-      ? (JSON.parse(saved) as { center: [number, number]; zoom: number })
-      : null;
+    // Restore last map position from localStorage (persists across reloads & browser restarts).
+    // Skipped when an explicit initialCenter is provided (e.g. edit mode).
+    let restored: { center: [number, number]; zoom: number } | null = null;
+    if (!initialCenter) {
+      try {
+        const saved = localStorage.getItem("map-view");
+        if (saved) {
+          const parsed = JSON.parse(saved) as {
+            center: [number, number];
+            zoom: number;
+          };
+          if (
+            Array.isArray(parsed.center) &&
+            parsed.center.length === 2 &&
+            Number.isFinite(parsed.center[0]) &&
+            Number.isFinite(parsed.center[1]) &&
+            Number.isFinite(parsed.zoom)
+          ) {
+            restored = parsed;
+          }
+        }
+      } catch {
+        // ignore corrupted entry
+      }
+    }
 
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -650,14 +704,43 @@ export function KiteMap({
     });
     // ─────────────────────────────────────────────────────────────────────
 
-    // Persist map position to sessionStorage on every move
+    // Persist map position to localStorage on every move (survives reloads & browser restarts)
     map.on("moveend", () => {
       const c = map.getCenter();
-      sessionStorage.setItem(
-        "map-view",
-        JSON.stringify({ center: [c.lng, c.lat], zoom: map.getZoom() }),
-      );
+      const view = {
+        center: [c.lng, c.lat] as [number, number],
+        zoom: map.getZoom(),
+      };
+      try {
+        localStorage.setItem("map-view", JSON.stringify(view));
+      } catch {
+        // quota exceeded or storage disabled — ignore
+      }
+      // If authenticated, also sync to server (debounced to avoid one PATCH per pixel)
+      if (userIdRef.current) {
+        if (mapViewSaveTimerRef.current) {
+          clearTimeout(mapViewSaveTimerRef.current);
+        }
+        mapViewSaveTimerRef.current = setTimeout(() => {
+          fetch("/api/preferences", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mapView: view }),
+            keepalive: true,
+          }).catch(() => {});
+        }, 1500);
+      }
     });
+
+    // Mark the map as user-interacted on the first real gesture so the
+    // async DB-stored view doesn't snap them away mid-exploration.
+    const markUserMoved = () => {
+      userMovedRef.current = true;
+    };
+    map.on("dragstart", markUserMoved);
+    map.on("zoomstart", markUserMoved);
+    map.on("rotatestart", markUserMoved);
+    map.on("pitchstart", markUserMoved);
 
     mapRef.current = map;
     // Copy ref value inside the effect so the cleanup reads the correct frame ID
@@ -666,6 +749,30 @@ export function KiteMap({
       mounted = false;
       const pulseFrame = pulseRef.current;
       if (pulseFrame !== null) cancelAnimationFrame(pulseFrame);
+      // Flush any pending debounced map-view save before tearing down
+      if (mapViewSaveTimerRef.current) {
+        clearTimeout(mapViewSaveTimerRef.current);
+        mapViewSaveTimerRef.current = null;
+        if (userIdRef.current && map) {
+          try {
+            const c = map.getCenter();
+            const body = JSON.stringify({
+              mapView: {
+                center: [c.lng, c.lat] as [number, number],
+                zoom: map.getZoom(),
+              },
+            });
+            fetch("/api/preferences", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body,
+              keepalive: true,
+            }).catch(() => {});
+          } catch {
+            // map already disposed — ignore
+          }
+        }
+      }
       map.remove();
       mapRef.current = null;
     };

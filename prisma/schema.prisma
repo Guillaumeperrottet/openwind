@@ -73,6 +73,10 @@ model UserPreference {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   sportFilter String   @default("ALL") // "ALL" | "KITE" | "PARAGLIDE"
   useKnots    Boolean  @default(true)
+  /// Last map view (persisted across devices when authenticated)
+  mapCenterLng Float?
+  mapCenterLat Float?
+  mapZoom      Float?
   updatedAt   DateTime @updatedAt
 }
 

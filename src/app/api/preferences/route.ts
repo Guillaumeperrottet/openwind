@@ -8,6 +8,13 @@ const SPORT_FILTERS = ["ALL", "KITE", "PARAGLIDE"] as const;
 const updatePreferencesSchema = z.object({
   sportFilter: z.enum(SPORT_FILTERS).optional(),
   useKnots: z.boolean().optional(),
+  mapView: z
+    .object({
+      center: z.tuple([z.number(), z.number()]),
+      zoom: z.number().min(0).max(24),
+    })
+    .nullable()
+    .optional(),
 });
 
 /**
@@ -20,16 +27,31 @@ export async function GET() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ sportFilter: "ALL", useKnots: true });
+    return NextResponse.json({
+      sportFilter: "ALL",
+      useKnots: true,
+      mapView: null,
+    });
   }
 
   const pref = await prisma.userPreference.findUnique({
     where: { userId: user.id },
   });
 
+  const mapView =
+    pref?.mapCenterLng != null &&
+    pref?.mapCenterLat != null &&
+    pref?.mapZoom != null
+      ? {
+          center: [pref.mapCenterLng, pref.mapCenterLat] as [number, number],
+          zoom: pref.mapZoom,
+        }
+      : null;
+
   return NextResponse.json({
     sportFilter: pref?.sportFilter ?? "ALL",
     useKnots: pref?.useKnots ?? true,
+    mapView,
   });
 }
 
@@ -63,6 +85,18 @@ export async function PATCH(request: NextRequest) {
   if (parsed.data.useKnots !== undefined) {
     data.useKnots = parsed.data.useKnots;
   }
+  if (parsed.data.mapView !== undefined) {
+    if (parsed.data.mapView === null) {
+      data.mapCenterLng = null;
+      data.mapCenterLat = null;
+      data.mapZoom = null;
+    } else {
+      const [lng, lat] = parsed.data.mapView.center;
+      data.mapCenterLng = lng;
+      data.mapCenterLat = lat;
+      data.mapZoom = parsed.data.mapView.zoom;
+    }
+  }
 
   if (Object.keys(data).length === 0) {
     return NextResponse.json(
@@ -89,8 +123,19 @@ export async function PATCH(request: NextRequest) {
     create: { userId: user.id, ...data },
   });
 
+  const mapView =
+    pref.mapCenterLng != null &&
+    pref.mapCenterLat != null &&
+    pref.mapZoom != null
+      ? {
+          center: [pref.mapCenterLng, pref.mapCenterLat] as [number, number],
+          zoom: pref.mapZoom,
+        }
+      : null;
+
   return NextResponse.json({
     sportFilter: pref.sportFilter,
     useKnots: pref.useKnots,
+    mapView,
   });
 }
