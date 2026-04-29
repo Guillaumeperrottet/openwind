@@ -211,37 +211,36 @@ export function KiteMap({
 
       if (best) {
         const ageMs = Date.now() - new Date(best.updatedAt).getTime();
-        // If the ref is older than 2 min, trigger a background refresh so
-        // subsequent clicks see the latest trame. Still show current value
-        // instantly — no spinner, no flash.
-        if (ageMs > 2 * 60 * 1000) {
-          fetch("/api/stations")
-            .then((r) => (r.ok ? r.json() : null))
-            .then((data: WindStation[] | null) => {
-              if (Array.isArray(data) && data.length > 0) {
-                stationsRef.current = data;
-                const refreshed = data.find((s) => s.id === best!.id) ?? null;
-                if (refreshed) {
-                  const newAge =
-                    Date.now() - new Date(refreshed.updatedAt).getTime();
-                  // Only update the popup if the fetched value is actually
-                  // fresher than what we just showed.
-                  if (newAge < ageMs) {
-                    setSelectedWind(
-                      getWindData(
-                        refreshed.windSpeedKmh,
-                        refreshed.windDirection,
-                        refreshed.gustsKmh ??
-                          Math.round(refreshed.windSpeedKmh * 1.3),
-                        refreshed.updatedAt,
-                      ),
-                    );
-                  }
+        // Always trigger a background refresh on popup open so the displayed
+        // value matches whatever the server has right now (the on-map GeoJSON
+        // can be up to 60 s stale, plus 60 s CDN). /api/stations is cached
+        // 60 s at the edge so this is essentially free.
+        fetch("/api/stations")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data: WindStation[] | null) => {
+            if (Array.isArray(data) && data.length > 0) {
+              stationsRef.current = data;
+              const refreshed = data.find((s) => s.id === best!.id) ?? null;
+              if (refreshed) {
+                const newAge =
+                  Date.now() - new Date(refreshed.updatedAt).getTime();
+                // Only update the popup if the fetched value is actually
+                // fresher than what we just showed.
+                if (newAge < ageMs) {
+                  setSelectedWind(
+                    getWindData(
+                      refreshed.windSpeedKmh,
+                      refreshed.windDirection,
+                      refreshed.gustsKmh ??
+                        Math.round(refreshed.windSpeedKmh * 1.3),
+                      refreshed.updatedAt,
+                    ),
+                  );
                 }
               }
-            })
-            .catch(() => {});
-        }
+            }
+          })
+          .catch(() => {});
 
         const gustsKmh = best.gustsKmh ?? Math.round(best.windSpeedKmh * 1.3);
         setSelectedWind(

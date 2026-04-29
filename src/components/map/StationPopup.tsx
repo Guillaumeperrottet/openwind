@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { X, ExternalLink } from "lucide-react";
-import { windConditionLabel, barColors } from "@/lib/utils";
+import {
+  windColor,
+  windConditionLabel,
+  windDirectionLabel,
+  barColors,
+} from "@/lib/utils";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import type { HistoryPoint } from "@/types";
 
@@ -93,18 +98,57 @@ export function StationPopup({
     };
   }, [onClose]);
 
-  const speedKmh = Math.round(station.windSpeedKmh);
+  // Pick the freshest values between the click-time props and the latest
+  // PAST point of the just-fetched 48 h history. This keeps the header in
+  // sync with the chart's last bar, even when the GeoJSON cached on the map
+  // was a bit stale at click time.
+  const live = useMemo(() => {
+    const propsTime = station.updatedAt;
+    let chosen = {
+      windSpeedKmh: station.windSpeedKmh,
+      windDirection: station.windDirection,
+      gustsKmh: station.gustsKmh,
+      updatedAt: propsTime,
+    };
+    if (history && history.length > 0) {
+      const nowIso = new Date().toISOString().slice(0, 16);
+      const lastPast = [...history].reverse().find((p) => p.time <= nowIso);
+      if (lastPast) {
+        const histIso = `${lastPast.time}:00Z`;
+        if (
+          !propsTime ||
+          new Date(histIso).getTime() > new Date(propsTime).getTime()
+        ) {
+          chosen = {
+            windSpeedKmh: lastPast.windSpeedKmh,
+            windDirection: lastPast.windDirection,
+            gustsKmh: lastPast.gustsKmh,
+            updatedAt: histIso,
+          };
+        }
+      }
+    }
+    return chosen;
+  }, [
+    history,
+    station.updatedAt,
+    station.windSpeedKmh,
+    station.windDirection,
+    station.gustsKmh,
+  ]);
+
+  const speedKmh = Math.round(live.windSpeedKmh);
   const speedKts = Math.round(speedKmh / 1.852);
-  const gustsKmh = Math.round(station.gustsKmh);
+  const gustsKmh = Math.round(live.gustsKmh);
   const gustsKts = Math.round(gustsKmh / 1.852);
-  const color = station.colorHex;
-  const dir = station.windDirection;
+  const color = windColor(speedKmh);
+  const dir = live.windDirection;
   const arrowRot = (dir + 180) % 360;
-  const dirLabel = station.dirLabel;
+  const dirLabel = windDirectionLabel(dir);
   const primary = useKnots ? `${speedKts} kts` : `${speedKmh} km/h`;
   const gusts = useKnots ? `${gustsKts} kts` : `${gustsKmh} km/h`;
   const condLabel = windConditionLabel(speedKmh);
-  const time = new Date(station.updatedAt).toLocaleTimeString("fr", {
+  const time = new Date(live.updatedAt).toLocaleTimeString("fr", {
     hour: "2-digit",
     minute: "2-digit",
   });
