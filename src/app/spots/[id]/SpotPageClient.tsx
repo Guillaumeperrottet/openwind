@@ -392,22 +392,28 @@ export function SpotPageClient({
               )}
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-              {(spot.country || spot.region) && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {[spot.region, spot.country].filter(Boolean).join(", ")}
-                </span>
+              {showInfo && (spot.country || spot.region) && (
+                <>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {[spot.region, spot.country].filter(Boolean).join(", ")}
+                  </span>
+                  <span>·</span>
+                </>
               )}
-              <span>·</span>
-              <span className="flex items-center gap-1">
-                {isKite ? (
-                  <Sailboat className="h-3.5 w-3.5" />
-                ) : (
-                  <Mountain className="h-3.5 w-3.5" />
-                )}
-                {isKite ? "Kitesurf" : "Parapente"}
-              </span>
-              <span>·</span>
+              {showInfo && (
+                <>
+                  <span className="flex items-center gap-1">
+                    {isKite ? (
+                      <Sailboat className="h-3.5 w-3.5" />
+                    ) : (
+                      <Mountain className="h-3.5 w-3.5" />
+                    )}
+                    {isKite ? "Kitesurf" : "Parapente"}
+                  </span>
+                  <span>·</span>
+                </>
+              )}
               <Link
                 href={`/webcams?lat=${spot.latitude}&lng=${spot.longitude}&name=${encodeURIComponent(spot.name)}&back=${encodeURIComponent(`/spots/${spot.id}`)}`}
                 className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
@@ -816,11 +822,11 @@ export function SpotPageClient({
           </div>
         )}
 
-        {/* ── Tableau détaillé ────────────────────────────────────── */}
+        {/* ── Windguru ────────────────────────────────────── */}
         {forecast ? (
           <div className="mb-10">
             <h2 className="text-base font-semibold text-gray-900 mb-3">
-              Tableau détaillé
+              Windguru
             </h2>
             <ForecastTable forecast={forecast} light />
           </div>
