@@ -385,8 +385,9 @@ export function SpotPageClient({
                 >
                   <WindDirectionRose
                     bestDirections={spot.bestWindDirections}
-                    size={80}
-                    showLabels={false}
+                    size={72}
+                    variant="minimal"
+                    showLabels
                   />
                 </div>
               )}

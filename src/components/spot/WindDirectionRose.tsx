@@ -57,6 +57,14 @@ interface Props {
   interactive?: boolean;
   onChange?: (dirs: string[]) => void;
   showLabels?: boolean;
+  /**
+   * Visual style. `minimal` is a clean, modern dial: thin ring,
+   * green arcs on the active directions with their labels outside.
+   * Use it where space is tight and you only want to convey the
+   * favorable direction(s) at a glance. `full` is the original
+   * compass (ticks, wedges, cross-hairs).
+   */
+  variant?: "full" | "minimal";
 }
 
 export function WindDirectionRose({
@@ -66,7 +74,38 @@ export function WindDirectionRose({
   interactive = false,
   onChange,
   showLabels = true,
+  variant = "full",
 }: Props) {
+  if (variant === "minimal" && !interactive) {
+    return (
+      <MinimalRose
+        bestDirections={bestDirections}
+        currentDirection={currentDirection}
+        size={size}
+        showLabels={showLabels}
+      />
+    );
+  }
+  return (
+    <FullRose
+      bestDirections={bestDirections}
+      currentDirection={currentDirection}
+      size={size}
+      interactive={interactive}
+      onChange={onChange}
+      showLabels={showLabels}
+    />
+  );
+}
+
+function FullRose({
+  bestDirections,
+  currentDirection,
+  size = 80,
+  interactive = false,
+  onChange,
+  showLabels = true,
+}: Omit<Props, "variant">) {
   const cx = size / 2;
   const cy = size / 2;
   const R = size * 0.44; // main circle radius
@@ -316,5 +355,164 @@ export function WindDirectionPicker({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * MinimalRose
+ *
+ * Nautical-style compass: thin ring, 4 cardinal labels (N in red),
+ * tiny dots on intercardinals, and inward-pointing blue trapezoids
+ * for each favorable wind direction.
+ */
+function MinimalRose({
+  bestDirections,
+  currentDirection,
+  size,
+  showLabels,
+}: {
+  bestDirections: string[];
+  currentDirection?: number | null;
+  size: number;
+  showLabels: boolean;
+}) {
+  const cx = size / 2;
+  const cy = size / 2;
+  // Padding inside the viewBox so cardinal labels never get clipped.
+  const pad = size * 0.18;
+  const R = (size - pad * 2) / 2;
+  const ringStroke = Math.max(1, size * 0.018);
+  const best = new Set(bestDirections.map((d) => d.toUpperCase()));
+
+  const labelR = R + pad * 0.55;
+  const cardinalFont = Math.max(9, size * 0.13);
+
+  // Inward trapezoid: wide near the ring, narrow toward the center.
+  const trapezoid = (index: number): string => {
+    const step = (2 * Math.PI) / 16;
+    const angle = index * step - Math.PI / 2; // 0 = North
+    const halfOuter = step * 0.32;
+    const halfInner = step * 0.18;
+    const rOuter = R * 0.86;
+    const rInner = R * 0.42;
+    const a1 = angle - halfOuter;
+    const a2 = angle + halfOuter;
+    const a3 = angle + halfInner;
+    const a4 = angle - halfInner;
+    const p = (r: number, a: number) =>
+      `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
+    return `${p(rOuter, a1)} ${p(rOuter, a2)} ${p(rInner, a3)} ${p(rInner, a4)}`;
+  };
+
+  const cardinals = [
+    { label: "N", angle: -90, color: "#dc2626" },
+    { label: "E", angle: 0, color: "#1f2937" },
+    { label: "S", angle: 90, color: "#1f2937" },
+    { label: "W", angle: 180, color: "#1f2937" },
+  ];
+
+  // Intercardinal dots (NE, SE, SW, NW)
+  const intercardinals = [-45, 45, 135, -135];
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      aria-label={`Vent favorable depuis : ${bestDirections.join(", ") || "aucune direction"}`}
+    >
+      {/* Thin outer ring */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={R}
+        fill="none"
+        stroke="#1f2937"
+        strokeWidth={ringStroke * 1.4}
+      />
+
+      {/* Faint cross-hairs */}
+      {[0, 90].map((deg) => {
+        const rad = ((deg - 90) * Math.PI) / 180;
+        return (
+          <line
+            key={`cross-${deg}`}
+            x1={cx + R * 0.92 * Math.cos(rad)}
+            y1={cy + R * 0.92 * Math.sin(rad)}
+            x2={cx - R * 0.92 * Math.cos(rad)}
+            y2={cy - R * 0.92 * Math.sin(rad)}
+            stroke="#cbd5e1"
+            strokeWidth={ringStroke}
+          />
+        );
+      })}
+
+      {/* Intercardinal dots */}
+      {intercardinals.map((deg) => {
+        const rad = (deg * Math.PI) / 180;
+        return (
+          <circle
+            key={`dot-${deg}`}
+            cx={cx + R * 0.78 * Math.cos(rad)}
+            cy={cy + R * 0.78 * Math.sin(rad)}
+            r={Math.max(1, size * 0.018)}
+            fill="#cbd5e1"
+          />
+        );
+      })}
+
+      {/* Favorable direction trapezoids */}
+      {DIRS.map((dir, i) =>
+        best.has(dir) ? (
+          <polygon
+            key={`tz-${dir}`}
+            points={trapezoid(i)}
+            fill="#7ea4c4"
+            stroke="#1f2937"
+            strokeWidth={ringStroke}
+            strokeLinejoin="round"
+          />
+        ) : null,
+      )}
+
+      {/* Current wind direction needle */}
+      {currentDirection != null &&
+        (() => {
+          const angleDeg = currentDirection - 90;
+          const rad = (angleDeg * Math.PI) / 180;
+          return (
+            <line
+              x1={cx + R * 0.85 * Math.cos(rad)}
+              y1={cy + R * 0.85 * Math.sin(rad)}
+              x2={cx + R * 0.3 * Math.cos(rad)}
+              y2={cy + R * 0.3 * Math.sin(rad)}
+              stroke="#0ea5e9"
+              strokeWidth={Math.max(1.5, size * 0.025)}
+              strokeLinecap="round"
+            />
+          );
+        })()}
+
+      {/* Cardinal labels */}
+      {showLabels &&
+        cardinals.map(({ label, angle, color }) => {
+          const rad = (angle * Math.PI) / 180;
+          return (
+            <text
+              key={label}
+              x={cx + labelR * Math.cos(rad)}
+              y={cy + labelR * Math.sin(rad)}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={cardinalFont}
+              fontWeight={700}
+              fill={color}
+              style={{ userSelect: "none" }}
+            >
+              {label}
+            </text>
+          );
+        })}
+    </svg>
   );
 }
