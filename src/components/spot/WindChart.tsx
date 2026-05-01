@@ -119,7 +119,6 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
   const CHART_H = 150;
   const DAY_H = 24;
   const TIME_H = 18;
-  const KITE_H = 14;
 
   const allVals = points.flatMap((p) =>
     useKnots ? [p.windSpeedKnots, p.gustsKnots] : [p.windSpeedKmh, p.gustsKmh],
@@ -128,7 +127,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
   const yMax = Math.ceil(dataMax / 5) * 5 + 5;
 
   const totalW = Y_AXIS_W + points.length * BAR_SLOT + BAR_GAP;
-  const totalH = DAY_H + CHART_H + TIME_H + KITE_H;
+  const totalH = DAY_H + CHART_H + TIME_H;
 
   const bH = (val: number) => Math.max((val / yMax) * CHART_H, 1);
   const bY = (val: number) => DAY_H + CHART_H - bH(val);
@@ -155,13 +154,6 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
 
   const yTicks: number[] = [];
   for (let v = 0; v <= yMax; v += 5) yTicks.push(v);
-
-  const kiteColor = (score: 0 | 1 | 2 | 3) => {
-    if (score === 3) return "#16a34a";
-    if (score === 2) return "#4ade80";
-    if (score === 1) return "#fbbf24";
-    return "#e5e7eb";
-  };
 
   // Active time label for compass panel
   const activeTime = activePoint.time;
@@ -294,14 +286,6 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
                     fill={style.background}
                     rx="1"
                   />
-                  <rect
-                    x={x + 1}
-                    y={DAY_H + CHART_H + TIME_H + 2}
-                    width={BAR_W - 2}
-                    height={KITE_H - 4}
-                    rx="1.5"
-                    fill={kiteColor(p.kitableScore)}
-                  />
                 </g>
               );
             })}
@@ -389,7 +373,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
             className="absolute left-0 sm:hidden"
             style={{
               top: DAY_H + CHART_H,
-              height: TIME_H + KITE_H + 4,
+              height: TIME_H + 4,
               width: totalW,
               touchAction: "pan-x",
               zIndex: 5,
@@ -520,23 +504,6 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
                 style={{ background: "#ef4444" }}
               />
               Maintenant
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="flex gap-0.5">
-                <span
-                  className="inline-block w-2.5 h-2 rounded-sm"
-                  style={{ background: "#16a34a" }}
-                />
-                <span
-                  className="inline-block w-2.5 h-2 rounded-sm"
-                  style={{ background: "#4ade80" }}
-                />
-                <span
-                  className="inline-block w-2.5 h-2 rounded-sm"
-                  style={{ background: "#fbbf24" }}
-                />
-              </span>
-              Score kite
             </span>
           </div>
         </div>

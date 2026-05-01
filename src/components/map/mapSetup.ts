@@ -343,11 +343,11 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
     "stations-tail",
   );
 
-  // Kite only: pulse starts at 10 kts (19 km/h), no pulse for para
+  // Kite only: pulse starts at 12 kts (22 km/h), no pulse for para
   const SPOT_PULSE_COLOR: maplibregl.ExpressionSpecification = [
     "step",
     ["get", "windSpeedKmh"],
-    "#50d818", // 19–46 km/h (10–25 kts) → green
+    "#50d818", // 22–46 km/h (12–25 kts) → green
     46,
     "#e6d620", // 46–56 km/h (25–30 kts) → yellow
     56,
@@ -366,7 +366,7 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
       ["!", ["has", "point_count"]],
       ["==", ["get", "featureType"], "spot"],
       ["==", ["get", "sportType"], "KITE"],
-      [">=", ["get", "windSpeedKmh"], 19],
+      [">=", ["get", "windSpeedKmh"], 22],
     ],
     paint: {
       "circle-radius": 8,
@@ -378,13 +378,13 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
 
   // ── Spot layers ──
   // Wind-based color for KITE spots (matches the pulse palette).
-  // < 19 km/h shows neutral grey so the icon stays readable at calm conditions.
+  // < 22 km/h shows neutral grey so the icon stays readable at calm conditions.
   const KITE_WIND_COLOR: maplibregl.ExpressionSpecification = [
     "step",
     ["coalesce", ["to-number", ["get", "windSpeedKmh"]], 0],
-    "#9ca3af", // < 19 km/h (calm)        → neutral grey
-    19,
-    "#50d818", // 19–46 km/h (10–25 kts)  → green
+    "#9ca3af", // < 22 km/h (calm)        → neutral grey
+    22,
+    "#50d818", // 22–46 km/h (12–25 kts)  → green
     46,
     "#e6d620", // 46–56 km/h (25–30 kts)  → yellow
     56,
