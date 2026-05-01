@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -21,6 +21,7 @@ import {
   Star,
   Radio,
   Camera,
+  ChevronDown,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { WindCompass } from "@/components/spot/WindCompass";
@@ -78,6 +79,19 @@ function networkLabelFromStationId(id: string): string {
   return NETWORK_LABELS.meteoswiss;
 }
 
+/** SSR-safe media query for `min-width: 768px` (md breakpoint). */
+function useIsDesktop(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia("(min-width: 768px)");
+      mql.addEventListener("change", cb);
+      return () => mql.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 768px)").matches,
+    () => false,
+  );
+}
+
 // Serialised spot from Prisma (dates are strings after JSON)
 interface SpotData {
   id: string;
@@ -124,6 +138,12 @@ export function SpotPageClient({
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  // Infos détaillées (badges, description, meta, photos) :
+  // repliées sur mobile, dépliées sur desktop par défaut.
+  const isDesktop = useIsDesktop();
+  const [userToggled, setUserToggled] = useState(false);
+  const [manualShow, setManualShow] = useState(false);
+  const showInfo = userToggled ? manualShow : isDesktop;
   const [forecast, setForecast] = useState<FullForecast | null>(null);
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   // Live current wind from /api/stations — same endpoint as the map popup,
@@ -405,51 +425,72 @@ export function SpotPageClient({
               </a>
             </div>
 
-            {/* Badges */}
-            <div className="flex flex-wrap gap-2 mt-3">
-              <Badge className={DIFFICULTY_COLORS[spot.difficulty]}>
-                {DIFFICULTY_LABELS[spot.difficulty]}
-              </Badge>
-              {isKite && (
-                <Badge className="bg-gray-100 text-gray-700">
-                  <Waves className="h-3 w-3 mr-1" />{" "}
-                  {WATER_LABELS[spot.waterType]}
-                </Badge>
-              )}
-              <Badge className="bg-gray-100 text-gray-700">
-                <Wind className="h-3 w-3 mr-1" />{" "}
-                {useKnots
-                  ? `${roundKnots(spot.minWindKmh)}–${roundKnots(spot.maxWindKmh)} kts`
-                  : `${spot.minWindKmh}–${spot.maxWindKmh} km/h`}
-              </Badge>
-            </div>
+            {/* Toggle infos détaillées */}
+            <button
+              type="button"
+              onClick={() => {
+                setManualShow(!showInfo);
+                setUserToggled(true);
+              }}
+              aria-expanded={showInfo}
+              aria-controls="spot-info-details"
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 transition-colors"
+            >
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${showInfo ? "rotate-180" : ""}`}
+              />
+              {showInfo ? "Masquer les infos" : "Infos sur le spot"}
+            </button>
 
-            {/* Description + meta compact */}
-            {spot.description && (
-              <p className="text-sm text-gray-500 mt-3 leading-relaxed max-w-2xl">
-                {spot.description}
-              </p>
+            {/* Badges */}
+            {showInfo && (
+              <div id="spot-info-details">
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Badge className={DIFFICULTY_COLORS[spot.difficulty]}>
+                    {DIFFICULTY_LABELS[spot.difficulty]}
+                  </Badge>
+                  {isKite && (
+                    <Badge className="bg-gray-100 text-gray-700">
+                      <Waves className="h-3 w-3 mr-1" />{" "}
+                      {WATER_LABELS[spot.waterType]}
+                    </Badge>
+                  )}
+                  <Badge className="bg-gray-100 text-gray-700">
+                    <Wind className="h-3 w-3 mr-1" />{" "}
+                    {useKnots
+                      ? `${roundKnots(spot.minWindKmh)}–${roundKnots(spot.maxWindKmh)} kts`
+                      : `${spot.minWindKmh}–${spot.maxWindKmh} km/h`}
+                  </Badge>
+                </div>
+
+                {/* Description + meta compact */}
+                {spot.description && (
+                  <p className="text-sm text-gray-500 mt-3 leading-relaxed max-w-2xl">
+                    {spot.description}
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-400">
+                  {bestMonthLabels.length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {bestMonthLabels.join(", ")}
+                    </span>
+                  )}
+                  {spot.hazards && (
+                    <span className="flex items-center gap-1 text-orange-500">
+                      <AlertTriangle className="h-3 w-3" />
+                      {spot.hazards}
+                    </span>
+                  )}
+                  {spot.access && (
+                    <span className="flex items-center gap-1">
+                      <Car className="h-3 w-3" />
+                      {spot.access}
+                    </span>
+                  )}
+                </div>
+              </div>
             )}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-400">
-              {bestMonthLabels.length > 0 && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {bestMonthLabels.join(", ")}
-                </span>
-              )}
-              {spot.hazards && (
-                <span className="flex items-center gap-1 text-orange-500">
-                  <AlertTriangle className="h-3 w-3" />
-                  {spot.hazards}
-                </span>
-              )}
-              {spot.access && (
-                <span className="flex items-center gap-1">
-                  <Car className="h-3 w-3" />
-                  {spot.access}
-                </span>
-              )}
-            </div>
 
             {lastRefreshed && (
               <span className="inline-flex items-center gap-1 text-[10px] text-gray-500 mt-2">
@@ -464,34 +505,36 @@ export function SpotPageClient({
           </div>
 
           {/* ── Right side: photos ──────────────────────────── */}
-          <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto">
-            {spot.images.length > 0 && (
-              <div className="flex gap-1.5">
-                {spot.images.slice(0, 3).map((img, idx) => (
-                  <button
-                    key={img.id}
-                    onClick={() => setLightboxIndex(idx)}
-                    className="relative overflow-hidden rounded-lg border border-gray-200 w-20 h-20 sm:w-24 sm:h-24 focus:outline-none focus:ring-2 focus:ring-sky-400"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img.url}
-                      alt={img.caption || spot.name}
-                      className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
-                    />
-                    {idx === 2 && spot.images.length > 3 && (
-                      <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-0.5">
-                        <Images className="h-4 w-4 text-white" />
-                        <span className="text-white font-semibold text-xs">
-                          +{spot.images.length - 3}
-                        </span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          {showInfo && (
+            <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto">
+              {spot.images.length > 0 && (
+                <div className="flex gap-1.5">
+                  {spot.images.slice(0, 3).map((img, idx) => (
+                    <button
+                      key={img.id}
+                      onClick={() => setLightboxIndex(idx)}
+                      className="relative overflow-hidden rounded-lg border border-gray-200 w-20 h-20 sm:w-24 sm:h-24 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.url}
+                        alt={img.caption || spot.name}
+                        className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                      />
+                      {idx === 2 && spot.images.length > 3 && (
+                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-0.5">
+                          <Images className="h-4 w-4 text-white" />
+                          <span className="text-white font-semibold text-xs">
+                            +{spot.images.length - 3}
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
