@@ -151,7 +151,7 @@ export function StationPageClient({
     windSpeedKmh: station.windSpeedKmh,
     windDirection: station.windDirection,
     gustsKmh: gustsKmh ?? station.windSpeedKmh,
-    isKitable: station.windSpeedKmh >= 15 && station.windSpeedKmh <= 45,
+    isKitable: station.windSpeedKmh >= 22 && station.windSpeedKmh <= 45,
     conditionLabel: condLabel,
     color,
     updatedAt: station.updatedAt,

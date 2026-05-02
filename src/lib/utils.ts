@@ -89,7 +89,7 @@ export function getWindData(
     windDirection,
     gustsKmh,
     updatedAt,
-    isKitable: windSpeedKmh >= 15 && windSpeedKmh <= 45,
+    isKitable: windSpeedKmh >= 22 && windSpeedKmh <= 45,
     conditionLabel: windConditionLabel(windSpeedKmh),
     color: windColor(windSpeedKmh),
   };

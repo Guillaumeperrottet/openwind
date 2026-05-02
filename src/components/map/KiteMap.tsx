@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import Link from "next/link";
+import { Wind } from "lucide-react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { io, type Socket } from "socket.io-client";
@@ -419,10 +421,35 @@ export function KiteMap({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    // One-shot focus request from another page (e.g. « Ça souffle ? » planner).
+    // Stored in sessionStorage so it survives navigation and is consumed once.
+    let focusRequest: { center: [number, number]; zoom: number } | null = null;
+    if (!initialCenter) {
+      try {
+        const raw = sessionStorage.getItem("openwind-focus-map");
+        if (raw) {
+          const parsed = JSON.parse(raw) as {
+            lat: number;
+            lng: number;
+            zoom?: number;
+          };
+          if (Number.isFinite(parsed.lat) && Number.isFinite(parsed.lng)) {
+            focusRequest = {
+              center: [parsed.lng, parsed.lat],
+              zoom: Number.isFinite(parsed.zoom) ? parsed.zoom! : 10,
+            };
+          }
+          sessionStorage.removeItem("openwind-focus-map");
+        }
+      } catch {
+        // ignore corrupted entry
+      }
+    }
+
     // Restore last map position from localStorage (persists across reloads & browser restarts).
     // Skipped when an explicit initialCenter is provided (e.g. edit mode).
     let restored: { center: [number, number]; zoom: number } | null = null;
-    if (!initialCenter) {
+    if (!initialCenter && !focusRequest) {
       try {
         const saved = localStorage.getItem("map-view");
         if (saved) {
@@ -448,8 +475,12 @@ export function KiteMap({
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_STYLE,
-      center: initialCenter ?? restored?.center ?? [10, 35],
-      zoom: initialCenter ? (initialZoom ?? 12) : (restored?.zoom ?? 2.5),
+      center: initialCenter ??
+        focusRequest?.center ??
+        restored?.center ?? [10, 35],
+      zoom: initialCenter
+        ? (initialZoom ?? 12)
+        : (focusRequest?.zoom ?? restored?.zoom ?? 2.5),
       attributionControl: false,
     });
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
@@ -467,7 +498,7 @@ export function KiteMap({
     map.on("load", () => {
       if (!mounted) return; // effect was cleaned up before load fired
       // Only auto-geolocate on very first visit (no saved position, no explicit center)
-      if (!initialCenter && !restored) geolocate.trigger();
+      if (!initialCenter && !restored && !focusRequest) geolocate.trigger();
 
       // Place initial pick marker (e.g. edit mode)
       if (initialCenter && pickMode) {
@@ -1138,6 +1169,17 @@ export function KiteMap({
         setLegendOpen={setLegendOpen}
         pickMode={pickMode}
       />
+
+      {/* « Ça souffle ? » floating button — hidden in pickMode (planner) */}
+      {!pickMode && (
+        <Link
+          href="/plan?quick=now"
+          className="absolute bottom-8 left-4 z-10 inline-flex items-center gap-2 rounded-full bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 text-sm font-medium shadow-lg transition-colors"
+        >
+          <Wind className="h-4 w-4" />
+          <span>Ça souffle&nbsp;?</span>
+        </Link>
+      )}
 
       {/* Pick toast — hidden on mobile where the TripPlanner controls provide guidance */}
       {pickMode && (

@@ -46,8 +46,8 @@ async function fetchDailyArchive(
   }
 }
 
-/** Wind threshold (km/h) to count a day as "good" */
-const GOOD_DAY_THRESHOLD = 15;
+/** Wind threshold (km/h) to count a day as "good" for kite (~12 kts) */
+const GOOD_DAY_THRESHOLD = 22;
 
 /**
  * Compute monthly stats from daily data for one year.

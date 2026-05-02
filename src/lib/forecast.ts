@@ -70,15 +70,15 @@ export const roundKnots = (kmh: number): number => Math.round(kmh / 1.852);
  * - 3: idéal (steady wind in sweet spot)
  */
 function calcKitableScore(kmh: number, gustsKmh: number): 0 | 1 | 2 | 3 {
-  if (kmh < 12 || kmh > 55) return 0;
+  if (kmh < 18 || kmh > 55) return 0;
   const gustRatio = gustsKmh / Math.max(kmh, 1);
-  const isIdealSpeed = kmh >= 18 && kmh <= 38;
+  const isIdealSpeed = kmh >= 25 && kmh <= 38;
   const isSteady = gustRatio < 1.45;
 
-  if (kmh >= 15 && kmh <= 45 && isSteady && isIdealSpeed) return 3;
-  if (kmh >= 15 && kmh <= 45 && isSteady) return 2;
-  if (kmh >= 15 && kmh <= 45) return 1; // gusty but rideable
-  // 12–15 or 45–55: marginal zone (too light or too strong)
+  if (kmh >= 22 && kmh <= 45 && isSteady && isIdealSpeed) return 3;
+  if (kmh >= 22 && kmh <= 45 && isSteady) return 2;
+  if (kmh >= 22 && kmh <= 45) return 1; // gusty but rideable
+  // 18–22 or 45–55: marginal zone (too light or too strong)
   return 0;
 }
 
@@ -201,7 +201,7 @@ export async function fetchFullForecast(
       waveHeightM: marineHourly?.wave_height[i] ?? null,
       wavePeriodS: marineHourly?.wave_period[i] ?? null,
       waveDirection: marineHourly?.wave_direction[i] ?? null,
-      isKitable: kmh >= 15 && kmh <= 45,
+      isKitable: kmh >= 22 && kmh <= 45,
       kitableScore: calcKitableScore(kmh, gustsKmh),
     };
   });

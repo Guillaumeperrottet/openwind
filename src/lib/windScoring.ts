@@ -6,7 +6,8 @@ import type { ForecastHour, DayAnalysis, SportType } from "@/types";
 
 /** Wind thresholds per sport type */
 export const SPORT_THRESHOLDS = {
-  KITE: { min: 15, max: 45, idealMin: 20, idealMax: 35, idealCenter: 27 },
+  /** Kite: rideable from 12 kts (~22 km/h) up to ~24 kts (45 km/h). */
+  KITE: { min: 22, max: 45, idealMin: 25, idealMax: 35, idealCenter: 30 },
   /** Paraglide: calm wind is ideal. "rideable" = 0–15 km/h. */
   PARAGLIDE: { min: 0, max: 15, idealMin: 0, idealMax: 10, idealCenter: 5 },
 } as const;
@@ -33,7 +34,7 @@ const DIR_DEGREES: Record<string, number> = {
 
 /**
  * Get the best window of rideable hours from a forecast array.
- * Sport-aware: kite 15–45 km/h, paraglide 0–15 km/h (calm).
+ * Sport-aware: kite 22–45 km/h, paraglide 0–15 km/h (calm).
  */
 export function analyzeForecast(
   forecast: ForecastHour[],

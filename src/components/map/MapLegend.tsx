@@ -39,7 +39,7 @@ export function MapLegend({
 
   return (
     <div
-      className={`absolute bottom-8 left-4 z-10 ${pickMode ? "hidden lg:block" : ""}`}
+      className={`absolute bottom-8 right-4 z-10 ${pickMode ? "hidden lg:block" : ""}`}
     >
       {legendOpen ? (
         <div className="rounded-xl bg-white/90 backdrop-blur p-3 border border-gray-200 text-xs text-gray-600 shadow-lg">

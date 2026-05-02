@@ -146,6 +146,16 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ─── « Ça souffle ? » quick mode ──────────────────────────────────────────
+  // Active when ?quick=now in URL. Auto-geolocate, set today/today, sort by score.
+  const quickNow = searchParams?.quick === "now";
+  const [geoGate, setGeoGate] = useState<
+    "hidden" | "asking" | "denied" | "unsupported"
+  >("hidden");
+  const [quickHandled, setQuickHandled] = useState(false);
+  // Tracks whether the last search was a quick-now run (used for empty-banner)
+  const [lastQuickRadius, setLastQuickRadius] = useState<number | null>(null);
+
   const reverseGeocode = useCallback(async (la: number, lo: number) => {
     try {
       const res = await fetch(
@@ -166,6 +176,83 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
       setLocationName(null);
     }
   }, []);
+
+  const runQuickNowSearch = useCallback(
+    (searchRadius: number) => {
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        setGeoGate("unsupported");
+        return;
+      }
+      setGeoGate("asking");
+      setGeoLoading(true);
+      setError(null);
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const la = pos.coords.latitude;
+          const lo = pos.coords.longitude;
+          const today = toISO(0);
+          setLat(la);
+          setLng(lo);
+          setStartDate(today);
+          setEndDate(today);
+          setRadius(searchRadius);
+          setSortBy("score");
+          setMobileFiltersOpen(false);
+          reverseGeocode(la, lo);
+          setGeoGate("hidden");
+          setGeoLoading(false);
+          setLoading(true);
+          setSearched(true);
+          setLastQuickRadius(searchRadius);
+
+          const params = new URLSearchParams({
+            startDate: today,
+            endDate: today,
+            radius: String(searchRadius),
+            lat: la.toFixed(5),
+            lng: lo.toFixed(5),
+            ...(sport !== "ALL" ? { sport } : {}),
+            quick: "now",
+          });
+          router.replace(`/plan?${params}`, { scroll: false });
+
+          try {
+            const res = await fetch(`/api/plan?${params}`);
+            if (!res.ok) throw new Error(`Erreur ${res.status}`);
+            const data: SpotWithForecast[] = await res.json();
+            setResults(data);
+            setSelectedDayMap({});
+            if (data.length > 0) setSheetFrac(SNAP_HALF);
+          } catch {
+            setError("Impossible de récupérer les prévisions. Réessayez.");
+            setResults([]);
+          } finally {
+            setLoading(false);
+          }
+        },
+        (err) => {
+          setGeoLoading(false);
+          setGeoGate(
+            err.code === err.PERMISSION_DENIED ? "denied" : "unsupported",
+          );
+        },
+        { timeout: 10000, enableHighAccuracy: true },
+      );
+    },
+    [sport, reverseGeocode, router, setSheetFrac],
+  );
+
+  // Trigger when arriving with ?quick=now (or re-clicking the navbar link)
+  useEffect(() => {
+    if (!quickNow) {
+      setQuickHandled(false);
+      return;
+    }
+    if (quickHandled) return;
+    setQuickHandled(true);
+    runQuickNowSearch(150);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickNow]);
 
   const handlePickLocation = useCallback(
     (latitude: number, longitude: number) => {
@@ -405,675 +492,830 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
     };
   }, []);
 
+  // « Ça souffle ? » — empty/low-wind detection (only after a quick search)
+  const quickTopScore = sorted[0]?.bestScore ?? 0;
+  const showQuickEmptyBanner =
+    quickNow &&
+    searched &&
+    !loading &&
+    geoGate === "hidden" &&
+    lastQuickRadius !== null &&
+    (sorted.length === 0 || quickTopScore < 30);
+  const nextRadiusUp =
+    lastQuickRadius === 150 ? 300 : lastQuickRadius === 300 ? 500 : null;
+
   return (
-    <div className="flex flex-col h-full">
-      {/* ═══ Desktop Controls Bar ═══ */}
-      <div className="hidden lg:block shrink-0 px-4 py-3 bg-white border-b border-gray-200">
-        <div className="flex flex-wrap items-end gap-2.5">
-          {/* Destination */}
-          <div className="flex items-end gap-1.5 min-w-0 flex-1 relative">
-            <div className="flex-1 min-w-0">
-              <label className="text-xs text-gray-500 mb-1 block">
-                Destination <span className="text-gray-400">(optionnel)</span>
-              </label>
-              {hasLocation && !deskGeoQuery ? (
-                <div
-                  className={`${ctrlInput} flex items-center gap-2 h-9.5 cursor-default`}
-                >
-                  <MapPin className="h-3.5 w-3.5 text-sky-500 shrink-0" />
-                  <span className="truncate text-gray-700 text-sm flex-1">
-                    {locationName || `${lat!.toFixed(3)}°, ${lng!.toFixed(3)}°`}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLat(null);
-                      setLng(null);
-                      setLocationName(null);
-                      setDeskGeoQuery("");
-                    }}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ) : (
-                <div className="relative">
-                  <div className={`${ctrlInput} flex items-center gap-2 h-9.5`}>
-                    <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                    <input
-                      type="text"
-                      value={deskGeoQuery}
-                      onChange={(e) => {
-                        setDeskGeoQuery(e.target.value);
-                        searchDeskGeo(e.target.value);
-                      }}
-                      onFocus={() =>
-                        deskGeoResults.length && setDeskGeoOpen(true)
-                      }
-                      placeholder="Ville, lieu… ou laissez vide"
-                      className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
-                    />
-                  </div>
-                  {deskGeoOpen && deskGeoResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                      {deskGeoResults.map((r, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => {
-                            setLat(r.lat);
-                            setLng(r.lon);
-                            setLocationName(r.name.split(",")[0]);
-                            setDeskGeoQuery("");
-                            setDeskGeoResults([]);
-                            setDeskGeoOpen(false);
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-700 border-b border-gray-100 last:border-0 flex items-center gap-2"
-                        >
-                          <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
-                          <span className="truncate">{r.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <button
-              onClick={handleGeolocate}
-              disabled={geoLoading}
-              title="Utiliser ma position"
-              className="h-9.5 w-9.5 shrink-0 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors disabled:opacity-40"
-            >
-              <Locate className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          {/* Dates */}
-          <div className="flex gap-2 flex-1 min-w-0 sm:flex-none sm:contents">
-            <div className="flex-1 sm:flex-none">
-              <label className="text-xs text-gray-500 mb-1 block">Du</label>
-              <input
-                type="date"
-                value={startDate}
-                min={toISO(0)}
-                onChange={(e) => {
-                  setStartDate(e.target.value);
-                  if (e.target.value > endDate) setEndDate(e.target.value);
-                }}
-                className={`${ctrlInput} w-full sm:w-auto`}
-              />
-            </div>
-            <div className="flex-1 sm:flex-none">
-              <label className="text-xs text-gray-500 mb-1 block">Au</label>
-              <input
-                type="date"
-                value={endDate}
-                min={startDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className={`${ctrlInput} w-full sm:w-auto`}
-              />
-            </div>
-          </div>
-
-          {/* Radius */}
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">
-              Rayon
-              {!hasLocation && <span className="text-gray-400"> (ignoré)</span>}
-            </label>
-            <select
-              value={radius}
-              onChange={(e) => setRadius(Number(e.target.value))}
-              className={ctrlInput}
-              disabled={!hasLocation}
-            >
-              <option value={50}>50 km</option>
-              <option value={100}>100 km</option>
-              <option value={150}>150 km</option>
-              <option value={300}>300 km</option>
-              <option value={500}>500 km</option>
-            </select>
-          </div>
-
-          {/* Sport */}
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Sport</label>
-            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-sm">
-              {(
-                [
-                  ["KITE", "Kite"],
-                  ["PARAGLIDE", "Para"],
-                ] as const
-              ).map(([key, label], i) => (
-                <button
-                  key={key}
-                  onClick={() => setSport(key)}
-                  className={`px-3 py-2 font-medium transition-colors ${
-                    sport === key
-                      ? key === "KITE"
-                        ? "bg-green-500 text-white"
-                        : "bg-orange-500 text-white"
-                      : "bg-gray-50 text-gray-500 hover:bg-gray-100"
-                  } ${i > 0 ? "border-l border-gray-200" : ""}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {hasLocation ? (
-            <Button
-              onClick={handleSearch}
-              disabled={loading}
-              className="h-9.5 self-end w-full sm:w-auto"
-            >
-              {loading ? "Recherche…" : "Trouver"}
-            </Button>
-          ) : (
-            <div className="flex gap-2 self-end w-full sm:w-auto">
-              <Button
-                onClick={handleSearchNearMe}
-                disabled={loading || geoLoading}
-                className="h-9.5 flex-1 sm:flex-none"
-              >
-                {geoLoading ? (
-                  "Localisation…"
-                ) : loading ? (
-                  "Recherche…"
-                ) : (
-                  <>
-                    <Locate className="h-3.5 w-3.5 mr-1" />
-                    Autour de moi
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handleSearch}
-                disabled={loading}
-                className="h-9.5 flex-1 sm:flex-none"
-                variant="secondary"
-              >
-                {loading ? (
-                  "Recherche…"
-                ) : (
-                  <>
-                    <Globe className="h-3.5 w-3.5 mr-1" />
-                    Meilleurs spots
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ═══ Desktop data source banner ═══ */}
-      {searched && !loading && results.length > 0 && (
-        <div
-          className={`shrink-0 hidden lg:flex items-center gap-2 px-4 py-2 text-xs border-b border-gray-200 ${
-            dataSource === "archive"
-              ? "bg-amber-50 text-amber-700"
-              : "bg-sky-50 text-sky-700"
-          }`}
-        >
-          {dataSource === "archive" ? (
-            <>
-              <Archive className="h-3.5 w-3.5 shrink-0" />
-              <span>
-                <strong>Données historiques</strong> {"—"} Les dates
-                sélectionnées dépassent les 16 jours de prévision. Les scores
-                sont basés sur les archives météo des 5 dernières années.
-              </span>
-            </>
-          ) : (
-            <>
-              <Info className="h-3.5 w-3.5 shrink-0" />
-              <span>
-                <strong>Prévisions temps réel</strong> {"—"} Jusqu&apos;à 16
-                jours. Au-delà, les scores se baseront sur les archives
-                annuelles.
-              </span>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ═══ Map + Results ═══ */}
-      <div className="flex flex-1 min-h-0 flex-col lg:flex-row relative">
-        {/* Map */}
-        <div className="flex-1 min-h-0 lg:h-full lg:border-r border-gray-200 relative">
-          <KiteMap
-            spots={results}
-            pickMode={true}
-            onPickLocation={handlePickLocation}
-            highlightSpotId={hoveredSpotId}
-          />
-
-          {/* Mobile FABs — positioned above the sheet */}
-          <div
-            className="lg:hidden absolute right-3 z-10 flex flex-col gap-2"
-            style={{
-              bottom: `calc(${sheetFrac * 100}vh + 12px)`,
-              transition: isDragging
-                ? "none"
-                : "bottom 0.3s cubic-bezier(0.32,0.72,0,1)",
-            }}
-          >
-            {!searched && (
-              <button
-                onClick={handleSearchNearMe}
-                disabled={loading || geoLoading}
-                className="h-12 w-12 rounded-full bg-sky-600 text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
-                title="Autour de moi"
-              >
-                <Locate className="h-5 w-5" />
-              </button>
-            )}
-            {!searched && !hasLocation && (
-              <button
-                onClick={handleSearch}
-                disabled={loading}
-                className="h-12 w-12 rounded-full bg-gray-900 text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
-                title="Meilleurs spots"
-              >
-                <Globe className="h-5 w-5" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* ═══ Bottom Sheet (mobile) / Side Panel (desktop) ═══ */}
-        <div className="hidden lg:block relative shrink-0">
-          {/* Desktop expand toggle — centered on left edge */}
-          {searched && results.length > 0 && (
-            <button
-              onClick={() => setPanelExpanded((p) => !p)}
-              className="absolute -left-3.5 top-1/2 -translate-y-1/2 z-30 w-7 h-14 flex items-center justify-center bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 hover:shadow transition-all"
-              title={panelExpanded ? "Réduire le panel" : "Élargir le panel"}
-            >
-              {panelExpanded ? (
-                <PanelRightClose className="h-4 w-4 text-gray-500" />
-              ) : (
-                <PanelRightOpen className="h-4 w-4 text-gray-500" />
-              )}
-            </button>
-          )}
-        </div>
-        <div
-          ref={sheetRef}
-          className={`absolute bottom-0 left-0 right-0 z-20 lg:static lg:z-auto w-full flex flex-col min-h-0 bg-white rounded-t-2xl lg:rounded-none shadow-[0_-4px_20px_rgba(0,0,0,0.08)] lg:shadow-none border-t border-gray-200 lg:border-t-0 transition-[width] duration-300 ease-in-out ${
-            panelExpanded ? "lg:w-[65vw]" : "lg:w-105"
-          }`}
-          style={{
-            height: isMobile ? `${sheetFrac * 100}vh` : undefined,
-            transition: isDragging
-              ? "none"
-              : isMobile
-                ? "height 0.3s cubic-bezier(0.32,0.72,0,1)"
-                : "width 0.3s cubic-bezier(0.32,0.72,0,1)",
-          }}
-        >
-          {/* Drag handle — tall touch target for easy swiping */}
-          <div
-            className="lg:hidden flex flex-col items-center pt-3 pb-2 cursor-grab active:cursor-grabbing shrink-0 touch-none"
-            onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
-            onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
-            onTouchEnd={(e) => handleDragEnd(e.changedTouches[0].clientY)}
-            onClick={handleSheetToggle}
-          >
-            <div className="w-12 h-1.5 rounded-full bg-gray-300 mb-1.5" />
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
-              <span>
-                {loading
-                  ? "Recherche…"
-                  : results.length > 0
-                    ? `${results.length} spot${results.length > 1 ? "s" : ""}`
-                    : searched
-                      ? "Aucun résultat"
-                      : "Résultats"}
-              </span>
-              <ChevronUp
-                className={`h-3.5 w-3.5 transition-transform ${sheetFrac > SNAP_HALF + 0.05 ? "rotate-180" : ""}`}
-              />
-            </div>
-          </div>
-
-          {/* Swipeable content wrapper — enables drag from anywhere, not just the handle */}
-          <div
-            className="flex flex-col min-h-0 flex-1"
-            onTouchStart={contentTouchStart}
-            onTouchMove={contentTouchMove}
-            onTouchEnd={contentTouchEnd}
-          >
-            {/* Peek preview — first result */}
-            {sheetFrac <= SNAP_PEEK + 0.02 && firstResult && !loading && (
-              <div className="lg:hidden px-4 pb-2 shrink-0">
-                <div className="flex items-center gap-3">
+    <>
+      <div className="flex flex-col h-full">
+        {/* ═══ Desktop Controls Bar ═══ */}
+        <div className="hidden lg:block shrink-0 px-4 py-3 bg-white border-b border-gray-200">
+          <div className="flex flex-wrap items-end gap-2.5">
+            {/* Destination */}
+            <div className="flex items-end gap-1.5 min-w-0 flex-1 relative">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Destination <span className="text-gray-400">(optionnel)</span>
+                </label>
+                {hasLocation && !deskGeoQuery ? (
                   <div
-                    className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold"
-                    style={{
-                      background: scoreColor(firstResult.bestScore ?? 0),
-                    }}
+                    className={`${ctrlInput} flex items-center gap-2 h-9.5 cursor-default`}
                   >
-                    {firstResult.bestScore ?? 0}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {firstResult.name}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate">
-                      {[firstResult.region, firstResult.country]
-                        .filter(Boolean)
-                        .join(", ")}
-                      {hasLocation &&
-                        ` · ${Math.round(firstResult.distanceKm)} km`}
-                    </p>
-                  </div>
-                  {results.length > 1 && (
-                    <span className="text-xs text-gray-400 shrink-0">
-                      +{results.length - 1}
+                    <MapPin className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+                    <span className="truncate text-gray-700 text-sm flex-1">
+                      {locationName ||
+                        `${lat!.toFixed(3)}°, ${lng!.toFixed(3)}°`}
                     </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Mobile onboarding — visible before first search */}
-            {!searched && !loading && (
-              <div className="lg:hidden px-4 pt-3 pb-2 border-b border-gray-100">
-                <h2 className="text-base font-semibold text-gray-800">
-                  🪁 Planifiez votre session
-                </h2>
-                <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                  Choisissez une destination et vos dates, ou lancez une
-                  recherche rapide pour trouver le meilleur vent.
-                </p>
-              </div>
-            )}
-
-            {/* Mobile inline filters (collapsible) */}
-            <div className="lg:hidden shrink-0">
-              <button
-                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                className="w-full flex items-center justify-between px-4 py-2 text-xs border-b border-gray-100"
-              >
-                <div className="flex items-center gap-2 text-gray-500 min-w-0">
-                  <SlidersHorizontal className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">{filterSummary || "Filtres"}</span>
-                </div>
-                {mobileFiltersOpen ? (
-                  <ChevronUp className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLat(null);
+                        setLng(null);
+                        setLocationName(null);
+                        setDeskGeoQuery("");
+                      }}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 ) : (
-                  <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                )}
-              </button>
-              {mobileFiltersOpen && (
-                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                  <PlanFilters
-                    lat={lat}
-                    lng={lng}
-                    locationName={locationName}
-                    startDate={startDate}
-                    endDate={endDate}
-                    radius={radius}
-                    sport={sport}
-                    geoLoading={geoLoading}
-                    onLatChange={setLat}
-                    onLngChange={setLng}
-                    onLocationNameChange={setLocationName}
-                    onStartDateChange={setStartDate}
-                    onEndDateChange={setEndDate}
-                    onRadiusChange={setRadius}
-                    onSportChange={setSport}
-                    onGeolocate={handleGeolocate}
-                    onPickOnMap={handlePickOnMap}
-                    reverseGeocode={reverseGeocode}
-                  />
-                  <div className="mt-3 flex gap-2">
-                    {hasLocation ? (
-                      <Button
-                        onClick={handleSearch}
-                        disabled={loading}
-                        className="h-10 flex-1"
-                      >
-                        {loading ? "Recherche…" : "Trouver"}
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          onClick={handleSearchNearMe}
-                          disabled={loading || geoLoading}
-                          className="h-10 flex-1"
-                        >
-                          {geoLoading ? (
-                            "Localisation…"
-                          ) : (
-                            <>
-                              <Locate className="h-3.5 w-3.5 mr-1" />
-                              Autour de moi
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={handleSearch}
-                          disabled={loading}
-                          className="h-10 flex-1"
-                          variant="secondary"
-                        >
-                          <Globe className="h-3.5 w-3.5 mr-1" />
-                          Meilleurs spots
-                        </Button>
-                      </>
+                  <div className="relative">
+                    <div
+                      className={`${ctrlInput} flex items-center gap-2 h-9.5`}
+                    >
+                      <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                      <input
+                        type="text"
+                        value={deskGeoQuery}
+                        onChange={(e) => {
+                          setDeskGeoQuery(e.target.value);
+                          searchDeskGeo(e.target.value);
+                        }}
+                        onFocus={() =>
+                          deskGeoResults.length && setDeskGeoOpen(true)
+                        }
+                        placeholder="Ville, lieu… ou laissez vide"
+                        className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
+                      />
+                    </div>
+                    {deskGeoOpen && deskGeoResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                        {deskGeoResults.map((r, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setLat(r.lat);
+                              setLng(r.lon);
+                              setLocationName(r.name.split(",")[0]);
+                              setDeskGeoQuery("");
+                              setDeskGeoResults([]);
+                              setDeskGeoOpen(false);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-sky-50 hover:text-sky-700 border-b border-gray-100 last:border-0 flex items-center gap-2"
+                          >
+                            <MapPin className="h-3 w-3 text-gray-400 shrink-0" />
+                            <span className="truncate">{r.name}</span>
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Mobile data source banner */}
-            {searched && !loading && results.length > 0 && (
-              <div
-                className={`lg:hidden shrink-0 flex items-center gap-2 px-4 py-1.5 text-xs border-b border-gray-200 ${
-                  dataSource === "archive"
-                    ? "bg-amber-50 text-amber-700"
-                    : "bg-sky-50 text-sky-700"
-                }`}
-              >
-                {dataSource === "archive" ? (
-                  <>
-                    <Archive className="h-3.5 w-3.5 shrink-0" />
-                    <span>
-                      <strong>Données historiques</strong> {"—"} archives météo
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Info className="h-3.5 w-3.5 shrink-0" />
-                    <span>
-                      <strong>Prévisions temps réel</strong>
-                    </span>
-                  </>
                 )}
               </div>
-            )}
+              <button
+                onClick={handleGeolocate}
+                disabled={geoLoading}
+                title="Utiliser ma position"
+                className="h-9.5 w-9.5 shrink-0 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors disabled:opacity-40"
+              >
+                <Locate className="h-3.5 w-3.5" />
+              </button>
+            </div>
 
-            {/* Sort bar */}
-            {results.length > 1 && (
-              <div className="shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-100 text-xs">
-                <span className="text-gray-400">Trier :</span>
+            {/* Dates */}
+            <div className="flex gap-2 flex-1 min-w-0 sm:flex-none sm:contents">
+              <div className="flex-1 sm:flex-none">
+                <label className="text-xs text-gray-500 mb-1 block">Du</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  min={toISO(0)}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    if (e.target.value > endDate) setEndDate(e.target.value);
+                  }}
+                  className={`${ctrlInput} w-full sm:w-auto`}
+                />
+              </div>
+              <div className="flex-1 sm:flex-none">
+                <label className="text-xs text-gray-500 mb-1 block">Au</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className={`${ctrlInput} w-full sm:w-auto`}
+                />
+              </div>
+            </div>
+
+            {/* Radius */}
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">
+                Rayon
+                {!hasLocation && (
+                  <span className="text-gray-400"> (ignoré)</span>
+                )}
+              </label>
+              <select
+                value={radius}
+                onChange={(e) => setRadius(Number(e.target.value))}
+                className={ctrlInput}
+                disabled={!hasLocation}
+              >
+                <option value={50}>50 km</option>
+                <option value={100}>100 km</option>
+                <option value={150}>150 km</option>
+                <option value={300}>300 km</option>
+                <option value={500}>500 km</option>
+              </select>
+            </div>
+
+            {/* Sport */}
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Sport</label>
+              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-sm">
                 {(
                   [
-                    ["score", "Score"],
-                    ...(hasLocation
-                      ? [["distance", "Distance"] as [SortKey, string]]
-                      : []),
-                    ["wind", "Vent"],
-                  ] as [SortKey, string][]
-                ).map(([key, label]) => (
+                    ["KITE", "Kite"],
+                    ["PARAGLIDE", "Para"],
+                  ] as const
+                ).map(([key, label], i) => (
                   <button
                     key={key}
-                    onClick={() => setSortBy(key)}
-                    className={`px-2 py-0.5 rounded-full transition-colors ${
-                      sortBy === key
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-500 hover:text-gray-800"
-                    }`}
+                    onClick={() => setSport(key)}
+                    className={`px-3 py-2 font-medium transition-colors ${
+                      sport === key
+                        ? key === "KITE"
+                          ? "bg-green-500 text-white"
+                          : "bg-orange-500 text-white"
+                        : "bg-gray-50 text-gray-500 hover:bg-gray-100"
+                    } ${i > 0 ? "border-l border-gray-200" : ""}`}
                   >
                     {label}
                   </button>
                 ))}
-                <span className="ml-auto flex items-center gap-2 text-gray-400">
-                  {results.length} spot{results.length > 1 ? "s" : ""}
-                  {results.filter((r) => r.forecastError).length > 0 && (
-                    <span className="text-orange-400 ml-1">
-                      ({results.filter((r) => r.forecastError).length} sans
-                      prévision)
-                    </span>
+              </div>
+            </div>
+
+            {hasLocation ? (
+              <Button
+                onClick={handleSearch}
+                disabled={loading}
+                className="h-9.5 self-end w-full sm:w-auto"
+              >
+                {loading ? "Recherche…" : "Trouver"}
+              </Button>
+            ) : (
+              <div className="flex gap-2 self-end w-full sm:w-auto">
+                <Button
+                  onClick={handleSearchNearMe}
+                  disabled={loading || geoLoading}
+                  className="h-9.5 flex-1 sm:flex-none"
+                >
+                  {geoLoading ? (
+                    "Localisation…"
+                  ) : loading ? (
+                    "Recherche…"
+                  ) : (
+                    <>
+                      <Locate className="h-3.5 w-3.5 mr-1" />
+                      Autour de moi
+                    </>
                   )}
-                  <button
-                    onClick={handleShare}
-                    className="ml-1 p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-sky-600 transition-colors"
-                    title="Partager cette recherche"
-                  >
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
-                    ) : (
-                      <Share2 className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                </span>
+                </Button>
+                <Button
+                  onClick={handleSearch}
+                  disabled={loading}
+                  className="h-9.5 flex-1 sm:flex-none"
+                  variant="secondary"
+                >
+                  {loading ? (
+                    "Recherche…"
+                  ) : (
+                    <>
+                      <Globe className="h-3.5 w-3.5 mr-1" />
+                      Meilleurs spots
+                    </>
+                  )}
+                </Button>
               </div>
             )}
+          </div>
+        </div>
 
-            {/* Results list */}
+        {/* ═══ Desktop data source banner ═══ */}
+        {searched && !loading && results.length > 0 && (
+          <div
+            className={`shrink-0 hidden lg:flex items-center gap-2 px-4 py-2 text-xs border-b border-gray-200 ${
+              dataSource === "archive"
+                ? "bg-amber-50 text-amber-700"
+                : "bg-sky-50 text-sky-700"
+            }`}
+          >
+            {dataSource === "archive" ? (
+              <>
+                <Archive className="h-3.5 w-3.5 shrink-0" />
+                <span>
+                  <strong>Données historiques</strong> {"—"} Les dates
+                  sélectionnées dépassent les 16 jours de prévision. Les scores
+                  sont basés sur les archives météo des 5 dernières années.
+                </span>
+              </>
+            ) : (
+              <>
+                <Info className="h-3.5 w-3.5 shrink-0" />
+                <span>
+                  <strong>Prévisions temps réel</strong> {"—"} Jusqu&apos;à 16
+                  jours. Au-delà, les scores se baseront sur les archives
+                  annuelles.
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ═══ Map + Results ═══ */}
+        <div className="flex flex-1 min-h-0 flex-col lg:flex-row relative">
+          {/* Map */}
+          <div className="flex-1 min-h-0 lg:h-full lg:border-r border-gray-200 relative">
+            <KiteMap
+              spots={results}
+              pickMode={true}
+              onPickLocation={handlePickLocation}
+              highlightSpotId={hoveredSpotId}
+            />
+
+            {/* Mobile FABs — positioned above the sheet */}
             <div
-              ref={scrollRef}
-              className={`flex-1 overflow-y-auto p-4 ${panelExpanded ? "grid grid-cols-2 gap-3 auto-rows-min items-start" : "space-y-2.5"}`}
+              className="lg:hidden absolute right-3 z-10 flex flex-col gap-2"
+              style={{
+                bottom: `calc(${sheetFrac * 100}vh + 12px)`,
+                transition: isDragging
+                  ? "none"
+                  : "bottom 0.3s cubic-bezier(0.32,0.72,0,1)",
+              }}
             >
-              {/* Empty state — desktop only (mobile has the onboarding header + open filters) */}
-              {!searched && !loading && (
-                <div className="hidden lg:block text-center text-gray-400 text-sm py-12 col-span-full">
-                  <Navigation className="h-8 w-8 mx-auto mb-3 opacity-20" />
-                  <p className="font-medium text-gray-500">
-                    Trouvez les meilleurs spots
-                  </p>
-                  <p className="text-xs mt-1.5 opacity-70 leading-5">
-                    Cliquez sur la carte, recherchez un lieu,
-                    <br />
-                    ou lancez directement pour les meilleurs spots mondiaux.
-                  </p>
-                </div>
+              {!searched && (
+                <button
+                  onClick={handleSearchNearMe}
+                  disabled={loading || geoLoading}
+                  className="h-12 w-12 rounded-full bg-sky-600 text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                  title="Autour de moi"
+                >
+                  <Locate className="h-5 w-5" />
+                </button>
               )}
+              {!searched && !hasLocation && (
+                <button
+                  onClick={handleSearch}
+                  disabled={loading}
+                  className="h-12 w-12 rounded-full bg-gray-900 text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+                  title="Meilleurs spots"
+                >
+                  <Globe className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          </div>
 
-              {/* Skeleton */}
-              {loading && (
-                <div className="space-y-2.5 col-span-full">
-                  {[1, 2, 3, 4].map((i) => (
+          {/* ═══ Bottom Sheet (mobile) / Side Panel (desktop) ═══ */}
+          <div className="hidden lg:block relative shrink-0">
+            {/* Desktop expand toggle — centered on left edge */}
+            {searched && results.length > 0 && (
+              <button
+                onClick={() => setPanelExpanded((p) => !p)}
+                className="absolute -left-3.5 top-1/2 -translate-y-1/2 z-30 w-7 h-14 flex items-center justify-center bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 hover:shadow transition-all"
+                title={panelExpanded ? "Réduire le panel" : "Élargir le panel"}
+              >
+                {panelExpanded ? (
+                  <PanelRightClose className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <PanelRightOpen className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
+            )}
+          </div>
+          <div
+            ref={sheetRef}
+            className={`absolute bottom-0 left-0 right-0 z-20 lg:static lg:z-auto w-full flex flex-col min-h-0 bg-white rounded-t-2xl lg:rounded-none shadow-[0_-4px_20px_rgba(0,0,0,0.08)] lg:shadow-none border-t border-gray-200 lg:border-t-0 transition-[width] duration-300 ease-in-out ${
+              panelExpanded ? "lg:w-[65vw]" : "lg:w-105"
+            }`}
+            style={{
+              height: isMobile ? `${sheetFrac * 100}vh` : undefined,
+              transition: isDragging
+                ? "none"
+                : isMobile
+                  ? "height 0.3s cubic-bezier(0.32,0.72,0,1)"
+                  : "width 0.3s cubic-bezier(0.32,0.72,0,1)",
+            }}
+          >
+            {/* Drag handle — tall touch target for easy swiping */}
+            <div
+              className="lg:hidden flex flex-col items-center pt-3 pb-2 cursor-grab active:cursor-grabbing shrink-0 touch-none"
+              onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
+              onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
+              onTouchEnd={(e) => handleDragEnd(e.changedTouches[0].clientY)}
+              onClick={handleSheetToggle}
+            >
+              <div className="w-12 h-1.5 rounded-full bg-gray-300 mb-1.5" />
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                <span>
+                  {loading
+                    ? "Recherche…"
+                    : results.length > 0
+                      ? `${results.length} spot${results.length > 1 ? "s" : ""}`
+                      : searched
+                        ? "Aucun résultat"
+                        : "Résultats"}
+                </span>
+                <ChevronUp
+                  className={`h-3.5 w-3.5 transition-transform ${sheetFrac > SNAP_HALF + 0.05 ? "rotate-180" : ""}`}
+                />
+              </div>
+            </div>
+
+            {/* Swipeable content wrapper — enables drag from anywhere, not just the handle */}
+            <div
+              className="flex flex-col min-h-0 flex-1"
+              onTouchStart={contentTouchStart}
+              onTouchMove={contentTouchMove}
+              onTouchEnd={contentTouchEnd}
+            >
+              {/* Peek preview — first result */}
+              {sheetFrac <= SNAP_PEEK + 0.02 && firstResult && !loading && (
+                <div className="lg:hidden px-4 pb-2 shrink-0">
+                  <div className="flex items-center gap-3">
                     <div
-                      key={i}
-                      className="rounded-xl bg-gray-50 border border-gray-200 p-3 animate-pulse"
+                      className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+                      style={{
+                        background: scoreColor(firstResult.bestScore ?? 0),
+                      }}
                     >
-                      <div className="flex justify-between mb-2">
-                        <div className="space-y-1">
-                          <div className="h-3.5 bg-gray-200 rounded w-28" />
-                          <div className="h-2.5 bg-gray-200 rounded w-20" />
-                        </div>
-                        <div className="w-10 h-10 rounded-lg bg-gray-200" />
-                      </div>
-                      <div className="h-8 bg-gray-200 rounded-lg" />
+                      {firstResult.bestScore ?? 0}
                     </div>
-                  ))}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {firstResult.name}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {[firstResult.region, firstResult.country]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {hasLocation &&
+                          ` · ${Math.round(firstResult.distanceKm)} km`}
+                      </p>
+                    </div>
+                    {results.length > 1 && (
+                      <span className="text-xs text-gray-400 shrink-0">
+                        +{results.length - 1}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Error */}
-              {error && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-xl p-3 border border-red-200 col-span-full">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  {error}
+              {/* Mobile onboarding — visible before first search */}
+              {!searched && !loading && (
+                <div className="lg:hidden px-4 pt-3 pb-2 border-b border-gray-100">
+                  <h2 className="text-base font-semibold text-gray-800">
+                    🪁 Planifiez votre session
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                    Choisissez une destination et vos dates, ou lancez une
+                    recherche rapide pour trouver le meilleur vent.
+                  </p>
                 </div>
               )}
 
-              {/* No results */}
-              {!loading && searched && results.length === 0 && !error && (
-                <div className="text-center text-gray-400 text-sm py-12 col-span-full">
-                  <Wind className="h-7 w-7 mx-auto mb-3 opacity-30" />
-                  {hasLocation ? (
+              {/* Mobile inline filters (collapsible) */}
+              <div className="lg:hidden shrink-0">
+                <button
+                  onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+                  className="w-full flex items-center justify-between px-4 py-2 text-xs border-b border-gray-100"
+                >
+                  <div className="flex items-center gap-2 text-gray-500 min-w-0">
+                    <SlidersHorizontal className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">
+                      {filterSummary || "Filtres"}
+                    </span>
+                  </div>
+                  {mobileFiltersOpen ? (
+                    <ChevronUp className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                  )}
+                </button>
+                {mobileFiltersOpen && (
+                  <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                    <PlanFilters
+                      lat={lat}
+                      lng={lng}
+                      locationName={locationName}
+                      startDate={startDate}
+                      endDate={endDate}
+                      radius={radius}
+                      sport={sport}
+                      geoLoading={geoLoading}
+                      onLatChange={setLat}
+                      onLngChange={setLng}
+                      onLocationNameChange={setLocationName}
+                      onStartDateChange={setStartDate}
+                      onEndDateChange={setEndDate}
+                      onRadiusChange={setRadius}
+                      onSportChange={setSport}
+                      onGeolocate={handleGeolocate}
+                      onPickOnMap={handlePickOnMap}
+                      reverseGeocode={reverseGeocode}
+                    />
+                    <div className="mt-3 flex gap-2">
+                      {hasLocation ? (
+                        <Button
+                          onClick={handleSearch}
+                          disabled={loading}
+                          className="h-10 flex-1"
+                        >
+                          {loading ? "Recherche…" : "Trouver"}
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={handleSearchNearMe}
+                            disabled={loading || geoLoading}
+                            className="h-10 flex-1"
+                          >
+                            {geoLoading ? (
+                              "Localisation…"
+                            ) : (
+                              <>
+                                <Locate className="h-3.5 w-3.5 mr-1" />
+                                Autour de moi
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={handleSearch}
+                            disabled={loading}
+                            className="h-10 flex-1"
+                            variant="secondary"
+                          >
+                            <Globe className="h-3.5 w-3.5 mr-1" />
+                            Meilleurs spots
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile data source banner */}
+              {searched && !loading && results.length > 0 && (
+                <div
+                  className={`lg:hidden shrink-0 flex items-center gap-2 px-4 py-1.5 text-xs border-b border-gray-200 ${
+                    dataSource === "archive"
+                      ? "bg-amber-50 text-amber-700"
+                      : "bg-sky-50 text-sky-700"
+                  }`}
+                >
+                  {dataSource === "archive" ? (
                     <>
-                      Aucun spot dans un rayon de {radius} km.
-                      <br />
-                      <span className="text-xs opacity-60">
-                        Élargissez le rayon ou changez de destination.
+                      <Archive className="h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        <strong>Données historiques</strong> {"—"} archives
+                        météo
                       </span>
                     </>
                   ) : (
-                    "Aucun spot trouvé."
+                    <>
+                      <Info className="h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        <strong>Prévisions temps réel</strong>
+                      </span>
+                    </>
                   )}
                 </div>
               )}
 
-              {/* Result cards / Spot preview */}
-              {!loading && previewSpotId && panelExpanded
-                ? (() => {
-                    const previewSpot = sorted.find(
-                      (s) => s.id === previewSpotId,
-                    );
-                    if (!previewSpot) return null;
-                    const dayIdx =
-                      selectedDayMap[previewSpot.id] ??
-                      previewSpot.bestDayIndex ??
-                      0;
-                    return (
-                      <div className="col-span-full h-full">
-                        <SpotPreview
-                          spot={previewSpot}
-                          activeDayIdx={dayIdx}
-                          onBack={() => setPreviewSpotId(null)}
-                          onSelectDay={(i) =>
+              {/* Sort bar */}
+              {results.length > 1 && (
+                <div className="shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-100 text-xs">
+                  <span className="text-gray-400">Trier :</span>
+                  {(
+                    [
+                      ["score", "Score"],
+                      ...(hasLocation
+                        ? [["distance", "Distance"] as [SortKey, string]]
+                        : []),
+                      ["wind", "Vent"],
+                    ] as [SortKey, string][]
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => setSortBy(key)}
+                      className={`px-2 py-0.5 rounded-full transition-colors ${
+                        sortBy === key
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-500 hover:text-gray-800"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                  <span className="ml-auto flex items-center gap-2 text-gray-400">
+                    {results.length} spot{results.length > 1 ? "s" : ""}
+                    {results.filter((r) => r.forecastError).length > 0 && (
+                      <span className="text-orange-400 ml-1">
+                        ({results.filter((r) => r.forecastError).length} sans
+                        prévision)
+                      </span>
+                    )}
+                    <button
+                      onClick={handleShare}
+                      className="ml-1 p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-sky-600 transition-colors"
+                      title="Partager cette recherche"
+                    >
+                      {copied ? (
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      ) : (
+                        <Share2 className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </span>
+                </div>
+              )}
+
+              {/* Results list */}
+              <div
+                ref={scrollRef}
+                className={`flex-1 overflow-y-auto p-4 ${panelExpanded ? "grid grid-cols-2 gap-3 auto-rows-min items-start" : "space-y-2.5"}`}
+              >
+                {/* Empty state — desktop only (mobile has the onboarding header + open filters) */}
+                {!searched && !loading && (
+                  <div className="hidden lg:block text-center text-gray-400 text-sm py-12 col-span-full">
+                    <Navigation className="h-8 w-8 mx-auto mb-3 opacity-20" />
+                    <p className="font-medium text-gray-500">
+                      Trouvez les meilleurs spots
+                    </p>
+                    <p className="text-xs mt-1.5 opacity-70 leading-5">
+                      Cliquez sur la carte, recherchez un lieu,
+                      <br />
+                      ou lancez directement pour les meilleurs spots mondiaux.
+                    </p>
+                  </div>
+                )}
+
+                {/* Skeleton */}
+                {loading && (
+                  <div className="space-y-2.5 col-span-full">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="rounded-xl bg-gray-50 border border-gray-200 p-3 animate-pulse"
+                      >
+                        <div className="flex justify-between mb-2">
+                          <div className="space-y-1">
+                            <div className="h-3.5 bg-gray-200 rounded w-28" />
+                            <div className="h-2.5 bg-gray-200 rounded w-20" />
+                          </div>
+                          <div className="w-10 h-10 rounded-lg bg-gray-200" />
+                        </div>
+                        <div className="h-8 bg-gray-200 rounded-lg" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Error */}
+                {error && (
+                  <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-xl p-3 border border-red-200 col-span-full">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    {error}
+                  </div>
+                )}
+
+                {/* No results */}
+                {!loading && searched && results.length === 0 && !error && (
+                  <div className="text-center text-gray-400 text-sm py-12 col-span-full">
+                    <Wind className="h-7 w-7 mx-auto mb-3 opacity-30" />
+                    {hasLocation ? (
+                      <>
+                        Aucun spot dans un rayon de {radius} km.
+                        <br />
+                        <span className="text-xs opacity-60">
+                          Élargissez le rayon ou changez de destination.
+                        </span>
+                      </>
+                    ) : (
+                      "Aucun spot trouvé."
+                    )}
+                  </div>
+                )}
+
+                {/* Result cards / Spot preview */}
+                {!loading && previewSpotId && panelExpanded
+                  ? (() => {
+                      const previewSpot = sorted.find(
+                        (s) => s.id === previewSpotId,
+                      );
+                      if (!previewSpot) return null;
+                      const dayIdx =
+                        selectedDayMap[previewSpot.id] ??
+                        previewSpot.bestDayIndex ??
+                        0;
+                      return (
+                        <div className="col-span-full h-full">
+                          <SpotPreview
+                            spot={previewSpot}
+                            activeDayIdx={dayIdx}
+                            onBack={() => setPreviewSpotId(null)}
+                            onSelectDay={(i) =>
+                              setSelectedDayMap((prev) => ({
+                                ...prev,
+                                [previewSpot.id]: i,
+                              }))
+                            }
+                          />
+                        </div>
+                      );
+                    })()
+                  : !loading &&
+                    sorted.map((spot) => {
+                      const activeDayIdx =
+                        selectedDayMap[spot.id] ?? spot.bestDayIndex ?? 0;
+
+                      return (
+                        <SpotResultCard
+                          key={spot.id}
+                          spot={spot}
+                          activeDayIdx={activeDayIdx}
+                          hasLocation={hasLocation}
+                          isMultiDay={isMultiDay}
+                          onHover={setHoveredSpotId}
+                          onSelectDay={(spotId, dayIdx) =>
                             setSelectedDayMap((prev) => ({
                               ...prev,
-                              [previewSpot.id]: i,
+                              [spotId]: dayIdx,
                             }))
                           }
+                          onSelect={
+                            panelExpanded
+                              ? (id) => setPreviewSpotId(id)
+                              : undefined
+                          }
                         />
-                      </div>
-                    );
-                  })()
-                : !loading &&
-                  sorted.map((spot) => {
-                    const activeDayIdx =
-                      selectedDayMap[spot.id] ?? spot.bestDayIndex ?? 0;
-
-                    return (
-                      <SpotResultCard
-                        key={spot.id}
-                        spot={spot}
-                        activeDayIdx={activeDayIdx}
-                        hasLocation={hasLocation}
-                        isMultiDay={isMultiDay}
-                        onHover={setHoveredSpotId}
-                        onSelectDay={(spotId, dayIdx) =>
-                          setSelectedDayMap((prev) => ({
-                            ...prev,
-                            [spotId]: dayIdx,
-                          }))
-                        }
-                        onSelect={
-                          panelExpanded
-                            ? (id) => setPreviewSpotId(id)
-                            : undefined
-                        }
-                      />
-                    );
-                  })}
+                      );
+                    })}
+              </div>
             </div>
+            {/* end swipeable content wrapper */}
           </div>
-          {/* end swipeable content wrapper */}
         </div>
       </div>
-    </div>
+
+      {/* ═══ « Ça souffle ? » — Geolocation gate modal ═══ */}
+      {geoGate !== "hidden" && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-full bg-sky-100 flex items-center justify-center">
+                <Wind className="h-5 w-5 text-sky-600" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {geoGate === "asking"
+                  ? "Localisation en cours…"
+                  : "Ça souffle ?"}
+              </h2>
+            </div>
+            {geoGate === "asking" && (
+              <p className="text-sm text-gray-600">
+                Autorise la localisation dans ton navigateur pour qu&apos;on
+                trouve les meilleurs spots autour de toi.
+              </p>
+            )}
+            {geoGate === "denied" && (
+              <>
+                <p className="text-sm text-gray-600 mb-2">
+                  Cette fonction a besoin de ta position pour trouver les spots
+                  ventés près de chez toi.
+                </p>
+                <p className="text-xs text-gray-500 mb-5">
+                  Active la géolocalisation dans les réglages de ton navigateur,
+                  puis réessaie.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    onClick={() => runQuickNowSearch(150)}
+                    className="flex-1"
+                  >
+                    Réessayer
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setGeoGate("hidden");
+                      router.replace("/plan", { scroll: false });
+                    }}
+                    className="flex-1"
+                  >
+                    Aller au planificateur
+                  </Button>
+                </div>
+              </>
+            )}
+            {geoGate === "unsupported" && (
+              <>
+                <p className="text-sm text-gray-600 mb-5">
+                  Ton navigateur ne permet pas la géolocalisation. Tu peux
+                  utiliser le planificateur classique pour choisir une ville.
+                </p>
+                <Button
+                  onClick={() => {
+                    setGeoGate("hidden");
+                    router.replace("/plan", { scroll: false });
+                  }}
+                  className="w-full"
+                >
+                  Aller au planificateur
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ « Ça souffle ? » — Empty / low-wind banner ═══ */}
+      {showQuickEmptyBanner && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[55] w-[min(440px,calc(100vw-2rem))]">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="h-9 w-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                <Wind className="h-4 w-4 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">
+                  {sorted.length === 0
+                    ? "Aucun spot dans ce rayon"
+                    : "Pas top aujourd'hui"}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {sorted.length === 0
+                    ? `Pas de spot trouvé à moins de ${lastQuickRadius} km.`
+                    : `Le meilleur spot dans ${lastQuickRadius} km a un score de ${quickTopScore}/100.`}
+                  {nextRadiusUp ? " Élargir la zone ?" : ""}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {nextRadiusUp && (
+                <Button
+                  onClick={() => runQuickNowSearch(nextRadiusUp)}
+                  className="flex-1"
+                  disabled={loading}
+                >
+                  Chercher à {nextRadiusUp} km
+                </Button>
+              )}
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  // Stash user position so the home map can fly there on mount.
+                  if (lat !== null && lng !== null) {
+                    try {
+                      sessionStorage.setItem(
+                        "openwind-focus-map",
+                        JSON.stringify({ lat, lng, zoom: 10 }),
+                      );
+                    } catch {
+                      // ignore storage errors
+                    }
+                  }
+                  setLastQuickRadius(null);
+                  router.push("/");
+                }}
+                className={nextRadiusUp ? "shrink-0" : "flex-1"}
+              >
+                {nextRadiusUp ? "Fermer" : "OK"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -210,9 +210,9 @@ export async function GET(request: NextRequest) {
 
         let score: number;
         if (spotSport === "PARAGLIDE") {
-          // Paraglide: less wind = better; good days (≥15 km/h) are BAD for parapente
+          // Paraglide: less wind = better; good days (≥22 km/h) are BAD for parapente
           const calmScore = Math.max(0, 1 - avgWind / 25) * 100;
-          const badDaysPct = 100 - avgGoodDays; // % days with < 15 km/h = GOOD for para
+          const badDaysPct = 100 - avgGoodDays; // % days with < 22 km/h = GOOD for para
           score = Math.round(badDaysPct * 0.5 + calmScore * 0.5);
         } else {
           // Kite: combine good days % + avg wind intensity

@@ -150,7 +150,7 @@ export function WindArchives({ spotId, useKnots = true }: Props) {
         </span>
         <span className="flex items-center gap-1">
           <Calendar className="h-3 w-3" /> % jours ≥{" "}
-          {useKnots ? "8 kts" : "15 km/h"}
+          {useKnots ? "12 kts" : "22 km/h"}
         </span>
         <span className="flex items-center gap-1">
           <TrendingUp className="h-3 w-3" /> Source : Open-Meteo Archive
