@@ -82,13 +82,20 @@ export function ForecastWithToggle({
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        // Always reset loading, even if the effect was cancelled
+        // (otherwise the button stays disabled forever when the user
+        // toggles back to Open-Meteo while a fetch is in flight).
+        setLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [source, spotId, lat, lng, mchForecast, loading]);
+    // We intentionally exclude `loading` from deps: it's a guard read at
+    // effect start, not a trigger. Including it would re-run the effect
+    // when we set it to true above, causing a redundant fetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, spotId, lat, lng, mchForecast]);
 
   function handleToggle(next: Source) {
     setSource(next);
