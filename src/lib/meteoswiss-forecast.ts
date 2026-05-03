@@ -45,6 +45,12 @@ let _metaCache: MchPoint[] | null = null;
 let _metaCacheTime = 0;
 const META_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h — points rarely change
 
+// Per-pointId forecast cache (key embeds the run hour, so old runs are
+// naturally evicted when a new MCH run is published). Inflight Map
+// deduplicates concurrent requests for the same point.
+const _forecastCache = new Map<string, HourlyPoint[]>();
+const _forecastInflight = new Map<string, Promise<HourlyPoint[]>>();
+
 /**
  * Fetch and parse the ~6000-point metadata CSV.
  * Cached in-process for 24 hours.
@@ -335,44 +341,63 @@ export async function fetchMchForecast(
   // 1. Find nearest MCH forecast point
   const pointId = await findNearestPointId(lat, lon);
 
-  // 2. Fetch the 3 wind-parameter CSVs in parallel
-  const now = new Date();
-  const [speedSeries, gustsSeries, dirSeries] = await Promise.all(
-    PARAMS.map((p) => streamParseForPoint(getForecastUrl(p, now), pointId)),
-  );
+  // 2. Result cache: keyed by pointId + current run hour. Subsequent calls
+  //    for the same Swiss point within the hour skip the 90 MB of CSV I/O.
+  const runKey = getForecastUrl(PARAMS[0], new Date()); // includes YYYYMMDDHH
+  const cacheKey = `${pointId}|${runKey}|${timezone}`;
+  const cached = _forecastCache.get(cacheKey);
+  if (cached) return cached;
+  const inflight = _forecastInflight.get(cacheKey);
+  if (inflight) return inflight;
 
-  // 3. Build HourlyPoint[] — use speedSeries keys as the time axis
-  const points: HourlyPoint[] = [];
+  const promise = (async () => {
+    // 3. Fetch the 3 wind-parameter CSVs in parallel
+    const now = new Date();
+    const [speedSeries, gustsSeries, dirSeries] = await Promise.all(
+      PARAMS.map((p) => streamParseForPoint(getForecastUrl(p, now), pointId)),
+    );
 
-  // Sort date strings for chronological order
-  const dates = Array.from(speedSeries.keys()).sort();
+    // 4. Build HourlyPoint[] — use speedSeries keys as the time axis
+    const points: HourlyPoint[] = [];
 
-  for (const dateStr of dates) {
-    const speedKmh = speedSeries.get(dateStr) ?? 0;
-    const gustsKmh = gustsSeries.get(dateStr) ?? speedKmh;
-    const direction = dirSeries.get(dateStr) ?? 0;
-    const score = calcKitableScore(speedKmh, gustsKmh);
+    // Sort date strings for chronological order
+    const dates = Array.from(speedSeries.keys()).sort();
 
-    points.push({
-      time: mchDateToIso(dateStr, timezone),
-      windSpeedKmh: speedKmh,
-      windSpeedKnots: Math.round((speedKmh / 1.852) * 10) / 10,
-      gustsKmh,
-      gustsKnots: Math.round((gustsKmh / 1.852) * 10) / 10,
-      windDirection: direction,
-      // Temp/precip/cloud not in MCH wind point grid — caller may merge
-      // from Open-Meteo. Defaults are zero/empty.
-      temperatureC: 0,
-      precipMmh: 0,
-      cloudcover: 0,
-      weathercode: 0,
-      waveHeightM: null,
-      wavePeriodS: null,
-      waveDirection: null,
-      isKitable: score >= 2,
-      kitableScore: score,
-    });
+    for (const dateStr of dates) {
+      const speedKmh = speedSeries.get(dateStr) ?? 0;
+      const gustsKmh = gustsSeries.get(dateStr) ?? speedKmh;
+      const direction = dirSeries.get(dateStr) ?? 0;
+      const score = calcKitableScore(speedKmh, gustsKmh);
+
+      points.push({
+        time: mchDateToIso(dateStr, timezone),
+        windSpeedKmh: speedKmh,
+        windSpeedKnots: Math.round((speedKmh / 1.852) * 10) / 10,
+        gustsKmh,
+        gustsKnots: Math.round((gustsKmh / 1.852) * 10) / 10,
+        windDirection: direction,
+        // Temp/precip/cloud not in MCH wind point grid — caller may merge
+        // from Open-Meteo. Defaults are zero/empty.
+        temperatureC: 0,
+        precipMmh: 0,
+        cloudcover: 0,
+        weathercode: 0,
+        waveHeightM: null,
+        wavePeriodS: null,
+        waveDirection: null,
+        isKitable: score >= 2,
+        kitableScore: score,
+      });
+    }
+
+    _forecastCache.set(cacheKey, points);
+    return points;
+  })();
+
+  _forecastInflight.set(cacheKey, promise);
+  try {
+    return await promise;
+  } finally {
+    _forecastInflight.delete(cacheKey);
   }
-
-  return points;
 }
