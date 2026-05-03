@@ -75,6 +75,8 @@ interface Props {
   forecast: FullForecast;
   /** Use light (white) background instead of dark zinc-900 */
   light?: boolean;
+  /** Source attribution shown in footer (defaults to Open-Meteo) */
+  source?: { label: string; url?: string };
 }
 
 /**
@@ -86,7 +88,7 @@ interface Props {
  * Displayed values are in **knots** (industry standard for kitesurfing).
  * Colors are computed from km/h thresholds for accuracy.
  */
-export function ForecastTable({ forecast, light = true }: Props) {
+export function ForecastTable({ forecast, light = true, source }: Props) {
   const points = filterEvery3h(forecast.hourly);
   const days = groupByDay(points);
   const allPoints = days.flatMap((d) => d.points);
@@ -316,7 +318,8 @@ export function ForecastTable({ forecast, light = true }: Props) {
         <div
           className={`mt-1.5 text-[9px] ${light ? "text-gray-400" : "text-zinc-600"}`}
         >
-          Open-Meteo · CC BY 4.0 · Fuseau : {forecast.timezone}
+          {source?.label ?? "Open-Meteo"} · CC BY 4.0 · Fuseau :{" "}
+          {forecast.timezone}
         </div>
       </div>
     </div>

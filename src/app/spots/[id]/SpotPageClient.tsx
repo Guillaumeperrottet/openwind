@@ -22,6 +22,7 @@ import {
   Radio,
   Camera,
   ChevronDown,
+  CloudRain,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { WindCompass } from "@/components/spot/WindCompass";
@@ -33,10 +34,18 @@ import { useNearbyStations } from "@/components/spot/useNearbyStations";
 import { SpotLightbox } from "@/components/spot/SpotLightbox";
 
 // Lazy-load heavy below-fold components — keeps initial bundle small
-const ForecastTable = dynamic(
-  () => import("@/components/spot/ForecastTable").then((m) => m.ForecastTable),
+const ForecastWithToggle = dynamic(
+  () =>
+    import("@/components/spot/ForecastWithToggle").then(
+      (m) => m.ForecastWithToggle,
+    ),
   { ssr: false },
 );
+
+/** Rough Switzerland bounding box — covers all of CH + a small buffer. */
+function isInSwitzerland(lat: number, lng: number): boolean {
+  return lat >= 45.7 && lat <= 47.9 && lng >= 5.8 && lng <= 10.6;
+}
 const WindArchives = dynamic(
   () => import("@/components/spot/WindArchives").then((m) => m.WindArchives),
   { ssr: false },
@@ -68,6 +77,7 @@ const NETWORK_LABELS: Record<string, string> = {
   meteofrance: "Météo-France",
   netatmo: "Netatmo",
   meteoswiss: "MeteoSwiss",
+  "fr-energy": "FribourgÉnergie",
 };
 
 /** Infer the network label from a station id prefix. */
@@ -76,7 +86,63 @@ function networkLabelFromStationId(id: string): string {
   if (id.startsWith("windball-")) return NETWORK_LABELS.windball;
   if (id.startsWith("mf-")) return NETWORK_LABELS.meteofrance;
   if (id.startsWith("netatmo-")) return NETWORK_LABELS.netatmo;
+  if (id.startsWith("fr-energy-")) return NETWORK_LABELS["fr-energy"];
   return NETWORK_LABELS.meteoswiss;
+}
+
+/**
+ * Conditional rain alert — visible only if significant precipitation is
+ * forecast in the next 6 hours. Shows the upcoming total + start time.
+ */
+function PrecipAlert({ hourly }: { hourly: FullForecast["hourly"] }) {
+  // Capture "now" via lazy state init at mount (pure during render), then
+  // refresh every 5 min via setInterval (pure-effect pattern).
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const summary = useMemo(() => {
+    if (nowMs === null) return null;
+    const upcoming = hourly
+      .filter((p) => {
+        const t = new Date(p.time).getTime();
+        return t >= nowMs && t <= nowMs + 6 * 60 * 60 * 1000;
+      })
+      .slice(0, 6);
+
+    if (upcoming.length === 0) return null;
+
+    const totalMm = upcoming.reduce((s, p) => s + (p.precipMmh || 0), 0);
+    if (totalMm < 0.5) return null;
+
+    const firstRain = upcoming.find((p) => p.precipMmh >= 0.1);
+    if (!firstRain) return null;
+
+    return {
+      startHour: firstRain.time.slice(11, 16),
+      totalMm,
+      intensity:
+        totalMm > 5 ? "Pluie soutenue" : totalMm > 2 ? "Pluie" : "Pluie faible",
+    };
+  }, [hourly, nowMs]);
+
+  if (!summary) return null;
+
+  return (
+    <div className="mb-4 flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+      <CloudRain className="h-4 w-4 mt-0.5 shrink-0 text-blue-600" />
+      <div className="flex-1 min-w-0">
+        <span className="font-medium">{summary.intensity} attendue</span>
+        <span className="text-blue-700">
+          {" "}
+          dès {summary.startHour} · {summary.totalMm.toFixed(1)} mm sur les 6
+          prochaines heures
+        </span>
+      </div>
+    </div>
+  );
 }
 
 /** SSR-safe media query for `min-width: 768px` (md breakpoint). */
@@ -573,6 +639,9 @@ export function SpotPageClient({
           </div>
         </div>
 
+        {/* ── Alerte précipitation (conditionnelle) ───────────────── */}
+        {forecast && <PrecipAlert hourly={forecast.hourly} />}
+
         {/* ── Vent en direct + Info ──────────────────────────────── */}
         <div className="flex flex-col md:flex-row items-start gap-3 mb-10">
           {/* Compass */}
@@ -829,7 +898,13 @@ export function SpotPageClient({
             <h2 className="text-base font-semibold text-gray-900 mb-3">
               Windguru
             </h2>
-            <ForecastTable forecast={forecast} light />
+            <ForecastWithToggle
+              forecast={forecast}
+              spotId={spot.id}
+              lat={spot.latitude}
+              lng={spot.longitude}
+              enableMeteoSwiss={isInSwitzerland(spot.latitude, spot.longitude)}
+            />
           </div>
         ) : (
           <div className="text-sm text-gray-500 text-center py-8">

@@ -5,6 +5,7 @@ import { fetchPioupiouStations } from "@/lib/pioupiou";
 import { fetchNetatmoStations } from "@/lib/netatmo";
 import { fetchMeteoFranceStations } from "@/lib/meteofrance";
 import { fetchWindballStations } from "@/lib/windball";
+import { fetchFribourgEnergieStations } from "@/lib/fribourgenergie";
 
 /**
  * GET /api/cron/stations
@@ -23,14 +24,21 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [meteoResult, piouResult, netatmoResult, mfResult, wbResult] =
-      await Promise.allSettled([
-        fetchMeteoSwissStations(),
-        fetchPioupiouStations(),
-        fetchNetatmoStations(),
-        fetchMeteoFranceStations(),
-        fetchWindballStations(),
-      ]);
+    const [
+      meteoResult,
+      piouResult,
+      netatmoResult,
+      mfResult,
+      wbResult,
+      feResult,
+    ] = await Promise.allSettled([
+      fetchMeteoSwissStations(),
+      fetchPioupiouStations(),
+      fetchNetatmoStations(),
+      fetchMeteoFranceStations(),
+      fetchWindballStations(),
+      fetchFribourgEnergieStations(),
+    ]);
 
     const meteoStations =
       meteoResult.status === "fulfilled" ? meteoResult.value : [];
@@ -40,6 +48,7 @@ export async function GET(request: NextRequest) {
       netatmoResult.status === "fulfilled" ? netatmoResult.value : [];
     const mfStations = mfResult.status === "fulfilled" ? mfResult.value : [];
     const wbStations = wbResult.status === "fulfilled" ? wbResult.value : [];
+    const feStations = feResult.status === "fulfilled" ? feResult.value : [];
 
     const allStations = [
       ...meteoStations,
@@ -47,6 +56,7 @@ export async function GET(request: NextRequest) {
       ...netatmoStations,
       ...mfStations,
       ...wbStations,
+      ...feStations,
     ];
 
     if (allStations.length === 0) {

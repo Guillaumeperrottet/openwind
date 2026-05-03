@@ -6,6 +6,7 @@ import { fetchPioupiouStations } from "@/lib/pioupiou";
 import { fetchNetatmoStations } from "@/lib/netatmo";
 import { fetchMeteoFranceStations } from "@/lib/meteofrance";
 import { fetchWindballStations } from "@/lib/windball";
+import { fetchFribourgEnergieStations } from "@/lib/fribourgenergie";
 
 export const dynamic = "force-dynamic";
 
@@ -176,6 +177,7 @@ export async function GET() {
     withTimeout(fetchNetatmoStations(), 10_000),
     withTimeout(fetchMeteoFranceStations()),
     withTimeout(fetchWindballStations()),
+    withTimeout(fetchFribourgEnergieStations()),
   ]);
 
   const meteoSwiss = results[0].status === "fulfilled" ? results[0].value : [];
@@ -183,18 +185,21 @@ export async function GET() {
   const netatmo = results[2].status === "fulfilled" ? results[2].value : [];
   const meteoFrance = results[3].status === "fulfilled" ? results[3].value : [];
   const windball = results[4].status === "fulfilled" ? results[4].value : [];
+  const fribourgEnergie =
+    results[5].status === "fulfilled" ? results[5].value : [];
 
+  const networkNames = [
+    "MeteoSwiss",
+    "Pioupiou",
+    "Netatmo",
+    "Météo-France",
+    "Windball",
+    "FribourgÉnergie",
+  ];
   for (let i = 0; i < results.length; i++) {
     if (results[i].status === "rejected") {
-      const names = [
-        "MeteoSwiss",
-        "Pioupiou",
-        "Netatmo",
-        "Météo-France",
-        "Windball",
-      ];
       console.error(
-        `[/api/stations] ${names[i]} error:`,
+        `[/api/stations] ${networkNames[i]} error:`,
         (results[i] as PromiseRejectedResult).reason,
       );
     }
@@ -206,6 +211,7 @@ export async function GET() {
     ...netatmo,
     ...meteoFrance,
     ...windball,
+    ...fribourgEnergie,
   ];
 
   if (stations.length === 0) {
