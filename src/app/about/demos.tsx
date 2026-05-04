@@ -465,3 +465,145 @@ function Stat({
     </div>
   );
 }
+
+// ─── « Ça souffle ? » quick mode demo ─────────────────────────────────────────
+
+const QUICK_SPOTS = [
+  { name: "Estavayer-le-Lac", km: 4, kt: 18, dir: 230 },
+  { name: "Cudrefin", km: 12, kt: 22, dir: 245 },
+  { name: "Yvonand", km: 18, kt: 14, dir: 220 },
+  { name: "Le Bouveret", km: 38, kt: 11, dir: 200 },
+];
+
+export function QuickWindDemo() {
+  const [stage, setStage] = useState<"idle" | "locating" | "results">("idle");
+  const [revealed, setRevealed] = useState(0);
+
+  const start = () => {
+    if (stage !== "idle") return;
+    setStage("locating");
+    setRevealed(0);
+    setTimeout(() => {
+      setStage("results");
+      // Reveal results one by one
+      QUICK_SPOTS.forEach((_, i) => {
+        setTimeout(() => setRevealed((r) => Math.max(r, i + 1)), 120 * (i + 1));
+      });
+    }, 900);
+  };
+
+  const reset = () => {
+    setStage("idle");
+    setRevealed(0);
+  };
+
+  return (
+    <div className="relative rounded-2xl bg-linear-to-br from-slate-900 to-slate-800 p-6 sm:p-8 shadow-lg overflow-hidden min-h-[320px]">
+      {/* subtle wind streaks */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-20 pointer-events-none"
+        viewBox="0 0 400 320"
+        preserveAspectRatio="none"
+      >
+        {Array.from({ length: 8 }).map((_, i) => (
+          <path
+            key={i}
+            d={`M -20 ${30 + i * 38} Q 200 ${10 + i * 38} 420 ${50 + i * 38}`}
+            stroke="white"
+            strokeWidth="0.6"
+            fill="none"
+          />
+        ))}
+      </svg>
+
+      <div className="relative">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-sky-300/80">
+            <Zap className="h-3 w-3" />
+            Mode rapide
+          </div>
+          {stage === "results" && (
+            <button
+              type="button"
+              onClick={reset}
+              className="text-[10px] text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              Recommencer
+            </button>
+          )}
+        </div>
+
+        {stage === "idle" && (
+          <div className="mt-10 flex flex-col items-center text-center">
+            <p className="text-slate-300 text-sm max-w-xs">
+              Un seul clic, géolocalisation, et la liste des spots ventés
+              autour de toi. Pas de formulaire, pas d&apos;inscription.
+            </p>
+            <button
+              type="button"
+              onClick={start}
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-sky-500 hover:bg-sky-400 text-white px-5 py-2.5 text-sm font-semibold shadow-lg shadow-sky-500/30 transition-colors"
+            >
+              <Wind className="h-4 w-4" />
+              Ça souffle&nbsp;?
+            </button>
+            <p className="mt-3 text-[10px] text-slate-500">≈ 2 secondes</p>
+          </div>
+        )}
+
+        {stage === "locating" && (
+          <div className="mt-12 flex flex-col items-center text-center">
+            <div className="relative w-12 h-12">
+              <span className="absolute inset-0 rounded-full bg-sky-500/30 animate-ping" />
+              <span className="absolute inset-2 rounded-full bg-sky-500" />
+            </div>
+            <p className="mt-5 text-slate-300 text-sm">
+              Géolocalisation…
+            </p>
+          </div>
+        )}
+
+        {stage === "results" && (
+          <div className="mt-5">
+            <p className="text-[11px] text-slate-400">
+              4 spots ventés à moins de 50 km
+            </p>
+            <ul className="mt-3 space-y-1.5">
+              {QUICK_SPOTS.map((s, i) => (
+                <li
+                  key={s.name}
+                  className={`flex items-center gap-3 rounded-lg bg-white/[0.04] backdrop-blur px-3 py-2 transition-all duration-300 ${
+                    i < revealed
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-2"
+                  }`}
+                >
+                  <MapPin className="h-3.5 w-3.5 text-sky-300/80 shrink-0" />
+                  <span className="flex-1 text-sm text-slate-100 truncate">
+                    {s.name}
+                  </span>
+                  <span className="text-[10px] text-slate-400 tabular-nums">
+                    {s.km} km
+                  </span>
+                  <span
+                    className="text-sm font-semibold tabular-nums"
+                    style={{
+                      color:
+                        s.kt >= 18
+                          ? "#7dd3fc"
+                          : s.kt >= 12
+                            ? "#bae6fd"
+                            : "#cbd5e1",
+                    }}
+                  >
+                    {s.kt} kt
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -10,6 +10,7 @@ import {
   Activity,
   MessageSquare,
   Users,
+  Zap,
 } from "lucide-react";
 import { useReveal } from "./useReveal";
 import {
@@ -21,6 +22,7 @@ import {
   MiniForumDemo,
   WindStreaks,
   SportConditionsDemo,
+  QuickWindDemo,
 } from "./demos";
 
 export default function AboutClient() {
@@ -28,6 +30,7 @@ export default function AboutClient() {
     <div className="bg-white text-slate-900 antialiased selection:bg-blue-200/60">
       <Hero />
       <SectionMap />
+      <SectionQuickWind />
       <SectionNetworks />
       <SectionForecast />
       <SectionPlanner />
@@ -58,7 +61,7 @@ function Hero() {
             width={1200}
             height={400}
             priority
-            className="w-[92vw] sm:w-2xl lg:w-[60rem] h-auto"
+            className="w-[92vw] sm:w-2xl lg:w-240 h-auto"
           />
         </h1>
         <p className="mt-8 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -185,6 +188,44 @@ function SectionMap() {
       }
     >
       <MiniMapDemo />
+    </Section>
+  );
+}
+
+function SectionQuickWind() {
+  return (
+    <Section
+      reverse
+      eyebrow="Mode rapide"
+      icon={<Zap />}
+      title={
+        <>
+          « Ça souffle »,
+          <br />
+          en deux secondes.
+        </>
+      }
+      description={
+        <>
+          <p>
+            Un bouton, une géolocalisation, et la liste des spots vraiment
+            ventilés autour de toi — classés par qualité du moment.
+          </p>
+          <p className="text-sm text-slate-500">
+            Aucun formulaire, aucun compte. Pensé pour les jours où t’hésites
+            entre rouler 20 minutes ou rester chez toi.
+          </p>
+          <Link
+            href="/plan?quick=now"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+          >
+            Essayer maintenant
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </>
+      }
+    >
+      <QuickWindDemo />
     </Section>
   );
 }
