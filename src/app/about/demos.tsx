@@ -607,3 +607,88 @@ export function QuickWindDemo() {
     </div>
   );
 }
+
+// ─── Open source / forum → commit demo ────────────────────────────────────────
+
+const COMMIT_LINES: { type: "issue" | "commit" | "deploy"; text: string; meta?: string }[] = [
+  { type: "issue", text: "feat: add Météo-France SYNOP network", meta: "#42 · ouvert par @marc-kite" },
+  { type: "commit", text: "lib/meteofrance.ts  +185 stations", meta: "3 commits · @guiperrot" },
+  { type: "commit", text: "merge: pull request #42", meta: "main ← feat/meteo-france" },
+  { type: "deploy", text: "deployed to openwind.ch", meta: "build 2m18s" },
+];
+
+export function OpenSourceCodeDemo() {
+  return (
+    <div className="rounded-2xl bg-slate-950 border border-white/10 shadow-xl overflow-hidden font-mono text-[12px]">
+      {/* macOS-style window chrome */}
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/5 bg-slate-900/60">
+        <span className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
+        <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
+        <span className="w-2.5 h-2.5 rounded-full bg-green-400/70" />
+        <span className="ml-3 text-[11px] text-slate-400 font-sans">
+          Guillaumeperrottet/openwind
+        </span>
+      </div>
+
+      {/* Code-style log */}
+      <div className="p-5 space-y-3 text-slate-300">
+        {COMMIT_LINES.map((line, i) => {
+          const accent =
+            line.type === "issue"
+              ? "text-emerald-400"
+              : line.type === "commit"
+                ? "text-sky-400"
+                : "text-fuchsia-400";
+          const prefix =
+            line.type === "issue"
+              ? "issue  "
+              : line.type === "commit"
+                ? "commit "
+                : "deploy ";
+          return (
+            <div key={i} className="flex gap-3">
+              <span className="text-slate-600 select-none shrink-0">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className={`${accent} shrink-0`}>{prefix}</span>
+                  <span className="text-slate-100">{line.text}</span>
+                </div>
+                {line.meta && (
+                  <div className="text-[11px] text-slate-500 mt-0.5 ml-[64px] sm:ml-[68px]">
+                    {line.meta}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Final blinking prompt */}
+        <div className="flex gap-3 pt-2 border-t border-white/5">
+          <span className="text-slate-600 select-none shrink-0">
+            {String(COMMIT_LINES.length + 1).padStart(2, "0")}
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-emerald-400">$</span>
+            <span className="text-slate-400">git checkout -b feat/</span>
+            <span className="inline-block w-2 h-4 bg-emerald-400/80 animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer mini-stats */}
+      <div className="px-5 py-3 border-t border-white/5 bg-slate-900/40 flex items-center gap-4 text-[11px] text-slate-400 font-sans">
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-amber-400" />
+          TypeScript
+        </span>
+        <span>·</span>
+        <span>MIT</span>
+        <span>·</span>
+        <span className="text-slate-300">100% open</span>
+      </div>
+    </div>
+  );
+}

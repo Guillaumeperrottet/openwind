@@ -19,7 +19,7 @@ import {
   NetworksGrid,
   MiniPlannerDemo,
   MiniArchivesDemo,
-  MiniForumDemo,
+  OpenSourceCodeDemo,
   WindStreaks,
   SportConditionsDemo,
 } from "./demos";
@@ -325,9 +325,8 @@ function SectionForum() {
       icon={<MessageSquare />}
       title={
         <>
-          Construit en public,
+          Ouvert à tous
           <br />
-          avec ceux qui rident.
         </>
       }
       description={
@@ -335,14 +334,13 @@ function SectionForum() {
           <p>
             Openwind est <strong>100% open source</strong>. Le code, les
             données, les choix techniques — tout est sur GitHub. Tu peux lire,
-            forker, contribuer, ou juste t’en inspirer.
+            forker, contribuer.
           </p>
           <p>
-            Le forum sert à poser les vraies questions :{" "}
+            Le forum sert à poser des questions :{" "}
             <em>une station bizarre&nbsp;?</em>,{" "}
             <em>un spot manquant&nbsp;?</em>,{" "}
-            <em>une fonctionnalité qui te ferait gagner du temps&nbsp;?</em>{" "}
-            Les demandes finissent souvent en pull request.
+            <em>une fonctionnalité qui te ferait gagner du temps&nbsp;?</em>
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
@@ -365,7 +363,7 @@ function SectionForum() {
         </>
       }
     >
-      <MiniForumDemo />
+      <OpenSourceCodeDemo />
     </Section>
   );
 }
