@@ -10,7 +10,7 @@ import {
   Activity,
   MessageSquare,
   Users,
-  Zap,
+  Sparkles,
 } from "lucide-react";
 import { useReveal } from "./useReveal";
 import {
@@ -22,7 +22,6 @@ import {
   MiniForumDemo,
   WindStreaks,
   SportConditionsDemo,
-  QuickWindDemo,
 } from "./demos";
 
 export default function AboutClient() {
@@ -30,7 +29,6 @@ export default function AboutClient() {
     <div className="bg-white text-slate-900 antialiased selection:bg-blue-200/60">
       <Hero />
       <SectionMap />
-      <SectionQuickWind />
       <SectionNetworks />
       <SectionForecast />
       <SectionPlanner />
@@ -50,6 +48,20 @@ function Hero() {
     <section className="relative min-h-[88vh] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
       <WindStreaks />
       <div className="relative z-10 text-center max-w-4xl">
+        <Link
+          href="/plan?quick=now"
+          className="group inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full border border-blue-200 bg-blue-50/70 backdrop-blur-sm text-[12px] text-blue-800 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+        >
+          <span className="inline-flex items-center gap-1 font-semibold">
+            <Sparkles className="h-3 w-3" />
+            Nouveau
+          </span>
+          <span className="text-blue-300">·</span>
+          <span className="text-slate-700">
+            « Ça souffle ? »&nbsp;— les spots ventés autour de toi en 2 s
+          </span>
+          <ArrowRight className="h-3 w-3 text-blue-700 transition-transform group-hover:translate-x-0.5" />
+        </Link>
         <p className="text-sm font-medium text-blue-700/80 tracking-widest uppercase">
           Open Source · Suisse & monde
         </p>
@@ -188,44 +200,6 @@ function SectionMap() {
       }
     >
       <MiniMapDemo />
-    </Section>
-  );
-}
-
-function SectionQuickWind() {
-  return (
-    <Section
-      reverse
-      eyebrow="Mode rapide"
-      icon={<Zap />}
-      title={
-        <>
-          « Ça souffle »,
-          <br />
-          en deux secondes.
-        </>
-      }
-      description={
-        <>
-          <p>
-            Un bouton, une géolocalisation, et la liste des spots vraiment
-            ventilés autour de toi — classés par qualité du moment.
-          </p>
-          <p className="text-sm text-slate-500">
-            Aucun formulaire, aucun compte. Pensé pour les jours où t’hésites
-            entre rouler 20 minutes ou rester chez toi.
-          </p>
-          <Link
-            href="/plan?quick=now"
-            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
-          >
-            Essayer maintenant
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </>
-      }
-    >
-      <QuickWindDemo />
     </Section>
   );
 }
