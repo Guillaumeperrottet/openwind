@@ -46,7 +46,7 @@ function Hero() {
       {/* Floating "Nouveau" badge — top-left of the hero */}
       <Link
         href="/plan?quick=now"
-        className="hero-badge group absolute top-24 sm:top-28 left-4 sm:left-8 z-20 inline-flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/80 shadow-[0_8px_24px_-8px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_-8px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-0.5 -rotate-3 hover:rotate-0"
+        className="hero-badge group absolute top-24 sm:top-28 left-8 sm:left-24 lg:left-40 z-20 inline-flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/80 shadow-[0_8px_24px_-8px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_-8px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-0.5 -rotate-3 hover:rotate-0"
       >
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
