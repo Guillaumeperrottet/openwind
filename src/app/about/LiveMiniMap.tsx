@@ -28,69 +28,68 @@ export default function LiveMiniMap() {
   const [unlocked, setUnlocked] = useState(false);
 
   // Init map once.
-  // We defer creation by a microtask so that React 19 StrictMode's
-  // mount → unmount → mount cycle in dev cancels the first attempt
-  // *before* a WebGL context + async style load are even spawned.
-  // This avoids the "this.style is undefined" race when remove() is
-  // called while the style URL is still resolving.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    let cancelled = false;
-    let map: MlMap | null = null;
-    let ro: ResizeObserver | null = null;
+    const map = new maplibregl.Map({
+      container: el,
+      style: MAP_STYLE,
+      center: [8.2, 46.8], // Switzerland
+      zoom: 6.4,
+      attributionControl: false,
+    });
+    mapRef.current = map;
 
-    const t = setTimeout(() => {
-      if (cancelled) return;
-      map = new maplibregl.Map({
-        container: el,
-        style: MAP_STYLE,
-        center: [8.2, 46.8], // Switzerland
-        zoom: 6.4,
-        attributionControl: false,
-      });
-      mapRef.current = map;
+    // Disable interactions until the user explicitly clicks the map.
+    map.scrollZoom.disable();
+    map.dragPan.disable();
+    map.dragRotate.disable();
+    map.touchZoomRotate.disable();
+    map.doubleClickZoom.disable();
+    map.boxZoom.disable();
+    map.keyboard.disable();
 
-      // Disable interactions until the user explicitly clicks the map.
-      map.scrollZoom.disable();
-      map.dragPan.disable();
-      map.dragRotate.disable();
-      map.touchZoomRotate.disable();
-      map.doubleClickZoom.disable();
-      map.boxZoom.disable();
-      map.keyboard.disable();
+    map.on("error", (e) => {
+      console.warn("[LiveMiniMap] error:", e?.error?.message || e);
+    });
+    map.on("load", () => {
+      console.info("[LiveMiniMap] style loaded");
+      try {
+        map.resize();
+      } catch {}
+    });
+    map.on("styledata", () => {
+      // Re-trigger a paint if container size changed before style loaded.
+      try {
+        map.resize();
+      } catch {}
+    });
 
-      // Surface any GL error in the console for debugging.
-      map.on("error", (e) => {
-        console.warn("[LiveMiniMap]", e?.error?.message || e);
-      });
-
-      // The container starts at 0×0 before the aspect-ratio kicks in
-      // (and can resize on viewport changes). Keep the GL canvas in sync.
-      ro = new ResizeObserver(() => {
-        try {
-          map?.resize();
-        } catch {}
-      });
-      ro.observe(el);
-    }, 0);
+    // Container goes from 0×0 → real size when aspect-ratio applies.
+    const ro = new ResizeObserver(() => {
+      try {
+        map.resize();
+      } catch {}
+    });
+    ro.observe(el);
 
     return () => {
-      cancelled = true;
-      clearTimeout(t);
-      ro?.disconnect();
+      ro.disconnect();
       markersRef.current.forEach((m) => {
         try {
           m.remove();
         } catch {}
       });
       markersRef.current = [];
-      if (map) {
+      // Defer remove() to next tick so any in-flight style load can finish
+      // and avoid the StrictMode "this.style is undefined" race.
+      const toRemove = map;
+      setTimeout(() => {
         try {
-          map.remove();
+          toRemove.remove();
         } catch {}
-      }
+      }, 0);
       mapRef.current = null;
     };
   }, []);
@@ -111,34 +110,25 @@ export default function LiveMiniMap() {
   }, []);
 
   // Render markers when stations + map are ready.
-  // The map is created in a deferred microtask, so it may not exist yet
-  // when stations land — poll briefly until it appears.
   useEffect(() => {
     if (!stations) return;
+    const map = mapRef.current;
+    if (!map) return;
     let cancelled = false;
-    let map: MlMap | null = null;
 
-    const tryApply = () => {
-      if (cancelled) return;
-      map = mapRef.current;
-      if (!map) {
-        setTimeout(tryApply, 50);
-        return;
-      }
+    const apply = () => {
+      if (cancelled || mapRef.current !== map) return;
+      // Clear previous markers
+      markersRef.current.forEach((m) => {
+        try {
+          m.remove();
+        } catch {}
+      });
+      markersRef.current = [];
 
-      const apply = () => {
-        if (cancelled || mapRef.current !== map || !map) return;
-        // Clear previous markers
-        markersRef.current.forEach((m) => {
-          try {
-            m.remove();
-          } catch {}
-        });
-        markersRef.current = [];
-
-        for (const s of stations) {
-          if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) continue;
-          const color = windColor(s.windSpeedKmh);
+      for (const s of stations) {
+        if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) continue;
+        const color = windColor(s.windSpeedKmh);
           const wrap = document.createElement("div");
           wrap.style.position = "relative";
           wrap.style.width = "10px";
@@ -190,13 +180,10 @@ export default function LiveMiniMap() {
             .addTo(map);
           markersRef.current.push(marker);
         }
-      };
-
-      if (map.isStyleLoaded()) apply();
-      else map.once("load", apply);
     };
 
-    tryApply();
+    if (map.isStyleLoaded()) apply();
+    else map.once("load", apply);
 
     return () => {
       cancelled = true;

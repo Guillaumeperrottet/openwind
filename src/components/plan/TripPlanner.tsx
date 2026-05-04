@@ -1187,7 +1187,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
       {/* ═══ « Ça souffle ? » — Geolocation gate modal ═══ */}
       {geoGate !== "hidden" && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4"
+          className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 px-4"
           role="dialog"
           aria-modal="true"
         >
@@ -1261,7 +1261,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
       {/* ═══ « Ça souffle ? » — Empty / low-wind banner ═══ */}
       {showQuickEmptyBanner && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[55] w-[min(440px,calc(100vw-2rem))]">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-55 w-[min(440px,calc(100vw-2rem))]">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-4">
             <div className="flex items-start gap-3 mb-3">
               <div className="h-9 w-9 rounded-full bg-amber-50 flex items-center justify-center shrink-0">

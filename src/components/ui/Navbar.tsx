@@ -78,7 +78,7 @@ export function Navbar() {
           {/* Mobile search toggle */}
           <button
             onClick={() => setMobileSearch(true)}
-            className="sm:hidden flex items-center justify-center rounded-lg px-2 py-2 text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors min-w-[40px] min-h-[40px]"
+            className="sm:hidden flex items-center justify-center rounded-lg px-2 py-2 text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors min-w-10 min-h-10"
             aria-label="Rechercher"
           >
             <Search className="h-4 w-4" />
@@ -88,7 +88,7 @@ export function Navbar() {
               key={href}
               href={href}
               className={cn(
-                "items-center justify-center gap-1.5 rounded-lg px-2 py-2 sm:px-3 sm:py-1.5 text-sm transition-colors min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0",
+                "items-center justify-center gap-1.5 rounded-lg px-2 py-2 sm:px-3 sm:py-1.5 text-sm transition-colors min-w-10 min-h-10 sm:min-w-0 sm:min-h-0",
                 hideOnMobile ? "hidden sm:flex" : "flex",
                 pathname === href
                   ? "bg-sky-50 text-sky-600"
