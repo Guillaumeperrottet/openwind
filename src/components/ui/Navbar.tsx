@@ -15,6 +15,7 @@ import {
   X,
   MessagesSquare,
   Mail,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
@@ -162,6 +163,14 @@ export function Navbar() {
                     </Link>
                   </div>
                   <div className="border-t border-gray-100">
+                    <Link
+                      href="/about"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <Info className="h-3.5 w-3.5" />
+                      À propos
+                    </Link>
                     <button
                       onClick={() => {
                         setMenuOpen(false);
@@ -206,6 +215,14 @@ export function Navbar() {
                     <User className="h-3.5 w-3.5" />
                     Se connecter
                   </button>
+                  <Link
+                    href="/about"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                    À propos
+                  </Link>
                   {/* Mobile-only links */}
                   <div className="border-t border-gray-100 sm:hidden">
                     <Link
