@@ -42,11 +42,30 @@ function Hero() {
   return (
     <section className="relative min-h-[88vh] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
       <WindStreaks />
+
+      {/* Floating "Nouveau" badge — top-left of the hero */}
+      <Link
+        href="/plan?quick=now"
+        className="hero-badge group absolute top-24 sm:top-28 left-4 sm:left-8 z-20 inline-flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/80 shadow-[0_8px_24px_-8px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_-8px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-0.5 -rotate-3 hover:rotate-0"
+      >
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500" />
+        </span>
+        <span className="text-[11px] font-semibold text-blue-800 tracking-wide">
+          NOUVEAU
+        </span>
+        <span className="text-[11px] text-slate-700 hidden sm:inline">
+          · « Ça souffle ? » en 2&nbsp;s
+        </span>
+        <ArrowRight className="h-3 w-3 text-blue-700 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+
       <div className="relative z-10 text-center max-w-4xl">
         <p className="text-sm font-medium text-blue-700/80 tracking-widest uppercase">
           Open Source · Suisse & monde
         </p>
-        <h1 className="mt-8 flex justify-center relative">
+        <h1 className="mt-8 flex justify-center">
           <span className="sr-only">Openwind</span>
           <Image
             src="/logo_noback.png"
@@ -56,23 +75,6 @@ function Hero() {
             priority
             className="w-[92vw] sm:w-2xl lg:w-240 h-auto"
           />
-          {/* Floating "Nouveau" badge */}
-          <Link
-            href="/plan?quick=now"
-            className="hero-badge group absolute -top-2 sm:top-2 right-2 sm:right-8 lg:right-16 inline-flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/80 shadow-[0_8px_24px_-8px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_-8px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-0.5 -rotate-3 hover:rotate-0"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500" />
-            </span>
-            <span className="text-[11px] font-semibold text-blue-800 tracking-wide">
-              NOUVEAU
-            </span>
-            <span className="text-[11px] text-slate-700 hidden sm:inline">
-              · « Ça souffle ? » en 2&nbsp;s
-            </span>
-            <ArrowRight className="h-3 w-3 text-blue-700 transition-transform group-hover:translate-x-0.5" />
-          </Link>
         </h1>
         <p className="mt-8 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
           La carte vivante du vent pour kitesurfeurs et parapentistes.
