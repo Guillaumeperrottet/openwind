@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Star, X, MapPin, Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Spot } from "@/types";
 
 interface SearchBarProps {
@@ -115,6 +116,23 @@ export function SearchBar({
     const favs = allSpotsRef.current.filter((s) => favoriteIds.has(s.id));
     setFavorites(favs);
   }, [favoriteIds, spotsLoaded]);
+
+  // Auto-open when ?openSearch=1 is present (e.g. from «Favoris» in user menu)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("openSearch") === "1") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOpen(true);
+      // Focus on next tick so the input is mounted
+      requestAnimationFrame(() => inputRef.current?.focus());
+      // Strip the param from the URL without scrolling
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("openSearch");
+      const qs = params.toString();
+      router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   // Search locally with fuzzy matching
   const doSearch = useCallback((q: string) => {

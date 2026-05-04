@@ -137,11 +137,15 @@ export function Navbar() {
                     </p>
                   </div>
                   <div className="py-1">
-                    <div className="px-3 py-1.5 text-xs text-gray-500">
-                      <Star className="inline h-3 w-3 mr-1 text-amber-400" />
+                    <Link
+                      href="/?openSearch=1"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                    >
+                      <Star className="h-3 w-3 text-amber-400" />
                       {favoriteIds.size} favori
                       {favoriteIds.size !== 1 ? "s" : ""}
-                    </div>
+                    </Link>
                   </div>
                   {/* Mobile-only links */}
                   <div className="border-t border-gray-100 sm:hidden">
