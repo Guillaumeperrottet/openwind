@@ -281,16 +281,24 @@ function SectionPlanner() {
     <Section
       eyebrow="Trip Planner"
       icon={<Compass />}
-      title={<>Quand et où ?</>}
+      title={
+        <>
+          Le vent qui souffle,
+          <br />
+          près de chez toi.
+        </>
+      }
       description={
         <>
           <p>
-            Indique tes dates, les km et ton sport. Openwind classe les spots
-            autour de toi par qualité de vent prévue, sur la base d&apos;un
-            score multi-critères.
+            Tu cherches une session ce week-end&nbsp;? Indique tes dates, ton
+            rayon et ton sport. Openwind scanne tous les spots autour de toi et
+            te dit où le vent va vraiment souffler — classés par score
+            multi-critères.
           </p>
           <p className="text-sm text-slate-500">
-            Au-delà de 16 jours, on bascule sur les archives historiques.
+            Au-delà de 16 jours, on bascule sur les archives historiques pour
+            les voyages plus lointains.
           </p>
         </>
       }
