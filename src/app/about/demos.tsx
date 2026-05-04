@@ -170,7 +170,7 @@ const NETWORKS = [
     target: 80,
     prefix: "~",
     suffix: "",
-    region: "CH + FR sud",
+    region: "CH · Méditerranée",
     color: "#7c3aed",
   },
   {

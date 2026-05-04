@@ -204,7 +204,7 @@ function SectionMap() {
         alt="Carte Openwind avec stations météo et popups en temps réel"
         width={797}
         height={609}
-        caption="La vraie carte sur openwind.ch — stations live"
+        caption="Ton spot manque ? Crée-le en 2 minutes."
       />
     </Section>
   );
@@ -383,8 +383,8 @@ function SectionSports() {
       description={
         <>
           <p>
-            Un kitesurfeur cherche du vent, un parapentiste fuit les rafales.
-            Openwind ajuste son scoring et ses filtres au sport choisi.
+            Un kitesurfeur cherche du vent, un parapentiste le fuit. Openwind
+            ajuste son scoring et ses filtres au sport choisi.
           </p>
         </>
       }
