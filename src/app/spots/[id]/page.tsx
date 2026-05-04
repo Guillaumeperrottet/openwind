@@ -2,6 +2,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getWindData } from "@/lib/utils";
+import { fetchCurrentWind } from "@/lib/windFetch";
 import {
   buildSpotDescription,
   buildArticleSchema,
@@ -108,8 +109,7 @@ export default async function SpotPage({ params }: Props) {
         where: { stationId: spot.nearestStationId },
         orderBy: { time: "desc" },
       });
-      const maxAge =
-        FRESHNESS_MS[latest?.source ?? ""] ?? DEFAULT_FRESHNESS_MS;
+      const maxAge = FRESHNESS_MS[latest?.source ?? ""] ?? DEFAULT_FRESHNESS_MS;
       if (latest && Date.now() - latest.time.getTime() < maxAge) {
         wind = getWindData(
           latest.windSpeedKmh,
@@ -130,6 +130,17 @@ export default async function SpotPage({ params }: Props) {
   // No fallback to Open-Meteo grid: if the spot's station has no recent
   // measurement, we'd rather show "Données vent indisponibles" than a
   // forecast value that disagrees with the 48h history chart.
+
+  // Fallback: if no nearby station (or no fresh measurement), use Open-Meteo
+  // model wind at the spot's coordinates. The card label switches to
+  // "Open-Meteo · NWP" automatically when windSource is null.
+  if (!wind) {
+    try {
+      wind = await fetchCurrentWind(spot.latitude, spot.longitude);
+    } catch {
+      /* network error — wind stays null, the page shows "données indisponibles" */
+    }
+  }
 
   return (
     <>
