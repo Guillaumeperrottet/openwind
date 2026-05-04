@@ -8,6 +8,7 @@
  */
 
 import { useState } from "react";
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
@@ -150,13 +151,100 @@ export function MiniForecastDemo() {
 // ─── Networks pills ───────────────────────────────────────────────────────────
 
 const NETWORKS = [
-  { name: "MeteoSwiss", count: "154", region: "Suisse", color: "#dc2626" },
-  { name: "Pioupiou", count: "600+", region: "Mondial", color: "#2563eb" },
-  { name: "Netatmo", count: "~80", region: "CH + FR sud", color: "#7c3aed" },
-  { name: "Météo-France", count: "185", region: "France", color: "#0ea5e9" },
-  { name: "Windball", count: "20+", region: "Romandie", color: "#16a34a" },
-  { name: "FribourgÉnergie", count: "3", region: "Fribourg", color: "#f59e0b" },
-];
+  {
+    name: "MeteoSwiss",
+    target: 154,
+    suffix: "",
+    region: "Suisse",
+    color: "#dc2626",
+  },
+  {
+    name: "Pioupiou",
+    target: 600,
+    suffix: "+",
+    region: "Mondial",
+    color: "#2563eb",
+  },
+  {
+    name: "Netatmo",
+    target: 80,
+    prefix: "~",
+    suffix: "",
+    region: "CH + FR sud",
+    color: "#7c3aed",
+  },
+  {
+    name: "Météo-France",
+    target: 185,
+    suffix: "",
+    region: "France",
+    color: "#0ea5e9",
+  },
+  {
+    name: "Windball",
+    target: 20,
+    suffix: "+",
+    region: "Romandie",
+    color: "#16a34a",
+  },
+  {
+    name: "FribourgÉnergie",
+    target: 3,
+    suffix: "",
+    region: "Fribourg",
+    color: "#f59e0b",
+  },
+] as const;
+
+function CountUp({
+  to,
+  prefix = "",
+  suffix = "",
+  duration = 1400,
+}: {
+  to: number;
+  prefix?: string;
+  suffix?: string;
+  duration?: number;
+}) {
+  const [value, setValue] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !startedRef.current) {
+            startedRef.current = true;
+            const start = performance.now();
+            const tick = (now: number) => {
+              const t = Math.min(1, (now - start) / duration);
+              // easeOutCubic
+              const eased = 1 - Math.pow(1 - t, 3);
+              setValue(Math.round(eased * to));
+              if (t < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          }
+        }
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [to, duration]);
+
+  return (
+    <span ref={ref}>
+      {prefix}
+      {value}
+      {suffix}
+    </span>
+  );
+}
 
 export function NetworksGrid() {
   return (
@@ -176,7 +264,11 @@ export function NetworksGrid() {
             </span>
           </div>
           <div className="mt-2 text-2xl font-semibold tabular-nums text-slate-900">
-            {n.count}
+            <CountUp
+              to={n.target}
+              prefix={"prefix" in n ? n.prefix : ""}
+              suffix={n.suffix}
+            />
           </div>
           <div className="text-[11px] text-slate-500">{n.region}</div>
         </div>
