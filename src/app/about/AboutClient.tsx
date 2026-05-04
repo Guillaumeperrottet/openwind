@@ -321,21 +321,47 @@ function SectionArchives() {
 function SectionForum() {
   return (
     <Section
-      eyebrow="Communauté"
+      eyebrow="Open source & communauté"
       icon={<MessageSquare />}
       title={
         <>
-          Le terrain
+          Construit en public,
           <br />
-          plutôt que les modèles.
+          avec ceux qui rident.
         </>
       }
       description={
         <>
           <p>
-            Un forum simple pour partager ses sessions, ses spots secrets, ses
-            conseils matériel. Markdown, votes et threads — pas de bruit.
+            Openwind est <strong>100% open source</strong>. Le code, les
+            données, les choix techniques — tout est sur GitHub. Tu peux lire,
+            forker, contribuer, ou juste t’en inspirer.
           </p>
+          <p>
+            Le forum sert à poser les vraies questions :{" "}
+            <em>une station bizarre&nbsp;?</em>,{" "}
+            <em>un spot manquant&nbsp;?</em>,{" "}
+            <em>une fonctionnalité qui te ferait gagner du temps&nbsp;?</em>{" "}
+            Les demandes finissent souvent en pull request.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <Link
+              href="/forum"
+              className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+            >
+              Ouvrir le forum
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a
+              href="https://github.com/Guillaumeperrottet/openwind/issues/new"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              <GithubIcon />
+              Proposer une fonctionnalité
+            </a>
+          </div>
         </>
       }
     >
