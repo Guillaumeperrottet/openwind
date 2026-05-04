@@ -37,11 +37,22 @@ export default function LiveMiniMap() {
       center: [8.2, 46.8], // Switzerland
       zoom: 6.4,
       attributionControl: false,
-      dragRotate: false,
-      pitchWithRotate: false,
-      interactive: false, // unlocked on click
     });
     mapRef.current = map;
+
+    // Disable interactions until the user explicitly clicks the map.
+    map.scrollZoom.disable();
+    map.dragPan.disable();
+    map.dragRotate.disable();
+    map.touchZoomRotate.disable();
+    map.doubleClickZoom.disable();
+    map.boxZoom.disable();
+    map.keyboard.disable();
+
+    // Surface any GL error in the console for debugging.
+    map.on("error", (e) => {
+      console.warn("[LiveMiniMap]", e?.error?.message || e);
+    });
 
     // The container starts at 0×0 before the aspect-ratio kicks in
     // (and can resize on viewport changes). Keep the GL canvas in sync.
