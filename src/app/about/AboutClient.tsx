@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Map as MapIcon,
@@ -49,8 +50,16 @@ function Hero() {
         <p className="text-sm font-medium text-blue-700/80 tracking-widest uppercase">
           Open Source · Suisse & monde
         </p>
-        <h1 className="mt-6 text-[14vw] sm:text-[8rem] lg:text-[10rem] leading-[0.9] font-semibold tracking-[-0.04em] text-slate-900">
-          Open<span className="text-blue-600">wind</span>
+        <h1 className="mt-8 flex justify-center">
+          <span className="sr-only">Openwind</span>
+          <Image
+            src="/logo_noback.png"
+            alt="Openwind"
+            width={1200}
+            height={400}
+            priority
+            className="w-[80vw] sm:w-[32rem] lg:w-[44rem] h-auto"
+          />
         </h1>
         <p className="mt-8 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
           La carte vivante du vent pour kitesurfeurs et parapentistes.

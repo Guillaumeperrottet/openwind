@@ -129,57 +129,57 @@ export default function LiveMiniMap() {
       for (const s of stations) {
         if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) continue;
         const color = windColor(s.windSpeedKmh);
-          const wrap = document.createElement("div");
-          wrap.style.position = "relative";
-          wrap.style.width = "10px";
-          wrap.style.height = "10px";
-          wrap.style.pointerEvents = "none";
+        const wrap = document.createElement("div");
+        wrap.style.position = "relative";
+        wrap.style.width = "10px";
+        wrap.style.height = "10px";
+        wrap.style.pointerEvents = "none";
 
-          const dot = document.createElement("span");
-          dot.style.position = "absolute";
-          dot.style.inset = "0";
-          dot.style.borderRadius = "9999px";
-          dot.style.background = color;
-          dot.style.boxShadow = "0 0 0 1.5px white, 0 1px 2px rgba(0,0,0,0.25)";
-          wrap.appendChild(dot);
+        const dot = document.createElement("span");
+        dot.style.position = "absolute";
+        dot.style.inset = "0";
+        dot.style.borderRadius = "9999px";
+        dot.style.background = color;
+        dot.style.boxShadow = "0 0 0 1.5px white, 0 1px 2px rgba(0,0,0,0.25)";
+        wrap.appendChild(dot);
 
-          // Arrow tail (only if measurable wind)
-          if (s.windSpeedKmh >= 3 && Number.isFinite(s.windDirection)) {
-            const arrow = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "svg",
-            );
-            arrow.setAttribute("width", "20");
-            arrow.setAttribute("height", "20");
-            arrow.style.position = "absolute";
-            arrow.style.left = "50%";
-            arrow.style.top = "50%";
-            arrow.style.transform = `translate(-50%, -50%) rotate(${s.windDirection}deg)`;
-            arrow.style.pointerEvents = "none";
-            const path = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "path",
-            );
-            path.setAttribute(
-              "d",
-              "M 10 10 L 10 2 M 10 2 L 7.5 5 M 10 2 L 12.5 5",
-            );
-            path.setAttribute("stroke", color);
-            path.setAttribute("stroke-width", "1.4");
-            path.setAttribute("stroke-linecap", "round");
-            path.setAttribute("fill", "none");
-            arrow.appendChild(path);
-            wrap.appendChild(arrow);
-          }
-
-          const marker = new maplibregl.Marker({
-            element: wrap,
-            anchor: "center",
-          })
-            .setLngLat([s.lng, s.lat])
-            .addTo(map);
-          markersRef.current.push(marker);
+        // Arrow tail (only if measurable wind)
+        if (s.windSpeedKmh >= 3 && Number.isFinite(s.windDirection)) {
+          const arrow = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg",
+          );
+          arrow.setAttribute("width", "20");
+          arrow.setAttribute("height", "20");
+          arrow.style.position = "absolute";
+          arrow.style.left = "50%";
+          arrow.style.top = "50%";
+          arrow.style.transform = `translate(-50%, -50%) rotate(${s.windDirection}deg)`;
+          arrow.style.pointerEvents = "none";
+          const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path",
+          );
+          path.setAttribute(
+            "d",
+            "M 10 10 L 10 2 M 10 2 L 7.5 5 M 10 2 L 12.5 5",
+          );
+          path.setAttribute("stroke", color);
+          path.setAttribute("stroke-width", "1.4");
+          path.setAttribute("stroke-linecap", "round");
+          path.setAttribute("fill", "none");
+          arrow.appendChild(path);
+          wrap.appendChild(arrow);
         }
+
+        const marker = new maplibregl.Marker({
+          element: wrap,
+          anchor: "center",
+        })
+          .setLngLat([s.lng, s.lat])
+          .addTo(map);
+        markersRef.current.push(marker);
+      }
     };
 
     if (map.isStyleLoaded()) apply();
