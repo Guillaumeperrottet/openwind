@@ -3,13 +3,12 @@
 /**
  * Tiny "live" UI demos for the /about page.
  *
- * These are intentionally NOT the real components — they're stripped-down
- * visual mocks that look like the app but render statically (no fetches,
- * no maps, no Prisma). The point is to give visitors a feel of the UI
- * without the cost (or maintenance burden) of screenshots.
+ * Most demos are stripped-down visual mocks (no fetches, no Prisma) — except
+ * `MiniMapDemo`, which embeds the *real* MapLibre map with live stations.
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Wind,
   CloudRain,
@@ -20,125 +19,24 @@ import {
   MessageCircle,
 } from "lucide-react";
 
-// ─── Mini map demo ────────────────────────────────────────────────────────────
+// ─── Mini map demo (real MapLibre + live /api/stations) ───────────────────────
 
-/** Animated mock map with clustered station dots and a wind-arrow tail. */
-export function MiniMapDemo() {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 90);
-    return () => clearInterval(id);
-  }, []);
-
-  // Stations pseudo-randomly placed but stable.
-  const stations = [
-    { x: 18, y: 32, kt: 12, dir: 220, pulse: false },
-    { x: 28, y: 58, kt: 22, dir: 240, pulse: true },
-    { x: 42, y: 24, kt: 8, dir: 180, pulse: false },
-    { x: 52, y: 48, kt: 28, dir: 260, pulse: true },
-    { x: 64, y: 36, kt: 15, dir: 200, pulse: false },
-    { x: 74, y: 64, kt: 19, dir: 230, pulse: false },
-    { x: 86, y: 28, kt: 25, dir: 210, pulse: true },
-    { x: 38, y: 72, kt: 6, dir: 100, pulse: false },
-    { x: 80, y: 80, kt: 11, dir: 190, pulse: false },
-  ];
-
-  return (
-    <div className="relative w-full aspect-16/10 rounded-2xl overflow-hidden bg-linear-to-br from-slate-50 to-blue-50/40 border border-black/5 shadow-sm">
-      {/* Faux topographic background */}
-      <svg
-        className="absolute inset-0 w-full h-full opacity-[0.18]"
-        viewBox="0 0 100 60"
-        preserveAspectRatio="none"
-      >
-        {Array.from({ length: 12 }).map((_, i) => (
-          <path
-            key={i}
-            d={`M 0 ${10 + i * 4} Q 25 ${6 + i * 4 + Math.sin(i) * 3} 50 ${
-              12 + i * 4
-            } T 100 ${10 + i * 4}`}
-            stroke="#94a3b8"
-            strokeWidth="0.15"
-            fill="none"
-          />
-        ))}
-      </svg>
-
-      {/* Stations */}
-      {stations.map((s, i) => {
-        const pulseScale = s.pulse && Math.floor(tick / 8) % 2 === 0 ? 1.6 : 1;
-        const color =
-          s.kt >= 22
-            ? "#3a7fa8"
-            : s.kt >= 15
-              ? "#6a9cbd"
-              : s.kt >= 8
-                ? "#a8bdd4"
-                : "#c8d4dc";
-        return (
-          <div
-            key={i}
-            className="absolute -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `${s.x}%`, top: `${s.y}%` }}
-          >
-            {/* Pulse ring */}
-            {s.pulse && (
-              <span
-                className="absolute inset-0 rounded-full transition-all duration-700"
-                style={{
-                  background: color,
-                  opacity: 0.25,
-                  width: 24,
-                  height: 24,
-                  marginLeft: -12,
-                  marginTop: -12,
-                  transform: `scale(${pulseScale})`,
-                }}
-              />
-            )}
-            {/* Dot */}
-            <span
-              className="block w-3 h-3 rounded-full ring-2 ring-white shadow"
-              style={{ background: color }}
-            />
-            {/* Wind arrow tail */}
-            <svg
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-              width="22"
-              height="22"
-              style={{ transform: `translate(-50%,-50%) rotate(${s.dir}deg)` }}
-            >
-              <path
-                d="M 11 11 L 11 2 M 11 2 L 8 6 M 11 2 L 14 6"
-                stroke={color}
-                strokeWidth="1.4"
-                strokeLinecap="round"
-                fill="none"
-              />
-            </svg>
-            {/* Speed label */}
-            <span
-              className="absolute left-1/2 -translate-x-1/2 mt-2 text-[9px] font-semibold tabular-nums"
-              style={{ color, top: "100%" }}
-            >
-              {s.kt} kt
-            </span>
-          </div>
-        );
-      })}
-
-      {/* Cluster bubble */}
-      <div className="absolute top-4 right-4 flex items-center justify-center w-12 h-12 rounded-full bg-blue-600/85 text-white text-sm font-semibold ring-4 ring-white/70 shadow-lg">
-        24
-      </div>
-
-      {/* Legend pill */}
-      <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur shadow-sm border border-black/5 text-[10px] text-slate-600">
-        <Wind className="h-3 w-3 text-slate-400" />
-        Live · 5 réseaux
+const LiveMiniMap = dynamic(() => import("./LiveMiniMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="relative w-full aspect-16/10 rounded-2xl overflow-hidden border border-black/5 shadow-sm bg-linear-to-br from-slate-50 to-blue-50/40">
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 shadow text-xs text-slate-500">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+          Chargement de la carte…
+        </div>
       </div>
     </div>
-  );
+  ),
+});
+
+export function MiniMapDemo() {
+  return <LiveMiniMap />;
 }
 
 // ─── Mini forecast table ──────────────────────────────────────────────────────
