@@ -90,16 +90,27 @@ export default async function SpotPage({ params }: Props) {
   let wind: WindData | null = null;
   let windSource: { name: string; network: string } | null = null;
 
+  // Per-network freshness window — some networks update much less often than
+  // every 10 min (Météo-France SYNOP = 3 h). Showing a 2 h-old measurement is
+  // still more useful than nothing.
+  const FRESHNESS_MS: Record<string, number> = {
+    meteofrance: 4 * 60 * 60 * 1000, // SYNOP every 3 h
+    meteoswiss: 30 * 60 * 1000,
+    pioupiou: 15 * 60 * 1000,
+    netatmo: 30 * 60 * 1000,
+    windball: 30 * 60 * 1000,
+  };
+  const DEFAULT_FRESHNESS_MS = 5 * 60 * 1000;
+
   if (spot.nearestStationId) {
     try {
       const latest = await prisma.stationMeasurement.findFirst({
         where: { stationId: spot.nearestStationId },
         orderBy: { time: "desc" },
       });
-      // Only use the DB row if it's fresh (≤ 5 min old). Otherwise leave
-      // `wind = null` so the client side fetches /api/stations and we
-      // avoid showing a stale value that would contradict the live popup.
-      if (latest && Date.now() - latest.time.getTime() < 5 * 60 * 1000) {
+      const maxAge =
+        FRESHNESS_MS[latest?.source ?? ""] ?? DEFAULT_FRESHNESS_MS;
+      if (latest && Date.now() - latest.time.getTime() < maxAge) {
         wind = getWindData(
           latest.windSpeedKmh,
           latest.windDirection,
