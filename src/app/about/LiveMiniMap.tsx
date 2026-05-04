@@ -28,52 +28,69 @@ export default function LiveMiniMap() {
   const [unlocked, setUnlocked] = useState(false);
 
   // Init map once.
+  // We defer creation by a microtask so that React 19 StrictMode's
+  // mount → unmount → mount cycle in dev cancels the first attempt
+  // *before* a WebGL context + async style load are even spawned.
+  // This avoids the "this.style is undefined" race when remove() is
+  // called while the style URL is still resolving.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const map = new maplibregl.Map({
-      container: el,
-      style: MAP_STYLE,
-      center: [8.2, 46.8], // Switzerland
-      zoom: 6.4,
-      attributionControl: false,
-    });
-    mapRef.current = map;
 
-    // Disable interactions until the user explicitly clicks the map.
-    map.scrollZoom.disable();
-    map.dragPan.disable();
-    map.dragRotate.disable();
-    map.touchZoomRotate.disable();
-    map.doubleClickZoom.disable();
-    map.boxZoom.disable();
-    map.keyboard.disable();
+    let cancelled = false;
+    let map: MlMap | null = null;
+    let ro: ResizeObserver | null = null;
 
-    // Surface any GL error in the console for debugging.
-    map.on("error", (e) => {
-      console.warn("[LiveMiniMap]", e?.error?.message || e);
-    });
+    const t = setTimeout(() => {
+      if (cancelled) return;
+      map = new maplibregl.Map({
+        container: el,
+        style: MAP_STYLE,
+        center: [8.2, 46.8], // Switzerland
+        zoom: 6.4,
+        attributionControl: false,
+      });
+      mapRef.current = map;
 
-    // The container starts at 0×0 before the aspect-ratio kicks in
-    // (and can resize on viewport changes). Keep the GL canvas in sync.
-    const ro = new ResizeObserver(() => {
-      try {
-        map.resize();
-      } catch {}
-    });
-    ro.observe(el);
+      // Disable interactions until the user explicitly clicks the map.
+      map.scrollZoom.disable();
+      map.dragPan.disable();
+      map.dragRotate.disable();
+      map.touchZoomRotate.disable();
+      map.doubleClickZoom.disable();
+      map.boxZoom.disable();
+      map.keyboard.disable();
+
+      // Surface any GL error in the console for debugging.
+      map.on("error", (e) => {
+        console.warn("[LiveMiniMap]", e?.error?.message || e);
+      });
+
+      // The container starts at 0×0 before the aspect-ratio kicks in
+      // (and can resize on viewport changes). Keep the GL canvas in sync.
+      ro = new ResizeObserver(() => {
+        try {
+          map?.resize();
+        } catch {}
+      });
+      ro.observe(el);
+    }, 0);
 
     return () => {
-      ro.disconnect();
+      cancelled = true;
+      clearTimeout(t);
+      ro?.disconnect();
       markersRef.current.forEach((m) => {
         try {
           m.remove();
         } catch {}
       });
       markersRef.current = [];
-      try {
-        map.remove();
-      } catch {}
+      if (map) {
+        try {
+          map.remove();
+        } catch {}
+      }
       mapRef.current = null;
     };
   }, []);
@@ -94,79 +111,92 @@ export default function LiveMiniMap() {
   }, []);
 
   // Render markers when stations + map are ready.
+  // The map is created in a deferred microtask, so it may not exist yet
+  // when stations land — poll briefly until it appears.
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !stations) return;
+    if (!stations) return;
     let cancelled = false;
+    let map: MlMap | null = null;
 
-    const apply = () => {
-      if (cancelled || mapRef.current !== map) return;
-      // Clear previous markers
-      markersRef.current.forEach((m) => {
-        try {
-          m.remove();
-        } catch {}
-      });
-      markersRef.current = [];
-
-      for (const s of stations) {
-        if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) continue;
-        const color = windColor(s.windSpeedKmh);
-        const wrap = document.createElement("div");
-        wrap.style.position = "relative";
-        wrap.style.width = "10px";
-        wrap.style.height = "10px";
-        wrap.style.pointerEvents = "none";
-
-        const dot = document.createElement("span");
-        dot.style.position = "absolute";
-        dot.style.inset = "0";
-        dot.style.borderRadius = "9999px";
-        dot.style.background = color;
-        dot.style.boxShadow = "0 0 0 1.5px white, 0 1px 2px rgba(0,0,0,0.25)";
-        wrap.appendChild(dot);
-
-        // Arrow tail (only if measurable wind)
-        if (s.windSpeedKmh >= 3 && Number.isFinite(s.windDirection)) {
-          const arrow = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg",
-          );
-          arrow.setAttribute("width", "20");
-          arrow.setAttribute("height", "20");
-          arrow.style.position = "absolute";
-          arrow.style.left = "50%";
-          arrow.style.top = "50%";
-          arrow.style.transform = `translate(-50%, -50%) rotate(${s.windDirection}deg)`;
-          arrow.style.pointerEvents = "none";
-          const path = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path",
-          );
-          path.setAttribute(
-            "d",
-            "M 10 10 L 10 2 M 10 2 L 7.5 5 M 10 2 L 12.5 5",
-          );
-          path.setAttribute("stroke", color);
-          path.setAttribute("stroke-width", "1.4");
-          path.setAttribute("stroke-linecap", "round");
-          path.setAttribute("fill", "none");
-          arrow.appendChild(path);
-          wrap.appendChild(arrow);
-        }
-
-        const marker = new maplibregl.Marker({
-          element: wrap,
-          anchor: "center",
-        })
-          .setLngLat([s.lng, s.lat])
-          .addTo(map);
-        markersRef.current.push(marker);
+    const tryApply = () => {
+      if (cancelled) return;
+      map = mapRef.current;
+      if (!map) {
+        setTimeout(tryApply, 50);
+        return;
       }
+
+      const apply = () => {
+        if (cancelled || mapRef.current !== map || !map) return;
+        // Clear previous markers
+        markersRef.current.forEach((m) => {
+          try {
+            m.remove();
+          } catch {}
+        });
+        markersRef.current = [];
+
+        for (const s of stations) {
+          if (!Number.isFinite(s.lat) || !Number.isFinite(s.lng)) continue;
+          const color = windColor(s.windSpeedKmh);
+          const wrap = document.createElement("div");
+          wrap.style.position = "relative";
+          wrap.style.width = "10px";
+          wrap.style.height = "10px";
+          wrap.style.pointerEvents = "none";
+
+          const dot = document.createElement("span");
+          dot.style.position = "absolute";
+          dot.style.inset = "0";
+          dot.style.borderRadius = "9999px";
+          dot.style.background = color;
+          dot.style.boxShadow = "0 0 0 1.5px white, 0 1px 2px rgba(0,0,0,0.25)";
+          wrap.appendChild(dot);
+
+          // Arrow tail (only if measurable wind)
+          if (s.windSpeedKmh >= 3 && Number.isFinite(s.windDirection)) {
+            const arrow = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "svg",
+            );
+            arrow.setAttribute("width", "20");
+            arrow.setAttribute("height", "20");
+            arrow.style.position = "absolute";
+            arrow.style.left = "50%";
+            arrow.style.top = "50%";
+            arrow.style.transform = `translate(-50%, -50%) rotate(${s.windDirection}deg)`;
+            arrow.style.pointerEvents = "none";
+            const path = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "path",
+            );
+            path.setAttribute(
+              "d",
+              "M 10 10 L 10 2 M 10 2 L 7.5 5 M 10 2 L 12.5 5",
+            );
+            path.setAttribute("stroke", color);
+            path.setAttribute("stroke-width", "1.4");
+            path.setAttribute("stroke-linecap", "round");
+            path.setAttribute("fill", "none");
+            arrow.appendChild(path);
+            wrap.appendChild(arrow);
+          }
+
+          const marker = new maplibregl.Marker({
+            element: wrap,
+            anchor: "center",
+          })
+            .setLngLat([s.lng, s.lat])
+            .addTo(map);
+          markersRef.current.push(marker);
+        }
+      };
+
+      if (map.isStyleLoaded()) apply();
+      else map.once("load", apply);
     };
 
-    if (map.isStyleLoaded()) apply();
-    else map.once("load", apply);
+    tryApply();
 
     return () => {
       cancelled = true;
