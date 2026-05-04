@@ -32,7 +32,6 @@ export default function AboutClient() {
       <SectionNetworks />
       <SectionForecast />
       <SectionPlanner />
-      <SectionArchives />
       <SectionForum />
       <SectionSports />
       <SectionOpenSource />
@@ -232,29 +231,33 @@ function SectionForecast() {
   return (
     <Section
       reverse
-      eyebrow="Prévisions"
+      eyebrow="Prévisions & archives"
       icon={<Calendar />}
       title={
         <>
-          Sept jours d&apos;avance,
-          <br />
-          deux modèles au choix.
+          De demain matin
+          <br />à cinq ans en arrière.
         </>
       }
       description={
         <>
           <p>
-            Open-Meteo en couverture mondiale, MeteoSwiss ICON-CH2-EPS pour une
-            précision locale en Suisse. Un score visuel par tranche horaire dit
-            en un clin d&apos;œil si la session vaut le déplacement.
+            Prévisions <strong>7 jours</strong> par tranche horaire (Open-Meteo
+            en couverture mondiale, MeteoSwiss ICON-CH2-EPS pour la Suisse), et
+            <strong> 5 ans d&apos;archives</strong> pour confirmer la
+            saisonnalité d&apos;un spot avant de réserver.
           </p>
           <p className="text-sm text-slate-500">
-            Vent, rafales, direction, température, pluie — tout est là.
+            Vent, rafales, direction, pluie, température — plus tendances
+            mensuelles année par année.
           </p>
         </>
       }
     >
-      <MiniForecastDemo />
+      <div className="space-y-4">
+        <MiniForecastDemo />
+        <MiniArchivesDemo />
+      </div>
     </Section>
   );
 }
@@ -286,34 +289,6 @@ function SectionPlanner() {
       }
     >
       <MiniPlannerDemo />
-    </Section>
-  );
-}
-
-function SectionArchives() {
-  return (
-    <Section
-      reverse
-      eyebrow="Archives"
-      icon={<Activity />}
-      title={
-        <>
-          Cinq ans
-          <br />
-          de mémoire vent.
-        </>
-      }
-      description={
-        <>
-          <p>
-            Saisonnalité, tendances mensuelles, comparaison année par année. De
-            quoi savoir si ce spot italien que tu vises est vraiment ventilé en
-            septembre.
-          </p>
-        </>
-      }
-    >
-      <MiniArchivesDemo />
     </Section>
   );
 }
