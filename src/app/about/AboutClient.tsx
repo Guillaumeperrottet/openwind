@@ -58,7 +58,7 @@ function Hero() {
             width={1200}
             height={400}
             priority
-            className="w-[80vw] sm:w-[32rem] lg:w-[44rem] h-auto"
+            className="w-[92vw] sm:w-2xl lg:w-[60rem] h-auto"
           />
         </h1>
         <p className="mt-8 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
