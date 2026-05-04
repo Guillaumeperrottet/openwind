@@ -37,17 +37,32 @@ export default function LiveMiniMap() {
       center: [8.2, 46.8], // Switzerland
       zoom: 6.4,
       attributionControl: false,
-      cooperativeGestures: false,
       dragRotate: false,
       pitchWithRotate: false,
-      touchZoomRotate: false,
       interactive: false, // unlocked on click
     });
     mapRef.current = map;
+
+    // The container starts at 0×0 before the aspect-ratio kicks in
+    // (and can resize on viewport changes). Keep the GL canvas in sync.
+    const ro = new ResizeObserver(() => {
+      try {
+        map.resize();
+      } catch {}
+    });
+    ro.observe(el);
+
     return () => {
-      markersRef.current.forEach((m) => m.remove());
+      ro.disconnect();
+      markersRef.current.forEach((m) => {
+        try {
+          m.remove();
+        } catch {}
+      });
       markersRef.current = [];
-      map.remove();
+      try {
+        map.remove();
+      } catch {}
       mapRef.current = null;
     };
   }, []);
@@ -71,10 +86,16 @@ export default function LiveMiniMap() {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !stations) return;
+    let cancelled = false;
 
     const apply = () => {
+      if (cancelled || mapRef.current !== map) return;
       // Clear previous markers
-      markersRef.current.forEach((m) => m.remove());
+      markersRef.current.forEach((m) => {
+        try {
+          m.remove();
+        } catch {}
+      });
       markersRef.current = [];
 
       for (const s of stations) {
@@ -135,6 +156,10 @@ export default function LiveMiniMap() {
 
     if (map.isStyleLoaded()) apply();
     else map.once("load", apply);
+
+    return () => {
+      cancelled = true;
+    };
   }, [stations]);
 
   function unlock() {
