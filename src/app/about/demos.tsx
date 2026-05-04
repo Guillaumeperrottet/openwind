@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import {
   Wind,
   CloudRain,
@@ -536,8 +537,8 @@ export function QuickWindDemo() {
         {stage === "idle" && (
           <div className="mt-10 flex flex-col items-center text-center">
             <p className="text-slate-300 text-sm max-w-xs">
-              Un seul clic, géolocalisation, et la liste des spots ventés
-              autour de toi. Pas de formulaire, pas d&apos;inscription.
+              Un seul clic, géolocalisation, et la liste des spots ventés autour
+              de toi. Pas de formulaire, pas d&apos;inscription.
             </p>
             <button
               type="button"
@@ -557,9 +558,7 @@ export function QuickWindDemo() {
               <span className="absolute inset-0 rounded-full bg-sky-500/30 animate-ping" />
               <span className="absolute inset-2 rounded-full bg-sky-500" />
             </div>
-            <p className="mt-5 text-slate-300 text-sm">
-              Géolocalisation…
-            </p>
+            <p className="mt-5 text-slate-300 text-sm">Géolocalisation…</p>
           </div>
         )}
 
@@ -610,10 +609,26 @@ export function QuickWindDemo() {
 
 // ─── Open source / forum → commit demo ────────────────────────────────────────
 
-const COMMIT_LINES: { type: "issue" | "commit" | "deploy"; text: string; meta?: string }[] = [
-  { type: "issue", text: "feat: add Météo-France SYNOP network", meta: "#42 · ouvert par @marc-kite" },
-  { type: "commit", text: "lib/meteofrance.ts  +185 stations", meta: "3 commits · @guiperrot" },
-  { type: "commit", text: "merge: pull request #42", meta: "main ← feat/meteo-france" },
+const COMMIT_LINES: {
+  type: "issue" | "commit" | "deploy";
+  text: string;
+  meta?: string;
+}[] = [
+  {
+    type: "issue",
+    text: "feat: add Météo-France SYNOP network",
+    meta: "#42 · ouvert par @marc-kite",
+  },
+  {
+    type: "commit",
+    text: "lib/meteofrance.ts  +185 stations",
+    meta: "3 commits · @guiperrot",
+  },
+  {
+    type: "commit",
+    text: "merge: pull request #42",
+    meta: "main ← feat/meteo-france",
+  },
   { type: "deploy", text: "deployed to openwind.ch", meta: "build 2m18s" },
 ];
 
@@ -690,5 +705,49 @@ export function OpenSourceCodeDemo() {
         <span className="text-slate-300">100% open</span>
       </div>
     </div>
+  );
+}
+
+// ─── Screenshot frame ─────────────────────────────────────────────────────────
+
+export function Screenshot({
+  src,
+  alt,
+  width,
+  height,
+  caption,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  caption?: string;
+}) {
+  return (
+    <figure className="group">
+      <div className="relative rounded-2xl overflow-hidden border border-black/8 bg-white shadow-[0_18px_50px_-15px_rgba(15,23,42,0.25)] transition-shadow group-hover:shadow-[0_24px_70px_-15px_rgba(15,23,42,0.35)]">
+        {/* Browser chrome */}
+        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-black/5 bg-slate-50">
+          <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
+          <span className="w-2.5 h-2.5 rounded-full bg-yellow-300" />
+          <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
+          <span className="ml-3 px-2 py-0.5 rounded text-[10px] text-slate-400 bg-white border border-black/5 font-sans truncate">
+            openwind.ch
+          </span>
+        </div>
+        <Image
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          className="w-full h-auto block"
+        />
+      </div>
+      {caption && (
+        <figcaption className="mt-2 text-[11px] text-slate-500 text-center font-sans">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
   );
 }

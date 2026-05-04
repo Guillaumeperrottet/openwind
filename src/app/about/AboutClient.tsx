@@ -14,11 +14,8 @@ import {
 } from "lucide-react";
 import { useReveal } from "./useReveal";
 import {
-  MiniMapDemo,
-  MiniForecastDemo,
   NetworksGrid,
-  MiniPlannerDemo,
-  MiniArchivesDemo,
+  Screenshot,
   OpenSourceCodeDemo,
   WindStreaks,
   SportConditionsDemo,
@@ -198,7 +195,13 @@ function SectionMap() {
         </>
       }
     >
-      <MiniMapDemo />
+      <Screenshot
+        src="/capture/map.png"
+        alt="Carte Openwind avec stations météo et popups en temps réel"
+        width={797}
+        height={609}
+        caption="La vraie carte sur openwind.ch — stations live"
+      />
     </Section>
   );
 }
@@ -242,21 +245,32 @@ function SectionForecast() {
       description={
         <>
           <p>
-            Prévisions <strong>7 jours</strong> par tranche horaire (Open-Meteo
-            en couverture mondiale, MeteoSwiss ICON-CH2-EPS pour la Suisse), et
-            <strong> 5 ans d&apos;archives</strong> pour confirmer la
-            saisonnalité d&apos;un spot avant de réserver.
+            Prévisions <strong>7 jours</strong> par tranche horaire, et
+            <strong> 5 ans d&apos;archives </strong> pour confirmer la
+            saisonnalité d&apos;un spot
           </p>
           <p className="text-sm text-slate-500">
-            Vent, rafales, direction, pluie, température — plus tendances
-            mensuelles année par année.
+            Open-Meteo en couverture mondiale, MeteoSwiss ICON-CH2-EPS pour la
+            Suisse
           </p>
         </>
       }
     >
-      <div className="space-y-4">
-        <MiniForecastDemo />
-        <MiniArchivesDemo />
+      <div className="space-y-6">
+        <Screenshot
+          src="/capture/previsions.png"
+          alt="Tableau de prévisions 7 jours style Windguru"
+          width={1546}
+          height={746}
+          caption="Prévisions 7 jours, par tranche de 3 h"
+        />
+        <Screenshot
+          src="/capture/archives.png"
+          alt="Archives historiques sur 5 ans avec heatmap mensuelle"
+          width={1524}
+          height={319}
+          caption="Archives 5 ans — saisonnalité par mois"
+        />
       </div>
     </Section>
   );
@@ -267,28 +281,27 @@ function SectionPlanner() {
     <Section
       eyebrow="Trip Planner"
       icon={<Compass />}
-      title={
-        <>
-          Quand
-          <br />
-          partir où ?
-        </>
-      }
+      title={<>Quand et où ?</>}
       description={
         <>
           <p>
-            Indique tes dates, ton rayon et ton sport. Openwind classe les spots
+            Indique tes dates, les km et ton sport. Openwind classe les spots
             autour de toi par qualité de vent prévue, sur la base d&apos;un
             score multi-critères.
           </p>
           <p className="text-sm text-slate-500">
-            Au-delà de 16 jours, on bascule sur les archives historiques pour
-            les voyages lointains.
+            Au-delà de 16 jours, on bascule sur les archives historiques.
           </p>
         </>
       }
     >
-      <MiniPlannerDemo />
+      <Screenshot
+        src="/capture/scoring.png"
+        alt="Résultats du Trip Planner avec scoring multi-critères"
+        width={489}
+        height={259}
+        caption="Spots classés par score de vent prévu"
+      />
     </Section>
   );
 }
