@@ -737,6 +737,11 @@ export function KiteMap({
     });
     // ─────────────────────────────────────────────────────────────────────
 
+    // Auto-collapse the sport filter pill as soon as the user starts panning/zooming
+    map.on("movestart", () => {
+      setFilterOpen(false);
+    });
+
     // Persist map position to localStorage on every move (survives reloads & browser restarts)
     map.on("moveend", () => {
       const c = map.getCenter();
