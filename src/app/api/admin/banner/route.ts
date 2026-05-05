@@ -9,19 +9,62 @@ interface BannerConfig {
   text: string;
   url: string;
   active: boolean;
+  speedSec: number;
+  paused: boolean;
 }
 
-const defaultBanner: BannerConfig = { text: "", url: "", active: false };
+const defaultBanner: BannerConfig = {
+  text: "",
+  url: "",
+  active: false,
+  speedSec: 45,
+  paused: false,
+};
 
 function isAdmin(userId: string) {
   const ids = (process.env.ADMIN_USER_IDS ?? "").split(",").filter(Boolean);
   return ids.includes(userId);
 }
 
-const bannerSchema = z.object({
-  text: z.string().min(1).max(300),
-  url: z.string().url().max(500),
-  active: z.boolean(),
+const bannerConfigSchema = z.object({
+  text: z.string().max(300).default(""),
+  url: z.string().max(500).default(""),
+  active: z.boolean().default(false),
+  speedSec: z.number().int().min(10).max(120).default(45),
+  paused: z.boolean().default(false),
+});
+
+const bannerUpdateSchema = bannerConfigSchema.superRefine((value, ctx) => {
+  if (!value.active) return;
+
+  if (!value.text.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Le texte est requis quand le bandeau est actif",
+      path: ["text"],
+    });
+  }
+
+  if (!value.url.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "L'URL est requise quand le bandeau est actif",
+      path: ["url"],
+    });
+    return;
+  }
+
+  try {
+    // Ensure we only save clickable absolute links.
+    // eslint-disable-next-line no-new
+    new URL(value.url);
+  } catch {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "URL invalide",
+      path: ["url"],
+    });
+  }
 });
 
 /** Public — read current banner config */
@@ -33,7 +76,9 @@ export async function GET() {
     if (!row) {
       return NextResponse.json(defaultBanner);
     }
-    return NextResponse.json(JSON.parse(row.value) as BannerConfig);
+    const raw = JSON.parse(row.value) as unknown;
+    const parsed = bannerConfigSchema.safeParse(raw);
+    return NextResponse.json(parsed.success ? parsed.data : defaultBanner);
   } catch {
     return NextResponse.json(defaultBanner);
   }
@@ -51,7 +96,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const body = await req.json();
-  const parsed = bannerSchema.safeParse(body);
+  const parsed = bannerUpdateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Données invalides", details: parsed.error.flatten() },

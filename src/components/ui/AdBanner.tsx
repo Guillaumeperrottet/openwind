@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  type CSSProperties,
+} from "react";
 
 interface BannerConfig {
   text: string;
   url: string;
   active: boolean;
+  speedSec: number;
+  paused: boolean;
 }
 
 export function AdBanner() {
@@ -43,6 +51,11 @@ export function AdBanner() {
 
   if (!banner) return null;
 
+  const marqueeStyle: CSSProperties = {
+    animationDuration: `${banner.speedSec}s`,
+    animationPlayState: banner.paused ? "paused" : "running",
+  };
+
   return (
     <div
       ref={containerRef}
@@ -59,14 +72,18 @@ export function AdBanner() {
           {banner.text} ·{" "}
         </span>
         {/* Two identical groups: one scrolls out, the other fills seamlessly */}
-        <span className="inline-flex animate-marquee">
+        <span className="inline-flex animate-marquee" style={marqueeStyle}>
           {Array.from({ length: copies }, (_, i) => (
             <span key={i} className="px-4">
               {banner.text} ·
             </span>
           ))}
         </span>
-        <span className="inline-flex animate-marquee" aria-hidden>
+        <span
+          className="inline-flex animate-marquee"
+          style={marqueeStyle}
+          aria-hidden
+        >
           {Array.from({ length: copies }, (_, i) => (
             <span key={i} className="px-4">
               {banner.text} ·

@@ -2,11 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Middleware Supabase SSR — rafraîchit la session à chaque requête.
+ * Proxy Supabase SSR — rafraîchit la session à chaque requête.
  * Sans ce fichier, l'access token (1h) expire et le serveur voit
  * l'utilisateur comme déconnecté même si le refresh token est valide.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

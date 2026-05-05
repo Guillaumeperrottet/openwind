@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, ExternalLink } from "lucide-react";
 
@@ -8,6 +8,8 @@ interface BannerConfig {
   text: string;
   url: string;
   active: boolean;
+  speedSec: number;
+  paused: boolean;
 }
 
 export default function AdminBannerPage() {
@@ -17,6 +19,8 @@ export default function AdminBannerPage() {
     text: "",
     url: "",
     active: false,
+    speedSec: 45,
+    paused: false,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,6 +62,11 @@ export default function AdminBannerPage() {
     }
   }
 
+  const previewMarqueeStyle: CSSProperties = {
+    animationDuration: `${banner.speedSec}s`,
+    animationPlayState: banner.paused ? "paused" : "running",
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -70,10 +79,10 @@ export default function AdminBannerPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-xl mx-auto px-4 py-10">
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/admin")}
           className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
         >
-          <ArrowLeft className="w-4 h-4" /> Retour à la carte
+          <ArrowLeft className="w-4 h-4" /> Retour à l'admin
         </button>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-1">
@@ -154,20 +163,72 @@ export default function AdminBannerPage() {
             </div>
           </div>
 
+          {/* Marquee behavior */}
+          <div className="space-y-3">
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="text-sm font-medium text-gray-700">
+                Arrêter le défilement
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={banner.paused}
+                onClick={() => setBanner((b) => ({ ...b, paused: !b.paused }))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  banner.paused ? "bg-sky-500" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                    banner.paused ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </label>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Vitesse de défilement ({banner.speedSec}s)
+              </label>
+              <input
+                type="range"
+                min={10}
+                max={120}
+                step={5}
+                value={banner.speedSec}
+                onChange={(e) =>
+                  setBanner((b) => ({ ...b, speedSec: Number(e.target.value) }))
+                }
+                disabled={banner.paused}
+                className="w-full accent-sky-500 disabled:opacity-50"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Plus la valeur est élevée, plus le texte défile lentement.
+              </p>
+            </div>
+          </div>
+
           {/* Preview */}
           {banner.text && (
             <div>
               <p className="text-xs font-medium text-gray-500 mb-2">Aperçu</p>
               <div className="overflow-hidden rounded-lg bg-black/75 backdrop-blur-sm">
                 <div className="flex items-center h-7 whitespace-nowrap text-xs text-white/90">
-                  <span className="inline-flex animate-marquee">
+                  <span
+                    className="inline-flex animate-marquee"
+                    style={previewMarqueeStyle}
+                  >
                     {Array.from({ length: 6 }, (_, i) => (
                       <span key={i} className="px-4">
                         {banner.text} ·
                       </span>
                     ))}
                   </span>
-                  <span className="inline-flex animate-marquee" aria-hidden>
+                  <span
+                    className="inline-flex animate-marquee"
+                    style={previewMarqueeStyle}
+                    aria-hidden
+                  >
                     {Array.from({ length: 6 }, (_, i) => (
                       <span key={i} className="px-4">
                         {banner.text} ·

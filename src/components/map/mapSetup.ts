@@ -95,6 +95,20 @@ export function registerWindImages(map: maplibregl.Map) {
         // icon missing — fall back to plain circle
       });
   }
+
+  // Para spot icon (same async pattern)
+  if (!map.hasImage("spot-para-icon")) {
+    map
+      .loadImage("/icon_para.png")
+      .then((img) => {
+        if (img && !map.hasImage("spot-para-icon")) {
+          map.addImage("spot-para-icon", img.data);
+        }
+      })
+      .catch(() => {
+        // icon missing — fall back to plain circle
+      });
+  }
 }
 
 /**
@@ -405,7 +419,7 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
     paint: {
       // Small wind-colored dot for KITE — sits behind/below the icon so the
       // icon stays clearly visible while still showing the wind state.
-      "circle-radius": ["case", ["==", ["get", "sportType"], "KITE"], 6, 8],
+      "circle-radius": 6,
       "circle-color": [
         "case",
         ["==", ["get", "sportType"], "KITE"],
@@ -431,11 +445,33 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
     ],
     layout: {
       "icon-image": "spot-kite-icon",
-      "icon-size": 0.03, // ~38px on screen for a 1280px source
+      "icon-size": 0.03,
       "icon-allow-overlap": true,
       "icon-ignore-placement": true,
       "icon-anchor": "center",
-      "icon-offset": [0, -14], // float the icon above the colored dot
+      "icon-offset": [0, -14],
+    },
+  });
+
+  // Para icon layer (same size/offset as kite)
+  map.addLayer({
+    id: "spots-para-icon",
+    type: "symbol",
+    source: "combined-source",
+    filter: [
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "featureType"], "spot"],
+      ["==", ["get", "sportType"], "PARAGLIDE"],
+    ],
+    layout: {
+      "icon-image": "spot-para-icon",
+      // canvas 1024 vs 1280 for kite — bump size so they render at the same px
+      "icon-size": 0.0375,
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+      "icon-anchor": "center",
+      "icon-offset": [0, -14],
     },
   });
 

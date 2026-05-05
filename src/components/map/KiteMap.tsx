@@ -108,6 +108,7 @@ export function KiteMap({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(true);
   /** Sport filter: "ALL" | "KITE" | "PARAGLIDE" */
   const { user } = useAuth();
   const [sportFilter, _setSportFilter] = useState<"ALL" | "KITE" | "PARAGLIDE">(
@@ -131,8 +132,10 @@ export function KiteMap({
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!data) return;
-        if (data.sportFilter === "KITE" || data.sportFilter === "PARAGLIDE")
+        if (data.sportFilter === "KITE" || data.sportFilter === "PARAGLIDE") {
           _setSportFilter(data.sportFilter);
+          setFilterOpen(false);
+        }
         if (typeof data.useKnots === "boolean") _setUseKnots(data.useKnots);
 
         // Apply server-stored map view — but only if the user hasn't started
@@ -1123,41 +1126,61 @@ export function KiteMap({
       <div
         className={`absolute top-4 left-4 z-10 flex flex-col gap-1.5 ${pickMode ? "hidden" : ""}`}
       >
-        {/* Sport filter toggle */}
-        <div className="flex items-center rounded-full bg-white/95 shadow-lg border border-gray-200 p-0.5 text-[11px] font-semibold">
-          {(["ALL", "KITE", "PARAGLIDE"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setSportFilter(v)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all ${
-                sportFilter === v
-                  ? v === "KITE"
-                    ? "bg-green-500 text-white"
-                    : v === "PARAGLIDE"
-                      ? "bg-orange-500 text-white"
-                      : "bg-gray-700 text-white"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}
-            >
-              {v === "ALL" ? (
+        {/* Sport filter toggle — collapses to active label when a specific sport is selected */}
+        <div className="flex items-center rounded-full bg-white/95 shadow-lg border border-gray-200 p-0.5 text-[11px] font-semibold overflow-hidden">
+          {(["ALL", "KITE", "PARAGLIDE"] as const).map((v) => {
+            const isActive = sportFilter === v;
+            const show = filterOpen || isActive;
+            const label =
+              v === "ALL" ? (
                 "Tous"
               ) : v === "KITE" ? (
-                <>
-                  <span
-                    className={`inline-block h-1.5 w-1.5 rounded-full ${sportFilter === v ? "bg-white" : "bg-green-500"}`}
-                  />
-                  Kite
-                </>
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src="/icon_kite.png"
+                  alt="Kite"
+                  width={16}
+                  height={16}
+                  className="shrink-0"
+                />
               ) : (
-                <>
-                  <span
-                    className={`inline-block h-1.5 w-1.5 rounded-full ${sportFilter === v ? "bg-white" : "bg-orange-500"}`}
-                  />
-                  Para
-                </>
-              )}
-            </button>
-          ))}
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src="/icon_para.png"
+                  alt="Para"
+                  width={16}
+                  height={16}
+                  className="shrink-0"
+                />
+              );
+            return (
+              <button
+                key={v}
+                onClick={() => {
+                  if (!filterOpen) {
+                    setFilterOpen(true);
+                    return;
+                  }
+                  setSportFilter(v);
+                  setFilterOpen(false);
+                }}
+                className="rounded-full transition-all duration-200 ease-in-out overflow-hidden whitespace-nowrap flex items-center justify-center"
+                style={{
+                  maxWidth: show ? "4rem" : "0",
+                  opacity: show ? 1 : 0,
+                  paddingLeft: show ? "0.625rem" : "0",
+                  paddingRight: show ? "0.625rem" : "0",
+                  paddingTop: "0.25rem",
+                  paddingBottom: "0.25rem",
+                  background: isActive ? "rgba(0,0,0,0.08)" : "transparent",
+                  color: isActive ? "#111827" : "#6b7280",
+                  pointerEvents: show ? "auto" : "none",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 

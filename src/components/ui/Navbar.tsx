@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -16,6 +16,7 @@ import {
   MessagesSquare,
   Mail,
   Info,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
@@ -32,6 +33,7 @@ export function Navbar() {
   const { user, favoriteIds, requestAuth, signOut } = useFavContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Sync user to Prisma DB after login
@@ -39,6 +41,32 @@ export function Navbar() {
     if (user) {
       fetch("/api/auth/sync", { method: "POST" }).catch(() => {});
     }
+  }, [user]);
+
+  // Resolve admin role server-side for the current authenticated user
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    let cancelled = false;
+    fetch("/api/admin/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: { isAdmin?: boolean }) => {
+        if (!cancelled) {
+          setIsAdmin(Boolean(data.isAdmin));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsAdmin(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // Close user menu on click outside
@@ -70,7 +98,9 @@ export function Navbar() {
 
         {/* Search bar — center, fills available space (hidden on mobile, toggle via icon) */}
         <div className="hidden sm:block flex-1 max-w-md mx-2 sm:mx-4">
-          <SearchBar favoriteIds={favoriteIds} />
+          <Suspense fallback={null}>
+            <SearchBar favoriteIds={favoriteIds} />
+          </Suspense>
         </div>
 
         {/* Nav links + user — pushed right */}
@@ -158,6 +188,13 @@ export function Navbar() {
                       Forum
                     </Link>
                     <Link
+                      href="/about"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <Info className="h-3.5 w-3.5" />À propos
+                    </Link>
+                    <Link
                       href="/spots/new"
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -167,10 +204,20 @@ export function Navbar() {
                     </Link>
                   </div>
                   <div className="border-t border-gray-100">
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
+                      >
+                        <Shield className="h-3.5 w-3.5" />
+                        Admin
+                      </Link>
+                    )}
                     <Link
                       href="/about"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="hidden sm:flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       <Info className="h-3.5 w-3.5" />À propos
                     </Link>
@@ -221,7 +268,7 @@ export function Navbar() {
                   <Link
                     href="/about"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                    className="hidden sm:flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
                   >
                     <Info className="h-3.5 w-3.5" />À propos
                   </Link>
@@ -242,6 +289,13 @@ export function Navbar() {
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Ajouter un spot
+                    </Link>
+                    <Link
+                      href="/about"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <Info className="h-3.5 w-3.5" />À propos
                     </Link>
                   </div>
                   <div className="border-t border-gray-100 px-3 py-2">
@@ -264,11 +318,13 @@ export function Navbar() {
       {mobileSearch && (
         <div className="fixed top-14 left-0 right-0 z-40 flex items-center h-12 px-3 gap-2 bg-white border-b border-gray-100 shadow-sm sm:hidden">
           <div className="flex-1">
-            <SearchBar
-              favoriteIds={favoriteIds}
-              autoFocus
-              onNavigate={() => setMobileSearch(false)}
-            />
+            <Suspense fallback={null}>
+              <SearchBar
+                favoriteIds={favoriteIds}
+                autoFocus
+                onNavigate={() => setMobileSearch(false)}
+              />
+            </Suspense>
           </div>
           <button
             onClick={() => setMobileSearch(false)}
