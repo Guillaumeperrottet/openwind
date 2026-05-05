@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { X, ExternalLink } from "lucide-react";
-import {
-  windColor,
-  windConditionLabel,
-  windDirectionLabel,
-  barColors,
-} from "@/lib/utils";
+import { windConditionLabel, windDirectionLabel, barColors } from "@/lib/utils";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import type { HistoryPoint } from "@/types";
 
@@ -32,6 +27,15 @@ interface StationPopupProps {
   useKnots: boolean;
   position: { x: number; y: number };
   onClose: () => void;
+  /** Called when the popup detects a fresher measurement than the GL feature
+   *  was carrying — lets the parent map re-color the arrow to match. */
+  onLiveUpdate?: (update: {
+    id: string;
+    windSpeedKmh: number;
+    windDirection: number;
+    gustsKmh: number;
+    updatedAt: string;
+  }) => void;
 }
 
 export function StationPopup({
@@ -39,6 +43,7 @@ export function StationPopup({
   useKnots,
   position,
   onClose,
+  onLiveUpdate,
 }: StationPopupProps) {
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -137,11 +142,41 @@ export function StationPopup({
     station.gustsKmh,
   ]);
 
+  // Push the freshest values back to the map so the GL arrow color matches.
+  useEffect(() => {
+    if (!onLiveUpdate) return;
+    if (
+      live.windSpeedKmh === station.windSpeedKmh &&
+      live.windDirection === station.windDirection &&
+      live.gustsKmh === station.gustsKmh
+    ) {
+      return;
+    }
+    onLiveUpdate({
+      id: station.id,
+      windSpeedKmh: live.windSpeedKmh,
+      windDirection: live.windDirection,
+      gustsKmh: live.gustsKmh,
+      updatedAt: live.updatedAt,
+    });
+  }, [
+    live.windSpeedKmh,
+    live.windDirection,
+    live.gustsKmh,
+    live.updatedAt,
+    station.id,
+    station.windSpeedKmh,
+    station.windDirection,
+    station.gustsKmh,
+    onLiveUpdate,
+  ]);
+
   const speedKmh = Math.round(live.windSpeedKmh);
   const speedKts = Math.round(speedKmh / 1.852);
   const gustsKmh = Math.round(live.gustsKmh);
   const gustsKts = Math.round(gustsKmh / 1.852);
-  const color = windColor(speedKmh);
+  // Same palette as the 48h history chart (barColors) for visual consistency
+  const color = barColors(speedKmh)[0];
   const dir = live.windDirection;
   const arrowRot = (dir + 180) % 360;
   const dirLabel = windDirectionLabel(dir);

@@ -628,7 +628,7 @@ export function KiteMap({
       });
 
       // Popup on station click — open React-based StationPopup
-      map.on("click", "stations-circle", (e) => {
+      map.on("click", "stations-arrow", (e) => {
         if (!e.features?.length) return;
         const p = e.features[0].properties as Record<string, unknown>;
         const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
@@ -665,10 +665,23 @@ export function KiteMap({
         setPopupPos(null);
       });
 
-      map.on("mouseenter", "stations-circle", () => {
+      map.on("mouseenter", "stations-arrow", (e) => {
         map.getCanvas().style.cursor = "pointer";
+        // Pre-warm the history cache so the popup shows the latest measurement
+        // instantly on click (instead of waiting 2-3 s for the fetch).
+        const f = e.features?.[0];
+        if (f) {
+          const id = String(
+            (f.properties as Record<string, unknown>)?.id ?? "",
+          );
+          if (id) {
+            fetch(`/api/stations/${encodeURIComponent(id)}/history`, {
+              cache: "force-cache",
+            }).catch(() => {});
+          }
+        }
       });
-      map.on("mouseleave", "stations-circle", () => {
+      map.on("mouseleave", "stations-arrow", () => {
         map.getCanvas().style.cursor = "";
       });
 
@@ -885,7 +898,7 @@ export function KiteMap({
         layers: [
           ...(map.getLayer("spots-circle") ? ["spots-circle"] : []),
           ...(map.getLayer("spots-clusters") ? ["spots-clusters"] : []),
-          ...(map.getLayer("stations-circle") ? ["stations-circle"] : []),
+          ...(map.getLayer("stations-arrow") ? ["stations-arrow"] : []),
         ],
       });
       if (features.length > 0) return;
@@ -1241,6 +1254,40 @@ export function KiteMap({
           onClose={() => {
             setSelectedStation(null);
             setStationPopupPos(null);
+          }}
+          onLiveUpdate={(u) => {
+            // Patch the GL feature so the arrow color matches the popup value
+            const idx = stationFeaturesRef.current.findIndex(
+              (f) => (f.properties as { id?: string })?.id === u.id,
+            );
+            if (idx >= 0) {
+              const f = stationFeaturesRef.current[idx];
+              stationFeaturesRef.current[idx] = {
+                ...f,
+                properties: {
+                  ...(f.properties ?? {}),
+                  windSpeedKmh: u.windSpeedKmh,
+                  windDirection: u.windDirection,
+                  gustsKmh: u.gustsKmh,
+                  rotation: (u.windDirection + 180) % 360,
+                  updatedAt: u.updatedAt,
+                  colorHex: windColor(u.windSpeedKmh),
+                },
+              };
+              updateCombinedSource();
+            }
+            // Also keep the popup-state in sync so re-renders use fresh values
+            setSelectedStation((prev) =>
+              prev && prev.id === u.id
+                ? {
+                    ...prev,
+                    windSpeedKmh: u.windSpeedKmh,
+                    windDirection: u.windDirection,
+                    gustsKmh: u.gustsKmh,
+                    updatedAt: u.updatedAt,
+                  }
+                : prev,
+            );
           }}
         />
       )}

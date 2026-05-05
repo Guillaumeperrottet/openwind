@@ -82,6 +82,37 @@ export function registerWindImages(map: maplibregl.Map) {
     );
   }
 
+  // Station chevron arrow (SDF — colored at runtime from wind speed).
+  // Drawn pointing UP (north) so `icon-rotate` matches the wind direction.
+  // Wide, soft chevron with rounded joins (letskite-inspired).
+  const stArrSize = 128;
+  const stArrCanvas = document.createElement("canvas");
+  stArrCanvas.width = stArrSize;
+  stArrCanvas.height = stArrSize;
+  const stCtx = stArrCanvas.getContext("2d")!;
+  const sac = stArrSize / 2;
+  stCtx.fillStyle = "white";
+  stCtx.strokeStyle = "white";
+  stCtx.lineWidth = 10;
+  stCtx.lineJoin = "round";
+  stCtx.lineCap = "round";
+  stCtx.beginPath();
+  stCtx.moveTo(sac, 28); // top tip
+  stCtx.lineTo(sac + 24, 90); // bottom right wing
+  stCtx.lineTo(sac, 72); // inner notch
+  stCtx.lineTo(sac - 24, 90); // bottom left wing
+  stCtx.closePath();
+  stCtx.fill();
+  stCtx.stroke();
+
+  if (!map.hasImage("station-arrow-sdf")) {
+    map.addImage(
+      "station-arrow-sdf",
+      stCtx.getImageData(0, 0, stArrSize, stArrSize),
+      { sdf: true },
+    );
+  }
+
   // Kite spot icon (loaded async — symbol layer renders once available)
   if (!map.hasImage("spot-kite-icon")) {
     map
@@ -202,84 +233,11 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
   });
 
   // ── Station layers ──
+  // Single chevron arrow per station, colored by current wind speed,
+  // rotated to point in the direction the wind is *blowing toward*
+  // (rotation = windDirection + 180°, computed in KiteMap).
   map.addLayer({
-    id: "stations-circle",
-    type: "circle",
-    source: "combined-source",
-    filter: [
-      "all",
-      ["!", ["has", "point_count"]],
-      ["==", ["get", "featureType"], "station"],
-    ],
-    paint: {
-      "circle-radius": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        3,
-        5,
-        7,
-        9,
-        10,
-        11,
-      ],
-      "circle-color": [
-        "step",
-        ["get", "windSpeedKmh"],
-        "#c8d4dc",
-        8,
-        "#d0d0d0",
-        15,
-        "#a8bdd4",
-        22,
-        "#6a9cbd",
-        30,
-        "#3a7fa8",
-        38,
-        "#e07720",
-        50,
-        "#cc3333",
-      ],
-      "circle-stroke-color": "rgba(255,255,255,0.5)",
-      "circle-stroke-width": 1.5,
-      "circle-opacity": 0.9,
-    },
-  });
-
-  map.addLayer(
-    {
-      id: "stations-tail",
-      type: "symbol",
-      source: "combined-source",
-      filter: [
-        "all",
-        ["!", ["has", "point_count"]],
-        ["==", ["get", "featureType"], "station"],
-      ],
-      layout: {
-        "icon-image": "wind-tail",
-        "icon-rotate": ["get", "rotation"],
-        "icon-rotation-alignment": "map",
-        "icon-allow-overlap": true,
-        "icon-ignore-placement": true,
-        "icon-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          3,
-          0.3,
-          7,
-          0.45,
-          10,
-          0.55,
-        ],
-      },
-    },
-    "stations-circle",
-  );
-
-  map.addLayer({
-    id: "stations-speed-label",
+    id: "stations-arrow",
     type: "symbol",
     source: "combined-source",
     filter: [
@@ -288,74 +246,50 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
       ["==", ["get", "featureType"], "station"],
     ],
     layout: {
-      "text-field": [
-        "to-string",
-        ["round", ["/", ["get", "windSpeedKmh"], 1.852]],
+      "icon-image": "station-arrow-sdf",
+      "icon-rotate": ["get", "rotation"],
+      "icon-rotation-alignment": "map",
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+      "icon-anchor": "center",
+      "icon-size": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        3,
+        0.15,
+        7,
+        0.22,
+        10,
+        0.28,
       ],
-      "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
-      "text-size": ["interpolate", ["linear"], ["zoom"], 3, 6, 7, 8, 10, 10],
-      "text-allow-overlap": true,
-      "text-ignore-placement": true,
     },
     paint: {
-      "text-color": "#fff",
-      "text-halo-color": "rgba(0,0,0,0.35)",
-      "text-halo-width": 1,
+      "icon-color": [
+        "step",
+        ["get", "windSpeedKmh"],
+        "#c0cdda", // < 2 kts
+        3.7,
+        "#90e86a", // 2–5 kts
+        9.3,
+        "#6de840", // 5–8 kts
+        14.8,
+        "#50d818", // 8–12 kts
+        22.2,
+        "#e6d620", // 12–16 kts
+        29.6,
+        "#f0a818", // 16–20 kts
+        37.0,
+        "#fc762d", // 20–25 kts
+        46.3,
+        "#e04010", // 25–30 kts
+        55.6,
+        "#8f0905", // 30–35 kts
+        64.8,
+        "#6a0020", // ≥ 35 kts
+      ],
     },
   });
-
-  map.addLayer(
-    {
-      id: "stations-pulse",
-      type: "circle",
-      source: "combined-source",
-      filter: [
-        "all",
-        ["!", ["has", "point_count"]],
-        ["==", ["get", "featureType"], "station"],
-        [">=", ["get", "windSpeedKmh"], 22],
-      ],
-      paint: {
-        "circle-radius": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          3,
-          5,
-          7,
-          9,
-          10,
-          11,
-        ],
-        "circle-color": [
-          "step",
-          ["get", "windSpeedKmh"],
-          "#c0cdda",
-          4,
-          "#90e86a",
-          9,
-          "#6de840",
-          15,
-          "#50d818",
-          22,
-          "#e6d620",
-          30,
-          "#f0a818",
-          37,
-          "#fc762d",
-          46,
-          "#e04010",
-          56,
-          "#8f0905",
-          65,
-          "#6a0020",
-        ],
-        "circle-opacity": 0.45,
-        "circle-stroke-width": 0,
-      },
-    },
-    "stations-tail",
-  );
 
   // Kite only: pulse starts at 12 kts (22 km/h), no pulse for para
   const SPOT_PULSE_COLOR: maplibregl.ExpressionSpecification = [
@@ -503,24 +437,10 @@ export function startPulseAnimation(
   const pulseStart = performance.now();
 
   const tick = () => {
-    if (!map.getLayer("stations-pulse") && !map.getLayer("spots-pulse")) return;
+    if (!map.getLayer("spots-pulse")) return;
     const t = ((performance.now() - pulseStart) / 1000) * Math.PI * 1.4;
     const wave = (Math.sin(t) + 1) / 2;
 
-    if (map.getLayer("stations-pulse")) {
-      const z = map.getZoom();
-      const stBase = z <= 3 ? 5 : z >= 10 ? 11 : 5 + ((z - 3) / 7) * 6;
-      map.setPaintProperty(
-        "stations-pulse",
-        "circle-radius",
-        stBase + wave * 8,
-      );
-      map.setPaintProperty(
-        "stations-pulse",
-        "circle-opacity",
-        0.45 * (1 - wave * 0.9),
-      );
-    }
     if (map.getLayer("spots-pulse")) {
       map.setPaintProperty("spots-pulse", "circle-radius", 8 + wave * 14);
       map.setPaintProperty(
