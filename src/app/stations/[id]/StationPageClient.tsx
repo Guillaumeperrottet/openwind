@@ -17,7 +17,7 @@ import { WindCompass } from "@/components/spot/WindCompass";
 import { WindChart } from "@/components/spot/WindChart";
 import { ForecastTable } from "@/components/spot/ForecastTable";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
-import { windColor, windConditionLabel, windDirectionLabel } from "@/lib/utils";
+import { barColors, windConditionLabel, windDirectionLabel } from "@/lib/utils";
 import { roundKnots } from "@/lib/forecast";
 import type { WindStation } from "@/lib/stations";
 import type { FullForecast } from "@/lib/forecast";
@@ -95,9 +95,36 @@ export function StationPageClient({
 }: Props) {
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [liveStation, setLiveStation] = useState<WindStation | null>(null);
   const router = useRouter();
 
   const srcMeta = getSourceMeta(station.source);
+
+  // Live polling — same source as the map popup (/api/stations) so the cards,
+  // compass, and last bar of the 48 h chart all reflect the freshest measurement.
+  // Polls every 60 s while the tab is visible.
+  useEffect(() => {
+    let cancelled = false;
+    const fetchLive = () => {
+      if (document.hidden) return;
+      fetch("/api/stations")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (cancelled || !Array.isArray(data)) return;
+          const found = data.find((s: WindStation) => s.id === station.id) as
+            | WindStation
+            | undefined;
+          if (found) setLiveStation(found);
+        })
+        .catch(() => {});
+    };
+    fetchLive();
+    const id = setInterval(fetchLive, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [station.id]);
 
   // Auto-refresh when tab becomes visible after being hidden for 10+ min.
   // Avoids polling in background tabs, saving ~4 API calls per cycle.
@@ -129,18 +156,35 @@ export function StationPageClient({
     };
   }, [router]);
 
-  // Derived display values
-  const color = windColor(station.windSpeedKmh);
-  const condLabel = windConditionLabel(station.windSpeedKmh);
-  const dirLabel = windDirectionLabel(station.windDirection);
-  const speedKts = roundKnots(station.windSpeedKmh);
-  const gustsKts = gustsKmh !== null ? roundKnots(gustsKmh) : null;
+  // Pick freshest values: live poll if newer, else SSR snapshot.
+  const liveIsNewer =
+    liveStation &&
+    new Date(liveStation.updatedAt).getTime() >
+      new Date(station.updatedAt).getTime();
+  const curWindKmh = liveIsNewer
+    ? liveStation!.windSpeedKmh
+    : station.windSpeedKmh;
+  const curDir = liveIsNewer
+    ? liveStation!.windDirection
+    : station.windDirection;
+  const curGustsKmh = liveIsNewer
+    ? (liveStation!.gustsKmh ?? gustsKmh)
+    : gustsKmh;
+  const curUpdatedAt = liveIsNewer ? liveStation!.updatedAt : station.updatedAt;
 
-  const updateTime = new Date(station.updatedAt).toLocaleTimeString("fr", {
+  // Derived display values — use the same `barColors` palette as the chart
+  // bars and the map flag so the colour is identical everywhere.
+  const color = barColors(curWindKmh)[0];
+  const condLabel = windConditionLabel(curWindKmh);
+  const dirLabel = windDirectionLabel(curDir);
+  const speedKts = roundKnots(curWindKmh);
+  const gustsKts = curGustsKmh !== null ? roundKnots(curGustsKmh) : null;
+
+  const updateTime = new Date(curUpdatedAt).toLocaleTimeString("fr", {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const updateDate = new Date(station.updatedAt).toLocaleDateString("fr", {
+  const updateDate = new Date(curUpdatedAt).toLocaleDateString("fr", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -148,13 +192,13 @@ export function StationPageClient({
 
   // WindCompass uses station speed + direction, estimated gusts (fallback to speed)
   const wind = {
-    windSpeedKmh: station.windSpeedKmh,
-    windDirection: station.windDirection,
-    gustsKmh: gustsKmh ?? station.windSpeedKmh,
-    isKitable: station.windSpeedKmh >= 22 && station.windSpeedKmh <= 45,
+    windSpeedKmh: curWindKmh,
+    windDirection: curDir,
+    gustsKmh: curGustsKmh ?? curWindKmh,
+    isKitable: curWindKmh >= 22 && curWindKmh <= 45,
     conditionLabel: condLabel,
     color,
-    updatedAt: station.updatedAt,
+    updatedAt: curUpdatedAt,
   };
 
   return (
@@ -282,7 +326,7 @@ export function StationPageClient({
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl sm:text-5xl font-bold tabular-nums leading-none text-gray-900">
-                    {useKnots ? speedKts : Math.round(station.windSpeedKmh)}
+                    {useKnots ? speedKts : Math.round(curWindKmh)}
                   </span>
                   <span className="text-base text-gray-500 font-medium">
                     {useKnots ? "kts" : "km/h"}
@@ -291,7 +335,7 @@ export function StationPageClient({
                 <div className="text-sm text-gray-500 mt-1.5">
                   /{" "}
                   {useKnots
-                    ? `${Math.round(station.windSpeedKmh)} km/h`
+                    ? `${Math.round(curWindKmh)} km/h`
                     : `${speedKts} kts`}
                 </div>
               </div>
@@ -302,11 +346,11 @@ export function StationPageClient({
                   <Zap className="h-4 w-4" />
                   Rafales
                 </div>
-                {gustsKts !== null && gustsKmh !== null ? (
+                {gustsKts !== null && curGustsKmh !== null ? (
                   <>
                     <div className="flex items-baseline gap-1">
                       <span className="text-4xl sm:text-5xl font-bold tabular-nums leading-none text-gray-900">
-                        {useKnots ? gustsKts : Math.round(gustsKmh)}
+                        {useKnots ? gustsKts : Math.round(curGustsKmh)}
                       </span>
                       <span className="text-base text-gray-500 font-medium">
                         {useKnots ? "kts" : "km/h"}
@@ -315,7 +359,7 @@ export function StationPageClient({
                     <div className="text-sm text-gray-500 mt-1.5">
                       /{" "}
                       {useKnots
-                        ? `${Math.round(gustsKmh)} km/h`
+                        ? `${Math.round(curGustsKmh)} km/h`
                         : `${gustsKts} kts`}
                     </div>
                   </>
@@ -339,9 +383,7 @@ export function StationPageClient({
                       viewBox="0 0 16 16"
                       aria-hidden="true"
                     >
-                      <g
-                        transform={`rotate(${(station.windDirection + 180) % 360}, 8, 8)`}
-                      >
+                      <g transform={`rotate(${(curDir + 180) % 360}, 8, 8)`}>
                         <line
                           x1="8"
                           y1="13"
@@ -361,9 +403,7 @@ export function StationPageClient({
                       <span className="text-4xl font-bold text-gray-900 leading-none">
                         {dirLabel}
                       </span>
-                      <span className="text-base text-gray-500">
-                        {station.windDirection}°
-                      </span>
+                      <span className="text-base text-gray-500">{curDir}°</span>
                     </div>
                   </div>
                 </div>
