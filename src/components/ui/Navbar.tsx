@@ -33,7 +33,8 @@ export function Navbar() {
   const { user, favoriteIds, requestAuth, signOut } = useFavContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminState, setIsAdmin] = useState(false);
+  const isAdmin = user ? isAdminState : false;
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Sync user to Prisma DB after login
@@ -45,10 +46,7 @@ export function Navbar() {
 
   // Resolve admin role server-side for the current authenticated user
   useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
+    if (!user) return;
 
     let cancelled = false;
     fetch("/api/admin/me", { cache: "no-store" })

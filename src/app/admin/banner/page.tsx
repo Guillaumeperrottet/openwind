@@ -82,7 +82,7 @@ export default function AdminBannerPage() {
           onClick={() => router.push("/admin")}
           className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
         >
-          <ArrowLeft className="w-4 h-4" /> Retour à l'admin
+          <ArrowLeft className="w-4 h-4" /> Retour à l&apos;admin
         </button>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-1">

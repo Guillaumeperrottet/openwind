@@ -19,7 +19,7 @@ export default function AdminPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Admin</h1>
             <p className="text-sm text-gray-500">
-              Espace d'administration Openwind.
+              Espace d&apos;administration Openwind.
             </p>
           </div>
         </div>
@@ -36,7 +36,7 @@ export default function AdminPage() {
               Bandeau publicitaire
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Modifier le texte, l'URL, l'activation et la vitesse du
+              Modifier le texte, l&apos;URL, l&apos;activation et la vitesse du
               défilement.
             </p>
           </Link>
@@ -53,7 +53,7 @@ export default function AdminPage() {
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               Accéder au forum pour gérer les catégories, éditer et supprimer
-              les contenus en tant qu'admin.
+              les contenus en tant qu&apos;admin.
             </p>
           </Link>
         </div>
