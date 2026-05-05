@@ -668,18 +668,59 @@ export function KiteMap({
       map.on("mouseenter", "stations-arrow", (e) => {
         map.getCanvas().style.cursor = "pointer";
         // Pre-warm the history cache so the popup shows the latest measurement
-        // instantly on click (instead of waiting 2-3 s for the fetch).
+        // instantly on click — and patch the GL feature on the fly so the
+        // arrow color matches what the popup will display BEFORE clicking.
         const f = e.features?.[0];
-        if (f) {
-          const id = String(
-            (f.properties as Record<string, unknown>)?.id ?? "",
-          );
-          if (id) {
-            fetch(`/api/stations/${encodeURIComponent(id)}/history`, {
-              cache: "force-cache",
-            }).catch(() => {});
-          }
-        }
+        if (!f) return;
+        const id = String((f.properties as Record<string, unknown>)?.id ?? "");
+        if (!id) return;
+        fetch(`/api/stations/${encodeURIComponent(id)}/history`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((hist) => {
+            if (!Array.isArray(hist) || hist.length === 0) return;
+            // Find the latest PAST point (skip 15-min forecasts that the API appends)
+            const nowIso = new Date().toISOString().slice(0, 16);
+            const lastPast = [...hist]
+              .reverse()
+              .find((p: { time: string }) => p.time <= nowIso) as
+              | {
+                  time: string;
+                  windSpeedKmh: number;
+                  windDirection: number;
+                  gustsKmh: number;
+                }
+              | undefined;
+            if (!lastPast) return;
+            const histIso = `${lastPast.time}:00Z`;
+            const idx = stationFeaturesRef.current.findIndex(
+              (sf) => (sf.properties as { id?: string })?.id === id,
+            );
+            if (idx < 0) return;
+            const feat = stationFeaturesRef.current[idx];
+            const propsT = (feat.properties as { updatedAt?: string })
+              ?.updatedAt;
+            // Only patch if history is genuinely fresher
+            if (
+              propsT &&
+              new Date(histIso).getTime() <= new Date(propsT).getTime()
+            ) {
+              return;
+            }
+            stationFeaturesRef.current[idx] = {
+              ...feat,
+              properties: {
+                ...(feat.properties ?? {}),
+                windSpeedKmh: lastPast.windSpeedKmh,
+                windDirection: lastPast.windDirection,
+                gustsKmh: lastPast.gustsKmh,
+                rotation: (lastPast.windDirection + 180) % 360,
+                updatedAt: histIso,
+                colorHex: windColor(lastPast.windSpeedKmh),
+              },
+            };
+            updateCombinedSource();
+          })
+          .catch(() => {});
       });
       map.on("mouseleave", "stations-arrow", () => {
         map.getCanvas().style.cursor = "";
