@@ -3,6 +3,8 @@
 import { useRef, useState, useCallback } from "react";
 import { MapPin, Search, Locate, X, Map } from "lucide-react";
 import type { SportType } from "@/types";
+import { DateRangePicker } from "./DateRangePicker";
+import { SportToggle } from "./SportToggle";
 
 export type SortKey = "score" | "distance" | "wind";
 
@@ -190,30 +192,17 @@ export function PlanFilters({
       </div>
 
       {/* Date range */}
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <label className="text-xs text-gray-500 mb-1 block">Du</label>
-          <input
-            type="date"
-            value={startDate}
-            min={toISO(0)}
-            onChange={(e) => {
-              onStartDateChange(e.target.value);
-              if (e.target.value > endDate) onEndDateChange(e.target.value);
-            }}
-            className={`${ctrlInput} w-full h-10`}
-          />
-        </div>
-        <div className="flex-1">
-          <label className="text-xs text-gray-500 mb-1 block">Au</label>
-          <input
-            type="date"
-            value={endDate}
-            min={startDate}
-            onChange={(e) => onEndDateChange(e.target.value)}
-            className={`${ctrlInput} w-full h-10`}
-          />
-        </div>
+      <div>
+        <label className="text-xs text-gray-500 mb-1 block">Période</label>
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onChange={(s, e) => {
+            onStartDateChange(s);
+            onEndDateChange(e);
+          }}
+          minDate={toISO(0)}
+        />
       </div>
 
       {/* Radius + Sport */}
@@ -238,28 +227,11 @@ export function PlanFilters({
         </div>
         <div className="flex-1">
           <label className="text-xs text-gray-500 mb-1 block">Sport</label>
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-sm h-10">
-            {(
-              [
-                ["KITE", "Kite"],
-                ["PARAGLIDE", "Para"],
-              ] as const
-            ).map(([key, label], i) => (
-              <button
-                key={key}
-                onClick={() => onSportChange(key)}
-                className={`px-3 py-2 font-medium transition-colors ${
-                  sport === key
-                    ? key === "KITE"
-                      ? "bg-green-500 text-white"
-                      : "bg-orange-500 text-white"
-                    : "bg-gray-50 text-gray-500 hover:bg-gray-100"
-                } ${i > 0 ? "border-l border-gray-200" : ""}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SportToggle
+            value={sport}
+            onChange={onSportChange}
+            className="w-full"
+          />
         </div>
       </div>
     </div>

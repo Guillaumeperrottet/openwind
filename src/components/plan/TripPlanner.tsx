@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { PlanFilters } from "@/components/plan/PlanFilters";
+import { DateRangePicker } from "@/components/plan/DateRangePicker";
+import { SportToggle } from "@/components/plan/SportToggle";
 
 const KiteMap = dynamic(
   () => import("@/components/map/KiteMap").then((m) => m.KiteMap),
@@ -594,30 +596,19 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             </div>
 
             {/* Dates */}
-            <div className="flex gap-2 flex-1 min-w-0 sm:flex-none sm:contents">
-              <div className="flex-1 sm:flex-none">
-                <label className="text-xs text-gray-500 mb-1 block">Du</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  min={toISO(0)}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    if (e.target.value > endDate) setEndDate(e.target.value);
-                  }}
-                  className={`${ctrlInput} w-full sm:w-auto`}
-                />
-              </div>
-              <div className="flex-1 sm:flex-none">
-                <label className="text-xs text-gray-500 mb-1 block">Au</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  min={startDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={`${ctrlInput} w-full sm:w-auto`}
-                />
-              </div>
+            <div className="flex-1 sm:flex-none sm:w-72 min-w-0">
+              <label className="text-xs text-gray-500 mb-1 block">
+                Période
+              </label>
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                onChange={(s, e) => {
+                  setStartDate(s);
+                  setEndDate(e);
+                }}
+                minDate={toISO(0)}
+              />
             </div>
 
             {/* Radius */}
@@ -645,28 +636,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             {/* Sport */}
             <div>
               <label className="text-xs text-gray-500 mb-1 block">Sport</label>
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-sm">
-                {(
-                  [
-                    ["KITE", "Kite"],
-                    ["PARAGLIDE", "Para"],
-                  ] as const
-                ).map(([key, label], i) => (
-                  <button
-                    key={key}
-                    onClick={() => setSport(key)}
-                    className={`px-3 py-2 font-medium transition-colors ${
-                      sport === key
-                        ? key === "KITE"
-                          ? "bg-green-500 text-white"
-                          : "bg-orange-500 text-white"
-                        : "bg-gray-50 text-gray-500 hover:bg-gray-100"
-                    } ${i > 0 ? "border-l border-gray-200" : ""}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <SportToggle value={sport} onChange={setSport} />
             </div>
 
             {hasLocation ? (
