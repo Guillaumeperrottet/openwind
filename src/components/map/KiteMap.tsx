@@ -8,12 +8,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { io, type Socket } from "socket.io-client";
 import type { Spot, WindData } from "@/types";
 import type { WindStation } from "@/lib/stations";
-import {
-  windColor,
-  windDirectionLabel,
-  getWindData,
-  isStationFresh,
-} from "@/lib/utils";
+import { windColor, windDirectionLabel, getWindData } from "@/lib/utils";
+import { isNetworkFresh } from "@/lib/stationConstants";
 import { SpotPopup } from "./SpotPopup";
 import { StationPopup } from "./StationPopup";
 import { MapLegend } from "./MapLegend";
@@ -238,7 +234,7 @@ export function KiteMap({
   const renderStations = useCallback(
     (stations: WindStation[]) => {
       stationFeaturesRef.current = stations.map((s) => {
-        const fresh = isStationFresh(s.updatedAt);
+        const fresh = isNetworkFresh(s.id, s.updatedAt);
         return {
           type: "Feature" as const,
           geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
@@ -344,7 +340,7 @@ export function KiteMap({
           if (!spot.nearestStationId) continue;
           const assigned =
             stations.find((s) => s.id === spot.nearestStationId) ?? null;
-          if (assigned && isStationFresh(assigned.updatedAt)) {
+          if (assigned && isNetworkFresh(assigned.id, assigned.updatedAt)) {
             windMap.set(spot.id, assigned.windSpeedKmh);
           }
         }
@@ -1085,7 +1081,7 @@ export function KiteMap({
         if (!spot.nearestStationId) continue;
         const assigned =
           stations.find((s) => s.id === spot.nearestStationId) ?? null;
-        if (assigned && isStationFresh(assigned.updatedAt)) {
+        if (assigned && isNetworkFresh(assigned.id, assigned.updatedAt)) {
           windMap.set(spot.id, assigned.windSpeedKmh);
         }
       }

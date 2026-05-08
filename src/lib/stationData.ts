@@ -6,8 +6,9 @@
  *   - getStationHistory → 48h observations + NWP forecast, strictly separated
  *   - getSpotLive       → current wind for a spot (station if fresh, Open-Meteo otherwise)
  *
- * ALL freshness thresholds live here. No other file should define FRESHNESS_MS,
- * FRESHNESS_BY_NETWORK, or duplicate isStationFresh logic.
+ * Freshness thresholds, network constants and detectNetwork() live in
+ * stationConstants.ts (client-safe). stationData.ts re-exports them for
+ * convenience of server consumers.
  *
  * server-only: this module must never be imported from client components.
  */
@@ -19,6 +20,12 @@ import type {
   WindHistoryBundle,
   HistoryPoint,
 } from "@/types";
+import {
+  FRESHNESS_BY_NETWORK,
+  NETWORK_LABELS,
+  detectNetwork,
+} from "@/lib/stationConstants";
+export { FRESHNESS_BY_NETWORK, NETWORK_LABELS, detectNetwork };
 import { prisma } from "@/lib/prisma";
 import { fetchCurrentWind } from "@/lib/windFetch";
 import {
@@ -27,44 +34,7 @@ import {
 } from "@/lib/windHistory";
 import type { WindStation } from "@/lib/stations";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-/**
- * Maximum age of a station measurement before it is considered stale.
- * Beyond this threshold:
- *   - spot pages fall back to Open-Meteo (when allowOpenMeteoFallback=true)
- *   - station pages show the obs with isFresh=false + "données anciennes" badge
- */
-export const FRESHNESS_BY_NETWORK: Record<NetworkId, number> = {
-  meteoswiss: 60 * 60 * 1000, // 1 h (10-min cycles but outages are common)
-  pioupiou: 20 * 60 * 1000, // 20 min (push ~4 min)
-  netatmo: 30 * 60 * 1000, // 30 min
-  meteofrance: 4 * 60 * 60 * 1000, // 4 h (SYNOP every 3 h)
-  windball: 30 * 60 * 1000, // 30 min
-  "fr-energy": 30 * 60 * 1000, // 30 min
-};
-
-export const NETWORK_LABELS: Record<NetworkId | "openmeteo", string> = {
-  meteoswiss: "MeteoSwiss",
-  pioupiou: "Pioupiou",
-  netatmo: "Netatmo",
-  meteofrance: "Météo-France",
-  windball: "Windball",
-  "fr-energy": "FribourgÉnergie",
-  openmeteo: "Open-Meteo",
-};
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Derive network identifier from station ID prefix. */
-export function detectNetwork(stationId: string): NetworkId {
-  if (stationId.startsWith("piou-")) return "pioupiou";
-  if (stationId.startsWith("ntm-")) return "netatmo";
-  if (stationId.startsWith("mf-")) return "meteofrance";
-  if (stationId.startsWith("windball-")) return "windball";
-  if (stationId.startsWith("fr-energy-")) return "fr-energy";
-  return "meteoswiss";
-}
 
 /**
  * Look up station lat/lng from the 10-min snapshot stored in SystemConfig.
