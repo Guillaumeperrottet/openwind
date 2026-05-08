@@ -35,7 +35,7 @@ export const DIFFICULTY_LABELS: Record<string, string> = {
 };
 
 export const WATER_LABELS: Record<string, string> = {
-  FLAT: "Plat",
+  FLAT: "Flat",
   CHOP: "Chop",
   WAVES: "Vagues",
   MIXED: "Mixte",

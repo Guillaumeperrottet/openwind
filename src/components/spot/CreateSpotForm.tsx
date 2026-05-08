@@ -489,7 +489,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
               <div>
                 <label className={labelClass}>Type d&apos;eau</label>
                 <select {...register("waterType")} className={inputClass}>
-                  <option value="FLAT">Plat</option>
+                  <option value="FLAT">Flat</option>
                   <option value="CHOP">Chop</option>
                   <option value="WAVES">Vagues</option>
                   <option value="MIXED">Mixte</option>
