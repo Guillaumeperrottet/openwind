@@ -10,6 +10,40 @@ import { fetchFribourgEnergieStations } from "@/lib/fribourgenergie";
 
 export const dynamic = "force-dynamic";
 
+/** Haversine distance in metres between two lat/lng points. */
+function distanceM(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+): number {
+  const R = 6_371_000;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const lat1 = (a.lat * Math.PI) / 180;
+  const lat2 = (b.lat * Math.PI) / 180;
+  const x =
+    Math.sin(dLat / 2) ** 2 +
+    Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+/**
+ * Slightly offset non-MeteoSwiss stations that are within 150 m of a
+ * MeteoSwiss station, so both icons remain visible on the map without
+ * overlapping. The offset (~25 m east) is purely visual — the station data
+ * and coordinates stored in the DB are not affected.
+ */
+function offsetCollocatedStations(stations: WindStation[]): WindStation[] {
+  const ms = stations.filter((s) => s.source === "meteoswiss");
+  // 0.00025° lng ≈ 20 m at Swiss latitudes
+  const LNG_OFFSET = 0.00025;
+  return stations.map((s) => {
+    if (s.source === "meteoswiss") return s;
+    const tooClose = ms.some((ref) => distanceM(ref, s) < 150);
+    if (!tooClose) return s;
+    return { ...s, lng: s.lng + LNG_OFFSET };
+  });
+}
+
 /**
  * Overlay the latest `StationMeasurement` rows on top of a stations array.
  *
@@ -149,7 +183,8 @@ export async function GET() {
         const snapshot = JSON.parse(cached.value) as WindStation[];
         // Two overlays: latest DB rows (cron 10min) + live API trames (60s cache)
         const withDb = await overlayLatestMeasurements(snapshot);
-        const stations = await overlayLiveNetworks(withDb);
+        const withLive = await overlayLiveNetworks(withDb);
+        const stations = offsetCollocatedStations(withLive);
         return NextResponse.json(stations, {
           headers: {
             // CDN cache 60 s — matches the live overlay revalidate window
@@ -233,7 +268,9 @@ export async function GET() {
   }
 
   // Overlay latest StationMeasurement rows for consistency with history chart
-  const merged = await overlayLatestMeasurements(stations);
+  const merged = offsetCollocatedStations(
+    await overlayLatestMeasurements(stations),
+  );
 
   return NextResponse.json(merged, {
     headers: {
