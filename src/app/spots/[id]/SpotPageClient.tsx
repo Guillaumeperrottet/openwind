@@ -59,7 +59,7 @@ import {
   relativeTime,
 } from "@/lib/utils";
 import { useSpotLive } from "@/lib/useSpotLive";
-import { NETWORK_LABELS as STATION_NETWORK_LABELS } from "@/lib/stationData";
+import { NETWORK_LABELS as STATION_NETWORK_LABELS } from "@/lib/stationConstants";
 import { roundKnots } from "@/lib/forecast";
 import { useFavContext } from "@/lib/FavContext";
 import {
