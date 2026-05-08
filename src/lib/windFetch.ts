@@ -76,11 +76,13 @@ export async function fetchCurrentWind(
     if (time[i] <= nowIso) idx = i;
   }
 
+  // Append "Z" so the string is parsed as UTC everywhere (browsers treat
+  // date-time strings without a timezone designator as local time).
   return getWindData(
     wind_speed_10m[idx] ?? 0,
     wind_direction_10m[idx] ?? 0,
     wind_gusts_10m[idx] ?? 0,
-    time[idx],
+    time[idx] + "Z",
     "openmeteo",
   );
 }
