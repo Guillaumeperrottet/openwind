@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Wind } from "lucide-react";
 import maplibregl from "maplibre-gl";
@@ -17,6 +17,7 @@ import {
 import { SpotPopup } from "./SpotPopup";
 import { StationPopup } from "./StationPopup";
 import { MapLegend } from "./MapLegend";
+import { useSpotLive } from "@/lib/useSpotLive";
 import {
   injectPopupCSS,
   registerWindImages,
@@ -86,10 +87,26 @@ export function KiteMap({
   const sportFilterRef = useRef<"ALL" | "KITE" | "PARAGLIDE">("ALL");
 
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
-  const [selectedWind, setSelectedWind] = useState<WindData | null>(null);
-  const [loadingWind, setLoadingWind] = useState(false);
   const [popupPos, setPopupPos] = useState<{ x: number; y: number } | null>(
     null,
+  );
+  // SWR hook — subscribes/unsubscribes as selectedSpot changes.
+  // Replaces fetchWind + re-derivation effect + openMeteoPoll effect.
+  const { data: spotLive, isLoading: loadingWind } = useSpotLive(
+    selectedSpot?.id ?? null,
+  );
+  const selectedWind = useMemo(
+    () =>
+      spotLive
+        ? getWindData(
+            spotLive.windSpeedKmh,
+            spotLive.windDirection,
+            spotLive.gustsKmh,
+            spotLive.updatedAt,
+            spotLive.source,
+          )
+        : null,
+    [spotLive],
   );
   const [showStations] = useState(!pickMode);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -195,60 +212,7 @@ export function KiteMap({
     y: number;
   } | null>(null);
 
-  const fetchWind = useCallback(async (spot: Spot) => {
-    setLoadingWind(true);
-    setSelectedWind(null);
-
-    // 1) If the spot has an assigned station AND it is fresh (< 30 min),
-    //    use it. We DON'T fall back to a "nearest fresh station" because for
-    //    kite/paragliding wind is highly local — a station 5 km away tells
-    //    you nothing useful. If our station is dead, prefer a gridded model
-    //    (Open-Meteo) right at the spot's coordinates.
-    //
-    //    No background re-fetch here — `stationsRef.current` is kept fresh by
-    //    the 60 s `loadStations` poll, and the re-derivation effect below
-    //    pushes any newer value into the open popup silently. Adding a
-    //    second fetch on open caused a visible value flicker ~500 ms after
-    //    the popup appeared.
-    const stations = stationsRef.current;
-    if (spot.nearestStationId && stations.length > 0) {
-      const assigned =
-        stations.find((s) => s.id === spot.nearestStationId) ?? null;
-      if (assigned && isStationFresh(assigned.updatedAt)) {
-        setSelectedWind(
-          getWindData(
-            assigned.windSpeedKmh,
-            assigned.windDirection,
-            assigned.gustsKmh ?? Math.round(assigned.windSpeedKmh * 1.3),
-            assigned.updatedAt,
-            "station",
-          ),
-        );
-        setLoadingWind(false);
-        return;
-      }
-    }
-
-    // 2) No fresh assigned station → Open-Meteo nowcast at the spot's exact
-    //    coordinates. This is the SAME source the spot's 48 h chart uses as
-    //    a fallback, so the popup stays consistent with what the spot page
-    //    shows. Subsequent refreshes are handled by the openMeteoPoll effect.
-    try {
-      const lat = spot.latitude.toFixed(2);
-      const lng = spot.longitude.toFixed(2);
-      const res = await fetch(`/api/wind?lat=${lat}&lng=${lng}`, {
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!res.ok) throw new Error();
-      const d = (await res.json()) as WindData | null;
-      if (!d?.windSpeedKmh && d?.windSpeedKmh !== 0) throw new Error();
-      setSelectedWind({ ...d, source: d.source ?? "openmeteo" });
-    } catch {
-      setSelectedWind(null);
-    } finally {
-      setLoadingWind(false);
-    }
-  }, []);
+  // fetchWind removed — replaced by useSpotLive SWR hook above.
 
   /**
    * Push the combined station + spot features to the unified clustered source.
@@ -398,75 +362,7 @@ export function KiteMap({
     useKnotsRef.current = useKnots;
   }, [useKnots]);
 
-  // When stations are refreshed while a spot popup is open, silently
-  // re-derive the wind shown in the popup so users see new values without
-  // having to close/reopen. Same logic as fetchWind: only the spot's
-  // *assigned* station counts. If it's stale, we leave the current popup
-  // value untouched (it's either an Open-Meteo fallback or already null).
-  useEffect(() => {
-    if (!selectedSpot) return;
-    if (!selectedSpot.nearestStationId) return;
-    const stations = stationsRef.current;
-    if (stations.length === 0) return;
-
-    const assigned =
-      stations.find((s) => s.id === selectedSpot.nearestStationId) ?? null;
-    if (!assigned || !isStationFresh(assigned.updatedAt)) return;
-
-    setSelectedWind((prev) => {
-      // Only replace if the new sample is strictly newer than what's shown
-      // AND the previous value also came from a station (don't overwrite a
-      // fresh Open-Meteo fallback with a station that just came back —
-      // wait for the next manual open instead, otherwise the value would
-      // jump while the user is reading).
-      if (prev?.source === "openmeteo") return prev;
-      if (
-        prev?.updatedAt &&
-        new Date(assigned.updatedAt).getTime() <=
-          new Date(prev.updatedAt).getTime()
-      ) {
-        return prev;
-      }
-      return getWindData(
-        assigned.windSpeedKmh,
-        assigned.windDirection,
-        assigned.gustsKmh ?? Math.round(assigned.windSpeedKmh * 1.3),
-        assigned.updatedAt,
-        "station",
-      );
-    });
-  }, [pollTick, selectedSpot]);
-
-  // When the popup is showing an Open-Meteo fallback (no fresh assigned
-  // station), poll /api/wind every 60 s so the value stays live too. This
-  // mirrors the loadStations() polling for stations and the openMeteoLive
-  // polling on the spot page — every popup variant updates without the user
-  // having to close/reopen.
-  useEffect(() => {
-    if (!selectedSpot) return;
-    if (selectedWind?.source !== "openmeteo") return;
-    let cancelled = false;
-    const id = setInterval(() => {
-      const lat = selectedSpot.latitude.toFixed(2);
-      const lng = selectedSpot.longitude.toFixed(2);
-      fetch(`/api/wind?lat=${lat}&lng=${lng}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d: WindData | null) => {
-          if (cancelled || !d) return;
-          if (!d.windSpeedKmh && d.windSpeedKmh !== 0) return;
-          setSelectedWind({ ...d, source: d.source ?? "openmeteo" });
-        })
-        .catch(() => {});
-    }, 60 * 1000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-    // We intentionally depend on selectedSpot.id (not the whole object) and
-    // on whether we're in openmeteo mode — re-derivation handled by the
-    // effect above for station mode.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSpot?.id, selectedWind?.source]);
+  // pollTick re-derivation effect removed — useSpotLive handles live updates.
 
   // Initialize map
   useEffect(() => {
@@ -826,7 +722,7 @@ export function KiteMap({
         }
         setSelectedStation(null);
         setStationPopupPos(null);
-        fetchWind(spot);
+        setSelectedSpot(spot);
       });
 
       map.on("mouseenter", "spots-circle", () => {
