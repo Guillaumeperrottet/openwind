@@ -41,7 +41,41 @@ Règles :
 - **Direction en degrés** (0 = Nord, 90 = Est)
 - **`source`** : identifiant unique utilisé pour le routage dans l'historique
 
-### 2. Intégrer dans le cron
+### 2. Déclarer le réseau dans `stationConstants.ts`
+
+Dans `src/lib/stationConstants.ts`, enregistrer le nouveau réseau comme source de vérité unique pour la fraîcheur et les labels :
+
+```ts
+// 1. Ajouter à l'union NetworkId
+export type NetworkId =
+  | "meteoswiss"
+  | "pioupiou"
+  | "netatmo"
+  | "meteofrance"
+  | "windball"
+  | "fr-energy"
+  | "aemet";
+
+// 2. Fenêtre de fraîcheur (ms) — détermine isFresh dans WindLive
+export const FRESHNESS_BY_NETWORK: Record<NetworkId, number> = {
+  // ...existants...
+  aemet: 60 * 60 * 1000, // 1 h
+};
+
+// 3. Label affiché dans l'UI
+export const NETWORK_LABELS: Record<NetworkId | "openmeteo", string> = {
+  // ...existants...
+  aemet: "AEMET",
+};
+
+// 4. detectNetwork() — ajouter le cas préfixe
+export function detectNetwork(id: string): NetworkId {
+  if (id.startsWith("aemet-")) return "aemet";
+  // ...
+}
+```
+
+### 3. Intégrer dans le cron
 
 Dans `src/app/api/cron/stations/route.ts`, ajouter le fetch dans le `Promise.allSettled()` :
 
@@ -57,11 +91,11 @@ const [meteo, piou, netatmo, aemet] = await Promise.allSettled([
 
 Ajouter le résultat dans le tableau de mesures en aval.
 
-### 3. Intégrer dans l'API stations
+### 4. Intégrer dans l'API stations
 
 Dans `src/app/api/stations/route.ts`, ajouter le fetch dans le `Promise.allSettled()` existant.
 
-### 4. Ajouter le routage historique
+### 5. Ajouter le routage historique
 
 Dans `src/app/api/stations/[id]/history/route.ts`, ajouter un cas pour le préfixe :
 
@@ -71,9 +105,10 @@ if (id.startsWith("aemet-")) {
 }
 ```
 
-### 5. Tester
+### 6. Tester
 
 ```bash
+pnpm test                 # Vitest — vérifier que les tests existants passent
 pnpm exec tsc --noEmit   # Vérifier le typage
 pnpm dev                  # Vérifier que les stations s'affichent sur la carte
 ```

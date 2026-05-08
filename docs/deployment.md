@@ -68,6 +68,12 @@ Optionnel (Netatmo) :
 | `NETATMO_CLIENT_SECRET` | Client secret Netatmo app                 |
 | `NETATMO_REFRESH_TOKEN` | Token initial (sera ensuite rotaté en DB) |
 
+Optionnel (Météo-France) :
+
+| Variable              | Description                                    |
+| --------------------- | ---------------------------------------------- |
+| `METEOFRANCE_API_KEY` | Clé API Météo-France DPObs (permanente ~2 ans) |
+
 ### 3. Cron Job
 
 Le fichier `vercel.json` configure le cron :
