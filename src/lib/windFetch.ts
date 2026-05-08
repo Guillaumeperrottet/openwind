@@ -34,6 +34,10 @@ async function fetchWithRetry(
 
 /**
  * Fetch current wind at a lat/lng from Open-Meteo (no API key needed).
+ *
+ * Uses minutely_15 with past_hours=2 and picks the most recent point ≤ now,
+ * giving a timestamp at most ~15 min old instead of the hourly model-run time
+ * that the `current=` endpoint returns (which can be 1-2h old).
  */
 export async function fetchCurrentWind(
   lat: number,
@@ -43,28 +47,45 @@ export async function fetchCurrentWind(
   url.searchParams.set("latitude", lat.toString());
   url.searchParams.set("longitude", lng.toString());
   url.searchParams.set(
-    "current",
+    "minutely_15",
     "wind_speed_10m,wind_direction_10m,wind_gusts_10m",
   );
   url.searchParams.set("wind_speed_unit", "kmh");
+  url.searchParams.set("past_hours", "2");
+  url.searchParams.set("forecast_days", "1");
+  url.searchParams.set("timezone", "UTC");
 
   const res = await fetchWithRetry(url.toString(), {
-    next: { revalidate: 600 },
+    next: { revalidate: 60 },
   } as RequestInit);
   if (!res.ok) throw new Error(`Open-Meteo ${res.status}: ${res.statusText}`);
 
   const data = await res.json();
-  const c = data.current;
+  const { time, wind_speed_10m, wind_direction_10m, wind_gusts_10m } =
+    data.minutely_15 as {
+      time: string[];
+      wind_speed_10m: number[];
+      wind_direction_10m: number[];
+      wind_gusts_10m: number[];
+    };
 
-  return {
-    ...getWindData(
-      c.wind_speed_10m,
-      c.wind_direction_10m,
-      c.wind_gusts_10m,
-      (c.time as string | undefined) ?? undefined,
-      "openmeteo",
-    ),
-  };
+  // Take the most recent past point (time ≤ now). Fallback to last available.
+  const nowIso = new Date().toISOString().slice(0, 16);
+  let idx = time.length - 1;
+  for (let i = time.length - 1; i >= 0; i--) {
+    if (time[i] <= nowIso) {
+      idx = i;
+      break;
+    }
+  }
+
+  return getWindData(
+    wind_speed_10m[idx] ?? 0,
+    wind_direction_10m[idx] ?? 0,
+    wind_gusts_10m[idx] ?? 0,
+    time[idx],
+    "openmeteo",
+  );
 }
 
 /**
