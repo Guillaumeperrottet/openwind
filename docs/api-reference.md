@@ -52,6 +52,16 @@ Met à jour un spot. Tous les champs sont optionnels. Validation : `maxWindKmh �
 
 Supprime un spot. Réponse : `{ ok: true }`.
 
+### `GET /api/spots/[id]/live`
+
+Vent courant pour un spot. Résout automatiquement `nearestStationId` → station → Open-Meteo si stale ou absent.
+
+| Param | Type | Requis | Description |
+| --- | --- | --- | --- |
+| `stationId` | string | Non | Override la station assignée au spot |
+
+**Réponse** : `WindLive` (windSpeedKmh, windDirection, gustsKmh, updatedAt, source, isFresh, staleAt). Cache 60 s.
+
 ### `GET /api/spots/[id]/archives`
 
 Archives vent 5 ans. Cache 7 jours (`s-maxage=604800`).
@@ -92,6 +102,12 @@ Toutes les stations combinées (MeteoSwiss + Pioupiou + Netatmo + Météo-France
 }
 ```
 
+### `GET /api/stations/[id]/live`
+
+Vent courant pour une station (DB uniquement, jamais NWP). Utile pour rafraîchir l'en-tête de la popup carte sans polluer le chart.
+
+**Réponse** : `WindLive` (windSpeedKmh, windDirection, gustsKmh, updatedAt, source, isFresh, staleAt). Cache 60 s.
+
 ### `GET /api/stations/[id]/history`
 
 Historique 48h + prévisions futures. Le préfixe de l'ID détermine la source :
@@ -99,24 +115,14 @@ Historique 48h + prévisions futures. Le préfixe de l'ID détermine la source :
 - `piou-*` → Pioupiou (DB + Archive API)
 - `ntm-*` → Netatmo (DB + Open-Meteo fallback)
 - `mf-*` → Météo-France (DB + Open-Meteo fallback)
-- Autre → MeteoSwiss (DB + CSV OGD)
+- `windball-*` → Windball (DB + API archive + Open-Meteo fallback)
+- Autre → MeteoSwiss (DB + CSV OGD + Open-Meteo forecast)
 
-**Réponse** : `HistoryPoint[]`. Cache 10 min.
+**Réponse** : `HistoryPoint[]`. Cache 60 s.
 
 ---
 
 ## Vent
-
-### `GET /api/wind`
-
-Vent courant pour une coordonnée.
-
-| Param | Type   | Requis |
-| ----- | ------ | ------ |
-| `lat` | number | Oui    |
-| `lng` | number | Oui    |
-
-**Réponse** : `WindData`. Cache 10 min.
 
 ### `POST /api/wind/grid`
 

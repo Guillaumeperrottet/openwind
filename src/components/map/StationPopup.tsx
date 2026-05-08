@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { X, ExternalLink } from "lucide-react";
 import { windConditionLabel, windDirectionLabel, barColors } from "@/lib/utils";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import type { HistoryPoint } from "@/types";
+import { useStationLive } from "@/lib/useStationLive";
 
 interface StationInfo {
   id: string;
@@ -45,6 +46,7 @@ export function StationPopup({
   onClose,
   onLiveUpdate,
 }: StationPopupProps) {
+  const { data: stationLive } = useStationLive(station.id);
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [loading, setLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
@@ -103,67 +105,33 @@ export function StationPopup({
     };
   }, [onClose]);
 
-  // Pick the freshest values between the click-time props and the latest
-  // PAST point of the just-fetched 48 h history. This keeps the header in
-  // sync with the chart's last bar, even when the GeoJSON cached on the map
-  // was a bit stale at click time.
-  const live = useMemo(() => {
-    const propsTime = station.updatedAt;
-    let chosen = {
-      windSpeedKmh: station.windSpeedKmh,
-      windDirection: station.windDirection,
-      gustsKmh: station.gustsKmh,
-      updatedAt: propsTime,
-    };
-    if (history && history.length > 0) {
-      const nowIso = new Date().toISOString().slice(0, 16);
-      const lastPast = [...history].reverse().find((p) => p.time <= nowIso);
-      if (lastPast) {
-        const histIso = `${lastPast.time}:00Z`;
-        if (
-          !propsTime ||
-          new Date(histIso).getTime() > new Date(propsTime).getTime()
-        ) {
-          chosen = {
-            windSpeedKmh: lastPast.windSpeedKmh,
-            windDirection: lastPast.windDirection,
-            gustsKmh: lastPast.gustsKmh,
-            updatedAt: histIso,
-          };
-        }
-      }
-    }
-    return chosen;
-  }, [
-    history,
-    station.updatedAt,
-    station.windSpeedKmh,
-    station.windDirection,
-    station.gustsKmh,
-  ]);
+  // Live header values: from useStationLive (polls /api/stations/${id}/live).
+  // Falls back to GL-feature props while the first SWR fetch is in-flight.
+  // This eliminates the VEV bug: header never reads from NWP forecast points.
+  const liveSpeed = stationLive?.windSpeedKmh ?? station.windSpeedKmh;
+  const liveDirection = stationLive?.windDirection ?? station.windDirection;
+  const liveGusts = stationLive?.gustsKmh ?? station.gustsKmh;
+  const liveUpdatedAt = stationLive?.updatedAt ?? station.updatedAt;
 
-  // Push the freshest values back to the map so the GL arrow color matches.
+  // Push fresher values back to the map so the GL arrow color matches.
   useEffect(() => {
-    if (!onLiveUpdate) return;
+    if (!onLiveUpdate || !stationLive) return;
     if (
-      live.windSpeedKmh === station.windSpeedKmh &&
-      live.windDirection === station.windDirection &&
-      live.gustsKmh === station.gustsKmh
+      stationLive.windSpeedKmh === station.windSpeedKmh &&
+      stationLive.windDirection === station.windDirection &&
+      stationLive.gustsKmh === station.gustsKmh
     ) {
       return;
     }
     onLiveUpdate({
       id: station.id,
-      windSpeedKmh: live.windSpeedKmh,
-      windDirection: live.windDirection,
-      gustsKmh: live.gustsKmh,
-      updatedAt: live.updatedAt,
+      windSpeedKmh: stationLive.windSpeedKmh,
+      windDirection: stationLive.windDirection,
+      gustsKmh: stationLive.gustsKmh,
+      updatedAt: stationLive.updatedAt,
     });
   }, [
-    live.windSpeedKmh,
-    live.windDirection,
-    live.gustsKmh,
-    live.updatedAt,
+    stationLive,
     station.id,
     station.windSpeedKmh,
     station.windDirection,
@@ -171,19 +139,19 @@ export function StationPopup({
     onLiveUpdate,
   ]);
 
-  const speedKmh = Math.round(live.windSpeedKmh);
+  const speedKmh = Math.round(liveSpeed);
   const speedKts = Math.round(speedKmh / 1.852);
-  const gustsKmh = Math.round(live.gustsKmh);
+  const gustsKmh = Math.round(liveGusts);
   const gustsKts = Math.round(gustsKmh / 1.852);
   // Same palette as the 48h history chart (barColors) for visual consistency
   const color = barColors(speedKmh)[0];
-  const dir = live.windDirection;
+  const dir = liveDirection;
   const arrowRot = (dir + 180) % 360;
   const dirLabel = windDirectionLabel(dir);
   const primary = useKnots ? `${speedKts} kts` : `${speedKmh} km/h`;
   const gusts = useKnots ? `${gustsKts} kts` : `${gustsKmh} km/h`;
   const condLabel = windConditionLabel(speedKmh);
-  const time = new Date(live.updatedAt).toLocaleTimeString("fr", {
+  const time = new Date(liveUpdatedAt).toLocaleTimeString("fr", {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -322,24 +290,7 @@ export function StationPopup({
           <span className="text-xs font-semibold text-gray-700">
             Historique · 48h
           </span>
-          <span className="text-[9px] text-gray-400">
-            Dernière màj{" "}
-            {(() => {
-              if (!history?.length) return time;
-              // Find last point in the past (history may include forecast points)
-              const now = new Date().toISOString().slice(0, 16);
-              const lastPast = [...history]
-                .reverse()
-                .find((p) => p.time <= now);
-              const d = lastPast
-                ? lastPast.time
-                : history[history.length - 1].time;
-              return new Date(d + ":00Z").toLocaleTimeString("fr", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-            })()}
-          </span>
+          <span className="text-[9px] text-gray-400">Dernière màj {time}</span>
         </div>
         <div className="px-2 pb-2">
           {loading ? (

@@ -22,7 +22,7 @@ src/
     api/                      # Endpoints REST
       spots/                  # CRUD spots + images + archives
       stations/               # Lecture stations multi-réseau
-      wind/                   # Vent courant + grille batch
+      wind/                   # Grille batch pour overlay carte (texture + grid)
       plan/                   # Planificateur de voyages
       favorites/              # Toggle favoris (auth)
       preferences/            # Préférences UI (auth)
@@ -157,56 +157,70 @@ Connexion `socket.io` vers `api.pioupiou.fr/v1/push` :
 
 **Règle d'or** : popup carte, cards "Vent moyen / Rafales / Direction" de la page spot et **dernière barre du chart 48 h** doivent toujours afficher la même valeur et le même horodatage.
 
-### Source unique : `/api/stations`
+### Source unique : `stationData.ts` (server-only)
 
-Le client appelle **un seul endpoint** pour le vent courant, à la fois depuis la carte et depuis la page spot :
+Toute la logique de résolution du vent courant est centralisée dans `src/lib/stationData.ts` :
 
-| Élément UI                         | Source de la valeur                                          |
-| ---------------------------------- | ------------------------------------------------------------ |
-| Popup carte (KiteMap)              | `/api/stations` (polling 60 s)                               |
-| Cards page spot (Vent / Raf / Dir) | **`/api/stations`** (polling 60 s, identique au popup)       |
-| Dernière barre du chart 48 h       | Trame live de `/api/stations` injectée en queue de `history` |
-| Reste du chart 48 h                | `/api/spots/[id]/weather` (Windball/Pioupiou API directe)    |
+| Fonction                      | Rôle                                                        |
+| ----------------------------- | ----------------------------------------------------------- |
+| `getStationLive(id, opts)`    | DB → fraîcheur par réseau → fallback Open-Meteo             |
+| `getSpotLive(spotId)`         | `nearestStationId` → `getStationLive` → fallback Open-Meteo |
+| `getStationHistory(id, opts)` | Observations DB + prévisions NWP strictement séparées       |
+| `getStationFromCache(id)`     | Lecture snapshot `SystemConfig.stations_cache`              |
 
-Comme les deux UI lisent le même endpoint avec le même CDN cache (60 s), elles partagent la même fenêtre de fraîcheur → mêmes kts, même `il y a X min`.
+Les seuils de fraîcheur par réseau sont dans `src/lib/stationConstants.ts` (importable côté client) :
 
-### `/api/stations` : overlays live
+| Réseau        | Fenêtre de fraîcheur |
+| ------------- | -------------------- |
+| `pioupiou`    | 20 min               |
+| `meteoswiss`  | 1 h                  |
+| `netatmo`     | 1 h                  |
+| `windball`    | 1 h                  |
+| `meteofrance` | 4 h                  |
 
-Le route handler combine 3 couches dans cet ordre :
+### SWR côté client
 
-1. **Snapshot cache** (`SystemConfig.stations_cache`) — rempli par le cron toutes les 10 min, lecture instantanée
-2. **`overlayLatestMeasurements()`** — applique les dernières lignes `StationMeasurement` de la DB (≤ 30 min) par-dessus
-3. **`overlayLiveNetworks()`** — re-fetch live Windball + Pioupiou (cache fetch 60 s) pour les réseaux les plus rapides
+Deux hooks SWR remplacent tous les `useEffect` de polling manuel :
 
-Cache CDN : `s-maxage=60, stale-while-revalidate=300`.
+| Hook                             | Endpoint                      | Interval | Utilisé dans                  |
+| -------------------------------- | ----------------------------- | -------- | ----------------------------- |
+| `useSpotLive(spotId, override?)` | `GET /api/spots/[id]/live`    | 60 s     | SpotPageClient, KiteMap popup |
+| `useStationLive(stationId)`      | `GET /api/stations/[id]/live` | 60 s     | StationPopup header           |
 
-### Page spot : SSR vs client
+Deduplication SWR : si SpotPageClient et KiteMap ont le même spot sélectionné simultanément, un seul fetch est émis (`dedupingInterval: 30 s`).
 
-- **SSR** (`page.tsx`) : lit `StationMeasurement` la plus récente. Affichée seulement si **≤ 5 min** (sinon placeholder pour éviter une valeur figée qui contredirait le live).
-- **Client** (`SpotPageClient.tsx`) : `useEffect` fetch `/api/stations` → trouve la station par `nearestStationId` → `setLiveStation(...)` → repolling 60 s.
-- Le `wind` affiché sur les cards est `useMemo` dérivé de `liveStation` (fallback `initialWind` SSR).
-- `chartHistory = useMemo` injecte le point `liveStation` à la queue de `history` quand sa trame est plus récente que la dernière trame du chart, pour que la dernière barre matche les cards.
+### Flux complet (spot avec station)
+
+```
+DB StationMeasurement
+  └── getStationLive()           ← fraîcheur per-network (stationConstants.ts)
+        ├── frais  → WindLive { source: "réseau", isFresh: true }
+        └── périmé → fetchCurrentWind() → WindLive { source: "openmeteo", isFresh: true }
+                    ↕
+          /api/spots/[id]/live   (cache CDN 60 s)
+                    ↕
+   useSpotLive()  →  wind useMemo  →  cards + popup carte + boussole
+```
+
+### SSR vs client
+
+- **SSR** (`page.tsx`) : appelle `getSpotLive(spotId)` ou `getStationLive(stationId)` → valeur initiale hydratée immédiatement.
+- **Client** : `useSpotLive` / `useStationLive` prennent le relais dès le montage, polling toutes les 60 s.
+- Le fallback SSR reste visible jusqu'au premier fetch SWR réussi (`keepPreviousData: true`).
+
+### Spot sans station (`nearestStationId = null`)
+
+`getSpotLive()` saute directement à Open-Meteo via les coordonnées du spot. Assigner une station via `PATCH /api/spots/[id]` invalide le cache SSR (`revalidatePath`) ; SWR refetch en ≤ 60 s — propagation automatique partout.
 
 ### Caches alignés à 60 s
 
-Tous les caches en bord de chaîne sont calés sur 60 s :
-
-| Cache                                                                 | TTL  |
-| --------------------------------------------------------------------- | ---- |
-| `fetchWindballStations` / `fetchWindballOne` / `fetchWindballHistory` | 60 s |
-| `fetchPioupiouStations` / `fetchPioupiouHistory`                      | 60 s |
-| `/api/stations` (CDN)                                                 | 60 s |
-| `/api/spots/[id]/weather` (CDN)                                       | 60 s |
-| `/api/stations/[id]/history` (CDN)                                    | 60 s |
-| Polling client KiteMap + SpotPageClient                               | 60 s |
-
-### Pas de fallback Open-Meteo
-
-Si la station d'un spot n'a pas de mesure récente, on **n'affiche rien** plutôt qu'une valeur de grille Open-Meteo qui serait incohérente avec le chart. La fonction `fetchCurrentWind()` n'est plus appelée côté page spot.
-
-### Bypass DB pour Windball/Pioupiou (chart 48 h)
-
-`fetchWindHistoryStation()` (dans `lib/windHistory.ts`) **ne merge plus** les mesures DB avec l'API pour ces deux réseaux : seule l'API est utilisée. Cela évite des doubles barres causées par deux timestamps légèrement différents pour la même trame physique.
+| Cache                                     | TTL  |
+| ----------------------------------------- | ---- |
+| `/api/spots/[id]/live` (CDN)              | 60 s |
+| `/api/stations/[id]/live` (CDN)           | 60 s |
+| `/api/stations/[id]/history` (CDN)        | 60 s |
+| `/api/stations` (CDN)                     | 60 s |
+| SWR client (useSpotLive / useStationLive) | 60 s |
 
 ---
 

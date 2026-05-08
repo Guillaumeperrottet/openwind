@@ -2,6 +2,51 @@ export type Difficulty = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
 export type WaterType = "FLAT" | "CHOP" | "WAVES" | "MIXED";
 export type SportType = "KITE" | "PARAGLIDE";
 
+// ─── Unified wind data types ──────────────────────────────────────────────────
+
+export type NetworkId =
+  | "meteoswiss"
+  | "pioupiou"
+  | "netatmo"
+  | "meteofrance"
+  | "windball"
+  | "fr-energy";
+
+/** Unified response for "current wind" — regardless of source. */
+export type WindLive = {
+  /** Mean wind speed (km/h). Convert to kts at display time. */
+  windSpeedKmh: number;
+  windDirection: number;
+  gustsKmh: number;
+  temperatureC?: number;
+  /** ISO UTC. Always present. */
+  updatedAt: string;
+  /** "station" = real anemometer reading. "openmeteo" = NWP grid fallback. */
+  source: "station" | "openmeteo";
+  /** Network identifier when source === "station". */
+  network?: NetworkId;
+  /** Station ID when source === "station". */
+  stationId?: string;
+  /** ISO UTC — beyond this date the UI should flag the data as stale. */
+  staleAt: string;
+  /** True if Date.now() < new Date(staleAt).getTime(). */
+  isFresh: boolean;
+};
+
+/** Unified response for 48h history. Observations and NWP strictly separated. */
+export type WindHistoryBundle = {
+  /** Observed points (past). Sorted ascending by time. */
+  observations: HistoryPoint[];
+  /** Future NWP points only (time > now). Sorted ascending by time. */
+  forecast: HistoryPoint[];
+  meta: {
+    stationId: string | null;
+    network: NetworkId | "openmeteo";
+    /** Human-readable label, e.g. "VEV · MeteoSwiss" or "Vent estimé · Open-Meteo" */
+    label: string;
+  };
+};
+
 export interface Spot {
   id: string;
   name: string;

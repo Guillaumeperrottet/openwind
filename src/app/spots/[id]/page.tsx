@@ -2,7 +2,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getWindData } from "@/lib/utils";
-import { fetchCurrentWind } from "@/lib/windFetch";
+import { getSpotLive, NETWORK_LABELS } from "@/lib/stationData";
 import {
   buildSpotDescription,
   buildArticleSchema,
@@ -77,70 +77,30 @@ export default async function SpotPage({ params }: Props) {
 
   if (!spot) notFound();
 
-  // ── Current wind from DB (instant — no external API calls) ─────────────
-  // StationMeasurement is populated every 10 min by the cron job.
-  // This makes the page render immediately instead of waiting for external APIs.
-  const NETWORK_LABELS: Record<string, string> = {
-    meteoswiss: "MeteoSwiss",
-    pioupiou: "Pioupiou",
-    netatmo: "Netatmo",
-    meteofrance: "Météo-France",
-    windball: "Windball",
-  };
-
+  // ── Current wind via unified server entry point ─────────────────────────
+  // getSpotLive: station fraîche (seuils par réseau) → DB obs. Sinon → Open-Meteo.
+  // Remplace le bloc Prisma direct + table FRESHNESS_MS (9 lignes → 1 appel).
   let wind: WindData | null = null;
   let windSource: { name: string; network: string } | null = null;
-
-  // Per-network freshness window — some networks update much less often than
-  // every 10 min (Météo-France SYNOP = 3 h). Showing a 2 h-old measurement is
-  // still more useful than nothing.
-  const FRESHNESS_MS: Record<string, number> = {
-    meteofrance: 4 * 60 * 60 * 1000, // SYNOP every 3 h
-    meteoswiss: 30 * 60 * 1000,
-    pioupiou: 15 * 60 * 1000,
-    netatmo: 30 * 60 * 1000,
-    windball: 30 * 60 * 1000,
-  };
-  const DEFAULT_FRESHNESS_MS = 5 * 60 * 1000;
-
-  if (spot.nearestStationId) {
-    try {
-      const latest = await prisma.stationMeasurement.findFirst({
-        where: { stationId: spot.nearestStationId },
-        orderBy: { time: "desc" },
-      });
-      const maxAge = FRESHNESS_MS[latest?.source ?? ""] ?? DEFAULT_FRESHNESS_MS;
-      if (latest && Date.now() - latest.time.getTime() < maxAge) {
-        wind = getWindData(
-          latest.windSpeedKmh,
-          latest.windDirection,
-          latest.gustsKmh ?? Math.round(latest.windSpeedKmh * 1.3),
-          latest.time.toISOString(),
-        );
-        windSource = {
-          name: spot.nearestStationId,
-          network: NETWORK_LABELS[latest.source] ?? latest.source,
-        };
-      }
-    } catch {
-      /* DB error — wind stays null, the page shows "données indisponibles" */
+  try {
+    const live = await getSpotLive(spot.id);
+    wind = getWindData(
+      live.windSpeedKmh,
+      live.windDirection,
+      live.gustsKmh,
+      live.updatedAt,
+    );
+    if (live.source === "station" && live.stationId) {
+      windSource = {
+        name: live.stationId,
+        network: NETWORK_LABELS[live.network ?? "meteoswiss"],
+      };
     }
+  } catch {
+    /* wind stays null — page shows "données indisponibles" */
   }
 
-  // No fallback to Open-Meteo grid: if the spot's station has no recent
-  // measurement, we'd rather show "Données vent indisponibles" than a
-  // forecast value that disagrees with the 48h history chart.
-
-  // Fallback: if no nearby station (or no fresh measurement), use Open-Meteo
-  // model wind at the spot's coordinates. The card label switches to
-  // "Open-Meteo · NWP" automatically when windSource is null.
-  if (!wind) {
-    try {
-      wind = await fetchCurrentWind(spot.latitude, spot.longitude);
-    } catch {
-      /* network error — wind stays null, the page shows "données indisponibles" */
-    }
-  }
+  // No fallback to Open-Meteo grid: getSpotLive already handles that internally.
 
   return (
     <>

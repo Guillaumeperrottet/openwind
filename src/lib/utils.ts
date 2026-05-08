@@ -135,28 +135,3 @@ export function relativeTime(iso: string | undefined | null): string {
   const day = Math.round(hr / 24);
   return `il y a ${day} j`;
 }
-
-/**
- * Freshness thresholds (ms) for live wind station data.
- * - FRESH: treat as live, allow pulse, primary value
- * - RECENT: still display but with a "stale" warning, no pulse
- * - Beyond RECENT: data is considered too old to trust → fallback (Open-Meteo)
- */
-export const STATION_FRESH_MS = 30 * 60 * 1000; // 30 min
-export const STATION_RECENT_MS = 3 * 60 * 60 * 1000; // 3 h
-
-/** True when the timestamp is within the FRESH window. */
-export function isStationFresh(iso: string | undefined | null): boolean {
-  if (!iso) return false;
-  const t = new Date(iso).getTime();
-  if (isNaN(t)) return false;
-  return Date.now() - t < STATION_FRESH_MS;
-}
-
-/** True when the timestamp is within the RECENT window (includes FRESH). */
-export function isStationRecent(iso: string | undefined | null): boolean {
-  if (!iso) return false;
-  const t = new Date(iso).getTime();
-  if (isNaN(t)) return false;
-  return Date.now() - t < STATION_RECENT_MS;
-}

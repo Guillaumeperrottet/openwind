@@ -1,9 +1,11 @@
-# Refactor — Cohérence des données vent (un seul point d'entrée)
+# Refactor — Cohérence des données vent (historique)
 
-> **Audience** : prochaine session Claude / contributeur.
-> **Date d'analyse** : 8 mai 2026
-> **Statut** : Plan à exécuter, **aucun code à toucher avant validation utilisateur**.
-> **Objectif** : éliminer structurellement les divergences popup/page/chart en passant de N consommateurs indépendants à 1 seule source de vérité.
+> **Ce document est l'historique du plan de refactor exécuté le 8 mai 2026.**
+> **Le refactor est terminé.** Pour comprendre comment l'architecture fonctionne aujourd'hui, lire [architecture-donnees-vent.md](./architecture-donnees-vent.md).
+
+---
+
+## Archive du plan original
 
 ---
 
@@ -361,7 +363,7 @@ Ces patches restent valides après refactor mais certains seront supprimés en P
 3. **Phases en 1 PR ou plusieurs ?** (recommandation : 1 PR par phase, mergeable indépendamment.)
 4. **Tests automatisés** : ajout `vitest` ou validation manuelle uniquement ? (le projet n'a pas de tests aujourd'hui.)
 
-## infos pour sonnet 4.6 :
+## infos pour claude:
 
 "Lis intégralement refactor-coherence-data.md AVANT toute modification."
 "Une phase à la fois. Stop net après chaque phase, je valide visuellement avant de continuer."

@@ -1,14 +1,9 @@
 import { notFound } from "next/navigation";
-import { fetchMeteoSwissStations } from "@/lib/stations";
-import { fetchPioupiouStations } from "@/lib/pioupiou";
-import { fetchNetatmoStations } from "@/lib/netatmo";
-import { fetchMeteoFranceStations } from "@/lib/meteofrance";
-import { fetchWindballStations } from "@/lib/windball";
 import {
-  fetchWindHistory,
-  fetchWindHistoryStation,
-  fetchWindForecast15min,
-} from "@/lib/wind";
+  getStationFromCache,
+  getStationLive,
+  getStationHistory,
+} from "@/lib/stationData";
 import { fetchFullForecast } from "@/lib/forecast";
 import { StationPageClient } from "./StationPageClient";
 
@@ -42,61 +37,42 @@ export default async function StationPage({ params }: Props) {
   const { id } = await params;
   const stationId = decodeURIComponent(id);
 
-  // Fetch all 5 networks to find the station
-  const [meteo, piou, ntm, mf, wb] = await Promise.allSettled([
-    fetchMeteoSwissStations(),
-    fetchPioupiouStations(),
-    fetchNetatmoStations(),
-    fetchMeteoFranceStations(),
-    fetchWindballStations(),
-  ]);
-  const allStations = [
-    ...(meteo.status === "fulfilled" ? meteo.value : []),
-    ...(piou.status === "fulfilled" ? piou.value : []),
-    ...(ntm.status === "fulfilled" ? ntm.value : []),
-    ...(mf.status === "fulfilled" ? mf.value : []),
-    ...(wb.status === "fulfilled" ? wb.value : []),
-  ];
-  const station = allStations.find((s) => s.id === stationId);
-
+  // Look up station metadata from the 10-min cron snapshot — single DB query,
+  // ~5× faster than re-fetching all 5 networks on every page hit.
+  const station = await getStationFromCache(stationId);
   if (!station) notFound();
 
-  // Fetch 7-day forecast + 48h history + 15-min forecast in parallel.
-  // History: real MeteoSwiss 10-min measurements, falling back to Open-Meteo NWP.
-  // Current wind + gusts come from the station data itself (no extra Open-Meteo call).
-  const [forecastResult, historyResult, forecast15Result] =
-    await Promise.allSettled([
-      fetchFullForecast(station.lat, station.lng),
-      fetchWindHistoryStation(station.id).catch(() =>
-        fetchWindHistory(station.lat, station.lng),
-      ),
-      fetchWindForecast15min(station.lat, station.lng),
-    ]);
+  // Fetch live wind, 48h history and 7-day forecast in parallel.
+  // allowOpenMeteoFallback=false → show stale obs with isFresh=false badge
+  // rather than an Open-Meteo estimate (page is dedicated to THIS station).
+  const [liveResult, bundleResult, forecastResult] = await Promise.allSettled([
+    getStationLive(stationId, {
+      lat: station.lat,
+      lng: station.lng,
+      allowOpenMeteoFallback: false,
+    }),
+    getStationHistory(stationId, { lat: station.lat, lng: station.lng }),
+    fetchFullForecast(station.lat, station.lng),
+  ]);
 
-  // Append 15-min forecast points after last history point
-  const rawHistory =
-    historyResult.status === "fulfilled" ? historyResult.value : null;
-  const forecast15 =
-    forecast15Result.status === "fulfilled" ? forecast15Result.value : [];
-  let combinedHistory = rawHistory;
-  if (rawHistory && rawHistory.length > 0 && forecast15.length > 0) {
-    const lastTime = rawHistory[rawHistory.length - 1].time;
-    const futurePoints = forecast15.filter((p) => p.time > lastTime);
-    combinedHistory = [...rawHistory, ...futurePoints];
-  }
+  // StationPageClient still consumes a flat HistoryPoint[] — keep that contract
+  // while Phase 4 hasn't migrated it to WindHistoryBundle.
+  const bundle =
+    bundleResult.status === "fulfilled" ? bundleResult.value : null;
+  const history = bundle ? [...bundle.observations, ...bundle.forecast] : null;
 
-  // Use real gusts from station data, fallback to ×1.3 estimate if unavailable
-  const gustsKmh = station.gustsKmh ?? Math.round(station.windSpeedKmh * 1.3);
+  const live = liveResult.status === "fulfilled" ? liveResult.value : null;
+  const gustsKmh = live?.gustsKmh ?? null;
 
   return (
     <StationPageClient
       station={station}
       gustsKmh={gustsKmh}
-      openMeteoUpdatedAt={station.updatedAt}
+      openMeteoUpdatedAt={live?.updatedAt ?? null}
       forecast={
         forecastResult.status === "fulfilled" ? forecastResult.value : null
       }
-      history={combinedHistory}
+      history={history}
     />
   );
 }
