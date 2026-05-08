@@ -35,9 +35,9 @@ async function fetchWithRetry(
 /**
  * Fetch current wind at a lat/lng from Open-Meteo (no API key needed).
  *
- * Uses minutely_15 with past_hours=2 and picks the most recent point ≤ now,
- * giving a timestamp at most ~15 min old instead of the hourly model-run time
- * that the `current=` endpoint returns (which can be 1-2h old).
+ * Uses minutely_15 forecast-only (no past_hours) and picks the most recent
+ * slot ≤ now. NWP forecast slots are published immediately, so the chosen
+ * timestamp is at most ~15 min old (vs ERA5 past data which has a 1-2h lag).
  */
 export async function fetchCurrentWind(
   lat: number,
@@ -51,7 +51,6 @@ export async function fetchCurrentWind(
     "wind_speed_10m,wind_direction_10m,wind_gusts_10m",
   );
   url.searchParams.set("wind_speed_unit", "kmh");
-  url.searchParams.set("past_hours", "2");
   url.searchParams.set("forecast_days", "1");
   url.searchParams.set("timezone", "UTC");
 
@@ -69,14 +68,12 @@ export async function fetchCurrentWind(
       wind_gusts_10m: number[];
     };
 
-  // Take the most recent past point (time ≤ now). Fallback to last available.
+  // Pick the last forecast slot <= now: at 14h07 this gives the 14h00 slot
+  // (a live NWP value, ~7 min old) rather than ERA5 past data (1-2h lag).
   const nowIso = new Date().toISOString().slice(0, 16);
-  let idx = time.length - 1;
-  for (let i = time.length - 1; i >= 0; i--) {
-    if (time[i] <= nowIso) {
-      idx = i;
-      break;
-    }
+  let idx = 0;
+  for (let i = 0; i < time.length; i++) {
+    if (time[i] <= nowIso) idx = i;
   }
 
   return getWindData(
