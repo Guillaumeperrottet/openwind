@@ -70,7 +70,7 @@ export function detectNetwork(stationId: string): NetworkId {
  * Look up station lat/lng from the 10-min snapshot stored in SystemConfig.
  * Returns null if the cache is missing or the station is not in it.
  */
-async function getStationCoordsFromSnapshot(
+export async function getStationCoordsOrNull(
   stationId: string,
 ): Promise<{ lat: number; lng: number } | null> {
   try {
@@ -208,7 +208,7 @@ export async function getStationHistory(
   const coords =
     opts?.lat != null && opts?.lng != null
       ? { lat: opts.lat, lng: opts.lng }
-      : await getStationCoordsFromSnapshot(stationId);
+      : await getStationCoordsOrNull(stationId);
 
   let forecast: HistoryPoint[] = [];
   if (coords) {
