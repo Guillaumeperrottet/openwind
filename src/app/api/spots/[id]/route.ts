@@ -74,6 +74,7 @@ export async function PATCH(
     include: { images: true },
   });
   revalidatePath("/");
+  revalidatePath(`/spots/${id}`);
   return NextResponse.json(spot);
 }
 
