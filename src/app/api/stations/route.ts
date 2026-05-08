@@ -28,19 +28,25 @@ function distanceM(
 
 /**
  * Slightly offset non-MeteoSwiss stations that are within 150 m of a
- * MeteoSwiss station, so both icons remain visible on the map without
- * overlapping. The offset (~25 m east) is purely visual — the station data
- * and coordinates stored in the DB are not affected.
+ * MeteoSwiss station, so all icons remain visible on the map without
+ * overlapping. Each collocated station gets a distinct progressive offset
+ * so that e.g. two Windball sensors near the same MeteoSwiss mast don't
+ * end up stacked on each other. The offset is purely visual — the station
+ * data and real coordinates are not affected.
  */
 function offsetCollocatedStations(stations: WindStation[]): WindStation[] {
   const ms = stations.filter((s) => s.source === "meteoswiss");
-  // 0.00025° lng ≈ 20 m at Swiss latitudes
-  const LNG_OFFSET = 0.00025;
+  // 0.00025° lng ≈ 20 m east at Swiss latitudes
+  const LNG_STEP = 0.00025;
+  // Track how many non-MeteoSwiss stations have been offset near each MS ref
+  const counters = new Map<string, number>();
   return stations.map((s) => {
     if (s.source === "meteoswiss") return s;
-    const tooClose = ms.some((ref) => distanceM(ref, s) < 150);
-    if (!tooClose) return s;
-    return { ...s, lng: s.lng + LNG_OFFSET };
+    const ref = ms.find((r) => distanceM(r, s) < 150);
+    if (!ref) return s;
+    const n = (counters.get(ref.id) ?? 0) + 1;
+    counters.set(ref.id, n);
+    return { ...s, lng: s.lng + LNG_STEP * n };
   });
 }
 
