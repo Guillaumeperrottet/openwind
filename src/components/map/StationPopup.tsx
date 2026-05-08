@@ -290,9 +290,7 @@ export function StationPopup({
           <span className="text-xs font-semibold text-gray-700">
             Historique · 48h
           </span>
-          <span className="text-[9px] text-gray-400">
-            Dernière màj {time}
-          </span>
+          <span className="text-[9px] text-gray-400">Dernière màj {time}</span>
         </div>
         <div className="px-2 pb-2">
           {loading ? (

@@ -288,7 +288,7 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
         64.8,
         "#6a0020", // ≥ 35 kts
       ],
-      // Dim stations whose last measurement is older than STATION_FRESH_MS
+      // Dim stations whose last measurement is older than FRESHNESS_BY_NETWORK[network]
       // (default false = legacy data without isFresh property → treat as fresh).
       "icon-opacity": ["case", ["==", ["get", "isFresh"], false], 0.35, 1],
     },

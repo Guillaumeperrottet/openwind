@@ -253,7 +253,7 @@ export function KiteMap({
             dirLabel: windDirectionLabel(s.windDirection),
             source: s.source,
             gustsKmh: s.gustsKmh ?? Math.round(s.windSpeedKmh * 1.3),
-            /** false when station hasn't reported within STATION_FRESH_MS.
+            /** false when station hasn't reported within FRESHNESS_BY_NETWORK[network].
              *  Used to mute pulse animation on dead/stale beacons. */
             isFresh: fresh,
           },

@@ -361,7 +361,7 @@ Ces patches restent valides après refactor mais certains seront supprimés en P
 3. **Phases en 1 PR ou plusieurs ?** (recommandation : 1 PR par phase, mergeable indépendamment.)
 4. **Tests automatisés** : ajout `vitest` ou validation manuelle uniquement ? (le projet n'a pas de tests aujourd'hui.)
 
-## infos pour sonnet 4.6 :
+## infos pour claude:
 
 "Lis intégralement refactor-coherence-data.md AVANT toute modification."
 "Une phase à la fois. Stop net après chaque phase, je valide visuellement avant de continuer."
