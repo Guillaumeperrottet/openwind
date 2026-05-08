@@ -193,6 +193,14 @@ export function SpotPopup({
                 {wind.updatedAt && (
                   <div className="text-[10px] text-gray-400 mt-0.5">
                     {relativeTime(wind.updatedAt)}
+                    {wind.source === "openmeteo" && (
+                      <span
+                        className="ml-1 text-gray-400"
+                        title="Balise hors-ligne — vent estimé via le modèle Open-Meteo aux coordonnées du spot"
+                      >
+                        · Open-Meteo
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

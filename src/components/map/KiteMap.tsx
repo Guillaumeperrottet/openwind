@@ -8,7 +8,12 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { io, type Socket } from "socket.io-client";
 import type { Spot, WindData } from "@/types";
 import type { WindStation } from "@/lib/stations";
-import { windColor, windDirectionLabel, getWindData } from "@/lib/utils";
+import {
+  windColor,
+  windDirectionLabel,
+  getWindData,
+  isStationFresh,
+} from "@/lib/utils";
 import { SpotPopup } from "./SpotPopup";
 import { StationPopup } from "./StationPopup";
 import { MapLegend } from "./MapLegend";
@@ -88,9 +93,13 @@ export function KiteMap({
   );
   const [showStations] = useState(!pickMode);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_stationsUpdatedAt, setStationsUpdatedAt] = useState<string | null>(
+  const [stationsUpdatedAt, setStationsUpdatedAt] = useState<string | null>(
     null,
   );
+  /** Increments on every successful loadStations() poll, so re-derivation
+   *  effects can depend on it and fire reliably even when the first
+   *  station's timestamp didn't change between polls. */
+  const [pollTick, setPollTick] = useState(0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingStations, setLoadingStations] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -190,70 +199,29 @@ export function KiteMap({
     setLoadingWind(true);
     setSelectedWind(null);
 
-    // 1) Try nearest station from already-loaded station data (instant, no API call)
+    // 1) If the spot has an assigned station AND it is fresh (< 30 min),
+    //    use it. We DON'T fall back to a "nearest fresh station" because for
+    //    kite/paragliding wind is highly local — a station 5 km away tells
+    //    you nothing useful. If our station is dead, prefer a gridded model
+    //    (Open-Meteo) right at the spot's coordinates.
+    //
+    //    No background re-fetch here — `stationsRef.current` is kept fresh by
+    //    the 60 s `loadStations` poll, and the re-derivation effect below
+    //    pushes any newer value into the open popup silently. Adding a
+    //    second fetch on open caused a visible value flicker ~500 ms after
+    //    the popup appeared.
     const stations = stationsRef.current;
-    if (stations.length > 0) {
-      let best: WindStation | null = null;
-      let bestDist = Infinity;
-
-      // If spot has a nearestStationId, find it directly
-      if (spot.nearestStationId) {
-        best = stations.find((s) => s.id === spot.nearestStationId) ?? null;
-      }
-
-      // Otherwise (or if not found), find closest by distance
-      if (!best) {
-        for (const s of stations) {
-          const dLat = s.lat - spot.latitude;
-          const dLng = s.lng - spot.longitude;
-          const dist = dLat * dLat + dLng * dLng;
-          if (dist < bestDist) {
-            bestDist = dist;
-            best = s;
-          }
-        }
-      }
-
-      if (best) {
-        const ageMs = Date.now() - new Date(best.updatedAt).getTime();
-        // Always trigger a background refresh on popup open so the displayed
-        // value matches whatever the server has right now (the on-map GeoJSON
-        // can be up to 60 s stale, plus 60 s CDN). /api/stations is cached
-        // 60 s at the edge so this is essentially free.
-        fetch("/api/stations")
-          .then((r) => (r.ok ? r.json() : null))
-          .then((data: WindStation[] | null) => {
-            if (Array.isArray(data) && data.length > 0) {
-              stationsRef.current = data;
-              const refreshed = data.find((s) => s.id === best!.id) ?? null;
-              if (refreshed) {
-                const newAge =
-                  Date.now() - new Date(refreshed.updatedAt).getTime();
-                // Only update the popup if the fetched value is actually
-                // fresher than what we just showed.
-                if (newAge < ageMs) {
-                  setSelectedWind(
-                    getWindData(
-                      refreshed.windSpeedKmh,
-                      refreshed.windDirection,
-                      refreshed.gustsKmh ??
-                        Math.round(refreshed.windSpeedKmh * 1.3),
-                      refreshed.updatedAt,
-                    ),
-                  );
-                }
-              }
-            }
-          })
-          .catch(() => {});
-
-        const gustsKmh = best.gustsKmh ?? Math.round(best.windSpeedKmh * 1.3);
+    if (spot.nearestStationId && stations.length > 0) {
+      const assigned =
+        stations.find((s) => s.id === spot.nearestStationId) ?? null;
+      if (assigned && isStationFresh(assigned.updatedAt)) {
         setSelectedWind(
           getWindData(
-            best.windSpeedKmh,
-            best.windDirection,
-            gustsKmh,
-            best.updatedAt,
+            assigned.windSpeedKmh,
+            assigned.windDirection,
+            assigned.gustsKmh ?? Math.round(assigned.windSpeedKmh * 1.3),
+            assigned.updatedAt,
+            "station",
           ),
         );
         setLoadingWind(false);
@@ -261,7 +229,10 @@ export function KiteMap({
       }
     }
 
-    // 2) Fallback: call Open-Meteo via /api/wind
+    // 2) No fresh assigned station → Open-Meteo nowcast at the spot's exact
+    //    coordinates. This is the SAME source the spot's 48 h chart uses as
+    //    a fallback, so the popup stays consistent with what the spot page
+    //    shows. Subsequent refreshes are handled by the openMeteoPoll effect.
     try {
       const lat = spot.latitude.toFixed(2);
       const lng = spot.longitude.toFixed(2);
@@ -270,8 +241,8 @@ export function KiteMap({
       });
       if (!res.ok) throw new Error();
       const d = (await res.json()) as WindData | null;
-      if (!d?.windSpeedKmh) throw new Error();
-      setSelectedWind(d);
+      if (!d?.windSpeedKmh && d?.windSpeedKmh !== 0) throw new Error();
+      setSelectedWind({ ...d, source: d.source ?? "openmeteo" });
     } catch {
       setSelectedWind(null);
     } finally {
@@ -302,26 +273,32 @@ export function KiteMap({
    */
   const renderStations = useCallback(
     (stations: WindStation[]) => {
-      stationFeaturesRef.current = stations.map((s) => ({
-        type: "Feature" as const,
-        geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
-        properties: {
-          featureType: "station",
-          id: s.id,
-          name: s.name,
-          description: s.description ?? "",
-          windSpeedKmh: s.windSpeedKmh,
-          windDirection: s.windDirection,
-          /** Rotated so arrow points where wind BLOWS TO */
-          rotation: (s.windDirection + 180) % 360,
-          altitudeM: s.altitudeM,
-          updatedAt: s.updatedAt,
-          colorHex: windColor(s.windSpeedKmh),
-          dirLabel: windDirectionLabel(s.windDirection),
-          source: s.source,
-          gustsKmh: s.gustsKmh ?? Math.round(s.windSpeedKmh * 1.3),
-        },
-      }));
+      stationFeaturesRef.current = stations.map((s) => {
+        const fresh = isStationFresh(s.updatedAt);
+        return {
+          type: "Feature" as const,
+          geometry: { type: "Point" as const, coordinates: [s.lng, s.lat] },
+          properties: {
+            featureType: "station",
+            id: s.id,
+            name: s.name,
+            description: s.description ?? "",
+            windSpeedKmh: s.windSpeedKmh,
+            windDirection: s.windDirection,
+            /** Rotated so arrow points where wind BLOWS TO */
+            rotation: (s.windDirection + 180) % 360,
+            altitudeM: s.altitudeM,
+            updatedAt: s.updatedAt,
+            colorHex: windColor(s.windSpeedKmh),
+            dirLabel: windDirectionLabel(s.windDirection),
+            source: s.source,
+            gustsKmh: s.gustsKmh ?? Math.round(s.windSpeedKmh * 1.3),
+            /** false when station hasn't reported within STATION_FRESH_MS.
+             *  Used to mute pulse animation on dead/stale beacons. */
+            isFresh: fresh,
+          },
+        };
+      });
       updateCombinedSource();
     },
     [updateCombinedSource],
@@ -375,6 +352,11 @@ export function KiteMap({
       const stations: WindStation[] = await res.json();
       stationsRef.current = stations;
       renderStations(stations);
+      // Bump a counter so re-derivation effects always fire after a poll —
+      // we can't rely solely on `stationsUpdatedAt` (formatted HH:MM of the
+      // first station) because it can stay identical between two polls when
+      // that specific station hasn't pushed a new measurement.
+      setPollTick((n) => n + 1);
       if (stations.length > 0) {
         setStationsUpdatedAt(
           new Date(stations[0].updatedAt).toLocaleTimeString("fr", {
@@ -382,7 +364,11 @@ export function KiteMap({
             minute: "2-digit",
           }),
         );
-        // Update spot wind speeds for pulse coloring
+        // Update spot wind speeds for pulse coloring — ONLY the spot's
+        // assigned station counts, AND only if it's fresh. Same rationale as
+        // fetchWind: we never use a "nearest neighbour" because wind is too
+        // local. If the assigned station is dead, the spot stops pulsing —
+        // which is honest (we don't have a real measurement).
         const filter = sportFilterRef.current;
         const allSpots = spotsRef.current;
         const filtered =
@@ -391,20 +377,12 @@ export function KiteMap({
             : allSpots.filter((s) => s.sportType === filter);
         const windMap = new Map<string, number>();
         for (const spot of filtered) {
-          let best =
+          if (!spot.nearestStationId) continue;
+          const assigned =
             stations.find((s) => s.id === spot.nearestStationId) ?? null;
-          if (!best) {
-            let bestDist = Infinity;
-            for (const s of stations) {
-              const d =
-                (s.lat - spot.latitude) ** 2 + (s.lng - spot.longitude) ** 2;
-              if (d < bestDist) {
-                bestDist = d;
-                best = s;
-              }
-            }
+          if (assigned && isStationFresh(assigned.updatedAt)) {
+            windMap.set(spot.id, assigned.windSpeedKmh);
           }
-          if (best) windMap.set(spot.id, best.windSpeedKmh);
         }
         renderSpots(filtered, windMap);
       }
@@ -419,6 +397,76 @@ export function KiteMap({
   useEffect(() => {
     useKnotsRef.current = useKnots;
   }, [useKnots]);
+
+  // When stations are refreshed while a spot popup is open, silently
+  // re-derive the wind shown in the popup so users see new values without
+  // having to close/reopen. Same logic as fetchWind: only the spot's
+  // *assigned* station counts. If it's stale, we leave the current popup
+  // value untouched (it's either an Open-Meteo fallback or already null).
+  useEffect(() => {
+    if (!selectedSpot) return;
+    if (!selectedSpot.nearestStationId) return;
+    const stations = stationsRef.current;
+    if (stations.length === 0) return;
+
+    const assigned =
+      stations.find((s) => s.id === selectedSpot.nearestStationId) ?? null;
+    if (!assigned || !isStationFresh(assigned.updatedAt)) return;
+
+    setSelectedWind((prev) => {
+      // Only replace if the new sample is strictly newer than what's shown
+      // AND the previous value also came from a station (don't overwrite a
+      // fresh Open-Meteo fallback with a station that just came back —
+      // wait for the next manual open instead, otherwise the value would
+      // jump while the user is reading).
+      if (prev?.source === "openmeteo") return prev;
+      if (
+        prev?.updatedAt &&
+        new Date(assigned.updatedAt).getTime() <=
+          new Date(prev.updatedAt).getTime()
+      ) {
+        return prev;
+      }
+      return getWindData(
+        assigned.windSpeedKmh,
+        assigned.windDirection,
+        assigned.gustsKmh ?? Math.round(assigned.windSpeedKmh * 1.3),
+        assigned.updatedAt,
+        "station",
+      );
+    });
+  }, [pollTick, selectedSpot]);
+
+  // When the popup is showing an Open-Meteo fallback (no fresh assigned
+  // station), poll /api/wind every 60 s so the value stays live too. This
+  // mirrors the loadStations() polling for stations and the openMeteoLive
+  // polling on the spot page — every popup variant updates without the user
+  // having to close/reopen.
+  useEffect(() => {
+    if (!selectedSpot) return;
+    if (selectedWind?.source !== "openmeteo") return;
+    let cancelled = false;
+    const id = setInterval(() => {
+      const lat = selectedSpot.latitude.toFixed(2);
+      const lng = selectedSpot.longitude.toFixed(2);
+      fetch(`/api/wind?lat=${lat}&lng=${lng}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: WindData | null) => {
+          if (cancelled || !d) return;
+          if (!d.windSpeedKmh && d.windSpeedKmh !== 0) return;
+          setSelectedWind({ ...d, source: d.source ?? "openmeteo" });
+        })
+        .catch(() => {});
+    }, 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+    // We intentionally depend on selectedSpot.id (not the whole object) and
+    // on whether we're in openmeteo mode — re-derivation handled by the
+    // effect above for station mode.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSpot?.id, selectedWind?.source]);
 
   // Initialize map
   useEffect(() => {
@@ -1132,27 +1180,24 @@ export function KiteMap({
 
     const stations = stationsRef.current;
     if (stations.length > 0) {
+      // Same logic as loadStations(): only the *assigned* station counts,
+      // and only if it's fresh. No nearest-neighbour fallback (wind is too
+      // local). Mismatching this with loadStations() caused the pulse to
+      // flicker on every spots/filter change.
       const windMap = new Map<string, number>();
       for (const spot of filtered) {
-        let best = stations.find((s) => s.id === spot.nearestStationId) ?? null;
-        if (!best) {
-          let bestDist = Infinity;
-          for (const s of stations) {
-            const d =
-              (s.lat - spot.latitude) ** 2 + (s.lng - spot.longitude) ** 2;
-            if (d < bestDist) {
-              bestDist = d;
-              best = s;
-            }
-          }
+        if (!spot.nearestStationId) continue;
+        const assigned =
+          stations.find((s) => s.id === spot.nearestStationId) ?? null;
+        if (assigned && isStationFresh(assigned.updatedAt)) {
+          windMap.set(spot.id, assigned.windSpeedKmh);
         }
-        if (best) windMap.set(spot.id, best.windSpeedKmh);
       }
       renderSpots(filtered, windMap);
     } else {
       renderSpots(filtered);
     }
-  }, [spots, mapLoaded, renderSpots, sportFilter]);
+  }, [spots, mapLoaded, renderSpots, sportFilter, pollTick]);
 
   // Highlight a spot on hover from external panel (e.g. TripPlanner results)
   useEffect(() => {

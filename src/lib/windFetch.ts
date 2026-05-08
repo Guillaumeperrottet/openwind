@@ -57,8 +57,13 @@ export async function fetchCurrentWind(
   const c = data.current;
 
   return {
-    ...getWindData(c.wind_speed_10m, c.wind_direction_10m, c.wind_gusts_10m),
-    updatedAt: (c.time as string | undefined) ?? undefined,
+    ...getWindData(
+      c.wind_speed_10m,
+      c.wind_direction_10m,
+      c.wind_gusts_10m,
+      (c.time as string | undefined) ?? undefined,
+      "openmeteo",
+    ),
   };
 }
 

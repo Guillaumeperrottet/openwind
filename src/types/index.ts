@@ -55,6 +55,12 @@ export interface WindData {
   color: string;
   /** Time of last update from Open-Meteo, e.g. "2026-04-01T14:45" */
   updatedAt?: string;
+  /** Provenance of the measurement.
+   *  - "station": real-time anemometer reading (MeteoSwiss, Pioupiou, etc.)
+   *  - "openmeteo": gridded forecast/nowcast from Open-Meteo (used as fallback
+   *    when the spot's nearest station is offline or absent).
+   *  Used by the UI to discreetly disclose the source under the timestamp. */
+  source?: "station" | "openmeteo";
 }
 
 export interface ForecastHour {

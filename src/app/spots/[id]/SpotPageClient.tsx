@@ -57,6 +57,7 @@ import {
   MONTHS,
   getWindData,
   relativeTime,
+  isStationFresh,
 } from "@/lib/utils";
 import { roundKnots } from "@/lib/forecast";
 import { useFavContext } from "@/lib/FavContext";
@@ -215,6 +216,10 @@ export function SpotPageClient({
   // Live current wind from /api/stations — same endpoint as the map popup,
   // so the card and the popup ALWAYS show the exact same value.
   const [liveStation, setLiveStation] = useState<WindStation | null>(null);
+  // Open-Meteo gridded fallback at the spot's coordinates. Used when the
+  // assigned station hasn't reported within STATION_FRESH_MS — same logic
+  // as the map popup, keeps the two views consistent.
+  const [openMeteoLive, setOpenMeteoLive] = useState<WindData | null>(null);
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     spot.nearestStationId,
   );
@@ -253,6 +258,30 @@ export function SpotPageClient({
       clearInterval(id);
     };
   }, [selectedStationId, spot.nearestStationId]);
+
+  // Open-Meteo nowcast at the spot's coordinates — used only when the
+  // assigned station is offline. Polled every 60 s like /api/stations.
+  // Cheap: /api/wind is cached server-side (s-maxage=600) and edge-cached.
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      const lat = spot.latitude.toFixed(2);
+      const lng = spot.longitude.toFixed(2);
+      fetch(`/api/wind?lat=${lat}&lng=${lng}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: WindData | null) => {
+          if (cancelled || !d) return;
+          setOpenMeteoLive({ ...d, source: d.source ?? "openmeteo" });
+        })
+        .catch(() => {});
+    };
+    load();
+    const id = setInterval(load, 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [spot.latitude, spot.longitude]);
 
   // Fetch forecast + history client-side (chart only)
   useEffect(() => {
@@ -302,19 +331,30 @@ export function SpotPageClient({
     };
   }, [selectedStationId, spot.id, spot.nearestStationId, historySource]);
 
-  // Cards = the live /api/stations value (same trame as map popup).
-  // Falls back to SSR `initialWind` while the live fetch is loading.
+  // Cards = the live /api/stations value when fresh, else the Open-Meteo
+  // nowcast at the spot's coordinates. Same logic as the map popup so the
+  // two views always agree. Falls back to SSR `initialWind` while loading.
   const wind = useMemo<WindData | null>(() => {
-    if (!liveStation) return initialWind;
-    return getWindData(
-      liveStation.windSpeedKmh,
-      liveStation.windDirection,
-      liveStation.gustsKmh ?? Math.round(liveStation.windSpeedKmh * 1.3),
-      liveStation.updatedAt,
-    );
-  }, [liveStation, initialWind]);
+    if (liveStation && isStationFresh(liveStation.updatedAt)) {
+      return getWindData(
+        liveStation.windSpeedKmh,
+        liveStation.windDirection,
+        liveStation.gustsKmh ?? Math.round(liveStation.windSpeedKmh * 1.3),
+        liveStation.updatedAt,
+        "station",
+      );
+    }
+    // Assigned station is dead (or none) — use Open-Meteo nowcast.
+    if (openMeteoLive) return openMeteoLive;
+    return initialWind;
+  }, [liveStation, openMeteoLive, initialWind]);
 
   const windSource = useMemo(() => {
+    // Mirror the `wind` fallback: if the assigned station is stale, the
+    // card shows Open-Meteo, so the source label must say so too. We do
+    // that by returning null — the UI then renders the "Open-Meteo" link
+    // it already had as a fallback.
+    if (liveStation && !isStationFresh(liveStation.updatedAt)) return null;
     const id = liveStation?.id ?? historySource;
     if (id) {
       return {
@@ -328,9 +368,13 @@ export function SpotPageClient({
   // Inject the live trame at the end of `history` so the chart's last bar
   // matches the card. Without this, the chart can lag the card by up to
   // one Windball trame interval (~10 min).
+  // ⚠ Only inject when the station is FRESH — otherwise we'd plant a stale
+  // value at the current time, contradicting the card (which falls back to
+  // Open-Meteo). When stale, leave the chart's natural forecast tail alone.
   const chartHistory = useMemo<HistoryPoint[] | null>(() => {
     if (!history) return history;
     if (!liveStation) return history;
+    if (!isStationFresh(liveStation.updatedAt)) return history;
     if (historySource && liveStation.id !== historySource) return history;
     const liveTime = new Date(liveStation.updatedAt).toISOString().slice(0, 16);
     const livePoint: HistoryPoint = {
