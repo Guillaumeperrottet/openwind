@@ -321,11 +321,21 @@ export async function fetchWindForecast15min(
     wind_direction_10m: number[];
   };
 
-  return time.map((t, i) => ({
-    time: t,
-    windSpeedKmh: wind_speed_10m[i] ?? 0,
-    windDirection: wind_direction_10m[i] ?? 0,
-    gustsKmh: wind_gusts_10m[i] ?? 0,
-    temperatureC: temperature_2m[i] ?? 0,
-  }));
+  // Open-Meteo's minutely_15 series starts at 00:00 of the current day, so
+  // many points are technically "past" relative to now. Callers append these
+  // to a station's observation history; if any past-but-after-last-obs
+  // point slips in, the popup's "last point ≤ now" picker treats an NWP
+  // value as a real measurement (Vevey/VEV bug 8 mai 2026 — popup showed
+  // 1 kts W from NWP while the station read 2 kts S). Strictly future only.
+  const nowIso = new Date().toISOString().slice(0, 16);
+
+  return time
+    .map((t, i) => ({
+      time: t,
+      windSpeedKmh: wind_speed_10m[i] ?? 0,
+      windDirection: wind_direction_10m[i] ?? 0,
+      gustsKmh: wind_gusts_10m[i] ?? 0,
+      temperatureC: temperature_2m[i] ?? 0,
+    }))
+    .filter((p) => p.time > nowIso);
 }
