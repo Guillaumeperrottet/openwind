@@ -1,9 +1,11 @@
-# Refactor — Cohérence des données vent (un seul point d'entrée)
+# Refactor — Cohérence des données vent (historique)
 
-> **Audience** : prochaine session Claude / contributeur.
-> **Date d'analyse** : 8 mai 2026
-> **Statut** : Plan à exécuter, **aucun code à toucher avant validation utilisateur**.
-> **Objectif** : éliminer structurellement les divergences popup/page/chart en passant de N consommateurs indépendants à 1 seule source de vérité.
+> **Ce document est l'historique du plan de refactor exécuté le 8 mai 2026.**
+> **Le refactor est terminé.** Pour comprendre comment l'architecture fonctionne aujourd'hui, lire [architecture-donnees-vent.md](./architecture-donnees-vent.md).
+
+---
+
+## Archive du plan original
 
 ---
 
