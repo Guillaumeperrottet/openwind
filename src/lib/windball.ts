@@ -14,6 +14,9 @@ import type { WindStation } from "./stations";
 
 const WINDBALL_API = "https://server.windball.ch";
 
+// Stations masquées (défectueuses, mal placées, données non fiables)
+const EXCLUDED_STATIONS = new Set(["windball-wb-08"]);
+
 // ─── Types from the Windball API ──────────────────────────────────────────────
 
 interface WBDevice {
@@ -69,9 +72,10 @@ export async function fetchWindballStations(): Promise<WindStation[]> {
 
   const devices: WBDevice[] = await listRes.json();
 
-  // Filter to recently active devices with valid coordinates
+  // Filter to recently active devices with valid coordinates (exclude known bad stations)
   const active = devices.filter(
     (d) =>
+      !EXCLUDED_STATIONS.has(`windball-${d.deviceId}`) &&
       d.latitude &&
       d.longitude &&
       d.lastActivityAt &&
