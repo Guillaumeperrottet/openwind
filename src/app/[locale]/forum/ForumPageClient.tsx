@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useRouter } from "next/navigation";
 import {
   MessageCircle,
@@ -50,6 +51,7 @@ interface Props {
 }
 
 export function ForumPageClient({ categories, isAdmin }: Props) {
+  const t = useTranslations("ForumPage");
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -57,14 +59,14 @@ export function ForumPageClient({ categories, isAdmin }: Props) {
   return (
     <div className="mx-auto px-4 sm:px-6 lg:px-10 pt-20 pb-12">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg font-semibold text-gray-900">Forum</h1>
+        <h1 className="text-lg font-semibold text-gray-900">{t("title")}</h1>
         {isAdmin && (
           <button
             onClick={() => setShowNew(!showNew)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
           >
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nouvelle catégorie</span>
+            <span className="hidden sm:inline">{t("newCategory")}</span>
           </button>
         )}
       </div>
@@ -117,7 +119,7 @@ export function ForumPageClient({ categories, isAdmin }: Props) {
                 </div>
 
                 <div className="text-xs text-gray-400 shrink-0 hidden sm:block tabular-nums">
-                  {cat.topicCount} sujet{cat.topicCount !== 1 ? "s" : ""}
+                  {t("topics", { count: cat.topicCount })}
                 </div>
 
                 {cat.lastTopic && (
@@ -145,7 +147,7 @@ export function ForumPageClient({ categories, isAdmin }: Props) {
                     onClick={async () => {
                       if (
                         !confirm(
-                          `Supprimer « ${cat.name} » et tous ses sujets ?`,
+                          t("deleteConfirm", { name: cat.name }),
                         )
                       )
                         return;
@@ -169,7 +171,7 @@ export function ForumPageClient({ categories, isAdmin }: Props) {
         {categories.length === 0 && (
           <div className="text-center py-12 text-gray-400">
             <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">Aucune catégorie</p>
+            <p className="text-sm">{t("noCategories")}</p>
           </div>
         )}
       </div>
@@ -186,6 +188,8 @@ function NewCategoryForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("ForumPage");
+  const tCommon = useTranslations("Common");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("MessageCircle");
@@ -207,29 +211,29 @@ function NewCategoryForm({
     <div className="space-y-3">
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">
-          Nom
+          {t("categoryName")}
         </label>
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Nom de la catégorie"
+          placeholder={t("categoryNamePlaceholder")}
           className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none focus:border-gray-400"
         />
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">
-          Description
+          {t("categoryDescription")}
         </label>
         <input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description courte (optionnel)"
+          placeholder={t("categoryDescriptionPlaceholder")}
           className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm outline-none focus:border-gray-400"
         />
       </div>
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">
-          Icône
+          {t("categoryIcon")}
         </label>
         <div className="flex items-center gap-2">
           {ICON_OPTIONS.map((ic) => (
@@ -254,14 +258,14 @@ function NewCategoryForm({
           className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 text-white text-sm rounded hover:bg-gray-900 transition-colors disabled:opacity-50"
         >
           <Check className="h-3.5 w-3.5" />
-          {saving ? "Création…" : "Créer"}
+          {saving ? t("creating") : tCommon("create")}
         </button>
         <button
           onClick={onCancel}
           className="flex items-center gap-1.5 px-3 py-1.5 text-gray-500 text-sm rounded hover:bg-gray-100 transition-colors"
         >
           <X className="h-3.5 w-3.5" />
-          Annuler
+          {tCommon("cancel")}
         </button>
       </div>
     </div>
@@ -279,6 +283,8 @@ function EditCategoryRow({
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("ForumPage");
+  const tCommon = useTranslations("Common");
   const [name, setName] = useState(category.name);
   const [description, setDescription] = useState(category.description ?? "");
   const [icon, setIcon] = useState(category.icon ?? "MessageCircle");
@@ -309,11 +315,11 @@ function EditCategoryRow({
       <input
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description"
+        placeholder={t("categoryDescription")}
         className="w-full border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-gray-400"
       />
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">Icône :</span>
+        <span className="text-xs text-gray-500">{t("iconLabel")}</span>
         {ICON_OPTIONS.map((ic) => (
           <button
             key={ic}
@@ -335,14 +341,14 @@ function EditCategoryRow({
           className="flex items-center gap-1 px-2.5 py-1 bg-gray-800 text-white text-xs rounded hover:bg-gray-900 transition-colors disabled:opacity-50"
         >
           <Check className="h-3 w-3" />
-          {saving ? "…" : "Enregistrer"}
+          {saving ? "…" : tCommon("save")}
         </button>
         <button
           onClick={onCancel}
           className="flex items-center gap-1 px-2.5 py-1 text-gray-500 text-xs rounded hover:bg-gray-100 transition-colors"
         >
           <X className="h-3 w-3" />
-          Annuler
+          {tCommon("cancel")}
         </button>
       </div>
     </div>

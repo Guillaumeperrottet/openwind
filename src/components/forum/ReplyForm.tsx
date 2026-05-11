@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Send } from "lucide-react";
 import { useFavContext } from "@/lib/FavContext";
 
@@ -16,11 +17,13 @@ interface ReplyFormProps {
 export function ReplyForm({
   topicId,
   parentId,
-  placeholder = "Votre réponse…",
+  placeholder,
   onCreated,
   onCancel,
   autoFocus,
 }: ReplyFormProps) {
+  const t = useTranslations("ForumPage");
+  const tCommon = useTranslations("Common");
   const { user, requestAuth } = useFavContext();
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,7 +60,7 @@ export function ReplyForm({
         ref={textareaRef}
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("replyPlaceholder")}
         autoFocus={autoFocus}
         rows={3}
         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none resize-y min-h-[72px]"
@@ -69,7 +72,7 @@ export function ReplyForm({
             onClick={onCancel}
             className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors"
           >
-            Annuler
+            {tCommon("cancel")}
           </button>
         )}
         <button
@@ -78,7 +81,7 @@ export function ReplyForm({
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-medium hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Send className="h-3.5 w-3.5" />
-          {loading ? "Envoi…" : "Répondre"}
+          {loading ? t("sending") : t("reply")}
         </button>
       </div>
     </form>

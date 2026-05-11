@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Mail, Eye, EyeOff } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 interface AuthModalProps {
@@ -10,6 +11,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onClose }: AuthModalProps) {
+  const t = useTranslations("AuthModal");
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +51,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       setLoading(false);
       if (authError) {
         if (authError.message === "Invalid login credentials") {
-          setError("Email ou mot de passe incorrect.");
+          setError(t("invalidCredentials"));
         } else {
           setError(authError.message);
         }
@@ -105,41 +107,36 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
         <h2 className="text-lg font-bold text-gray-900 mb-1">
           {mode === "login"
-            ? "Connexion"
+            ? t("loginTitle")
             : mode === "signup"
-              ? "Créer un compte"
-              : "Mot de passe oublié"}
+              ? t("signupTitle")
+              : t("forgotTitle")}
         </h2>
         <p className="text-sm text-gray-500 mb-5">
           {mode === "login"
-            ? "Connectez-vous pour accéder à vos favoris et au forum."
+            ? t("loginSubtitle")
             : mode === "signup"
-              ? "Inscrivez-vous pour sauvegarder vos spots favoris."
-              : "Entrez votre email pour recevoir un lien de réinitialisation."}
+              ? t("signupSubtitle")
+              : t("forgotSubtitle")}
         </p>
 
         {resetSent ? (
           <div className="text-center py-4">
             <Mail className="h-8 w-8 text-sky-500 mx-auto mb-2" />
             <p className="text-sm text-gray-700 font-medium">
-              Lien envoyé à <span className="text-sky-600">{email}</span>
+              {t("resetSentTitle")}{" "}
+              <span className="text-sky-600">{email}</span>
             </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Vérifiez votre boîte mail et cliquez sur le lien pour définir un
-              nouveau mot de passe.
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{t("resetSentBody")}</p>
           </div>
         ) : signupDone ? (
           <div className="text-center py-4">
             <Mail className="h-8 w-8 text-sky-500 mx-auto mb-2" />
             <p className="text-sm text-gray-700 font-medium">
-              Email de confirmation envoyé à{" "}
+              {t("signupDoneTitle")}{" "}
               <span className="text-sky-600">{email}</span>
             </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Vérifiez votre boîte mail et cliquez sur le lien pour activer
-              votre compte.
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{t("signupDoneBody")}</p>
           </div>
         ) : mode === "forgot" ? (
           <>
@@ -148,7 +145,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
+                placeholder={t("emailPlaceholder")}
                 required
                 className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
@@ -161,7 +158,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 {loading && (
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
                 )}
-                Envoyer le lien
+                {t("sendLink")}
               </button>
             </form>
             <p className="text-xs text-center text-gray-500 mt-4">
@@ -172,7 +169,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 }}
                 className="text-sky-600 hover:underline font-medium"
               >
-                Retour à la connexion
+                {t("backToLogin")}
               </button>
             </p>
           </>
@@ -202,7 +199,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     fill="#EA4335"
                   />
                 </svg>
-                Continuer avec Google
+                {t("loginWithGoogle")}
               </button>
               <button
                 onClick={() => handleOAuth("github")}
@@ -215,13 +212,13 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 >
                   <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
                 </svg>
-                Continuer avec GitHub
+                {t("loginWithGitHub")}
               </button>
             </div>
 
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs text-gray-400">ou</span>
+              <span className="text-xs text-gray-400">{t("orSeparator")}</span>
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
@@ -231,7 +228,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
+                placeholder={t("emailPlaceholder")}
                 required
                 className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
@@ -240,7 +237,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mot de passe"
+                  placeholder={t("passwordPlaceholder")}
                   required
                   minLength={6}
                   className="w-full rounded-lg border border-gray-200 px-4 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
@@ -269,7 +266,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                   }}
                   className="text-xs text-sky-600 hover:underline"
                 >
-                  Mot de passe oublié ?
+                  {t("forgotLink")}
                 </button>
               )}
 
@@ -281,14 +278,14 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 {loading && (
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
                 )}
-                {mode === "login" ? "Se connecter" : "Créer mon compte"}
+                {mode === "login" ? t("loginButton") : t("signupButton")}
               </button>
             </form>
 
             <p className="text-xs text-center text-gray-500 mt-4">
               {mode === "login" ? (
                 <>
-                  Pas encore de compte ?{" "}
+                  {t("switchToSignupPrompt")}{" "}
                   <button
                     onClick={() => {
                       setMode("signup");
@@ -296,12 +293,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     }}
                     className="text-sky-600 hover:underline font-medium"
                   >
-                    S&apos;inscrire
+                    {t("switchToSignupAction")}
                   </button>
                 </>
               ) : (
                 <>
-                  Déjà un compte ?{" "}
+                  {t("switchToLoginPrompt")}{" "}
                   <button
                     onClick={() => {
                       setMode("login");
@@ -309,7 +306,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                     }}
                     className="text-sky-600 hover:underline font-medium"
                   >
-                    Se connecter
+                    {t("switchToLoginAction")}
                   </button>
                 </>
               )}

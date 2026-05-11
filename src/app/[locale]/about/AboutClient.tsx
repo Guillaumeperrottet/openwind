@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Users,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useReveal } from "./useReveal";
 import {
   NetworksGrid,
@@ -39,11 +40,12 @@ export default function AboutClient() {
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 function Hero() {
+  const t = useTranslations("AboutPage");
   return (
     <section className="relative min-h-[88vh] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
       <WindStreaks />
 
-      {/* Floating "Nouveau" badge — top-left of the hero */}
+      {/* Floating badge — top-left of the hero */}
       <Link
         href="/plan?quick=now"
         className="hero-badge group absolute top-24 sm:top-28 left-8 sm:left-24 lg:left-40 z-20 inline-flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-blue-200/80 shadow-[0_8px_24px_-8px_rgba(37,99,235,0.35)] hover:shadow-[0_12px_32px_-8px_rgba(37,99,235,0.5)] transition-all hover:-translate-y-0.5 -rotate-3 hover:rotate-0"
@@ -53,17 +55,17 @@ function Hero() {
           <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500" />
         </span>
         <span className="text-[11px] font-semibold text-blue-800 tracking-wide">
-          NOUVEAU
+          {t("heroBadge")}
         </span>
         <span className="text-[11px] text-slate-700 hidden sm:inline">
-          · « Ça souffle ? » en 2&nbsp;s
+          {t("heroBadgeSubtitle")}
         </span>
         <ArrowRight className="h-3 w-3 text-blue-700 transition-transform group-hover:translate-x-0.5" />
       </Link>
 
       <div className="relative z-10 text-center max-w-4xl">
         <p className="text-sm font-medium text-blue-700/80 tracking-widest uppercase">
-          Open Source · Suisse & monde
+          {t("heroTagline")}
         </p>
         <h1 className="mt-8 flex justify-center">
           <span className="sr-only">Openwind</span>
@@ -77,16 +79,16 @@ function Hero() {
           />
         </h1>
         <p className="mt-8 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          La carte vivante du vent pour kitesurfeurs et parapentistes.
+          {t("heroDescLine1")}
           <br className="hidden sm:block" />
-          Six réseaux de stations, prévisions à 7 jours, archives sur 5 ans.
+          {t("heroDescLine2")}
         </p>
         <div className="mt-10 flex items-center justify-center gap-3">
           <Link
             href="/"
             className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
           >
-            Explorer la carte
+            {t("heroCtaExplore")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <a
@@ -96,14 +98,14 @@ function Hero() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
           >
             <GithubIcon />
-            Source
+            {t("heroCtaSource")}
           </a>
         </div>
       </div>
 
       {/* Scroll cue */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-400 text-[11px] uppercase tracking-widest">
-        <span>scroll</span>
+        <span>{t("scroll")}</span>
         <span className="block w-px h-8 bg-linear-to-b from-slate-300 to-transparent" />
       </div>
     </section>
@@ -175,56 +177,52 @@ function Section({
 // ─── Sections ─────────────────────────────────────────────────────────────────
 
 function SectionMap() {
+  const t = useTranslations("AboutPage");
   return (
     <Section
-      eyebrow="Carte"
+      eyebrow={t("mapEyebrow")}
       icon={<MapIcon />}
       title={
         <>
-          Toutes les stations,
+          {t("mapTitleLine1")}
           <br />
-          en un coup d&apos;œil.
+          {t("mapTitleLine2")}
         </>
       }
       description={
         <>
-          <p>
-            Une carte mondiale qui agrège six réseaux de stations
-            météorologiques en temps réel. Les flèches indiquent la direction,
-            la couleur la force, et un halo pulse quand ça souffle.
-          </p>
-          <p className="text-sm text-slate-500">
-            Mises à jour toutes les minutes, accessible sans compte.
-          </p>
+          <p>{t("mapP1")}</p>
+          <p className="text-sm text-slate-500">{t("mapP2")}</p>
         </>
       }
     >
       <Screenshot
         src="/capture/map.png"
-        alt="Carte Openwind avec stations météo et popups en temps réel"
+        alt={t("mapP1").substring(0, 80)}
         width={797}
         height={609}
-        caption="Ton spot manque ? Crée-le en 2 minutes."
+        caption={t("mapCaption")}
       />
     </Section>
   );
 }
 
 function SectionNetworks() {
+  const t = useTranslations("AboutPage");
   return (
     <section className="bg-slate-50/60 px-6 py-28 sm:py-36 border-y border-black/4">
       <div className="max-w-6xl mx-auto">
         <RevealHeader
-          eyebrow="Sources"
+          eyebrow={t("networksEyebrow")}
           icon={<Activity />}
           title={
             <>
-              Six réseaux,
+              {t("networksTitleLine1")}
               <br />
-              <span className="text-blue-600">une seule interface.</span>
+              <span className="text-blue-600">{t("networksTitleLine2")}</span>
             </>
           }
-          description="Pas besoin de jongler entre dix sites. Openwind unifie les principaux réseaux publics et communautaires."
+          description={t("networksDesc")}
         />
         <div className="mt-12">
           <NetworksGrid />
@@ -235,45 +233,44 @@ function SectionNetworks() {
 }
 
 function SectionForecast() {
+  const t = useTranslations("AboutPage");
   return (
     <Section
       reverse
-      eyebrow="Prévisions & archives"
+      eyebrow={t("forecastEyebrow")}
       icon={<Calendar />}
       title={
         <>
-          De demain matin
-          <br />à cinq ans en arrière.
+          {t("forecastTitleLine1")}
+          <br />
+          {t("forecastTitleLine2")}
         </>
       }
       description={
         <>
           <p>
-            Prévisions <strong>7 jours</strong> par tranche horaire, et
-            <strong> 5 ans d&apos;archives </strong> pour confirmer la
-            saisonnalité d&apos;un spot
+            {t.rich("forecastP1", {
+              bold: (chunks) => <strong>{chunks}</strong>,
+            })}
           </p>
-          <p className="text-sm text-slate-500">
-            Open-Meteo en couverture mondiale, MeteoSwiss ICON-CH2-EPS pour la
-            Suisse
-          </p>
+          <p className="text-sm text-slate-500">{t("forecastP2")}</p>
         </>
       }
     >
       <div className="space-y-6">
         <Screenshot
           src="/capture/previsions.png"
-          alt="Tableau de prévisions 7 jours style Windguru"
+          alt={t("forecastCaption1")}
           width={1546}
           height={746}
-          caption="Prévisions 7 jours, par tranche de 3 h"
+          caption={t("forecastCaption1")}
         />
         <Screenshot
           src="/capture/archives.png"
-          alt="Archives historiques sur 5 ans avec heatmap mensuelle"
+          alt={t("forecastCaption2")}
           width={1524}
           height={319}
-          caption="Archives 5 ans — saisonnalité par mois"
+          caption={t("forecastCaption2")}
         />
       </div>
     </Section>
@@ -281,72 +278,55 @@ function SectionForecast() {
 }
 
 function SectionPlanner() {
+  const t = useTranslations("AboutPage");
   return (
     <Section
-      eyebrow="Trip Planner"
+      eyebrow={t("plannerEyebrow")}
       icon={<Compass />}
       title={
         <>
-          Le vent qui souffle,
+          {t("plannerTitleLine1")}
           <br />
-          près de chez toi.
+          {t("plannerTitleLine2")}
         </>
       }
       description={
         <>
-          <p>
-            Tu cherches une session ce week-end&nbsp;? Indique tes dates, les km
-            et ton sport. Openwind scanne tous les spots autour de toi et te dit
-            où le vent va vraiment souffler — classés par score multi-critères.
-          </p>
-          <p className="text-sm text-slate-500">
-            Au-delà de 16 jours, on bascule sur les archives historiques pour
-            les voyages plus lointains.
-          </p>
+          <p>{t("plannerP1")}</p>
+          <p className="text-sm text-slate-500">{t("plannerP2")}</p>
         </>
       }
     >
       <Screenshot
         src="/capture/scoring.png"
-        alt="Résultats du Trip Planner avec scoring multi-critères"
+        alt={t("plannerCaption")}
         width={489}
         height={259}
-        caption="Spots classés par score de vent prévu"
+        caption={t("plannerCaption")}
       />
     </Section>
   );
 }
 
 function SectionForum() {
+  const t = useTranslations("AboutPage");
   return (
     <Section
-      eyebrow="Open source & communauté"
+      eyebrow={t("forumEyebrow")}
       icon={<MessageSquare />}
-      title={
-        <>
-          Ouvert à tous
-          <br />
-        </>
-      }
+      title={<>{t("forumTitle")}</>}
       description={
         <>
           <p>
-            Openwind est <strong>100% open source</strong>. Le code, les
-            données, les choix techniques — tout est sur GitHub. Tu peux lire,
-            forker, contribuer.
+            {t.rich("forumP1", { bold: (chunks) => <strong>{chunks}</strong> })}
           </p>
-          <p>
-            Le forum sert à poser des questions :{" "}
-            <em>une station bizarre&nbsp;?</em>,{" "}
-            <em>un spot manquant&nbsp;?</em>,{" "}
-            <em>une fonctionnalité qui te ferait gagner du temps&nbsp;?</em>
-          </p>
+          <p>{t.rich("forumP2", { em: (chunks) => <em>{chunks}</em> })}</p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link
               href="/forum"
               className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
             >
-              Ouvrir le forum
+              {t("forumCta")}
               <ArrowRight className="h-4 w-4" />
             </Link>
             <a
@@ -356,7 +336,7 @@ function SectionForum() {
               className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               <GithubIcon />
-              Proposer une fonctionnalité
+              {t("forumGithubCta")}
             </a>
           </div>
         </>
@@ -368,24 +348,22 @@ function SectionForum() {
 }
 
 function SectionSports() {
+  const t = useTranslations("AboutPage");
   return (
     <Section
       reverse
-      eyebrow="Multi-sport"
+      eyebrow={t("sportsEyebrow")}
       icon={<Users />}
       title={
         <>
-          Kite ou parapente,
+          {t("sportsTitleLine1")}
           <br />
-          chacun ses critères.
+          {t("sportsTitleLine2")}
         </>
       }
       description={
         <>
-          <p>
-            Un kitesurfeur cherche du vent, un parapentiste le fuit. Openwind
-            ajuste son scoring et ses filtres au sport choisi.
-          </p>
+          <p>{t("sportsP1")}</p>
         </>
       }
     >
@@ -396,6 +374,7 @@ function SectionSports() {
 
 function SectionOpenSource() {
   const [ref, visible] = useReveal();
+  const t = useTranslations("AboutPage");
   return (
     <section className="px-6 py-28 sm:py-36 bg-slate-900 text-slate-100">
       <div
@@ -406,12 +385,10 @@ function SectionOpenSource() {
       >
         <GithubIcon className="h-10 w-10 mx-auto text-slate-400" />
         <h2 className="mt-6 text-4xl sm:text-5xl font-semibold tracking-tight">
-          100% open source.
+          {t("osTitle")}
         </h2>
         <p className="mt-6 text-slate-400 text-lg leading-relaxed">
-          Code, données, modèles : tout est public. Tu peux contribuer un spot,
-          un réseau de stations, un correctif — ou juste lire le code pour
-          comprendre comment c&apos;est fait.
+          {t("osDesc")}
         </p>
         <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
           <a
@@ -421,13 +398,13 @@ function SectionOpenSource() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-slate-900 text-sm font-medium hover:bg-slate-100 transition-colors"
           >
             <GithubIcon />
-            Voir sur GitHub
+            {t("osGithubCta")}
           </a>
           <Link
             href="/spots/new"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-700 text-slate-200 text-sm font-medium hover:bg-slate-800 transition-colors"
           >
-            Proposer un spot
+            {t("osSpotCta")}
           </Link>
         </div>
       </div>
@@ -436,15 +413,16 @@ function SectionOpenSource() {
 }
 
 function Footer() {
+  const t = useTranslations("AboutPage");
   return (
     <footer className="px-6 py-10 border-t border-slate-200 text-center text-xs text-slate-400">
       <p>
-        Openwind · cartographie du vent open source.{" "}
+        {t("footerText")}{" "}
         <Link
           href="/"
           className="underline underline-offset-2 hover:text-slate-600"
         >
-          Aller à la carte →
+          {t("footerLink")}
         </Link>
       </p>
     </footer>

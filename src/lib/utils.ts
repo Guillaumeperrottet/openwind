@@ -78,6 +78,17 @@ export function windConditionLabel(kmh: number): string {
   return "Danger";
 }
 
+/** Returns the i18n message key for a wind speed — use with t(windConditionKey(kmh)) */
+export function windConditionKey(kmh: number): string {
+  if (kmh < 8) return "WindConditions.calm";
+  if (kmh < 15) return "WindConditions.light";
+  if (kmh < 22) return "WindConditions.gentle";
+  if (kmh < 30) return "WindConditions.good";
+  if (kmh < 38) return "WindConditions.strong";
+  if (kmh < 50) return "WindConditions.veryStrong";
+  return "WindConditions.danger";
+}
+
 export function getWindData(
   windSpeedKmh: number,
   windDirection: number,
@@ -118,9 +129,15 @@ export const MONTHS = [
   "Décembre",
 ];
 
+/** Returns the i18n message key for a month number (1-based) — use with t('Months.X') */
+export function monthKey(monthNumber: number): string {
+  return `Months.${monthNumber}`;
+}
+
 /**
  * Format an ISO timestamp as a short relative time in French.
  * Examples: "à l'instant" · "il y a 4 min" · "il y a 2 h" · "il y a 3 j"
+ * @deprecated In React components, use relativeTimeI18n(iso, t) instead.
  */
 export function relativeTime(iso: string | undefined | null): string {
   if (!iso) return "";
@@ -134,4 +151,22 @@ export function relativeTime(iso: string | undefined | null): string {
   if (hr < 24) return `il y a ${hr} h`;
   const day = Math.round(hr / 24);
   return `il y a ${day} j`;
+}
+
+/** Locale-aware relative time — pass the next-intl translator for the root messages */
+export function relativeTimeI18n(
+  iso: string | undefined | null,
+  t: (key: string, values?: Record<string, unknown>) => string,
+): string {
+  if (!iso) return "";
+  const ts = new Date(iso).getTime();
+  if (isNaN(ts)) return "";
+  const diffSec = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  if (diffSec < 60) return t("RelativeTime.justNow");
+  const min = Math.round(diffSec / 60);
+  if (min < 60) return t("RelativeTime.minutesAgo", { min });
+  const hr = Math.round(min / 60);
+  if (hr < 24) return t("RelativeTime.hoursAgo", { hr });
+  const day = Math.round(hr / 24);
+  return t("RelativeTime.daysAgo", { day });
 }

@@ -26,11 +26,11 @@ const getSpot = cache(async (id: string) => {
 });
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
   try {
     const spot = await getSpot(id);
     if (!spot) return { title: "Spot introuvable" };
@@ -38,16 +38,24 @@ export async function generateMetadata({ params }: Props) {
     // Build optimized, keyword-focused description
     const description = buildSpotDescription(spot);
 
+    const base = `https://openwind.ch`;
     return {
       title: spot.name,
       description,
       alternates: {
-        canonical: `https://openwind.ch/spots/${id}`,
+        canonical: `${base}/${locale}/spots/${id}`,
+        languages: {
+          "x-default": `${base}/fr/spots/${id}`,
+          fr: `${base}/fr/spots/${id}`,
+          en: `${base}/en/spots/${id}`,
+          de: `${base}/de/spots/${id}`,
+          it: `${base}/it/spots/${id}`,
+        },
       },
       openGraph: {
         title: `${spot.name} — Openwind`,
         description,
-        url: `https://openwind.ch/spots/${id}`,
+        url: `${base}/${locale}/spots/${id}`,
         type: "article",
         // Dynamic og:image generated via /api/og endpoint
         images: [

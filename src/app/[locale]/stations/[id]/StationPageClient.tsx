@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import {
   ArrowLeft,
   Mountain,
@@ -17,7 +18,7 @@ import { WindCompass } from "@/components/spot/WindCompass";
 import { WindChart } from "@/components/spot/WindChart";
 import { ForecastTable } from "@/components/spot/ForecastTable";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
-import { barColors, windConditionLabel, windDirectionLabel } from "@/lib/utils";
+import { barColors, windDirectionLabel, windConditionKey } from "@/lib/utils";
 import { roundKnots } from "@/lib/forecast";
 import type { WindStation } from "@/lib/stations";
 import type { FullForecast } from "@/lib/forecast";
@@ -93,6 +94,8 @@ export function StationPageClient({
   forecast,
   history,
 }: Props) {
+  const t = useTranslations("StationPage");
+  const tWind = useTranslations("WindConditions");
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [liveStation, setLiveStation] = useState<WindStation | null>(null);
@@ -175,16 +178,26 @@ export function StationPageClient({
   // Derived display values — use the same `barColors` palette as the chart
   // bars and the map flag so the colour is identical everywhere.
   const color = barColors(curWindKmh)[0];
-  const condLabel = windConditionLabel(curWindKmh);
+  type WindCondKey =
+    | "calm"
+    | "light"
+    | "gentle"
+    | "good"
+    | "strong"
+    | "veryStrong"
+    | "danger";
+  const condLabel = tWind(
+    windConditionKey(curWindKmh).split(".")[1] as WindCondKey,
+  );
   const dirLabel = windDirectionLabel(curDir);
   const speedKts = roundKnots(curWindKmh);
   const gustsKts = curGustsKmh !== null ? roundKnots(curGustsKmh) : null;
 
-  const updateTime = new Date(curUpdatedAt).toLocaleTimeString("fr", {
+  const updateTime = new Date(curUpdatedAt).toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const updateDate = new Date(curUpdatedAt).toLocaleDateString("fr", {
+  const updateDate = new Date(curUpdatedAt).toLocaleDateString(undefined, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -210,7 +223,7 @@ export function StationPageClient({
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-5"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour à la carte
+          {t("backToMap")}
         </Link>
 
         <div className="flex items-start justify-between gap-4">
@@ -233,15 +246,16 @@ export function StationPageClient({
             </div>
             <div className="flex items-center gap-3 mt-1 flex-wrap">
               <p className="text-xs text-gray-500">
-                Dernière mesure : {updateDate} à {updateTime}
+                {t("lastMeasurement")} {updateDate} à {updateTime}
               </p>
               {lastRefreshed && (
                 <span className="inline-flex items-center gap-1 text-[10px] text-gray-500">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  màj auto ·{" "}
-                  {lastRefreshed.toLocaleTimeString("fr", {
-                    hour: "2-digit",
-                    minute: "2-digit",
+                  {t("autoRefresh", {
+                    time: lastRefreshed.toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }),
                   })}
                 </span>
               )}
@@ -251,7 +265,7 @@ export function StationPageClient({
             <Link
               href={`/webcams?lat=${station.lat}&lng=${station.lng}&name=${encodeURIComponent(station.name)}&back=${encodeURIComponent(`/stations/${station.id}`)}`}
               className="inline-flex items-center justify-center text-gray-400 hover:text-blue-500 transition-colors"
-              title="Webcams à proximité"
+              title={t("webcams")}
             >
               <Camera className="h-4 w-4" />
             </Link>
@@ -310,7 +324,7 @@ export function StationPageClient({
                 {srcMeta.label}
                 <ExternalLink className="h-2 w-2 ml-0.5" />
               </a>
-              {` · mesure ${srcMeta.freq}`}
+              {` · ${t("measureEvery", { freq: srcMeta.freq })}`}
             </p>
           </div>
 
@@ -322,7 +336,7 @@ export function StationPageClient({
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 flex-1 sm:flex-none sm:w-40">
                 <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium mb-3">
                   <Wind className="h-4 w-4" />
-                  Vent moyen
+                  {t("windAverage")}
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl sm:text-5xl font-bold tabular-nums leading-none text-gray-900">
@@ -344,7 +358,7 @@ export function StationPageClient({
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 flex-1 sm:flex-none sm:w-40">
                 <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium mb-3">
                   <Zap className="h-4 w-4" />
-                  Rafales
+                  {t("gusts")}
                 </div>
                 {gustsKts !== null && curGustsKmh !== null ? (
                   <>
@@ -375,7 +389,9 @@ export function StationPageClient({
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-gray-600 mb-2">Direction</div>
+                  <div className="text-sm text-gray-600 mb-2">
+                    {t("direction")}
+                  </div>
                   <div className="flex items-center gap-3">
                     <svg
                       width="32"
@@ -419,7 +435,7 @@ export function StationPageClient({
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
                 <TrendingUp className="h-4 w-4 text-gray-500" />
-                Historique · 48h
+                {t("history48h")}
               </h2>
               <a
                 href={srcMeta.url}
@@ -440,7 +456,7 @@ export function StationPageClient({
                 />
               ) : (
                 <div className="flex items-center justify-center h-28 text-sm text-gray-500">
-                  Historique temporairement indisponible
+                  {t("historyUnavailable")}
                 </div>
               )}
             </div>
@@ -452,7 +468,7 @@ export function StationPageClient({
           <div className="mb-10">
             <div className="flex items-baseline justify-between mb-3">
               <h2 className="text-base font-semibold text-gray-900">
-                Prévisions vent · 7 jours
+                {t("forecast7d")}
               </h2>
               <a
                 href="https://open-meteo.com"
@@ -478,20 +494,20 @@ export function StationPageClient({
         {forecast ? (
           <div>
             <h2 className="text-base font-semibold text-gray-900 mb-3">
-              Tableau détaillé
+              {t("detailedTable")}
             </h2>
             <ForecastTable forecast={forecast} light />
           </div>
         ) : (
           <div className="text-sm text-gray-500 text-center py-8">
-            Prévisions temporairement indisponibles
+            {t("forecastUnavailable")}
           </div>
         )}
 
         {/* ── Attributions ─────────────────────────────────────────── */}
         <div className="mt-14 pt-6 border-t border-gray-200">
           <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-widest mb-3">
-            Sources de données ouvertes
+            {t("dataSources")}
           </p>
           <div className="flex flex-col gap-2 text-[11px] text-gray-500 leading-relaxed">
             <p>
@@ -508,8 +524,7 @@ export function StationPageClient({
             </p>
             <p>
               <span className="font-medium text-gray-700">Open-Meteo</span> —
-              Prévisions numériques météo 7 jours (NWP), sans clé API, open
-              source et gratuit.{" "}
+              {t("openMeteoDesc")}{" "}
               <a
                 href="https://open-meteo.com"
                 target="_blank"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useLocale } from "next-intl";
 import { windCellStyle } from "@/lib/forecast";
 import { windDirectionLabel } from "@/lib/utils";
 import { MiniCompass } from "@/components/spot/MiniCompass";
@@ -17,6 +18,7 @@ interface Props {
 
 /** SVG bar chart — wind speed + gusts, hourly, 7 days, with hover compass. */
 export function WindChart({ hourly, timezone, useKnots }: Props) {
+  const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const yAxisRef = useRef<HTMLDivElement>(null);
@@ -146,7 +148,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
   });
 
   const fmtDay = (d: string) =>
-    new Date(d + "T12:00:00").toLocaleDateString("fr", {
+    new Date(d + "T12:00:00").toLocaleDateString(locale, {
       weekday: "short",
       day: "numeric",
       month: "numeric",
@@ -157,7 +159,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
 
   // Active time label for compass panel
   const activeTime = activePoint.time;
-  const dateLabel = new Date(activeTime + ":00").toLocaleDateString("fr", {
+  const dateLabel = new Date(activeTime + ":00").toLocaleDateString(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",

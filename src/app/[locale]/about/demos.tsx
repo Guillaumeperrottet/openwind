@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
@@ -28,14 +29,21 @@ const LiveMiniMap = dynamic(() => import("./LiveMiniMap"), {
   loading: () => (
     <div className="relative w-full aspect-16/10 rounded-2xl overflow-hidden border border-black/5 shadow-sm bg-linear-to-br from-slate-50 to-blue-50/40">
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 shadow text-xs text-slate-500">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-          Chargement de la carte…
-        </div>
+        <MapLoadingPlaceholder />
       </div>
     </div>
   ),
 });
+
+function MapLoadingPlaceholder() {
+  const t = useTranslations("AboutPage");
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 shadow text-xs text-slate-500">
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+      {t("demoMapLoading")}
+    </div>
+  );
+}
 
 export function MiniMapDemo() {
   return <LiveMiniMap />;
@@ -499,6 +507,7 @@ export function WindStreaks() {
 
 export function SportConditionsDemo() {
   const [sport, setSport] = useState<"kite" | "para">("kite");
+  const t = useTranslations("AboutPage");
   return (
     <div className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden">
       <div className="flex border-b border-black/5">
@@ -512,26 +521,46 @@ export function SportConditionsDemo() {
                 : "text-slate-500 hover:text-slate-800"
             }`}
           >
-            {s === "kite" ? "🪁 Kite" : "🪂 Parapente"}
+            {s === "kite" ? t("demoKiteTab") : t("demoParaTab")}
           </button>
         ))}
       </div>
       <div className="p-5 space-y-3">
         {sport === "kite" ? (
           <>
-            <Stat icon={<Wind />} label="Vent idéal" value="20–35 km/h" />
-            <Stat icon={<Sun />} label="Direction" value="onshore / side" />
+            <Stat
+              icon={<Wind />}
+              label={t("demoWindIdeal")}
+              value="20–35 km/h"
+            />
+            <Stat
+              icon={<Sun />}
+              label={t("demoDirection")}
+              value={t("demoKiteDirection")}
+            />
             <Stat
               icon={<CloudRain />}
-              label="Conditions"
-              value="rafales < 1.45×"
+              label={t("demoConditions")}
+              value={t("demoKiteGusts")}
             />
           </>
         ) : (
           <>
-            <Stat icon={<Wind />} label="Vent idéal" value="0–10 km/h" />
-            <Stat icon={<Sun />} label="Ensoleillement" value="thermique +" />
-            <Stat icon={<CloudRain />} label="Pluie" value="aucune" />
+            <Stat
+              icon={<Wind />}
+              label={t("demoWindIdeal")}
+              value="0–10 km/h"
+            />
+            <Stat
+              icon={<Sun />}
+              label={t("demoSunshine")}
+              value={t("demoParaThermal")}
+            />
+            <Stat
+              icon={<CloudRain />}
+              label={t("demoRain")}
+              value={t("demoParaNone")}
+            />
           </>
         )}
       </div>
@@ -709,7 +738,7 @@ const COMMIT_LINES: {
   {
     type: "issue",
     text: "feat: add Météo-France SYNOP network",
-    meta: "#42 · ouvert par @marc-kite",
+    meta: "#42 · opened by @marc-kite",
   },
   {
     type: "commit",

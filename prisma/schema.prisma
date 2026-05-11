@@ -31,6 +31,9 @@ model Spot {
   id          String      @id @default(cuid())
   name        String
   description String?
+  descriptionEn String?
+  descriptionDe String?
+  descriptionIt String?
   latitude    Float
   longitude   Float
   country     String?
@@ -42,7 +45,13 @@ model Spot {
   bestMonths  String[]
   bestWindDirections String[]
   hazards     String?
+  hazardsEn   String?
+  hazardsDe   String?
+  hazardsIt   String?
   access      String?
+  accessEn    String?
+  accessDe    String?
+  accessIt    String?
   sportType   SportType  @default(KITE)
   nearestStationId String?
   createdAt   DateTime    @default(now())

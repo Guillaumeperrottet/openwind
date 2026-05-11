@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowLeft,
   MapPin,
@@ -53,10 +54,12 @@ const WindArchives = dynamic(
 const SpotMiniMap = dynamic(() => import("./SpotMiniMap"), { ssr: false });
 import {
   windConditionLabel,
+  windConditionKey,
   windDirectionLabel,
   MONTHS,
   getWindData,
   relativeTime,
+  relativeTimeI18n,
 } from "@/lib/utils";
 import { useSpotLive } from "@/lib/useSpotLive";
 import { NETWORK_LABELS as STATION_NETWORK_LABELS } from "@/lib/stationConstants";
@@ -67,6 +70,7 @@ import {
   DIFFICULTY_COLORS,
   DIFFICULTY_LABELS,
   WATER_LABELS,
+  useBadgeLabels,
 } from "@/components/ui/Badge";
 import type { WindData } from "@/types";
 import type { HistoryPoint } from "@/types";
@@ -145,6 +149,9 @@ interface SpotData {
   id: string;
   name: string;
   description: string | null;
+  descriptionEn?: string | null;
+  descriptionDe?: string | null;
+  descriptionIt?: string | null;
   latitude: number;
   longitude: number;
   country: string | null;
@@ -157,7 +164,13 @@ interface SpotData {
   bestMonths: string[];
   bestWindDirections: string[];
   hazards: string | null;
+  hazardsEn?: string | null;
+  hazardsDe?: string | null;
+  hazardsIt?: string | null;
   access: string | null;
+  accessEn?: string | null;
+  accessDe?: string | null;
+  accessIt?: string | null;
   nearestStationId: string | null;
   images: { id: string; url: string; caption: string | null }[];
   reports: {
@@ -209,6 +222,35 @@ export function SpotPageClient({
   const router = useRouter();
   const { favoriteIds, toggleFavorite } = useFavContext();
   const isFav = favoriteIds.has(spot.id);
+  const t = useTranslations("SpotPage");
+  const locale = useLocale();
+
+  // Locale-aware text fields
+  const localizedDescription =
+    (locale === "en"
+      ? spot.descriptionEn
+      : locale === "de"
+        ? spot.descriptionDe
+        : locale === "it"
+          ? spot.descriptionIt
+          : null) ?? spot.description;
+  const localizedHazards =
+    (locale === "en"
+      ? spot.hazardsEn
+      : locale === "de"
+        ? spot.hazardsDe
+        : locale === "it"
+          ? spot.hazardsIt
+          : null) ?? spot.hazards;
+  const localizedAccess =
+    (locale === "en"
+      ? spot.accessEn
+      : locale === "de"
+        ? spot.accessDe
+        : locale === "it"
+          ? spot.accessIt
+          : null) ?? spot.access;
+
   const { nearbyStations, loadingStations } = useNearbyStations(
     spot.latitude,
     spot.longitude,
@@ -366,8 +408,16 @@ export function SpotPageClient({
   const speedKts = roundKnots(speedKmh);
   const gustsKts = gustsKmh !== null ? roundKnots(gustsKmh) : null;
 
+  const tMonths = useTranslations("Months");
+  const { difficultyLabel, waterLabel } = useBadgeLabels();
+
   const bestMonthLabels = spot.bestMonths
-    .map((m) => MONTHS[parseInt(m) - 1])
+    .map((m) => {
+      const n = parseInt(m);
+      return n >= 1 && n <= 12
+        ? tMonths(String(n) as Parameters<typeof tMonths>[0])
+        : MONTHS[n - 1];
+    })
     .filter(Boolean);
 
   const isKite = spot.sportType === "KITE";
@@ -382,13 +432,13 @@ export function SpotPageClient({
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour à la carte
+            {t("backToMap")}
           </Link>
           <div className="flex items-center gap-2">
             <button
               onClick={() => toggleFavorite(spot.id)}
               className="inline-flex items-center justify-center text-gray-400 hover:text-amber-500 transition-colors"
-              title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+              title={isFav ? t("removeFavorite") : t("addFavorite")}
             >
               <Star
                 className="h-5 w-5"
@@ -400,7 +450,7 @@ export function SpotPageClient({
             <Link
               href={`/spots/${spot.id}/edit`}
               className="inline-flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
-              title="Modifier"
+              title={t("editSpot")}
             >
               <Pencil className="h-4 w-4" />
             </Link>
@@ -462,7 +512,7 @@ export function SpotPageClient({
                 className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <Radio className="h-3.5 w-3.5" />
-                Balises à proximité
+                {t("nearbyStationsLink")}
               </a>
             </div>
 
@@ -480,7 +530,7 @@ export function SpotPageClient({
               <ChevronDown
                 className={`h-3.5 w-3.5 transition-transform ${showInfo ? "rotate-180" : ""}`}
               />
-              {showInfo ? "Masquer les infos" : "Infos sur le spot"}
+              {showInfo ? t("hideInfo") : t("showInfo")}
             </button>
 
             {/* Badges */}
@@ -488,12 +538,12 @@ export function SpotPageClient({
               <div id="spot-info-details">
                 <div className="flex flex-wrap gap-2 mt-3">
                   <Badge className={DIFFICULTY_COLORS[spot.difficulty]}>
-                    {DIFFICULTY_LABELS[spot.difficulty]}
+                    {difficultyLabel(spot.difficulty)}
                   </Badge>
                   {isKite && (
                     <Badge className="bg-gray-100 text-gray-700">
                       <Waves className="h-3 w-3 mr-1" />{" "}
-                      {WATER_LABELS[spot.waterType]}
+                      {waterLabel(spot.waterType)}
                     </Badge>
                   )}
                   <Badge className="bg-gray-100 text-gray-700">
@@ -505,9 +555,9 @@ export function SpotPageClient({
                 </div>
 
                 {/* Description + meta compact */}
-                {spot.description && (
+                {localizedDescription && (
                   <p className="text-sm text-gray-500 mt-3 leading-relaxed max-w-2xl">
-                    {spot.description}
+                    {localizedDescription}
                   </p>
                 )}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-400">
@@ -517,16 +567,16 @@ export function SpotPageClient({
                       {bestMonthLabels.join(", ")}
                     </span>
                   )}
-                  {spot.hazards && (
+                  {localizedHazards && (
                     <span className="flex items-center gap-1 text-orange-500">
                       <AlertTriangle className="h-3 w-3" />
-                      {spot.hazards}
+                      {localizedHazards}
                     </span>
                   )}
-                  {spot.access && (
+                  {localizedAccess && (
                     <span className="flex items-center gap-1">
                       <Car className="h-3 w-3" />
-                      {spot.access}
+                      {localizedAccess}
                     </span>
                   )}
                 </div>
@@ -537,7 +587,7 @@ export function SpotPageClient({
               <span className="inline-flex items-center gap-1 text-[10px] text-gray-500 mt-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 màj auto ·{" "}
-                {lastRefreshed.toLocaleTimeString("fr", {
+                {lastRefreshed.toLocaleTimeString(undefined, {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -627,7 +677,7 @@ export function SpotPageClient({
               />
             ) : (
               <div className="flex items-center justify-center h-48 w-48 text-sm text-gray-400">
-                Données vent indisponibles
+                {t("windUnavailable")}
               </div>
             )}
             <p className="text-[10px] text-gray-500 text-center leading-snug">
@@ -654,7 +704,7 @@ export function SpotPageClient({
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 flex-1 sm:flex-none sm:w-40">
                 <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium mb-3">
                   <Wind className="h-4 w-4" />
-                  Vent moyen
+                  {t("avgWind")}
                 </div>
                 {wind ? (
                   <>
@@ -683,7 +733,7 @@ export function SpotPageClient({
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 flex-1 sm:flex-none sm:w-40">
                 <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium mb-3">
                   <Zap className="h-4 w-4" />
-                  Rafales
+                  {t("gusts")}
                 </div>
                 {gustsKts !== null && gustsKmh !== null ? (
                   <>
@@ -709,7 +759,9 @@ export function SpotPageClient({
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-gray-600 mb-2">Direction</div>
+                    <div className="text-sm text-gray-600 mb-2">
+                      {t("direction")}
+                    </div>
                     <div className="flex items-center gap-3">
                       <svg
                         width="32"
@@ -758,7 +810,7 @@ export function SpotPageClient({
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
                 <TrendingUp className="h-4 w-4 text-gray-500" />
-                Historique · 48h
+                {t("history48h")}
               </h2>
               {historySource ? (
                 <span className="text-[10px] text-gray-500">
@@ -804,7 +856,7 @@ export function SpotPageClient({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                     />
                   </svg>
-                  Chargement…
+                  {t("loading")}
                 </div>
               ) : chartHistory && chartHistory.length > 0 ? (
                 <WindHistoryChart
@@ -815,7 +867,7 @@ export function SpotPageClient({
                 />
               ) : (
                 <div className="flex items-center justify-center h-28 text-sm text-gray-500">
-                  Historique temporairement indisponible
+                  {t("historyUnavailable")}
                 </div>
               )}
             </div>
@@ -838,7 +890,7 @@ export function SpotPageClient({
           <div className="mb-10">
             <div className="flex items-baseline justify-between mb-3">
               <h2 className="text-base font-semibold text-gray-900">
-                Prévisions vent · 7 jours
+                {t("forecast7days")}
               </h2>
               <a
                 href="https://open-meteo.com"
@@ -876,7 +928,7 @@ export function SpotPageClient({
           </div>
         ) : (
           <div className="text-sm text-gray-500 text-center py-8">
-            Prévisions temporairement indisponibles
+            {t("forecastUnavailable")}
           </div>
         )}
 
@@ -884,11 +936,9 @@ export function SpotPageClient({
         <div id="balises" className="mb-10 scroll-mt-6">
           <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-1.5">
             <Radio className="h-4 w-4 text-gray-500" />
-            Balises à proximité
+            {t("nearbyStations")}
           </h2>
-          <p className="text-xs text-gray-400 mb-3">
-            Sélectionnez une balise pour afficher son historique 48h ci-dessus.
-          </p>
+          <p className="text-xs text-gray-400 mb-3">{t("selectStationHint")}</p>
           <NearbyStationsPanel
             stations={nearbyStations}
             loading={loadingStations}
@@ -901,7 +951,7 @@ export function SpotPageClient({
         {/* ── Archives vent historiques ────────────────────────── */}
         <div className="mb-10">
           <h2 className="text-base font-semibold text-gray-900 mb-3">
-            Archives vent
+            {t("windArchives")}
           </h2>
           <WindArchives spotId={spot.id} useKnots={useKnots} />
         </div>
@@ -909,7 +959,7 @@ export function SpotPageClient({
         {/* ── Situation ─────────────────────────────────────────── */}
         <div className="mb-10">
           <h2 className="text-base font-semibold text-gray-900 mb-3">
-            Situation
+            {t("location")}
           </h2>
           <div className="relative rounded-2xl border border-gray-200 overflow-hidden shadow-sm h-72 sm:h-96">
             <SpotMiniMap
@@ -933,7 +983,7 @@ export function SpotPageClient({
               rel="noopener noreferrer"
               className="hover:text-gray-500 transition-colors"
             >
-              Voir sur OpenStreetMap →
+              {t("openStreetMap")} →
             </a>
           </div>
         </div>

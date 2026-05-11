@@ -1,7 +1,9 @@
+import { getTranslations } from "next-intl/server";
 import type { WindyWebcam } from "@/app/api/webcams/route";
 import { WebcamsClient } from "./WebcamsClient";
 
 interface Props {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{
     lat?: string;
     lng?: string;
@@ -10,22 +12,24 @@ interface Props {
   }>;
 }
 
-export async function generateMetadata({ searchParams }: Props) {
+export async function generateMetadata({ params, searchParams }: Props) {
+  const { locale } = await params;
   const { name } = await searchParams;
+  const t = await getTranslations({ locale, namespace: "WebcamsPage" });
   return {
-    title: name ? `Webcams — ${name}` : "Webcams",
-    description: name
-      ? `Webcams en direct à proximité de ${name}.`
-      : "Webcams en direct pour les spots de vent.",
+    title: name ? t("metaTitleNear", { name }) : t("metaTitle"),
+    description: name ? t("metaDescNear", { name }) : t("metaDesc"),
   };
 }
 
-export default async function WebcamsPage({ searchParams }: Props) {
+export default async function WebcamsPage({ params, searchParams }: Props) {
+  const { locale } = await params;
   const { lat, lng, name, back } = await searchParams;
+  const t = await getTranslations({ locale, namespace: "WebcamsPage" });
 
   const latNum = lat ? parseFloat(lat) : null;
   const lngNum = lng ? parseFloat(lng) : null;
-  const locationName = name ?? "ce lieu";
+  const locationName = name ?? t("fallbackLocation");
   const backUrl = back ?? "/";
 
   let webcams: WindyWebcam[] = [];

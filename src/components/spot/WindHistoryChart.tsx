@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { useLocale } from "next-intl";
 import { roundKnots } from "@/lib/forecast";
 import { barColors } from "@/lib/utils";
 import { HistoryTooltip } from "./HistoryTooltip";
@@ -21,6 +22,7 @@ export function WindHistoryChart({
   useKnots,
   timezone = "UTC",
 }: Props) {
+  const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
@@ -198,8 +200,10 @@ export function WindHistoryChart({
   const fmtDay = (d: string) => {
     const [y, m, dv] = d.split("-").map(Number);
     const dt = new Date(Date.UTC(y, m - 1, dv, 12));
-    const days = ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"];
-    return `${days[dt.getUTCDay()]} ${dv}.${m}`;
+    const dayAbbr = new Intl.DateTimeFormat(locale, {
+      weekday: "short",
+    }).format(dt);
+    return `${dayAbbr} ${dv}.${m}`;
   };
 
   // ── Y ticks ───────────────────────────────────────────────────────────────

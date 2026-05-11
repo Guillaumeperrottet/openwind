@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef, useEffect, useState, Suspense } from "react";
-import Link from "next/link";
+import { useParams } from "next/navigation";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import {
   Route,
   MapPin,
@@ -22,13 +24,20 @@ import { cn } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
 import { SearchBar } from "./SearchBar";
 
-const links = [
-  { href: "/", label: "Carte", icon: MapPin },
-  { href: "/plan", label: "Planifier", icon: Route },
-  { href: "/forum", label: "Forum", icon: MessagesSquare, hideOnMobile: true },
-];
-
 export function Navbar() {
+  const t = useTranslations("Navbar");
+  const params = useParams();
+  const currentLocale = (params?.locale as string) ?? "fr";
+  const links = [
+    { href: "/" as const, label: t("map"), icon: MapPin },
+    { href: "/plan" as const, label: t("plan"), icon: Route },
+    {
+      href: "/forum" as const,
+      label: t("forum"),
+      icon: MessagesSquare,
+      hideOnMobile: true,
+    },
+  ];
   const pathname = usePathname();
   const { user, favoriteIds, requestAuth, signOut } = useFavContext();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -107,7 +116,7 @@ export function Navbar() {
           <button
             onClick={() => setMobileSearch(true)}
             className="sm:hidden flex items-center justify-center rounded-lg px-2 py-2 text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors min-w-10 min-h-10"
-            aria-label="Rechercher"
+            aria-label={t("searchAriaLabel")}
           >
             <Search className="h-4 w-4" />
           </button>
@@ -133,8 +142,10 @@ export function Navbar() {
             className="hidden sm:flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors"
           >
             <Plus className="h-4 w-4 shrink-0" />
-            <span className="hidden lg:inline">Ajouter un spot</span>
+            <span className="hidden lg:inline">{t("addSpot")}</span>
           </Link>
+
+          <LanguageSwitcher currentLocale={currentLocale} />
 
           {/* User avatar / login */}
           {user ? (
@@ -171,8 +182,7 @@ export function Navbar() {
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
                     >
                       <Star className="h-3 w-3 text-amber-400" />
-                      {favoriteIds.size} favori
-                      {favoriteIds.size !== 1 ? "s" : ""}
+                      {t("favorites", { count: favoriteIds.size })}
                     </Link>
                   </div>
                   {/* Mobile-only links */}
@@ -183,14 +193,15 @@ export function Navbar() {
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       <MessagesSquare className="h-3.5 w-3.5" />
-                      Forum
+                      {t("forum")}
                     </Link>
                     <Link
                       href="/about"
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                      <Info className="h-3.5 w-3.5" />À propos
+                      <Info className="h-3.5 w-3.5" />
+                      {t("about")}
                     </Link>
                     <Link
                       href="/spots/new"
@@ -198,7 +209,7 @@ export function Navbar() {
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      Ajouter un spot
+                      {t("addSpot")}
                     </Link>
                   </div>
                   <div className="border-t border-gray-100">
@@ -209,7 +220,7 @@ export function Navbar() {
                         className="flex items-center gap-2 w-full px-3 py-2 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
                       >
                         <Shield className="h-3.5 w-3.5" />
-                        Admin
+                        {t("admin")}
                       </Link>
                     )}
                     <Link
@@ -217,7 +228,8 @@ export function Navbar() {
                       onClick={() => setMenuOpen(false)}
                       className="hidden sm:flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                      <Info className="h-3.5 w-3.5" />À propos
+                      <Info className="h-3.5 w-3.5" />
+                      {t("about")}
                     </Link>
                     <button
                       onClick={() => {
@@ -227,7 +239,7 @@ export function Navbar() {
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       <LogOut className="h-3.5 w-3.5" />
-                      Déconnexion
+                      {t("signOut")}
                     </button>
                   </div>
                   <div className="border-t border-gray-100 px-3 py-2">
@@ -261,14 +273,15 @@ export function Navbar() {
                     className="flex items-center gap-2 w-full px-3 py-2.5 text-sm font-medium text-sky-600 hover:bg-sky-50 transition-colors"
                   >
                     <User className="h-3.5 w-3.5" />
-                    Se connecter
+                    {t("signIn")}
                   </button>
                   <Link
                     href="/about"
                     onClick={() => setMenuOpen(false)}
                     className="hidden sm:flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
                   >
-                    <Info className="h-3.5 w-3.5" />À propos
+                    <Info className="h-3.5 w-3.5" />
+                    {t("about")}
                   </Link>
                   {/* Mobile-only links */}
                   <div className="border-t border-gray-100 sm:hidden">
@@ -278,7 +291,7 @@ export function Navbar() {
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       <MessagesSquare className="h-3.5 w-3.5" />
-                      Forum
+                      {t("forum")}
                     </Link>
                     <Link
                       href="/spots/new"
@@ -286,14 +299,15 @@ export function Navbar() {
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      Ajouter un spot
+                      {t("addSpot")}
                     </Link>
                     <Link
                       href="/about"
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                     >
-                      <Info className="h-3.5 w-3.5" />À propos
+                      <Info className="h-3.5 w-3.5" />
+                      {t("about")}
                     </Link>
                   </div>
                   <div className="border-t border-gray-100 px-3 py-2">

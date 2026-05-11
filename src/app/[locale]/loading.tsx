@@ -1,4 +1,8 @@
+"use client";
+import { useTranslations } from "next-intl";
+
 export default function HomeLoading() {
+  const t = useTranslations("LoadingMap");
   return (
     <div
       className="bg-gray-100 animate-pulse relative"
@@ -38,7 +42,7 @@ export default function HomeLoading() {
             />
           </svg>
           <span className="text-sm text-gray-400 font-medium">
-            Chargement de la carte…
+            {t("loading")}
           </span>
         </div>
       </div>

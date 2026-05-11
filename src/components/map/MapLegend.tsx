@@ -1,5 +1,41 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
+type WindCondKey =
+  | "calm"
+  | "light"
+  | "gentle"
+  | "good"
+  | "strong"
+  | "veryStrong";
+
+type LegendEntry = {
+  range: string;
+  condKey: WindCondKey | null;
+  color: string;
+};
+
+const LEGEND_KTS: LegendEntry[] = [
+  { range: "< 4", condKey: null, color: "#c8d4dc" },
+  { range: "4-8", condKey: "calm", color: "#d0d0d0" },
+  { range: "8-12", condKey: "light", color: "#a8bdd4" },
+  { range: "12-16", condKey: "gentle", color: "#6a9cbd" },
+  { range: "16-21", condKey: "good", color: "#3a7fa8" },
+  { range: "21-27", condKey: "strong", color: "#e07720" },
+  { range: "> 27", condKey: "veryStrong", color: "#cc3333" },
+];
+
+const LEGEND_KMH: LegendEntry[] = [
+  { range: "< 8", condKey: null, color: "#c8d4dc" },
+  { range: "8-15", condKey: "calm", color: "#d0d0d0" },
+  { range: "15-22", condKey: "light", color: "#a8bdd4" },
+  { range: "22-30", condKey: "gentle", color: "#6a9cbd" },
+  { range: "30-38", condKey: "good", color: "#3a7fa8" },
+  { range: "38-50", condKey: "strong", color: "#e07720" },
+  { range: "> 50", condKey: "veryStrong", color: "#cc3333" },
+];
+
 interface MapLegendProps {
   useKnots: boolean;
   setUseKnots: (v: boolean) => void;
@@ -8,26 +44,6 @@ interface MapLegendProps {
   pickMode: boolean;
 }
 
-const LEGEND_KTS = [
-  { label: "< 4 – -", color: "#c8d4dc" },
-  { label: "4-8 – Calme", color: "#d0d0d0" },
-  { label: "8-12 – Faible", color: "#a8bdd4" },
-  { label: "12-16 – Léger", color: "#6a9cbd" },
-  { label: "16-21 – Bon", color: "#3a7fa8" },
-  { label: "21-27 – Fort", color: "#e07720" },
-  { label: "> 27 – Très fort", color: "#cc3333" },
-];
-
-const LEGEND_KMH = [
-  { label: "< 8 – -", color: "#c8d4dc" },
-  { label: "8-15 – Calme", color: "#d0d0d0" },
-  { label: "15-22 – Faible", color: "#a8bdd4" },
-  { label: "22-30 – Léger", color: "#6a9cbd" },
-  { label: "30-38 – Bon", color: "#3a7fa8" },
-  { label: "38-50 – Fort", color: "#e07720" },
-  { label: "> 50 – Très fort", color: "#cc3333" },
-];
-
 export function MapLegend({
   useKnots,
   setUseKnots,
@@ -35,6 +51,8 @@ export function MapLegend({
   setLegendOpen,
   pickMode,
 }: MapLegendProps) {
+  const tCond = useTranslations("WindConditions");
+  const tCommon = useTranslations("Common");
   const entries = useKnots ? LEGEND_KTS : LEGEND_KMH;
 
   return (
@@ -44,7 +62,9 @@ export function MapLegend({
       {legendOpen ? (
         <div className="rounded-xl bg-white/90 backdrop-blur p-3 border border-gray-200 text-xs text-gray-600 shadow-lg">
           <div className="flex items-center justify-between gap-3 mb-2.5">
-            <span className="font-semibold text-gray-900">Vent</span>
+            <span className="font-semibold text-gray-900">
+              {tCommon("wind")}
+            </span>
             <div className="flex items-center gap-2">
               <div className="flex rounded-full overflow-hidden border border-gray-200 text-[10px]">
                 <button
@@ -88,13 +108,14 @@ export function MapLegend({
               </button>
             </div>
           </div>
-          {entries.map(({ label, color }, i) => (
+          {entries.map(({ range, condKey, color }, i) => (
             <div key={i} className="flex items-center gap-2 mb-1">
               <span
                 className="w-3 h-3 rounded-full shrink-0 border border-gray-200"
                 style={{ background: color }}
               />
-              {label}
+              {range}
+              {condKey ? ` – ${tCond(condKey)}` : " – -"}
             </div>
           ))}
         </div>
@@ -116,7 +137,7 @@ export function MapLegend({
               clipRule="evenodd"
             />
           </svg>
-          <span className="font-semibold text-gray-900">Vent</span>
+          <span className="font-semibold text-gray-900">{tCommon("wind")}</span>
           <span className="text-gray-400">({useKnots ? "kts" : "km/h"})</span>
         </button>
       )}

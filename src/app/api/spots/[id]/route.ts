@@ -7,6 +7,9 @@ const updateSchema = z
   .object({
     name: z.string().min(2).optional(),
     description: z.string().optional().nullable(),
+    descriptionEn: z.string().optional().nullable(),
+    descriptionDe: z.string().optional().nullable(),
+    descriptionIt: z.string().optional().nullable(),
     latitude: z.number().min(-90).max(90).optional(),
     longitude: z.number().min(-180).max(180).optional(),
     country: z.string().optional().nullable(),
@@ -21,7 +24,13 @@ const updateSchema = z
     bestMonths: z.array(z.string()).optional(),
     bestWindDirections: z.array(z.string()).optional(),
     hazards: z.string().optional().nullable(),
+    hazardsEn: z.string().optional().nullable(),
+    hazardsDe: z.string().optional().nullable(),
+    hazardsIt: z.string().optional().nullable(),
     access: z.string().optional().nullable(),
+    accessEn: z.string().optional().nullable(),
+    accessDe: z.string().optional().nullable(),
+    accessIt: z.string().optional().nullable(),
     nearestStationId: z.string().optional().nullable(),
   })
   .refine(

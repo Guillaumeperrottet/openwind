@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { MapPin, Search, Locate, X, Map } from "lucide-react";
 import type { SportType } from "@/types";
 import { DateRangePicker } from "./DateRangePicker";
@@ -57,6 +58,7 @@ export function PlanFilters({
   onGeolocate,
   onPickOnMap,
 }: PlanFiltersProps) {
+  const t = useTranslations("PlanPage");
   const hasLocation = lat !== null && lng !== null;
 
   // Geocoding search
@@ -115,7 +117,8 @@ export function PlanFilters({
       {/* Destination */}
       <div>
         <label className="text-xs text-gray-500 mb-1 block">
-          Destination <span className="text-gray-400">(optionnel)</span>
+          {t("destination")}{" "}
+          <span className="text-gray-400">{t("destinationOptional")}</span>
         </label>
         <div className="flex gap-1.5">
           <div className="flex-1 min-w-0 relative">
@@ -149,7 +152,7 @@ export function PlanFilters({
                       searchGeo(e.target.value);
                     }}
                     onFocus={() => geoResults.length && setGeoOpen(true)}
-                    placeholder="Ville, lieu…"
+                    placeholder={t("cityPlaceholder")}
                     className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder:text-gray-400"
                   />
                 </div>
@@ -174,7 +177,7 @@ export function PlanFilters({
           <button
             onClick={onGeolocate}
             disabled={geoLoading}
-            title="Ma position"
+            title={t("useMyLocation")}
             className="h-10 w-10 shrink-0 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 disabled:opacity-40"
           >
             <Locate className="h-3.5 w-3.5" />
@@ -182,7 +185,7 @@ export function PlanFilters({
           {onPickOnMap && (
             <button
               onClick={onPickOnMap}
-              title="Choisir sur la carte"
+              title={t("pickOnMap")}
               className="h-10 w-10 shrink-0 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600"
             >
               <Map className="h-3.5 w-3.5" />
@@ -193,7 +196,9 @@ export function PlanFilters({
 
       {/* Date range */}
       <div>
-        <label className="text-xs text-gray-500 mb-1 block">Période</label>
+        <label className="text-xs text-gray-500 mb-1 block">
+          {t("period")}
+        </label>
         <DateRangePicker
           startDate={startDate}
           endDate={endDate}
@@ -209,8 +214,10 @@ export function PlanFilters({
       <div className="flex gap-3">
         <div className="flex-1">
           <label className="text-xs text-gray-500 mb-1 block">
-            Rayon
-            {!hasLocation && <span className="text-gray-400"> (ignoré)</span>}
+            {t("radius")}
+            {!hasLocation && (
+              <span className="text-gray-400"> {t("radiusIgnored")}</span>
+            )}
           </label>
           <select
             value={radius}
@@ -226,7 +233,9 @@ export function PlanFilters({
           </select>
         </div>
         <div className="flex-1">
-          <label className="text-xs text-gray-500 mb-1 block">Sport</label>
+          <label className="text-xs text-gray-500 mb-1 block">
+            {t("sport")}
+          </label>
           <SportToggle
             value={sport}
             onChange={onSportChange}

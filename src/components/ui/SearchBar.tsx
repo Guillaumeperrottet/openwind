@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, Star, X, MapPin, Plus } from "lucide-react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Spot } from "@/types";
 
@@ -81,6 +82,7 @@ export function SearchBar({
   autoFocus,
   onNavigate,
 }: SearchBarProps) {
+  const t = useTranslations("SearchBar");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -189,7 +191,7 @@ export function SearchBar({
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder="Rechercher un spot…"
+          placeholder={t("placeholder")}
           autoFocus={autoFocus}
           className="w-full rounded-full bg-gray-100 border border-gray-200 pl-9 pr-8 py-2 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 focus:bg-white outline-none transition-colors"
         />

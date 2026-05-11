@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations, useLocale } from "next-intl";
 import type { FullForecast, HourlyPoint } from "@/lib/forecast";
 import { windCellStyle, tempCellStyle, roundKnots } from "@/lib/forecast";
 
@@ -19,18 +22,20 @@ type DayGroup = {
   points: HourlyPoint[];
 };
 
-function groupByDay(points: HourlyPoint[]): DayGroup[] {
+function groupByDay(points: HourlyPoint[], locale: string = "fr"): DayGroup[] {
   const map = new Map<string, HourlyPoint[]>();
   for (const pt of points) {
     const date = pt.time.slice(0, 10);
     if (!map.has(date)) map.set(date, []);
     map.get(date)!.push(pt);
   }
-  const DAYS = ["Di", "Lu", "Ma", "Me", "Je", "Ve", "Sa"];
   return Array.from(map.entries()).map(([date, pts]) => {
     // Parse as local noon to avoid DST edge cases
     const d = new Date(`${date}T12:00:00`);
-    const label = `${DAYS[d.getDay()]} ${d.getDate()}.${d.getMonth() + 1}`;
+    const dayAbbr = new Intl.DateTimeFormat(locale, {
+      weekday: "short",
+    }).format(d);
+    const label = `${dayAbbr} ${d.getDate()}.${d.getMonth() + 1}`;
     return { date, label, points: pts };
   });
 }
@@ -89,8 +94,10 @@ interface Props {
  * Colors are computed from km/h thresholds for accuracy.
  */
 export function ForecastTable({ forecast, light = true, source }: Props) {
+  const t = useTranslations("ForecastTable");
+  const locale = useLocale();
   const points = filterEvery3h(forecast.hourly);
-  const days = groupByDay(points);
+  const days = groupByDay(points, locale);
   const allPoints = days.flatMap((d) => d.points);
 
   const LABEL_CELL = light
@@ -162,7 +169,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
           <tbody>
             {/* Wind speed (knots) */}
             <tr>
-              <td className={LABEL_CELL}>Vent (kn)</td>
+              <td className={LABEL_CELL}>{t("wind")}</td>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -177,7 +184,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Gusts (knots) */}
             <tr>
-              <td className={LABEL_CELL}>Rafales (kn)</td>
+              <td className={LABEL_CELL}>{t("gusts")}</td>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -192,7 +199,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Wind direction (SVG arrows) */}
             <tr>
-              <td className={LABEL_CELL}>Direction</td>
+              <td className={LABEL_CELL}>{t("direction")}</td>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -206,7 +213,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Temperature */}
             <tr>
-              <td className={LABEL_CELL}>Temp (°C)</td>
+              <td className={LABEL_CELL}>{t("temp")}</td>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -220,7 +227,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Cloud cover */}
             <tr>
-              <td className={LABEL_CELL}>Nuages (%)</td>
+              <td className={LABEL_CELL}>{t("clouds")}</td>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -233,7 +240,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Precipitation */}
             <tr>
-              <td className={LABEL_CELL}>Précip (mm)</td>
+              <td className={LABEL_CELL}>{t("precip")}</td>
               {allPoints.map((pt, i) => {
                 const hasPrecip = pt.precipMmh >= 0.1;
                 return (
@@ -256,7 +263,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
             {forecast.hasWaves && (
               <>
                 <tr>
-                  <td className={LABEL_CELL}>Vagues (m)</td>
+                  <td className={LABEL_CELL}>{t("waves")}</td>
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}
@@ -267,7 +274,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                   ))}
                 </tr>
                 <tr>
-                  <td className={LABEL_CELL}>Période (s)</td>
+                  <td className={LABEL_CELL}>{t("wavePeriod")}</td>
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}
@@ -291,15 +298,30 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
       >
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
           {[
-            { bg: "#d5f0d5", label: "Calme", range: "< 5 kn" },
-            { bg: "#8edb8e", label: "Léger", range: "5–8" },
-            { bg: "#3dbc3d", label: "Modéré", range: "8–12" },
-            { bg: "#e8e540", label: "Kitable", range: "12–16" },
-            { bg: "#e8b830", label: "Bon", range: "16–20" },
-            { bg: "#e07020", label: "Fort", range: "20–25" },
-            { bg: "#d42020", label: "Très fort", range: "25–30", white: true },
-            { bg: "#b00058", label: "Extrême", range: "30–35", white: true },
-            { bg: "#800080", label: "Danger", range: "> 35", white: true },
+            { bg: "#d5f0d5", label: t("legendCalm"), range: "< 5 kn" },
+            { bg: "#8edb8e", label: t("legendLight"), range: "5–8" },
+            { bg: "#3dbc3d", label: t("legendModerate"), range: "8–12" },
+            { bg: "#e8e540", label: t("legendKitable"), range: "12–16" },
+            { bg: "#e8b830", label: t("legendGood"), range: "16–20" },
+            { bg: "#e07020", label: t("legendStrong"), range: "20–25" },
+            {
+              bg: "#d42020",
+              label: t("legendVeryStrong"),
+              range: "25–30",
+              white: true,
+            },
+            {
+              bg: "#b00058",
+              label: t("legendExtreme"),
+              range: "30–35",
+              white: true,
+            },
+            {
+              bg: "#800080",
+              label: t("legendDanger"),
+              range: "> 35",
+              white: true,
+            },
           ].map((item) => (
             <span key={item.label} className="inline-flex items-center gap-1">
               <span
@@ -318,7 +340,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
         <div
           className={`mt-1.5 text-[9px] ${light ? "text-gray-400" : "text-zinc-600"}`}
         >
-          {source?.label ?? "Open-Meteo"} · CC BY 4.0 · Fuseau :{" "}
+          {source?.label ?? "Open-Meteo"} · CC BY 4.0 · {t("timezone")}{" "}
           {forecast.timezone}
         </div>
       </div>

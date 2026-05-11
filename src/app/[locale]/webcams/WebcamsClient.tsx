@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -50,9 +51,9 @@ function timeAgoShort(iso: string): string {
   return `${Math.floor(diff / 86400)}j`;
 }
 
-/** Date/heure formatée depuis une date ISO */
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleString("fr", {
+/** Date/heure formatée depuis une date ISO — locale injectée par le composant */
+function formatTime(iso: string, locale: string): string {
+  return new Date(iso).toLocaleString(locale, {
     day: "numeric",
     month: "short",
     hour: "2-digit",
@@ -67,6 +68,8 @@ export function WebcamsClient({
   lat,
   lng,
 }: Props) {
+  const t = useTranslations("WebcamsPage");
+  const locale = useLocale();
   const [webcams, setWebcams] = useState<WindyWebcam[]>(initial);
   const [selected, setSelected] = useState<number | null>(null);
   const [radius, setRadius] = useState(15);
@@ -126,24 +129,24 @@ export function WebcamsClient({
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-5"
         >
           <ArrowLeft className="h-4 w-4" />
-          Retour à {locationName}
+          {t("backTo", { name: locationName })}
         </Link>
 
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <Camera className="h-6 w-6 text-gray-500" />
-              Webcams
+              {t("title")}
             </h1>
             <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
-              {locationName} · dans un rayon de {radius} km
+              {locationName} · {t("inRadius", { radius })}
             </p>
           </div>
 
           {/* Sélecteur de rayon */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500">Rayon :</span>
+            <span className="text-gray-500">{t("radiusLabel")}</span>
             {[10, 15, 25, 50].map((r) => (
               <button
                 key={r}
@@ -175,10 +178,8 @@ export function WebcamsClient({
         {!loading && webcams.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-20 text-gray-400">
             <AlertCircle className="h-10 w-10" />
-            <p className="text-base font-medium">Aucune webcam trouvée</p>
-            <p className="text-sm">
-              Essaie d&apos;élargir le rayon de recherche.
-            </p>
+            <p className="text-base font-medium">{t("noWebcams")}</p>
+            <p className="text-sm">{t("tryExpand")}</p>
           </div>
         )}
 
@@ -300,10 +301,10 @@ export function WebcamsClient({
                   {cam.lastUpdatedOn && (
                     <span
                       className="text-gray-500 text-xs flex items-center gap-0.5"
-                      title={formatTime(cam.lastUpdatedOn)}
+                      title={formatTime(cam.lastUpdatedOn, locale)}
                     >
                       <Clock className="h-2.5 w-2.5" />
-                      {formatTime(cam.lastUpdatedOn)}
+                      {formatTime(cam.lastUpdatedOn, locale)}
                     </span>
                   )}
                   {cam.urls?.detail && (

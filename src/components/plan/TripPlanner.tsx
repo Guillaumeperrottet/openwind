@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { PlanFilters } from "@/components/plan/PlanFilters";
 import { DateRangePicker } from "@/components/plan/DateRangePicker";
@@ -64,6 +65,8 @@ const toISO = (offset: number) => {
 };
 
 export function TripPlanner({ searchParams }: TripPlannerProps) {
+  const t = useTranslations("PlanPage");
+  const tCommon = useTranslations("Common");
   const router = useRouter();
 
   // Restore state from URL searchParams
@@ -220,13 +223,13 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
           try {
             const res = await fetch(`/api/plan?${params}`);
-            if (!res.ok) throw new Error(`Erreur ${res.status}`);
+            if (!res.ok) throw new Error(`Error ${res.status}`);
             const data: SpotWithForecast[] = await res.json();
             setResults(data);
             setSelectedDayMap({});
             if (data.length > 0) setSheetFrac(SNAP_HALF);
           } catch {
-            setError("Impossible de récupérer les prévisions. Réessayez.");
+            setError(t("forecastFailed"));
             setResults([]);
           } finally {
             setLoading(false);
@@ -272,7 +275,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
   const handleGeolocate = () => {
     if (!navigator.geolocation) {
-      setError("La géolocalisation n'est pas disponible sur ce navigateur.");
+      setError(t("locationNotAvailable"));
       return;
     }
     setGeoLoading(true);
@@ -288,8 +291,8 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
         setGeoLoading(false);
         setError(
           err.code === err.PERMISSION_DENIED
-            ? "Autorisez la localisation dans les réglages de votre navigateur."
-            : "Impossible d'obtenir votre position. Réessayez.",
+            ? t("allowLocation")
+            : t("locationFailed"),
         );
       },
       { timeout: 10000, enableHighAccuracy: true },
@@ -298,7 +301,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
   const handleSearchNearMe = () => {
     if (!navigator.geolocation) {
-      setError("La géolocalisation n'est pas disponible sur ce navigateur.");
+      setError(t("locationNotAvailable"));
       return;
     }
     setGeoLoading(true);
@@ -335,7 +338,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
           setSelectedDayMap({});
           if (data.length > 0) setSheetFrac(SNAP_HALF);
         } catch {
-          setError("Impossible de récupérer les prévisions. Réessayez.");
+          setError(t("forecastFailed"));
           setResults([]);
         } finally {
           setLoading(false);
@@ -345,8 +348,8 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
         setGeoLoading(false);
         setError(
           err.code === err.PERMISSION_DENIED
-            ? "Autorisez la localisation dans les réglages de votre navigateur."
-            : "Impossible d'obtenir votre position. Réessayez.",
+            ? t("allowLocation")
+            : t("locationFailed"),
         );
       },
       { timeout: 10000, enableHighAccuracy: true },
@@ -383,7 +386,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
       setSelectedDayMap({});
       if (data.length > 0) setSheetFrac(SNAP_HALF);
     } catch {
-      setError("Impossible de récupérer les prévisions. Réessayez.");
+      setError(t("forecastFailed"));
       setResults([]);
     } finally {
       setLoading(false);
@@ -516,7 +519,10 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             <div className="flex items-end gap-1.5 min-w-0 flex-1 relative">
               <div className="flex-1 min-w-0">
                 <label className="text-xs text-gray-500 mb-1 block">
-                  Destination <span className="text-gray-400">(optionnel)</span>
+                  {t("destination")}{" "}
+                  <span className="text-gray-400">
+                    {t("destinationOptional")}
+                  </span>
                 </label>
                 {hasLocation && !deskGeoQuery ? (
                   <div
@@ -588,7 +594,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               <button
                 onClick={handleGeolocate}
                 disabled={geoLoading}
-                title="Utiliser ma position"
+                title={t("useMyLocation")}
                 className="h-9.5 w-9.5 shrink-0 flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors disabled:opacity-40"
               >
                 <Locate className="h-3.5 w-3.5" />
@@ -598,7 +604,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             {/* Dates */}
             <div className="flex-1 sm:flex-none sm:w-72 min-w-0">
               <label className="text-xs text-gray-500 mb-1 block">
-                Période
+                {t("period")}
               </label>
               <DateRangePicker
                 startDate={startDate}
@@ -614,9 +620,9 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             {/* Radius */}
             <div>
               <label className="text-xs text-gray-500 mb-1 block">
-                Rayon
+                {t("radius")}
                 {!hasLocation && (
-                  <span className="text-gray-400"> (ignoré)</span>
+                  <span className="text-gray-400"> {t("radiusIgnored")}</span>
                 )}
               </label>
               <select
@@ -635,7 +641,9 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
 
             {/* Sport */}
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Sport</label>
+              <label className="text-xs text-gray-500 mb-1 block">
+                {t("sport")}
+              </label>
               <SportToggle value={sport} onChange={setSport} />
             </div>
 
@@ -645,7 +653,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 disabled={loading}
                 className="h-9.5 self-end w-full sm:w-auto"
               >
-                {loading ? "Recherche…" : "Trouver"}
+                {loading ? t("searching") : t("find")}
               </Button>
             ) : (
               <div className="flex gap-2 self-end w-full sm:w-auto">
@@ -655,13 +663,13 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                   className="h-9.5 flex-1 sm:flex-none"
                 >
                   {geoLoading ? (
-                    "Localisation…"
+                    t("locating")
                   ) : loading ? (
-                    "Recherche…"
+                    t("searching")
                   ) : (
                     <>
                       <Locate className="h-3.5 w-3.5 mr-1" />
-                      Autour de moi
+                      {t("aroundMe")}
                     </>
                   )}
                 </Button>
@@ -672,11 +680,11 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                   variant="secondary"
                 >
                   {loading ? (
-                    "Recherche…"
+                    t("searching")
                   ) : (
                     <>
                       <Globe className="h-3.5 w-3.5 mr-1" />
-                      Meilleurs spots
+                      {t("bestSpots")}
                     </>
                   )}
                 </Button>
@@ -698,18 +706,16 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               <>
                 <Archive className="h-3.5 w-3.5 shrink-0" />
                 <span>
-                  <strong>Données historiques</strong> {"—"} Les dates
-                  sélectionnées dépassent les 16 jours de prévision. Les scores
-                  sont basés sur les archives météo des 5 dernières années.
+                  <strong>{t("historicalData")}</strong> {"—"}{" "}
+                  {t("historicalDataLong")}
                 </span>
               </>
             ) : (
               <>
                 <Info className="h-3.5 w-3.5 shrink-0" />
                 <span>
-                  <strong>Prévisions temps réel</strong> {"—"} Jusqu&apos;à 16
-                  jours. Au-delà, les scores se baseront sur les archives
-                  annuelles.
+                  <strong>{t("realTimeForecast")}</strong> {"—"}{" "}
+                  {t("realTimeForecastLong")}
                 </span>
               </>
             )}
@@ -767,7 +773,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               <button
                 onClick={() => setPanelExpanded((p) => !p)}
                 className="absolute -left-3.5 top-1/2 -translate-y-1/2 z-30 w-7 h-14 flex items-center justify-center bg-white border border-gray-200 rounded-l-lg shadow-sm hover:bg-gray-50 hover:shadow transition-all"
-                title={panelExpanded ? "Réduire le panel" : "Élargir le panel"}
+                title={panelExpanded ? t("reducePanel") : t("expandPanel")}
               >
                 {panelExpanded ? (
                   <PanelRightClose className="h-4 w-4 text-gray-500" />
@@ -803,12 +809,12 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
                 <span>
                   {loading
-                    ? "Recherche…"
+                    ? t("searching")
                     : results.length > 0
                       ? `${results.length} spot${results.length > 1 ? "s" : ""}`
                       : searched
-                        ? "Aucun résultat"
-                        : "Résultats"}
+                        ? t("noResultsSheet")
+                        : t("results")}
                 </span>
                 <ChevronUp
                   className={`h-3.5 w-3.5 transition-transform ${sheetFrac > SNAP_HALF + 0.05 ? "rotate-180" : ""}`}
@@ -860,11 +866,10 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               {!searched && !loading && (
                 <div className="lg:hidden px-4 pt-3 pb-2 border-b border-gray-100">
                   <h2 className="text-base font-semibold text-gray-800">
-                    🪁 Planifiez votre session
+                    {t("onboarding")}
                   </h2>
                   <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                    Choisissez une destination et vos dates, ou lancez une
-                    recherche rapide pour trouver le meilleur vent.
+                    {t("onboardingDesc")}
                   </p>
                 </div>
               )}
@@ -878,7 +883,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                   <div className="flex items-center gap-2 text-gray-500 min-w-0">
                     <SlidersHorizontal className="h-3.5 w-3.5 shrink-0" />
                     <span className="truncate">
-                      {filterSummary || "Filtres"}
+                      {filterSummary || t("filters")}
                     </span>
                   </div>
                   {mobileFiltersOpen ? (
@@ -916,7 +921,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                           disabled={loading}
                           className="h-10 flex-1"
                         >
-                          {loading ? "Recherche…" : "Trouver"}
+                          {loading ? t("searching") : t("find")}
                         </Button>
                       ) : (
                         <>
@@ -926,11 +931,11 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                             className="h-10 flex-1"
                           >
                             {geoLoading ? (
-                              "Localisation…"
+                              t("locating")
                             ) : (
                               <>
                                 <Locate className="h-3.5 w-3.5 mr-1" />
-                                Autour de moi
+                                {t("aroundMe")}
                               </>
                             )}
                           </Button>
@@ -941,7 +946,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                             variant="secondary"
                           >
                             <Globe className="h-3.5 w-3.5 mr-1" />
-                            Meilleurs spots
+                            {t("bestSpots")}
                           </Button>
                         </>
                       )}
@@ -963,15 +968,15 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                     <>
                       <Archive className="h-3.5 w-3.5 shrink-0" />
                       <span>
-                        <strong>Données historiques</strong> {"—"} archives
-                        météo
+                        <strong>{t("historicalData")}</strong> {"—"}{" "}
+                        {t("histArchivesShort")}
                       </span>
                     </>
                   ) : (
                     <>
                       <Info className="h-3.5 w-3.5 shrink-0" />
                       <span>
-                        <strong>Prévisions temps réel</strong>
+                        <strong>{t("realTimeForecast")}</strong>
                       </span>
                     </>
                   )}
@@ -981,14 +986,14 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               {/* Sort bar */}
               {results.length > 1 && (
                 <div className="shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-100 text-xs">
-                  <span className="text-gray-400">Trier :</span>
+                  <span className="text-gray-400">{t("sortBy")}</span>
                   {(
                     [
-                      ["score", "Score"],
+                      ["score", t("sortScore")],
                       ...(hasLocation
-                        ? [["distance", "Distance"] as [SortKey, string]]
+                        ? [["distance", t("sortDistance")] as [SortKey, string]]
                         : []),
-                      ["wind", "Vent"],
+                      ["wind", t("sortWind")],
                     ] as [SortKey, string][]
                   ).map(([key, label]) => (
                     <button
@@ -1007,14 +1012,14 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                     {results.length} spot{results.length > 1 ? "s" : ""}
                     {results.filter((r) => r.forecastError).length > 0 && (
                       <span className="text-orange-400 ml-1">
-                        ({results.filter((r) => r.forecastError).length} sans
-                        prévision)
+                        ({results.filter((r) => r.forecastError).length}{" "}
+                        {t("withoutForecast")})
                       </span>
                     )}
                     <button
                       onClick={handleShare}
                       className="ml-1 p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-sky-600 transition-colors"
-                      title="Partager cette recherche"
+                      title={t("share")}
                     >
                       {copied ? (
                         <Check className="h-3.5 w-3.5 text-green-500" />
@@ -1036,12 +1041,10 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                   <div className="hidden lg:block text-center text-gray-400 text-sm py-12 col-span-full">
                     <Navigation className="h-8 w-8 mx-auto mb-3 opacity-20" />
                     <p className="font-medium text-gray-500">
-                      Trouvez les meilleurs spots
+                      {t("findBestSpots")}
                     </p>
                     <p className="text-xs mt-1.5 opacity-70 leading-5">
-                      Cliquez sur la carte, recherchez un lieu,
-                      <br />
-                      ou lancez directement pour les meilleurs spots mondiaux.
+                      {t("findBestSpotsDesc")}
                     </p>
                   </div>
                 )}
@@ -1081,14 +1084,14 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                     <Wind className="h-7 w-7 mx-auto mb-3 opacity-30" />
                     {hasLocation ? (
                       <>
-                        Aucun spot dans un rayon de {radius} km.
+                        {t("noResultsInRadius", { radius })}
                         <br />
                         <span className="text-xs opacity-60">
-                          Élargissez le rayon ou changez de destination.
+                          {t("expandRadius")}
                         </span>
                       </>
                     ) : (
-                      "Aucun spot trouvé."
+                      t("noResultsGlobal")
                     )}
                   </div>
                 )}
@@ -1167,33 +1170,28 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 <Wind className="h-5 w-5 text-sky-600" />
               </div>
               <h2 className="text-lg font-semibold text-gray-900">
-                {geoGate === "asking"
-                  ? "Localisation en cours…"
-                  : "Ça souffle ?"}
+                {geoGate === "asking" ? t("locatingTitle") : t("quickMode")}
               </h2>
             </div>
             {geoGate === "asking" && (
               <p className="text-sm text-gray-600">
-                Autorise la localisation dans ton navigateur pour qu&apos;on
-                trouve les meilleurs spots autour de toi.
+                {t("quickModeAskingDesc")}
               </p>
             )}
             {geoGate === "denied" && (
               <>
                 <p className="text-sm text-gray-600 mb-2">
-                  Cette fonction a besoin de ta position pour trouver les spots
-                  ventés près de chez toi.
+                  {t("quickModeDeniedDesc")}
                 </p>
                 <p className="text-xs text-gray-500 mb-5">
-                  Active la géolocalisation dans les réglages de ton navigateur,
-                  puis réessaie.
+                  {t("quickModeDeniedHint")}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={() => runQuickNowSearch(150)}
                     className="flex-1"
                   >
-                    Réessayer
+                    {t("retry")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -1203,7 +1201,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                     }}
                     className="flex-1"
                   >
-                    Aller au planificateur
+                    {t("goToPlanner")}
                   </Button>
                 </div>
               </>
@@ -1211,8 +1209,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             {geoGate === "unsupported" && (
               <>
                 <p className="text-sm text-gray-600 mb-5">
-                  Ton navigateur ne permet pas la géolocalisation. Tu peux
-                  utiliser le planificateur classique pour choisir une ville.
+                  {t("quickModeUnsupportedDesc")}
                 </p>
                 <Button
                   onClick={() => {
@@ -1221,7 +1218,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                   }}
                   className="w-full"
                 >
-                  Aller au planificateur
+                  {t("goToPlanner")}
                 </Button>
               </>
             )}
@@ -1240,14 +1237,17 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900">
                   {sorted.length === 0
-                    ? "Aucun spot dans ce rayon"
-                    : "Pas top aujourd'hui"}
+                    ? t("noSpotInRadius")
+                    : t("notGreatToday")}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
                   {sorted.length === 0
-                    ? `Pas de spot trouvé à moins de ${lastQuickRadius} km.`
-                    : `Le meilleur spot dans ${lastQuickRadius} km a un score de ${quickTopScore}/100.`}
-                  {nextRadiusUp ? " Élargir la zone ?" : ""}
+                    ? t("noSpotFoundRadius", { radius: lastQuickRadius })
+                    : t("bestSpotScore", {
+                        radius: lastQuickRadius,
+                        score: quickTopScore,
+                      })}
+                  {nextRadiusUp ? ` ${t("expandArea")}` : ""}
                 </p>
               </div>
             </div>
@@ -1258,7 +1258,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                   className="flex-1"
                   disabled={loading}
                 >
-                  Chercher à {nextRadiusUp} km
+                  {t("searchAt", { radius: nextRadiusUp })}
                 </Button>
               )}
               <Button
@@ -1280,7 +1280,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                 }}
                 className={nextRadiusUp ? "shrink-0" : "flex-1"}
               >
-                {nextRadiusUp ? "Fermer" : "OK"}
+                {nextRadiusUp ? tCommon("close") : t("ok")}
               </Button>
             </div>
           </div>

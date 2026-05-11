@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { X, ExternalLink } from "lucide-react";
 import { windConditionLabel, windDirectionLabel, barColors } from "@/lib/utils";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
@@ -47,6 +48,8 @@ export function StationPopup({
   onLiveUpdate,
 }: StationPopupProps) {
   const { data: stationLive } = useStationLive(station.id);
+  const t = useTranslations("StationPage");
+  const tCommon = useTranslations("Common");
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [loading, setLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
@@ -276,7 +279,7 @@ export function StationPopup({
           </div>
           <div className="text-xs text-gray-500 mt-0.5">
             {dirLabel} · {dir}°
-            {station.gustsKmh > 0 ? ` · rafales ${gusts}` : ""}
+            {station.gustsKmh > 0 ? ` · ${t("gustsLabel")} ${gusts}` : ""}
           </div>
         </div>
         <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 shrink-0">
@@ -288,14 +291,16 @@ export function StationPopup({
       <div className="border-t border-gray-100">
         <div className="flex items-center justify-between px-4 py-2">
           <span className="text-xs font-semibold text-gray-700">
-            Historique · 48h
+            {t("history48h")}
           </span>
-          <span className="text-[9px] text-gray-400">Dernière màj {time}</span>
+          <span className="text-[9px] text-gray-400">
+            {t("lastUpdate", { time })}
+          </span>
         </div>
         <div className="px-2 pb-2">
           {loading ? (
             <div className="flex items-center justify-center h-24 text-xs text-gray-400 animate-pulse">
-              Chargement de l&apos;historique…
+              {tCommon("loading")}
             </div>
           ) : history && history.length > 0 ? (
             <WindHistoryChart
@@ -305,7 +310,7 @@ export function StationPopup({
             />
           ) : (
             <div className="flex items-center justify-center h-24 text-xs text-gray-400">
-              Historique indisponible
+              {t("historyEmpty")}
             </div>
           )}
         </div>
@@ -314,14 +319,14 @@ export function StationPopup({
       {/* Footer */}
       <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
         <span className="text-[10px] text-gray-400">
-          {sourceLabel} · Toutes les {sourceFreq} ·
+          {sourceLabel} · {t("everyN", { freq: sourceFreq })}
         </span>
         {!isPioupiou && !isNetatmo ? (
           <a
             href={`/stations/${encodeURIComponent(station.id)}`}
             className="text-xs font-semibold text-sky-500 hover:text-sky-600 inline-flex items-center gap-1 transition-colors"
           >
-            Toutes les données <ExternalLink className="h-3 w-3" />
+            {t("allData")} <ExternalLink className="h-3 w-3" />
           </a>
         ) : isNetatmo ? (
           <a

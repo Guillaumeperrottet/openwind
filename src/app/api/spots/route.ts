@@ -6,6 +6,9 @@ import { z } from "zod";
 const createSpotSchema = z.object({
   name: z.string().min(2),
   description: z.string().optional(),
+  descriptionEn: z.string().optional(),
+  descriptionDe: z.string().optional(),
+  descriptionIt: z.string().optional(),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   country: z.string().optional(),
@@ -20,7 +23,13 @@ const createSpotSchema = z.object({
   bestMonths: z.array(z.string()).default([]),
   bestWindDirections: z.array(z.string()).default([]),
   hazards: z.string().optional(),
+  hazardsEn: z.string().optional(),
+  hazardsDe: z.string().optional(),
+  hazardsIt: z.string().optional(),
   access: z.string().optional(),
+  accessEn: z.string().optional(),
+  accessDe: z.string().optional(),
+  accessIt: z.string().optional(),
   nearestStationId: z.string().optional(),
 });
 

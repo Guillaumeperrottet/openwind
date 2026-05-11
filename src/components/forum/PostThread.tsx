@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Reply, Trash2, Share2, Pencil, X, Check } from "lucide-react";
 import { VoteButtons } from "./VoteButtons";
 import { ReplyForm } from "./ReplyForm";
@@ -51,6 +52,8 @@ export function PostThread({
   onPostDeleted,
 }: PostThreadProps) {
   const { user } = useFavContext();
+  const t = useTranslations("ForumPage");
+  const tCommon = useTranslations("Common");
   const [showReply, setShowReply] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -119,7 +122,7 @@ export function PostThread({
           {/* Author + time */}
           <div className="flex items-center gap-1.5 text-xs text-gray-400">
             <span className="font-medium text-gray-600">
-              {post.author.name ?? "Anonyme"}
+              {post.author.name ?? t("anonymous")}
             </span>
             <span>·</span>
             <span>{timeAgo(post.createdAt)}</span>
@@ -128,8 +131,7 @@ export function PostThread({
                 onClick={() => setCollapsed(false)}
                 className="ml-1 text-gray-400 hover:text-gray-600"
               >
-                [{countDescendants(post) + 1} masqué
-                {countDescendants(post) > 0 ? "s" : ""}]
+                {t("hidden", { count: countDescendants(post) + 1 })}
               </button>
             )}
           </div>
@@ -152,7 +154,7 @@ export function PostThread({
                       className="flex items-center gap-1 px-2.5 py-1 bg-gray-800 text-white text-xs rounded hover:bg-gray-900 transition-colors disabled:opacity-50"
                     >
                       <Check className="h-3 w-3" />
-                      {saving ? "…" : "Enregistrer"}
+                      {saving ? "…" : tCommon("save")}
                     </button>
                     <button
                       onClick={() => {
@@ -162,7 +164,7 @@ export function PostThread({
                       className="flex items-center gap-1 px-2.5 py-1 text-gray-500 text-xs rounded hover:bg-gray-100 transition-colors"
                     >
                       <X className="h-3 w-3" />
-                      Annuler
+                      {tCommon("cancel")}
                     </button>
                   </div>
                 </div>
@@ -186,7 +188,7 @@ export function PostThread({
                   className="flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-gray-500 hover:bg-gray-100 rounded transition-colors"
                 >
                   <Reply className="h-3.5 w-3.5" />
-                  Répondre
+                  {t("reply")}
                 </button>
 
                 <button
@@ -194,7 +196,7 @@ export function PostThread({
                   className="flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-gray-500 hover:bg-gray-100 rounded transition-colors"
                 >
                   <Share2 className="h-3.5 w-3.5" />
-                  Partager
+                  {tCommon("share")}
                 </button>
 
                 {(user?.id === post.authorId || isAdmin) && !editing && (
@@ -204,14 +206,14 @@ export function PostThread({
                       className="flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-gray-500 hover:bg-gray-100 rounded transition-colors"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                      Éditer
+                      {tCommon("edit")}
                     </button>
                     <button
                       onClick={handleDelete}
                       className="flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium text-gray-500 hover:bg-gray-100 rounded transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                      Supprimer
+                      {tCommon("delete")}
                     </button>
                   </>
                 )}

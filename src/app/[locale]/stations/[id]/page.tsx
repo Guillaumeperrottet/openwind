@@ -11,23 +11,32 @@ import { StationPageClient } from "./StationPageClient";
 // Removing it lets internal fetch() calls use their ISR cache (revalidate settings).
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const name = decodeURIComponent(id);
   const description = `Balise vent ${name} — vent en direct, historique 48h et prévisions 7 jours.`;
+  const base = `https://openwind.ch`;
+  const encodedId = encodeURIComponent(id);
   return {
     title: `Station ${name}`,
     description,
     alternates: {
-      canonical: `https://openwind.ch/stations/${encodeURIComponent(name)}`,
+      canonical: `${base}/${locale}/stations/${encodedId}`,
+      languages: {
+        "x-default": `${base}/fr/stations/${encodedId}`,
+        fr: `${base}/fr/stations/${encodedId}`,
+        en: `${base}/en/stations/${encodedId}`,
+        de: `${base}/de/stations/${encodedId}`,
+        it: `${base}/it/stations/${encodedId}`,
+      },
     },
     openGraph: {
       title: `Station ${name} — Openwind`,
       description,
-      url: `https://openwind.ch/stations/${encodeURIComponent(name)}`,
+      url: `${base}/${locale}/stations/${encodedId}`,
       type: "website",
     },
   };

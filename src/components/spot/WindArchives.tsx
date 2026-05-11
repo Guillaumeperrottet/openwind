@@ -1,24 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { windDirectionLabel, MONTHS } from "@/lib/utils";
 import type { WindArchiveData, MonthStats } from "@/types";
 import { Archive, Wind, Calendar, TrendingUp, ChevronDown } from "lucide-react";
-
-const SHORT_MONTHS = [
-  "Jan",
-  "Fév",
-  "Mar",
-  "Avr",
-  "Mai",
-  "Juin",
-  "Juil",
-  "Août",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Déc",
-];
 
 function pctColor(pct: number): string {
   if (pct >= 60) return "#2e7d32";
@@ -36,6 +22,12 @@ interface Props {
 const toKts = (kmh: number) => Math.round(kmh / 1.852);
 
 export function WindArchives({ spotId, useKnots = true }: Props) {
+  const t = useTranslations("WindArchives");
+  const locale = useLocale();
+  const shortMonth = (idx: number) =>
+    new Intl.DateTimeFormat(locale, { month: "short" }).format(
+      new Date(2024, idx, 1),
+    );
   const [data, setData] = useState<WindArchiveData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -78,7 +70,7 @@ export function WindArchives({ spotId, useKnots = true }: Props) {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
         <div className="text-sm text-gray-400 text-center py-4">
           <Archive className="h-5 w-5 mx-auto mb-2 opacity-30" />
-          Archives historiques indisponibles
+          {t("unavailable")}
         </div>
       </div>
     );
@@ -92,23 +84,26 @@ export function WindArchives({ spotId, useKnots = true }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between px-5 py-3.5 border-b border-gray-100 gap-1">
         <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
           <Archive className="h-4 w-4 text-gray-500" />
-          Archives vent · {data.yearRange[0]}–{data.yearRange[1]}
+          {t("archiveTitle", {
+            from: data.yearRange[0],
+            to: data.yearRange[1],
+          })}
         </h2>
         <span className="text-xs text-gray-400">
-          Meilleur mois :{" "}
-          <span className="text-gray-700 font-medium">{MONTHS[bestIdx]}</span>
+          {t("bestMonth", { month: MONTHS[bestIdx] })}
         </span>
       </div>
 
       {/* Combined averages — main heatmap */}
       <div className="px-4 py-4">
         <div className="text-xs text-gray-500 mb-2 font-medium">
-          Moyenne {data.yearRange[0]}–{data.yearRange[1]}
+          {t("average", { from: data.yearRange[0], to: data.yearRange[1] })}
         </div>
         <MonthRow
           months={data.combined}
           bestMonth={data.bestMonth}
           useKnots={useKnots}
+          shortMonth={shortMonth}
         />
       </div>
 
@@ -118,7 +113,7 @@ export function WindArchives({ spotId, useKnots = true }: Props) {
           onClick={() => setShowYears((v) => !v)}
           className="w-full flex items-center justify-between px-5 py-2.5 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
         >
-          <span>Détail par année</span>
+          <span>{t("yearDetail")}</span>
           <ChevronDown
             className={`h-3.5 w-3.5 transition-transform ${showYears ? "rotate-180" : ""}`}
           />
@@ -135,6 +130,7 @@ export function WindArchives({ spotId, useKnots = true }: Props) {
                   months={yr.months}
                   bestMonth={0}
                   useKnots={useKnots}
+                  shortMonth={shortMonth}
                 />
               </div>
             ))}
@@ -145,15 +141,15 @@ export function WindArchives({ spotId, useKnots = true }: Props) {
       {/* Legend */}
       <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center gap-3 text-[10px] text-gray-400">
         <span className="flex items-center gap-1">
-          <Wind className="h-3 w-3" /> Vent max jour moyen (
-          {useKnots ? "kts" : "km/h"})
+          <Wind className="h-3 w-3" />{" "}
+          {t("windMaxDay", { unit: useKnots ? "kts" : "km/h" })}
         </span>
         <span className="flex items-center gap-1">
-          <Calendar className="h-3 w-3" /> % jours ≥{" "}
-          {useKnots ? "12 kts" : "22 km/h"}
+          <Calendar className="h-3 w-3" />{" "}
+          {t("goodDaysPct", { threshold: useKnots ? "12 kts" : "22 km/h" })}
         </span>
         <span className="flex items-center gap-1">
-          <TrendingUp className="h-3 w-3" /> Source : Open-Meteo Archive
+          <TrendingUp className="h-3 w-3" /> {t("source")}
         </span>
       </div>
     </div>
@@ -165,10 +161,12 @@ function MonthRow({
   months,
   bestMonth,
   useKnots = true,
+  shortMonth,
 }: {
   months: MonthStats[];
   bestMonth: number;
   useKnots?: boolean;
+  shortMonth: (idx: number) => string;
 }) {
   const fmt = (kmh: number) => (useKnots ? toKts(kmh) : Math.round(kmh));
   const unit = useKnots ? "kts" : "km/h";
@@ -188,10 +186,10 @@ function MonthRow({
               background:
                 m.dataDays > 0 ? `${pctColor(m.goodDaysPct)}18` : "#f5f5f5",
             }}
-            title={`${MONTHS[m.month - 1]} — Moy. ${fmt(m.avgWindKmh)} ${unit} · Max ${fmt(m.maxWindKmh)} ${unit} · ${m.goodDaysPct}% bons jours · Dir. ${windDirectionLabel(m.dominantDirection)} · ${m.dataDays}j de données`}
+            title={`${MONTHS[m.month - 1]} — ${fmt(m.avgWindKmh)} ${unit} · Max ${fmt(m.maxWindKmh)} ${unit} · ${m.goodDaysPct}% · ${windDirectionLabel(m.dominantDirection)} · ${m.dataDays}d`}
           >
             <div className="text-[10px] text-gray-500 font-medium mb-0.5">
-              {SHORT_MONTHS[m.month - 1]}
+              {shortMonth(m.month - 1)}
             </div>
             {m.dataDays > 0 ? (
               <>

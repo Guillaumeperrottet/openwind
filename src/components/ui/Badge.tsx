@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -40,3 +41,24 @@ export const WATER_LABELS: Record<string, string> = {
   WAVES: "Vagues",
   MIXED: "Mixte",
 };
+
+/** Hook for translated badge labels (use in client components) */
+export function useBadgeLabels() {
+  const t = useTranslations("Badge");
+  return {
+    difficultyLabel: (key: string) =>
+      ({
+        BEGINNER: t("difficulty.BEGINNER"),
+        INTERMEDIATE: t("difficulty.INTERMEDIATE"),
+        ADVANCED: t("difficulty.ADVANCED"),
+        EXPERT: t("difficulty.EXPERT"),
+      })[key] ?? key,
+    waterLabel: (key: string) =>
+      ({
+        FLAT: t("waterType.FLAT"),
+        CHOP: t("waterType.CHOP"),
+        WAVES: t("waterType.WAVES"),
+        MIXED: t("waterType.MIXED"),
+      })[key] ?? key,
+  };
+}

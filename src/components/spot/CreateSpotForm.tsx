@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { WindDirectionPicker } from "@/components/spot/WindDirectionRose";
 
@@ -38,10 +39,10 @@ import { useNearbyStations } from "@/components/spot/useNearbyStations";
 
 const schema = z
   .object({
-    name: z.string().min(2, "Minimum 2 caractères"),
+    name: z.string().min(2),
     description: z.string().optional(),
-    latitude: z.number({ error: "Cliquez sur la carte" }),
-    longitude: z.number({ error: "Cliquez sur la carte" }),
+    latitude: z.number(),
+    longitude: z.number(),
     country: z.string().optional(),
     region: z.string().optional(),
     sportType: z.enum(["KITE", "PARAGLIDE"]),
@@ -56,7 +57,6 @@ const schema = z
     nearestStationId: z.string().optional(),
   })
   .refine((d) => d.maxWindKmh >= d.minWindKmh, {
-    message: "Le vent max doit être ≥ au vent min",
     path: ["maxWindKmh"],
   });
 
@@ -73,6 +73,9 @@ export interface SpotInitialData {
   id: string;
   name: string;
   description: string | null;
+  descriptionEn?: string | null;
+  descriptionDe?: string | null;
+  descriptionIt?: string | null;
   latitude: number;
   longitude: number;
   country: string | null;
@@ -85,7 +88,13 @@ export interface SpotInitialData {
   bestMonths: string[];
   bestWindDirections: string[];
   hazards: string | null;
+  hazardsEn?: string | null;
+  hazardsDe?: string | null;
+  hazardsIt?: string | null;
   access: string | null;
+  accessEn?: string | null;
+  accessDe?: string | null;
+  accessIt?: string | null;
   nearestStationId: string | null;
   existingImages?: ExistingImage[];
 }
@@ -99,6 +108,9 @@ interface Props {
 export function CreateSpotForm({ initialData }: Props = {}) {
   const isEditMode = Boolean(initialData);
   const router = useRouter();
+  const t = useTranslations("CreateSpotForm");
+  const tBadge = useTranslations("Badge");
+  const tCommon = useTranslations("Common");
   const {
     images,
     imagePreviews,
@@ -118,6 +130,22 @@ export function CreateSpotForm({ initialData }: Props = {}) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [useKnots, setUseKnots] = useState(true);
+  const [langTab, setLangTab] = useState<"fr" | "en" | "de" | "it">("fr");
+  const [descriptionEn, setDescriptionEn] = useState(
+    initialData?.descriptionEn ?? "",
+  );
+  const [descriptionDe, setDescriptionDe] = useState(
+    initialData?.descriptionDe ?? "",
+  );
+  const [descriptionIt, setDescriptionIt] = useState(
+    initialData?.descriptionIt ?? "",
+  );
+  const [hazardsEn, setHazardsEn] = useState(initialData?.hazardsEn ?? "");
+  const [hazardsDe, setHazardsDe] = useState(initialData?.hazardsDe ?? "");
+  const [hazardsIt, setHazardsIt] = useState(initialData?.hazardsIt ?? "");
+  const [accessEn, setAccessEn] = useState(initialData?.accessEn ?? "");
+  const [accessDe, setAccessDe] = useState(initialData?.accessDe ?? "");
+  const [accessIt, setAccessIt] = useState(initialData?.accessIt ?? "");
 
   const {
     register,
@@ -207,7 +235,18 @@ export function CreateSpotForm({ initialData }: Props = {}) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          descriptionEn: descriptionEn || undefined,
+          descriptionDe: descriptionDe || undefined,
+          descriptionIt: descriptionIt || undefined,
+          hazardsEn: hazardsEn || undefined,
+          hazardsDe: hazardsDe || undefined,
+          hazardsIt: hazardsIt || undefined,
+          accessEn: accessEn || undefined,
+          accessDe: accessDe || undefined,
+          accessIt: accessIt || undefined,
+        }),
       });
 
       if (!res.ok) {
@@ -216,8 +255,8 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           typeof err.error === "string"
             ? err.error
             : isEditMode
-              ? "Erreur lors de la sauvegarde"
-              : "Erreur lors de la création du spot",
+              ? t("saveError")
+              : t("createError"),
         );
         return;
       }
@@ -247,7 +286,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
 
       router.push(`/spots/${spot.id}`);
     } catch {
-      setError("Erreur réseau, veuillez réessayer");
+      setError(t("networkError"));
     } finally {
       setSubmitting(false);
     }
@@ -268,16 +307,12 @@ export function CreateSpotForm({ initialData }: Props = {}) {
       });
       if (!res.ok) {
         const err = await res.json();
-        setError(
-          typeof err.error === "string"
-            ? err.error
-            : "Erreur lors de la suppression",
-        );
+        setError(typeof err.error === "string" ? err.error : t("deleteError"));
         return;
       }
       router.push("/");
     } catch {
-      setError("Erreur réseau, veuillez réessayer");
+      setError(t("networkError"));
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
@@ -322,12 +357,10 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                {isEditMode ? "Modifier le spot" : "Ajouter un spot"}
+                {isEditMode ? t("editTitle") : t("title")}
               </h1>
               <p className="text-xs text-gray-400 mt-0.5">
-                {isEditMode
-                  ? initialData!.name
-                  : "Cliquez sur la carte pour placer le spot"}
+                {isEditMode ? initialData!.name : t("clickToPlace")}
               </p>
             </div>
             <button
@@ -348,7 +381,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
 
           {/* Sport type toggle */}
           <div>
-            <label className={labelClass}>Type de sport</label>
+            <label className={labelClass}>{t("sport")}</label>
             <Controller
               control={control}
               name="sportType"
@@ -364,7 +397,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                     }`}
                   >
                     <Sailboat className="h-4 w-4" />
-                    Kitesurf
+                    {tCommon("kitesurf")}
                   </button>
                   <button
                     type="button"
@@ -376,7 +409,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                     }`}
                   >
                     <Mountain className="h-4 w-4" />
-                    Parapente
+                    {tCommon("paragliding")}
                   </button>
                 </div>
               )}
@@ -385,7 +418,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
 
           {/* Name */}
           <div>
-            <label className={labelClass}>Nom du spot *</label>
+            <label className={labelClass}>{t("name")} *</label>
             <input
               {...register("name")}
               placeholder="Ex: Tarifa Est"
@@ -394,32 +427,155 @@ export function CreateSpotForm({ initialData }: Props = {}) {
             {errors.name && <p className={errorClass}>{errors.name.message}</p>}
           </div>
 
-          {/* Description */}
-          <div>
-            <label className={labelClass}>Description</label>
-            <textarea
-              {...register("description")}
-              rows={2}
-              placeholder="Décris le spot, l'ambiance, les conditions..."
-              className={inputClass}
-            />
+          {/* Description + Hazards + Access — shared language tabs */}
+          <div className="space-y-3">
+            {/* Language tab selector */}
+            <div className="flex items-center justify-between">
+              <span className={labelClass + " mb-0"}>
+                {t("descriptionTab")}
+              </span>
+              <div className="flex gap-1">
+                {(["fr", "en", "de", "it"] as const).map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => setLangTab(l)}
+                    className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${langTab === l ? "bg-sky-600 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+                  >
+                    {l.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className={labelClass}>{t("description")}</label>
+              {langTab === "fr" && (
+                <textarea
+                  {...register("description")}
+                  rows={2}
+                  placeholder="Décris le spot, l'ambiance, les conditions..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "en" && (
+                <textarea
+                  value={descriptionEn}
+                  onChange={(e) => setDescriptionEn(e.target.value)}
+                  rows={2}
+                  placeholder="Describe the spot, atmosphere, conditions..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "de" && (
+                <textarea
+                  value={descriptionDe}
+                  onChange={(e) => setDescriptionDe(e.target.value)}
+                  rows={2}
+                  placeholder="Beschreibe den Spot, Stimmung, Bedingungen..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "it" && (
+                <textarea
+                  value={descriptionIt}
+                  onChange={(e) => setDescriptionIt(e.target.value)}
+                  rows={2}
+                  placeholder="Descrivi lo spot, l'atmosfera, le condizioni..."
+                  className={inputClass}
+                />
+              )}
+            </div>
+
+            {/* Hazards */}
+            <div>
+              <label className={labelClass}>{t("hazards")}</label>
+              {langTab === "fr" && (
+                <input
+                  {...register("hazards")}
+                  placeholder="Rochers, courant fort..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "en" && (
+                <input
+                  value={hazardsEn}
+                  onChange={(e) => setHazardsEn(e.target.value)}
+                  placeholder="Rocks, strong current..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "de" && (
+                <input
+                  value={hazardsDe}
+                  onChange={(e) => setHazardsDe(e.target.value)}
+                  placeholder="Felsen, starke Strömung..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "it" && (
+                <input
+                  value={hazardsIt}
+                  onChange={(e) => setHazardsIt(e.target.value)}
+                  placeholder="Rocce, corrente forte..."
+                  className={inputClass}
+                />
+              )}
+            </div>
+
+            {/* Access */}
+            <div>
+              <label className={labelClass}>{t("access")}</label>
+              {langTab === "fr" && (
+                <input
+                  {...register("access")}
+                  placeholder="Parking, temps de marche..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "en" && (
+                <input
+                  value={accessEn}
+                  onChange={(e) => setAccessEn(e.target.value)}
+                  placeholder="Parking, walking time..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "de" && (
+                <input
+                  value={accessDe}
+                  onChange={(e) => setAccessDe(e.target.value)}
+                  placeholder="Parkplatz, Gehzeit..."
+                  className={inputClass}
+                />
+              )}
+              {langTab === "it" && (
+                <input
+                  value={accessIt}
+                  onChange={(e) => setAccessIt(e.target.value)}
+                  placeholder="Parcheggio, tempo a piedi..."
+                  className={inputClass}
+                />
+              )}
+            </div>
           </div>
 
           {/* Country / Region (auto-filled) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Pays</label>
+              <label className={labelClass}>{t("country")}</label>
               <input
                 {...register("country")}
-                placeholder="Auto-rempli"
+                placeholder={t("autoFilled")}
                 className={inputClass}
               />
             </div>
             <div>
-              <label className={labelClass}>Région</label>
+              <label className={labelClass}>{t("region")}</label>
               <input
                 {...register("region")}
-                placeholder="Auto-rempli"
+                placeholder={t("autoFilled")}
                 className={inputClass}
               />
             </div>
@@ -427,7 +583,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           {/* Coordinates (manual edit) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Latitude</label>
+              <label className={labelClass}>{t("latitude")}</label>
               <Controller
                 control={control}
                 name="latitude"
@@ -447,7 +603,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
               />
             </div>
             <div>
-              <label className={labelClass}>Longitude</label>
+              <label className={labelClass}>{t("longitude")}</label>
               <Controller
                 control={control}
                 name="longitude"
@@ -477,22 +633,28 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           {/* Difficulty + Water type */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>Difficulté</label>
+              <label className={labelClass}>{t("difficulty")}</label>
               <select {...register("difficulty")} className={inputClass}>
-                <option value="BEGINNER">Débutant</option>
-                <option value="INTERMEDIATE">Intermédiaire</option>
-                <option value="ADVANCED">Avancé</option>
-                <option value="EXPERT">Expert</option>
+                <option value="BEGINNER">
+                  {tBadge("difficulty.BEGINNER")}
+                </option>
+                <option value="INTERMEDIATE">
+                  {tBadge("difficulty.INTERMEDIATE")}
+                </option>
+                <option value="ADVANCED">
+                  {tBadge("difficulty.ADVANCED")}
+                </option>
+                <option value="EXPERT">{tBadge("difficulty.EXPERT")}</option>
               </select>
             </div>
             {sportType === "KITE" && (
               <div>
-                <label className={labelClass}>Type d&apos;eau</label>
+                <label className={labelClass}>{t("waterType")}</label>
                 <select {...register("waterType")} className={inputClass}>
-                  <option value="FLAT">Flat</option>
-                  <option value="CHOP">Chop</option>
-                  <option value="WAVES">Vagues</option>
-                  <option value="MIXED">Mixte</option>
+                  <option value="FLAT">{tBadge("waterType.FLAT")}</option>
+                  <option value="CHOP">{tBadge("waterType.CHOP")}</option>
+                  <option value="WAVES">{tBadge("waterType.WAVES")}</option>
+                  <option value="MIXED">{tBadge("waterType.MIXED")}</option>
                 </select>
               </div>
             )}
@@ -501,9 +663,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           {/* Wind range with unit toggle */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className={labelClass + " mb-0"}>
-                Plage de vent idéale
-              </label>
+              <label className={labelClass + " mb-0"}>{t("windRange")}</label>
               <div className="flex rounded-full overflow-hidden border border-gray-200 text-[10px]">
                 <button
                   type="button"
@@ -550,7 +710,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                   )}
                 />
                 <span className="text-[10px] text-gray-400 mt-0.5 block">
-                  Min : {windDisplay(minWind)} {windUnit}
+                  {t("windMin")} : {windDisplay(minWind)} {windUnit}
                 </span>
               </div>
               <div>
@@ -573,7 +733,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                   )}
                 />
                 <span className="text-[10px] text-gray-400 mt-0.5 block">
-                  Max : {windDisplay(maxWind)} {windUnit}
+                  {t("windMax")} : {windDisplay(maxWind)} {windUnit}
                 </span>
               </div>
             </div>
@@ -585,23 +745,21 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           {/* Nearest station picker */}
           <div>
             <label className={labelClass}>
-              Balise la plus proche
+              {t("nearestStation")}
               <span className="text-gray-400 font-normal ml-1">
-                (vent en direct + prévisions)
+                ({t("nearestStationDesc")})
               </span>
             </label>
             {!lat || !lng ? (
               <p className="text-xs text-gray-400 italic">
-                Placez le spot sur la carte pour voir les balises proches
+                {t("placeSpotFirst")}
               </p>
             ) : loadingStations ? (
               <p className="text-xs text-gray-400 animate-pulse">
-                Recherche des balises...
+                {t("searchingStations")}
               </p>
             ) : nearbyStations.length === 0 ? (
-              <p className="text-xs text-gray-400">
-                Aucune balise trouvée à proximité
-              </p>
+              <p className="text-xs text-gray-400">{t("noStationFound")}</p>
             ) : (
               <Controller
                 control={control}
@@ -665,7 +823,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
 
           {/* Best wind directions */}
           <div>
-            <label className={labelClass}>Meilleures directions de vent</label>
+            <label className={labelClass}>{t("bestWindDirections")}</label>
             <Controller
               control={control}
               name="bestWindDirections"
@@ -681,7 +839,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
 
           {/* Best months */}
           <div>
-            <label className={labelClass}>Meilleurs mois</label>
+            <label className={labelClass}>{t("bestMonths")}</label>
             <Controller
               control={control}
               name="bestMonths"
@@ -716,32 +874,12 @@ export function CreateSpotForm({ initialData }: Props = {}) {
             />
           </div>
 
-          {/* Hazards + Access */}
-          <div className="grid grid-cols-1 gap-3">
-            <div>
-              <label className={labelClass}>Dangers / Précautions</label>
-              <input
-                {...register("hazards")}
-                placeholder="Rochers, courant fort..."
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Accès</label>
-              <input
-                {...register("access")}
-                placeholder="Parking, temps de marche..."
-                className={inputClass}
-              />
-            </div>
-          </div>
-
           {/* Images */}
           <div>
-            <label className={labelClass}>Photos (max 5)</label>
+            <label className={labelClass}>{t("imagesMax", { count: 5 })}</label>
             <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-dashed border-gray-300 px-4 py-3 hover:border-sky-500 transition-colors text-gray-500 hover:text-gray-900 text-sm">
               <Upload className="h-4 w-4" />
-              Ajouter des photos
+              {t("addPhotos")}
               <input
                 type="file"
                 multiple
@@ -798,12 +936,10 @@ export function CreateSpotForm({ initialData }: Props = {}) {
             className="w-full"
           >
             {submitting
-              ? isEditMode
-                ? "Sauvegarde..."
-                : "Création en cours..."
+              ? t("saving")
               : isEditMode
-                ? "Sauvegarder les modifications"
-                : "Créer le spot"}
+                ? t("submitEdit")
+                : t("submit")}
           </Button>
 
           {/* Delete spot (edit mode only) */}
@@ -817,17 +953,14 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                   className="w-full flex items-center justify-center gap-2 rounded-lg border border-red-200 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Supprimer ce spot
+                  {t("deleteSpot")}
                 </button>
               ) : (
                 <div className="rounded-lg bg-red-50 border border-red-200 p-4 space-y-3">
                   <p className="text-sm text-red-700 font-medium">
-                    Supprimer « {initialData!.name} » ?
+                    {t("deleteConfirm", { name: initialData!.name })}
                   </p>
-                  <p className="text-xs text-red-600">
-                    Cette action est irréversible. Le spot et toutes ses images
-                    seront supprimés.
-                  </p>
+                  <p className="text-xs text-red-600">{t("deleteWarning")}</p>
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -835,7 +968,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                       disabled={deleting}
                       className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
                     >
-                      Annuler
+                      {tCommon("cancel")}
                     </button>
                     <button
                       type="button"
@@ -843,7 +976,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                       disabled={deleting}
                       className="flex-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-50"
                     >
-                      {deleting ? "Suppression..." : "Confirmer"}
+                      {deleting ? t("deleting") : tCommon("confirm")}
                     </button>
                   </div>
                 </div>
