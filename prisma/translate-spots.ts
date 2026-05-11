@@ -20,6 +20,7 @@ if (!AZURE_KEY) {
   console.error("❌ Set AZURE_TRANSLATOR_KEY env var before running.");
   process.exit(1);
 }
+const AZURE_KEY_SAFE: string = AZURE_KEY;
 const AZURE_REGION = "switzerlandnorth";
 const AZURE_ENDPOINT =
   "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en&to=fr&to=de&to=it";
@@ -50,7 +51,7 @@ async function translateBatch(
   const res = await fetch(AZURE_ENDPOINT, {
     method: "POST",
     headers: {
-      "Ocp-Apim-Subscription-Key": AZURE_KEY,
+      "Ocp-Apim-Subscription-Key": AZURE_KEY_SAFE,
       "Ocp-Apim-Subscription-Region": AZURE_REGION,
       "Content-Type": "application/json",
     },
