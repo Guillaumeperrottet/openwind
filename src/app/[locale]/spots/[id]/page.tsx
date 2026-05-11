@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props) {
     if (!spot) return { title: "Spot introuvable" };
 
     // Build optimized, keyword-focused description
-    const description = buildSpotDescription(spot);
+    const description = buildSpotDescription(spot, locale);
 
     const base = `https://openwind.ch`;
     return {
@@ -74,7 +74,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function SpotPage({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
 
   let spot;
   try {
@@ -117,13 +117,14 @@ export default async function SpotPage({ params }: Props) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
             combineSchemas(
-              buildArticleSchema(spot),
-              buildPlaceSchema(spot),
+              buildArticleSchema(spot, locale),
+              buildPlaceSchema(spot, locale),
               buildBreadcrumbSchema(
                 spot.id,
                 spot.name,
                 spot.sportType,
                 spot.region,
+                locale,
               ),
             ),
           ),

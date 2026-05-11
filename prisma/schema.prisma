@@ -1,4 +1,3 @@
-// This is your Prisma schema file,
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -6,6 +5,193 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model Spot {
+  id                 String       @id @default(cuid())
+  name               String
+  description        String?
+  latitude           Float
+  longitude          Float
+  country            String?
+  region             String?
+  difficulty         Difficulty   @default(INTERMEDIATE)
+  waterType          WaterType    @default(CHOP)
+  minWindKmh         Int          @default(15)
+  maxWindKmh         Int          @default(35)
+  bestMonths         String[]
+  bestWindDirections String[]
+  hazards            String?
+  access             String?
+  sportType          SportType    @default(KITE)
+  nearestStationId   String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  accessDe           String?
+  accessEn           String?
+  accessIt           String?
+  descriptionDe      String?
+  descriptionEn      String?
+  descriptionIt      String?
+  hazardsDe          String?
+  hazardsEn          String?
+  hazardsIt          String?
+  favorites          Favorite[]
+  images             SpotImage[]
+  reports            WindReport[]
+}
+
+/// Synced from Supabase Auth on first login.
+model User {
+  id          String          @id
+  email       String          @unique
+  name        String?
+  avatarUrl   String?
+  createdAt   DateTime        @default(now())
+  favorites   Favorite[]
+  posts       ForumPost[]
+  topics      ForumTopic[]
+  votes       ForumVote[]
+  preferences UserPreference?
+}
+
+/// Per-user UI preferences (map filters, units, etc.)
+model UserPreference {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  sportFilter  String   @default("ALL")
+  useKnots     Boolean  @default(true)
+  updatedAt    DateTime @updatedAt
+  mapCenterLat Float?
+  /// Last map view (persisted across devices when authenticated)
+  mapCenterLng Float?
+  mapZoom      Float?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  spotId    String
+  createdAt DateTime @default(now())
+  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, spotId])
+  @@index([userId])
+}
+
+model SpotImage {
+  id        String   @id @default(cuid())
+  spotId    String
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
+  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+}
+
+model WindReport {
+  id            String   @id @default(cuid())
+  spotId        String
+  date          DateTime @default(now())
+  windSpeedKmh  Float
+  windDirection Int
+  gustsKmh      Float?
+  isKitable     Boolean  @default(true)
+  comment       String?
+  rating        Int      @default(3)
+  createdAt     DateTime @default(now())
+  spot          Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+}
+
+/// Stores live station wind measurements every 10 minutes (via cron).
+/// Used to build a real-time 48h history chart without relying on the
+/// ~2-hour-delayed MeteoSwiss OGD CSV files.
+model StationMeasurement {
+  id            String   @id @default(cuid())
+  stationId     String
+  time          DateTime
+  windSpeedKmh  Float
+  windDirection Float
+  gustsKmh      Float?
+  temperatureC  Float?
+  source        String   @default("meteoswiss")
+  createdAt     DateTime @default(now())
+
+  @@unique([stationId, time])
+  @@index([stationId, time])
+}
+
+/// Key-value store for internal config (e.g. Netatmo rotating refresh token).
+model SystemConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model ForumCategory {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  description String?
+  order       Int          @default(0)
+  icon        String?
+  topics      ForumTopic[]
+}
+
+model ForumTopic {
+  id         String        @id @default(cuid())
+  title      String
+  slug       String
+  body       String
+  pinned     Boolean       @default(false)
+  locked     Boolean       @default(false)
+  authorId   String
+  categoryId String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  posts      ForumPost[]
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  votes      ForumVote[]
+
+  @@index([categoryId, createdAt])
+  @@index([authorId])
+}
+
+model ForumPost {
+  id        String      @id @default(cuid())
+  body      String
+  authorId  String
+  topicId   String
+  parentId  String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    ForumPost?  @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  children  ForumPost[] @relation("PostReplies")
+  topic     ForumTopic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  votes     ForumVote[]
+
+  @@index([topicId, createdAt])
+  @@index([parentId])
+}
+
+model ForumVote {
+  id        String      @id @default(cuid())
+  value     Int
+  userId    String
+  topicId   String?
+  postId    String?
+  createdAt DateTime    @default(now())
+  post      ForumPost?  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  topic     ForumTopic? @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+  @@unique([userId, postId])
+  @@index([topicId])
+  @@index([postId])
 }
 
 enum Difficulty {
@@ -25,193 +211,4 @@ enum WaterType {
 enum SportType {
   KITE
   PARAGLIDE
-}
-
-model Spot {
-  id          String      @id @default(cuid())
-  name        String
-  description String?
-  descriptionEn String?
-  descriptionDe String?
-  descriptionIt String?
-  latitude    Float
-  longitude   Float
-  country     String?
-  region      String?
-  difficulty  Difficulty  @default(INTERMEDIATE)
-  waterType   WaterType   @default(CHOP)
-  minWindKmh  Int         @default(15)
-  maxWindKmh  Int         @default(35)
-  bestMonths  String[]
-  bestWindDirections String[]
-  hazards     String?
-  hazardsEn   String?
-  hazardsDe   String?
-  hazardsIt   String?
-  access      String?
-  accessEn    String?
-  accessDe    String?
-  accessIt    String?
-  sportType   SportType  @default(KITE)
-  nearestStationId String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  images      SpotImage[]
-  reports     WindReport[]
-  favorites   Favorite[]
-}
-
-/// Synced from Supabase Auth on first login.
-model User {
-  id          String          @id // Supabase auth.users.id (UUID)
-  email       String          @unique
-  name        String?
-  avatarUrl   String?
-  createdAt   DateTime        @default(now())
-  favorites   Favorite[]
-  topics      ForumTopic[]
-  posts       ForumPost[]
-  votes       ForumVote[]
-  preferences UserPreference?
-}
-
-/// Per-user UI preferences (map filters, units, etc.)
-model UserPreference {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sportFilter String   @default("ALL") // "ALL" | "KITE" | "PARAGLIDE"
-  useKnots    Boolean  @default(true)
-  /// Last map view (persisted across devices when authenticated)
-  mapCenterLng Float?
-  mapCenterLat Float?
-  mapZoom      Float?
-  updatedAt   DateTime @updatedAt
-}
-
-model Favorite {
-  id        String   @id @default(cuid())
-  userId    String
-  spotId    String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, spotId])
-  @@index([userId])
-}
-
-model SpotImage {
-  id        String   @id @default(cuid())
-  spotId    String
-  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
-  url       String
-  caption   String?
-  createdAt DateTime @default(now())
-}
-
-model WindReport {
-  id             String   @id @default(cuid())
-  spotId         String
-  spot           Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
-  date           DateTime @default(now())
-  windSpeedKmh   Float
-  windDirection  Int      // degrees 0-360
-  gustsKmh       Float?
-  isKitable      Boolean  @default(true)
-  comment        String?
-  rating         Int      @default(3) // 1-5
-  createdAt      DateTime @default(now())
-}
-
-/// Stores live station wind measurements every 10 minutes (via cron).
-/// Used to build a real-time 48h history chart without relying on the
-/// ~2-hour-delayed MeteoSwiss OGD CSV files.
-model StationMeasurement {
-  id             String   @id @default(cuid())
-  stationId      String   // e.g. "MAS", "BER", "piou-110"
-  time           DateTime // measurement timestamp (UTC)
-  windSpeedKmh   Float
-  windDirection  Float    // degrees 0-360
-  gustsKmh       Float?
-  temperatureC   Float?
-  source         String   @default("meteoswiss") // "meteoswiss" | "pioupiou" | "netatmo" | "meteofrance"
-  createdAt      DateTime @default(now())
-
-  @@unique([stationId, time])
-  @@index([stationId, time])
-}
-
-/// Key-value store for internal config (e.g. Netatmo rotating refresh token).
-model SystemConfig {
-  key       String   @id
-  value     String
-  updatedAt DateTime @updatedAt
-}
-
-// ─── Forum ────────────────────────────────────────────────
-
-model ForumCategory {
-  id          String       @id @default(cuid())
-  name        String       @unique
-  slug        String       @unique
-  description String?
-  order       Int          @default(0)
-  icon        String?      // lucide icon name
-  topics      ForumTopic[]
-}
-
-model ForumTopic {
-  id         String       @id @default(cuid())
-  title      String
-  slug       String
-  body       String       // markdown
-  pinned     Boolean      @default(false)
-  locked     Boolean      @default(false)
-  authorId   String
-  categoryId String
-  author     User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  posts      ForumPost[]
-  votes      ForumVote[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-
-  @@index([categoryId, createdAt])
-  @@index([authorId])
-}
-
-model ForumPost {
-  id        String      @id @default(cuid())
-  body      String      // markdown
-  authorId  String
-  topicId   String
-  parentId  String?     // null = direct reply to topic, else = nested reply
-  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  topic     ForumTopic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  parent    ForumPost?  @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  children  ForumPost[] @relation("PostReplies")
-  votes     ForumVote[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  @@index([topicId, createdAt])
-  @@index([parentId])
-}
-
-model ForumVote {
-  id       String      @id @default(cuid())
-  value    Int         // +1 or -1
-  userId   String
-  topicId  String?
-  postId   String?
-  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic    ForumTopic? @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  post     ForumPost?  @relation(fields: [postId], references: [id], onDelete: Cascade)
-  createdAt DateTime   @default(now())
-
-  @@unique([userId, topicId])
-  @@unique([userId, postId])
-  @@index([topicId])
-  @@index([postId])
 }

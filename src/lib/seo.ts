@@ -5,6 +5,99 @@
 
 import type { Spot, WindReport } from "@/generated/prisma/client";
 
+type Locale = "fr" | "en" | "de" | "it";
+
+// ── Locale-aware string tables ─────────────────────────────────────────────────
+
+const SPORT_LABELS: Record<Locale, { kite: string; para: string }> = {
+  fr: { kite: "Kitesurf", para: "Parapente" },
+  en: { kite: "Kitesurfing", para: "Paragliding" },
+  de: { kite: "Kitesurfen", para: "Gleitschirmfliegen" },
+  it: { kite: "Kitesurf", para: "Parapendio" },
+};
+
+const DIFFICULTY_LABELS: Record<Locale, Record<string, string>> = {
+  fr: {
+    BEGINNER: "pour débuter",
+    INTERMEDIATE: "technique et accessible",
+    ADVANCED: "pour confirmés",
+    EXPERT: "spot expert",
+    default: "populaire",
+  },
+  en: {
+    BEGINNER: "for beginners",
+    INTERMEDIATE: "technical and accessible",
+    ADVANCED: "for advanced riders",
+    EXPERT: "expert spot",
+    default: "popular",
+  },
+  de: {
+    BEGINNER: "für Einsteiger",
+    INTERMEDIATE: "technisch und zugänglich",
+    ADVANCED: "für Fortgeschrittene",
+    EXPERT: "Expertenspot",
+    default: "beliebt",
+  },
+  it: {
+    BEGINNER: "per principianti",
+    INTERMEDIATE: "tecnico e accessibile",
+    ADVANCED: "per esperti",
+    EXPERT: "spot esperto",
+    default: "popolare",
+  },
+};
+
+const DESC_TEMPLATES: Record<
+  Locale,
+  {
+    withLocation: (sport: string, loc: string, angle: string) => string;
+    withoutLocation: (sport: string, angle: string) => string;
+    spotDe: (sport: string) => string;
+  }
+> = {
+  fr: {
+    withLocation: (s, l, a) =>
+      `${s} à ${l} - spot ${a} - Prévisions vent 7j, archives, avis`,
+    withoutLocation: (s, a) =>
+      `${s} - spot ${a} - Prévisions vent 7j et archives`,
+    spotDe: (s) => `Spot de ${s}`,
+  },
+  en: {
+    withLocation: (s, l, a) =>
+      `${s} in ${l} - ${a} spot - 7-day wind forecasts, archives, reviews`,
+    withoutLocation: (s, a) =>
+      `${s} - ${a} spot - 7-day wind forecasts and archives`,
+    spotDe: (s) => `${s} spot`,
+  },
+  de: {
+    withLocation: (s, l, a) =>
+      `${s} in ${l} - ${a} Spot - 7-Tage Windvorhersagen, Archive, Bewertungen`,
+    withoutLocation: (s, a) =>
+      `${s} - ${a} Spot - 7-Tage Windvorhersagen und Archive`,
+    spotDe: (s) => `${s}-Spot`,
+  },
+  it: {
+    withLocation: (s, l, a) =>
+      `${s} a ${l} - spot ${a} - Previsioni vento 7 giorni, archivi, recensioni`,
+    withoutLocation: (s, a) =>
+      `${s} - spot ${a} - Previsioni vento 7 giorni e archivi`,
+    spotDe: (s) => `Spot di ${s}`,
+  },
+};
+
+const BREADCRUMB_LABELS: Record<Locale, { home: string; map: string }> = {
+  fr: { home: "Accueil", map: "Carte" },
+  en: { home: "Home", map: "Map" },
+  de: { home: "Startseite", map: "Karte" },
+  it: { home: "Home", map: "Mappa" },
+};
+
+/** Resolve locale string to typed Locale, defaulting to "fr". */
+function toLocale(locale?: string): Locale {
+  if (locale === "en" || locale === "de" || locale === "it") return locale;
+  return "fr";
+}
+
 /**
  * Build optimized meta description for a spot
  * Format: "{sport} à {lieu} - {angle unique} - Infos vent"
@@ -12,25 +105,20 @@ import type { Spot, WindReport } from "@/generated/prisma/client";
  */
 export function buildSpotDescription(
   spot: Pick<Spot, "name" | "sportType" | "region" | "country" | "difficulty">,
+  locale?: string,
 ): string {
-  const sport = spot.sportType === "KITE" ? "Kitesurf" : "Parapente";
+  const l = toLocale(locale);
+  const sport =
+    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
   const location = [spot.region, spot.country].filter(Boolean).join(", ");
+  const angle =
+    DIFFICULTY_LABELS[l][spot.difficulty] ?? DIFFICULTY_LABELS[l].default;
+  const tpl = DESC_TEMPLATES[l];
 
-  // Tailored angle based on difficulty
-  const angleMap: Record<string, string> = {
-    BEGINNER: "pour débuter",
-    INTERMEDIATE: "technique et accessible",
-    ADVANCED: "pour confirmés",
-    EXPERT: "spot expert",
-  };
-  const angle = angleMap[spot.difficulty] || "populaire";
-
-  // Format: "Sport à Lieu - angle - Prévisions vent 7j"
   const description = location
-    ? `${sport} à ${location} - spot ${angle} - Prévisions vent 7j, archives, avis`
-    : `${sport} - spot ${angle} - Prévisions vent 7j et archives`;
+    ? tpl.withLocation(sport, location, angle)
+    : tpl.withoutLocation(sport, angle);
 
-  // Truncate to ~155 chars (Google SERP limit)
   return description.length > 155
     ? description.substring(0, 152) + "..."
     : description;
@@ -56,11 +144,15 @@ export function buildArticleSchema(
     images: Array<{ url: string }>;
     reports: Array<WindReport>;
   },
+  locale?: string,
 ) {
-  const sport = spot.sportType === "KITE" ? "Kitesurf" : "Parapente";
+  const l = toLocale(locale);
+  const sport =
+    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
   const location = [spot.region, spot.country].filter(Boolean).join(", ");
+  const inPrep = l === "en" ? "in" : l === "de" ? "in" : l === "it" ? "a" : "à";
   const headline = location
-    ? `${spot.name} — ${sport} à ${location}`
+    ? `${spot.name} — ${sport} ${inPrep} ${location}`
     : spot.name;
 
   const article = {
@@ -68,7 +160,7 @@ export function buildArticleSchema(
     "@type": "Article",
     headline,
     name: spot.name,
-    description: spot.description || buildSpotDescription(spot),
+    description: spot.description || buildSpotDescription(spot, locale),
     image: spot.images[0]?.url || "https://openwind.ch/og-image.png",
     datePublished: spot.createdAt.toISOString(),
     dateModified: spot.updatedAt.toISOString(),
@@ -127,8 +219,11 @@ export function buildPlaceSchema(
   > & {
     images: Array<{ url: string }>;
   },
+  locale?: string,
 ) {
-  const sport = spot.sportType === "KITE" ? "Kitesurf" : "Parapente";
+  const l = toLocale(locale);
+  const sport =
+    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
 
   return {
     "@context": "https://schema.org",
@@ -136,7 +231,7 @@ export function buildPlaceSchema(
     name: spot.name,
     description: spot.description
       ? spot.description.substring(0, 500)
-      : `Spot de ${sport}`,
+      : DESC_TEMPLATES[l].spotDe(sport),
     geo: {
       "@type": "GeoCoordinates",
       latitude: spot.latitude,
@@ -154,19 +249,23 @@ export function buildPlaceSchema(
 
 /**
  * Build BreadcrumbList schema (JSON-LD)
- * Format: Home > Spots > {Sport} > {Region} > {SpotName}
+ * Format: Home > Map > {Sport} > {Region} > {SpotName}
  */
 export function buildBreadcrumbSchema(
   spotId: string,
   spotName: string,
   sport: "KITE" | "PARAGLIDE",
   region: string | null,
+  locale?: string,
 ) {
-  const sportLabel = sport === "KITE" ? "Kitesurf" : "Parapente";
+  const l = toLocale(locale);
+  const sportLabel =
+    sport === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
+  const { home, map } = BREADCRUMB_LABELS[l];
 
   const breadcrumbs = [
-    { name: "Accueil", url: "https://openwind.ch" },
-    { name: "Carte", url: "https://openwind.ch" },
+    { name: home, url: "https://openwind.ch" },
+    { name: map, url: "https://openwind.ch" },
     {
       name: sportLabel,
       url: `https://openwind.ch?sport=${sport.toLowerCase()}`,

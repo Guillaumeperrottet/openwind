@@ -17,11 +17,25 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { id, locale } = await params;
   const name = decodeURIComponent(id);
-  const description = `Balise vent ${name} — vent en direct, historique 48h et prévisions 7 jours.`;
+
+  const stationTitle: Record<string, string> = {
+    en: `Station ${name}`,
+    de: `Station ${name}`,
+    it: `Stazione ${name}`,
+    fr: `Station ${name}`,
+  };
+  const stationDesc: Record<string, string> = {
+    en: `Wind station ${name} — live wind, 48h history and 7-day forecasts.`,
+    de: `Windstation ${name} — Live-Wind, 48h-Verlauf und 7-Tage-Vorhersagen.`,
+    it: `Stazione vento ${name} — vento in diretta, storico 48h e previsioni 7 giorni.`,
+    fr: `Balise vent ${name} — vent en direct, historique 48h et prévisions 7 jours.`,
+  };
+  const description = stationDesc[locale] ?? stationDesc.fr;
+  const title = stationTitle[locale] ?? stationTitle.fr;
   const base = `https://openwind.ch`;
   const encodedId = encodeURIComponent(id);
   return {
-    title: `Station ${name}`,
+    title,
     description,
     alternates: {
       canonical: `${base}/${locale}/stations/${encodedId}`,
@@ -34,7 +48,7 @@ export async function generateMetadata({ params }: Props) {
       },
     },
     openGraph: {
-      title: `Station ${name} — Openwind`,
+      title: `${title} — Openwind`,
       description,
       url: `${base}/${locale}/stations/${encodedId}`,
       type: "website",
