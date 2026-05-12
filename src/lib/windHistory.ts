@@ -65,9 +65,20 @@ export async function fetchWindHistoryStation(
       .sort((a, b) => a.time.localeCompare(b.time));
   }
   if (isWindball) {
-    const measures = await fetchWindballHistory(stationId).catch(() => []);
+    // The Windball API only returns the last ~60 measurements (~10h).
+    // To extend the chart to a full 48h window, we complete the API trames
+    // with older points stored in our DB by the cron job.
+    //
+    // Critical rule: never overlap the two sources on the same time window,
+    // otherwise LoRa/cron timestamp drift produces "double bars" in the chart
+    // (see commit history for the original bug). We keep the API as the
+    // authoritative source for the recent window and use the DB ONLY for
+    // points strictly older than the earliest API point.
     const cutoffStr = cutoff.toISOString().slice(0, 16);
-    return measures
+
+    const apiPoints: HistoryPoint[] = (
+      await fetchWindballHistory(stationId).catch(() => [])
+    )
       .map((m) => ({
         time: new Date(m.updatedAt).toISOString().slice(0, 16),
         windSpeedKmh: m.windSpeed ?? 0,
@@ -77,6 +88,32 @@ export async function fetchWindHistoryStation(
       }))
       .filter((p) => p.time >= cutoffStr)
       .sort((a, b) => a.time.localeCompare(b.time));
+
+    let dbOlderPoints: HistoryPoint[] = [];
+    try {
+      // Cap the DB window to whatever the API doesn't already cover.
+      const apiOldest = apiPoints[0]?.time;
+      const dbUpperBound = apiOldest ? new Date(apiOldest + ":00Z") : now;
+
+      const rows = await prisma.stationMeasurement.findMany({
+        where: {
+          stationId,
+          time: { gte: cutoff, lt: dbUpperBound },
+        },
+        orderBy: { time: "asc" },
+      });
+      dbOlderPoints = rows.map((r: (typeof rows)[number]) => ({
+        time: r.time.toISOString().slice(0, 16),
+        windSpeedKmh: r.windSpeedKmh,
+        windDirection: r.windDirection,
+        gustsKmh: r.gustsKmh ?? r.windSpeedKmh,
+        temperatureC: r.temperatureC ?? 0,
+      }));
+    } catch {
+      /* DB unavailable — return API points only */
+    }
+
+    return [...dbOlderPoints, ...apiPoints];
   }
 
   // Other networks (MeteoSwiss, Netatmo, Météo-France) don't expose a rich
