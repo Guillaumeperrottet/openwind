@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { SITE_URL } from "@/lib/site";
 import { CategoryPageClient } from "./CategoryPageClient";
 
 interface Props {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props) {
       description:
         cat.description || `Discussions ${cat.name} sur le forum Openwind.`,
       alternates: {
-        canonical: `https://openwind.ch/forum/${slug}`,
+        canonical: `${SITE_URL}/fr/forum/${slug}`,
       },
     };
   } catch {

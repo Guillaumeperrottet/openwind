@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import {
   getStationFromCache,
@@ -5,6 +6,12 @@ import {
   getStationHistory,
 } from "@/lib/stationData";
 import { fetchFullForecast } from "@/lib/forecast";
+import {
+  DEFAULT_OG_IMAGE,
+  localizedAlternates,
+  localizedUrl,
+  toSiteLocale,
+} from "@/lib/site";
 import { StationPageClient } from "./StationPageClient";
 
 // No force-dynamic — params already makes this route dynamic.
@@ -14,44 +21,44 @@ interface Props {
   params: Promise<{ id: string; locale: string }>;
 }
 
+const getStation = cache(getStationFromCache);
+
 export async function generateMetadata({ params }: Props) {
   const { id, locale } = await params;
-  const name = decodeURIComponent(id);
-
-  const stationTitle: Record<string, string> = {
-    en: `Station ${name}`,
-    de: `Station ${name}`,
-    it: `Stazione ${name}`,
-    fr: `Station ${name}`,
-  };
-  const stationDesc: Record<string, string> = {
-    en: `Wind station ${name} — live wind, 48h history and 7-day forecasts.`,
-    de: `Windstation ${name} — Live-Wind, 48h-Verlauf und 7-Tage-Vorhersagen.`,
-    it: `Stazione vento ${name} — vento in diretta, storico 48h e previsioni 7 giorni.`,
-    fr: `Balise vent ${name} — vent en direct, historique 48h et prévisions 7 jours.`,
-  };
-  const description = stationDesc[locale] ?? stationDesc.fr;
-  const title = stationTitle[locale] ?? stationTitle.fr;
-  const base = `https://openwind.ch`;
-  const encodedId = encodeURIComponent(id);
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: `${base}/${locale}/stations/${encodedId}`,
-      languages: {
-        "x-default": `${base}/fr/stations/${encodedId}`,
-        fr: `${base}/fr/stations/${encodedId}`,
-        en: `${base}/en/stations/${encodedId}`,
-        de: `${base}/de/stations/${encodedId}`,
-        it: `${base}/it/stations/${encodedId}`,
-      },
+  const stationId = decodeURIComponent(id);
+  const station = await getStation(stationId);
+  const name = station?.name ?? stationId;
+  const localizedCopy = {
+    fr: {
+      title: `Vent à ${name} en direct`,
+      description: `Balise vent à ${name} (${stationId}) : mesure en direct, rafales, historique 48 h et prévisions à 7 jours.`,
     },
+    en: {
+      title: `Live wind at ${name}`,
+      description: `Wind station at ${name} (${stationId}): live measurements, gusts, 48-hour history and 7-day forecasts.`,
+    },
+    de: {
+      title: `Live-Wind in ${name}`,
+      description: `Windstation in ${name} (${stationId}): Live-Messwerte, Böen, 48-Stunden-Verlauf und 7-Tage-Prognosen.`,
+    },
+    it: {
+      title: `Vento in diretta a ${name}`,
+      description: `Stazione vento a ${name} (${stationId}): misure in diretta, raffiche, storico di 48 ore e previsioni a 7 giorni.`,
+    },
+  };
+  const copy = localizedCopy[toSiteLocale(locale)];
+  const encodedId = encodeURIComponent(stationId);
+
+  return {
+    title: copy.title,
+    description: copy.description,
+    alternates: localizedAlternates(locale, `/stations/${encodedId}`),
     openGraph: {
-      title: `${title} — Openwind`,
-      description,
-      url: `${base}/${locale}/stations/${encodedId}`,
+      title: `${copy.title} — Openwind`,
+      description: copy.description,
+      url: localizedUrl(locale, `/stations/${encodedId}`),
       type: "website",
+      images: [DEFAULT_OG_IMAGE],
     },
   };
 }
@@ -62,7 +69,7 @@ export default async function StationPage({ params }: Props) {
 
   // Look up station metadata from the 10-min cron snapshot — single DB query,
   // ~5× faster than re-fetching all 5 networks on every page hit.
-  const station = await getStationFromCache(stationId);
+  const station = await getStation(stationId);
   if (!station) notFound();
 
   // Fetch live wind, 48h history and 7-day forecast in parallel.

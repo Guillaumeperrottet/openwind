@@ -9,6 +9,11 @@ import {
   buildBreadcrumbSchema,
   combineSchemas,
 } from "@/lib/seo";
+import {
+  SITE_URL,
+  localizedAlternates,
+  localizedUrl,
+} from "@/lib/site";
 import type { WindLive } from "@/types";
 import { SpotPageClient } from "./SpotPageClient";
 
@@ -36,35 +41,32 @@ export async function generateMetadata({ params }: Props) {
 
     // Build optimized, keyword-focused description
     const description = buildSpotDescription(spot, locale);
+    const socialImage = `${SITE_URL}/api/og?id=${id}`;
 
-    const base = `https://openwind.ch`;
     return {
       title: spot.name,
       description,
-      alternates: {
-        canonical: `${base}/${locale}/spots/${id}`,
-        languages: {
-          "x-default": `${base}/fr/spots/${id}`,
-          fr: `${base}/fr/spots/${id}`,
-          en: `${base}/en/spots/${id}`,
-          de: `${base}/de/spots/${id}`,
-          it: `${base}/it/spots/${id}`,
-        },
-      },
+      alternates: localizedAlternates(locale, `/spots/${id}`),
       openGraph: {
         title: `${spot.name} — Openwind`,
         description,
-        url: `${base}/${locale}/spots/${id}`,
+        url: localizedUrl(locale, `/spots/${id}`),
         type: "article",
         // Dynamic og:image generated via /api/og endpoint
         images: [
           {
-            url: `https://openwind.ch/api/og?id=${id}`,
+            url: socialImage,
             width: 1200,
             height: 630,
             alt: spot.name,
           },
         ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${spot.name} — Openwind`,
+        description,
+        images: [socialImage],
       },
     };
   } catch {
@@ -113,7 +115,7 @@ export default async function SpotPage({ params }: Props) {
                 locale,
               ),
             ),
-          ),
+          ).replace(/</g, "\\u003c"),
         }}
       />
       <SpotPageClient

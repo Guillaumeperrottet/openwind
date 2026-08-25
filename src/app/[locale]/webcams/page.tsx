@@ -1,5 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import type { WindyWebcam } from "@/app/api/webcams/route";
+import {
+  DEFAULT_OG_IMAGE,
+  localizedAlternates,
+  localizedUrl,
+} from "@/lib/site";
 import { WebcamsClient } from "./WebcamsClient";
 
 interface Props {
@@ -19,6 +24,14 @@ export async function generateMetadata({ params, searchParams }: Props) {
   return {
     title: name ? t("metaTitleNear", { name }) : t("metaTitle"),
     description: name ? t("metaDescNear", { name }) : t("metaDesc"),
+    alternates: localizedAlternates(locale, "/webcams"),
+    openGraph: {
+      title: name ? t("metaTitleNear", { name }) : t("metaTitle"),
+      description: name ? t("metaDescNear", { name }) : t("metaDesc"),
+      url: localizedUrl(locale, "/webcams"),
+      type: "website",
+      images: [DEFAULT_OG_IMAGE],
+    },
   };
 }
 

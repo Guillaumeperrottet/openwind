@@ -4,6 +4,7 @@
  */
 
 import type { Spot, WindReport } from "@/generated/prisma/client";
+import { DEFAULT_OG_IMAGE, SITE_URL, localizedUrl } from "@/lib/site";
 
 type Locale = "fr" | "en" | "de" | "it";
 
@@ -161,20 +162,20 @@ export function buildArticleSchema(
     headline,
     name: spot.name,
     description: spot.description || buildSpotDescription(spot, locale),
-    image: spot.images[0]?.url || "https://openwind.ch/og-image.png",
+    image: spot.images[0]?.url || DEFAULT_OG_IMAGE,
     datePublished: spot.createdAt.toISOString(),
     dateModified: spot.updatedAt.toISOString(),
     author: {
       "@type": "Organization",
       name: "Openwind",
-      url: "https://openwind.ch",
+      url: SITE_URL,
     },
     publisher: {
       "@type": "Organization",
       name: "Openwind",
       logo: {
         "@type": "ImageObject",
-        url: "https://openwind.ch/logo.png",
+        url: `${SITE_URL}/logo_noback.png`,
       },
     },
   };
@@ -262,26 +263,27 @@ export function buildBreadcrumbSchema(
   const sportLabel =
     sport === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
   const { home, map } = BREADCRUMB_LABELS[l];
+  const homeUrl = localizedUrl(l);
 
   const breadcrumbs = [
-    { name: home, url: "https://openwind.ch" },
-    { name: map, url: "https://openwind.ch" },
+    { name: home, url: homeUrl },
+    { name: map, url: homeUrl },
     {
       name: sportLabel,
-      url: `https://openwind.ch?sport=${sport.toLowerCase()}`,
+      url: `${homeUrl}?sport=${sport.toLowerCase()}`,
     },
   ];
 
   if (region) {
     breadcrumbs.push({
       name: region,
-      url: `https://openwind.ch?region=${encodeURIComponent(region)}`,
+      url: `${homeUrl}?region=${encodeURIComponent(region)}`,
     });
   }
 
   breadcrumbs.push({
     name: spotName,
-    url: `https://openwind.ch/spots/${spotId}`,
+    url: localizedUrl(l, `/spots/${spotId}`),
   });
 
   return {

@@ -1,14 +1,42 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import {
+  DEFAULT_OG_IMAGE,
+  localizedAlternates,
+  localizedUrl,
+  toSiteLocale,
+} from "@/lib/site";
 import { ForumPageClient } from "./ForumPageClient";
 
-export const metadata: Metadata = {
-  title: "Forum",
-  description:
-    "Forum communautaire Openwind — discussions sur les spots, le matos, le projet et entraide entre riders.",
-  alternates: { canonical: "https://openwind.ch/forum" },
+const FORUM_DESCRIPTIONS = {
+  fr: "Forum communautaire Openwind — discussions sur les spots, le matériel, le projet et entraide entre pratiquants.",
+  en: "Openwind community forum — discuss spots, equipment, the project and share advice with other riders.",
+  de: "Openwind Community-Forum — Austausch über Spots, Ausrüstung, das Projekt und gegenseitige Hilfe.",
+  it: "Forum della comunità Openwind — discussioni su spot, attrezzatura, progetto e consigli tra praticanti.",
 };
+
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const description = FORUM_DESCRIPTIONS[toSiteLocale(locale)];
+
+  return {
+    title: "Forum",
+    description,
+    alternates: localizedAlternates(locale, "/forum"),
+    openGraph: {
+      title: "Forum — Openwind",
+      description,
+      url: localizedUrl(locale, "/forum"),
+      type: "website",
+      images: [DEFAULT_OG_IMAGE],
+    },
+  };
+}
 
 export default async function ForumPage() {
   const categories = await prisma.forumCategory.findMany({

@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { SITE_LOCALES, SITE_URL } from "@/lib/site";
 
-const BASE_URL = "https://openwind.ch";
-const LOCALES = ["fr", "en", "de", "it"] as const;
+const BASE_URL = SITE_URL;
+const LOCALES = SITE_LOCALES;
 
 /** Build a sitemap entry with hreflang alternates for all locales. */
 function multilingual(
@@ -28,10 +29,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...multilingual("/about", { changeFrequency: "monthly", priority: 0.9 }),
     ...multilingual("/plan", { changeFrequency: "weekly", priority: 0.85 }),
     ...multilingual("/forum", { changeFrequency: "daily", priority: 0.8 }),
-    ...multilingual("/spots/new", {
-      changeFrequency: "monthly",
-      priority: 0.5,
-    }),
   ];
 
   // Dynamic spot pages — 4 locales each

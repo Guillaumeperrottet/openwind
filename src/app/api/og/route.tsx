@@ -151,7 +151,7 @@ export async function GET(request: Request) {
               backdropFilter: "blur(10px)",
             }}
           >
-            Niveau: {diffLabel}
+            {`Niveau: ${diffLabel}`}
           </div>
           <div
             style={{
@@ -168,6 +168,10 @@ export async function GET(request: Request) {
       {
         width: 1200,
         height: 630,
+        headers: {
+          "Cache-Control":
+            "public, max-age=86400, s-maxage=2592000, stale-while-revalidate=86400",
+        },
       },
     );
   } catch (error) {
@@ -188,6 +192,3 @@ function adjustBrightness(hex: string, percent: number): string {
   const B = Math.min(255, Math.max(0, (num & 0x0000ff) + amt));
   return "#" + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
 }
-
-// Cache for 30 days (spots rarely change significantly)
-export const revalidate = 2592000; // 30 days in seconds

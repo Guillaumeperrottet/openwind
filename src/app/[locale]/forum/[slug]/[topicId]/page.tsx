@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { SITE_URL } from "@/lib/site";
 import { TopicPageClient } from "./TopicPageClient";
 
 interface Props {
-  params: Promise<{ slug: string; topicId: string }>;
+  params: Promise<{ locale: string; slug: string; topicId: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -21,12 +22,13 @@ export async function generateMetadata({ params }: Props) {
       title: topic.title,
       description: desc,
       alternates: {
-        canonical: `https://openwind.ch/forum/${slug}/${topicId}`,
+        canonical: `${SITE_URL}/fr/forum/${slug}/${topicId}`,
       },
       openGraph: {
         title: `${topic.title} — Forum Openwind`,
         description: desc,
         type: "article" as const,
+        url: `${SITE_URL}/fr/forum/${slug}/${topicId}`,
       },
     };
   } catch {

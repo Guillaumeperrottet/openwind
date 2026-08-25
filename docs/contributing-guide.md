@@ -191,7 +191,7 @@ Modifier `src/app/spots/[id]/page.tsx` pour importer et afficher le composant.
 Les catégories sont gérées en DB. Utiliser l'API admin :
 
 ```bash
-curl -X POST https://openwind.ch/api/forum/categories \
+curl -X POST https://www.openwind.ch/api/forum/categories \
   -H "Cookie: [session cookie]" \
   -H "Content-Type: application/json" \
   -d '{ "name": "Matériel", "description": "Discussion sur le matériel", "icon": "🎒", "order": 3 }'

@@ -12,9 +12,13 @@ export async function generateMetadata({ params }: Props) {
     const spot = await prisma.spot.findUnique({ where: { id } });
     return {
       title: spot ? `Modifier ${spot.name}` : "Modifier le spot",
+      robots: { index: false, follow: false },
     };
   } catch {
-    return { title: "Modifier le spot" };
+    return {
+      title: "Modifier le spot",
+      robots: { index: false, follow: false },
+    };
   }
 }
 

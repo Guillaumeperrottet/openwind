@@ -1,4 +1,9 @@
 import { getTranslations } from "next-intl/server";
+import {
+  DEFAULT_OG_IMAGE,
+  localizedAlternates,
+  localizedUrl,
+} from "@/lib/site";
 import AboutClient from "./AboutClient";
 
 interface Props {
@@ -8,25 +13,16 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "AboutPage" });
-  const base = "https://openwind.ch";
   return {
     title: t("metaTitle"),
     description: t("metaDesc"),
-    alternates: {
-      canonical: `${base}/${locale}/about`,
-      languages: {
-        "x-default": `${base}/fr/about`,
-        fr: `${base}/fr/about`,
-        en: `${base}/en/about`,
-        de: `${base}/de/about`,
-        it: `${base}/it/about`,
-      },
-    },
+    alternates: localizedAlternates(locale, "/about"),
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDesc"),
-      url: `${base}/${locale}/about`,
+      url: localizedUrl(locale, "/about"),
       type: "website",
+      images: [DEFAULT_OG_IMAGE],
     },
   };
 }

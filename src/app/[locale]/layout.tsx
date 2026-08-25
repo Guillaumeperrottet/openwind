@@ -7,82 +7,87 @@ import { getMessages } from "next-intl/server";
 import { Navbar } from "@/components/ui/Navbar";
 import { FavProvider } from "@/lib/FavContext";
 import { routing } from "@/i18n/routing";
+import {
+  DEFAULT_OG_IMAGE,
+  HOME_SEO,
+  SITE_URL,
+  localizedUrl,
+  toSiteLocale,
+} from "@/lib/site";
 import { notFound } from "next/navigation";
 
 const GTM_ID = "GTM-WQ58WR7M";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const localeNames: Record<string, string> = {
-  fr: "fr_CH",
-  en: "en_US",
-  de: "de_CH",
-  it: "it_CH",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const copy = HOME_SEO[toSiteLocale(locale)];
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://openwind.ch"),
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
-  verification: {
-    google: "IPK5LP6dD1gvar2XIppMLxIbce_yOzD3OfiPN1Cj1cU",
-  },
-  title: {
-    default: "Openwind — Balises vent en direct, spots kitesurf et parapente",
-    template: "%s — Openwind",
-  },
-  description:
-    "Balises vent en direct, carte interactive des spots de kitesurf et parapente. Stations météo temps réel, prévisions 7 jours, archives historiques et planificateur de voyages.",
-  keywords: [
-    "balise vent",
-    "balise vent direct",
-    "kitesurf",
-    "parapente",
-    "vent en direct",
-    "spots kitesurf",
-    "spots parapente",
-    "prévisions vent",
-    "carte vent",
-    "open source",
-    "météo",
-    "kite",
-    "paragliding",
-    "wind",
-    "forecast",
-  ],
-  authors: [{ name: "Openwind" }],
-  creator: "Openwind",
-  openGraph: {
-    title: "Openwind — Balises vent en direct, spots kitesurf et parapente",
-    description:
-      "Balises vent en direct et carte interactive des spots de kitesurf et parapente. Stations météo temps réel, prévisions, planificateur de voyages.",
-    url: "https://openwind.ch",
-    siteName: "Openwind",
-    locale: "fr_CH",
-    type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Openwind — Balises vent en direct, spots kitesurf et parapente",
-      },
+  return {
+    metadataBase: new URL(SITE_URL),
+    icons: {
+      icon: "/favicon.ico",
+      apple: "/apple-touch-icon.png",
+    },
+    verification: {
+      google: "IPK5LP6dD1gvar2XIppMLxIbce_yOzD3OfiPN1Cj1cU",
+    },
+    title: {
+      default: copy.title,
+      template: "%s — Openwind",
+    },
+    description: copy.description,
+    keywords: [
+      "balise vent",
+      "balise vent direct",
+      "kitesurf",
+      "parapente",
+      "vent en direct",
+      "spots kitesurf",
+      "spots parapente",
+      "prévisions vent",
+      "carte vent",
+      "open source",
+      "météo",
+      "kite",
+      "paragliding",
+      "wind",
+      "forecast",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Openwind — Balises vent en direct, spots kite & parapente",
-    description:
-      "Balises vent en direct, prévisions 7 jours, archives historiques. Open source.",
-    images: ["/og-image.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+    authors: [{ name: "Openwind" }],
+    creator: "Openwind",
+    openGraph: {
+      title: copy.title,
+      description: copy.socialDescription,
+      siteName: "Openwind",
+      locale: copy.openGraphLocale,
+      type: "website",
+      images: [
+        {
+          url: DEFAULT_OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: copy.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: copy.title,
+      description: copy.socialDescription,
+      images: [DEFAULT_OG_IMAGE],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 interface Props {
   children: React.ReactNode;
@@ -97,6 +102,33 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   const messages = await getMessages();
+  const copy = HOME_SEO[toSiteLocale(locale)];
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        name: "Openwind",
+        url: SITE_URL,
+        description: copy.description,
+      },
+      {
+        "@type": "SiteNavigationElement",
+        name: "Carte",
+        url: localizedUrl(locale),
+      },
+      {
+        "@type": "SiteNavigationElement",
+        name: "Planification",
+        url: localizedUrl(locale, "/plan"),
+      },
+      {
+        "@type": "SiteNavigationElement",
+        name: "Forum",
+        url: localizedUrl(locale, "/forum"),
+      },
+    ],
+  };
 
   return (
     <>
@@ -114,44 +146,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@graph": [
-              {
-                "@type": "WebSite",
-                name: "Openwind",
-                url: "https://openwind.ch",
-                description:
-                  "Balises vent en direct et carte interactive des spots de kitesurf et parapente.",
-              },
-              {
-                "@type": "SiteNavigationElement",
-                name: "Carte",
-                url: "https://openwind.ch",
-              },
-              {
-                "@type": "SiteNavigationElement",
-                name: "Planification",
-                url: "https://openwind.ch/plan",
-              },
-              {
-                "@type": "SiteNavigationElement",
-                name: "Forum",
-                url: "https://openwind.ch/forum",
-              },
-            ],
-          }),
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
         }}
-      />
-      {/* hreflang for SEO */}
-      <link rel="alternate" hrefLang="fr" href="https://openwind.ch/fr" />
-      <link rel="alternate" hrefLang="en" href="https://openwind.ch/en" />
-      <link rel="alternate" hrefLang="de" href="https://openwind.ch/de" />
-      <link rel="alternate" hrefLang="it" href="https://openwind.ch/it" />
-      <link
-        rel="alternate"
-        hrefLang="x-default"
-        href="https://openwind.ch/fr"
       />
       <NextIntlClientProvider messages={messages}>
         <FavProvider>

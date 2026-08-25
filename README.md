@@ -2,7 +2,7 @@
 
 **Carte open source des spots de kitesurf et parapente — vent en direct, prévisions, archives, planificateur de voyages.**
 
-[openwind.ch](https://openwind.ch)
+[openwind.ch](https://www.openwind.ch)
 
 ![Status](https://img.shields.io/badge/status-alpha-orange)
 ![License](https://img.shields.io/badge/license-AGPL--v3-blue)
