@@ -652,6 +652,30 @@ export function SpotPageClient({
         </div>
       </div>
 
+      {locale === "fr" && spot.id === "cmnq613tx00it04kw1d0vraq4" && (
+        <div className="border-b border-sky-100 bg-sky-50 px-4 py-3 sm:px-6">
+          <Link
+            href="/vent-en-direct/lac-de-la-gruyere"
+            className="mx-auto flex max-w-5xl items-center justify-between gap-4 rounded-xl text-sky-900 transition hover:text-sky-600"
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-sky-600 shadow-sm">
+                <MapPin className="h-4 w-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-sky-600">
+                  Guide local
+                </span>
+                <span className="block truncate text-sm font-medium">
+                  Vent en direct et informations sur le lac de la Gruyère
+                </span>
+              </span>
+            </span>
+            <ExternalLink className="h-4 w-4 shrink-0" />
+          </Link>
+        </div>
+      )}
+
       {/* ── Main content ─────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 py-8">
         {/* Unit toggle */}

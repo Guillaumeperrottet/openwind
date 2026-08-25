@@ -12,6 +12,19 @@ const intlMiddleware = createIntlMiddleware(routing);
  */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const isFrenchOnlyLocalGuide =
+    /^\/(?:fr|en|de|it)\/vent-en-direct\/lac-de-la-gruyere\/?$/.test(
+      pathname,
+    );
+
+  if (
+    /^\/(?:en|de|it)\/vent-en-direct\/lac-de-la-gruyere\/?$/.test(pathname)
+  ) {
+    return NextResponse.redirect(
+      new URL("/fr/vent-en-direct/lac-de-la-gruyere", request.url),
+      308,
+    );
+  }
 
   // Skip intl for API routes, auth callbacks, and static assets
   const isIntlRoute =
@@ -61,6 +74,7 @@ export async function proxy(request: NextRequest) {
   // layout can read the locale to set <html lang="...">.
   if (intlResponse) {
     intlResponse.headers.forEach((value, key) => {
+      if (isFrenchOnlyLocalGuide && key === "link") return;
       supabaseResponse.headers.set(key, value);
     });
   }
