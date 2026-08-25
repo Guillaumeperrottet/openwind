@@ -25,6 +25,7 @@ import {
 } from "@/components/plan/useBottomSheet";
 import { Button } from "@/components/ui/Button";
 import type { SpotWithForecast, SportType } from "@/types";
+import { trackEvent } from "@/lib/analytics";
 import {
   MapPin,
   Wind,
@@ -63,6 +64,12 @@ const toISO = (offset: number) => {
   d.setDate(d.getDate() + offset);
   return d.toISOString().split("T")[0];
 };
+
+function inclusiveDayCount(start: string, end: string): number {
+  const startMs = new Date(`${start}T00:00:00`).getTime();
+  const endMs = new Date(`${end}T00:00:00`).getTime();
+  return Math.max(1, Math.round((endMs - startMs) / 86400000) + 1);
+}
 
 export function TripPlanner({ searchParams }: TripPlannerProps) {
   const t = useTranslations("PlanPage");
@@ -227,6 +234,14 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
             const data: SpotWithForecast[] = await res.json();
             setResults(data);
             setSelectedDayMap({});
+            trackEvent("plan_search", {
+              search_mode: "quick_now",
+              sport: sport.toLowerCase(),
+              radius_km: searchRadius,
+              date_days: 1,
+              has_location: true,
+              results_count: data.length,
+            });
             if (data.length > 0) setSheetFrac(SNAP_HALF);
           } catch {
             setError(t("forecastFailed"));
@@ -336,6 +351,14 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
           const data: SpotWithForecast[] = await res.json();
           setResults(data);
           setSelectedDayMap({});
+          trackEvent("plan_search", {
+            search_mode: "near_me",
+            sport: sport.toLowerCase(),
+            radius_km: radius,
+            date_days: inclusiveDayCount(startDate, endDate),
+            has_location: true,
+            results_count: data.length,
+          });
           if (data.length > 0) setSheetFrac(SNAP_HALF);
         } catch {
           setError(t("forecastFailed"));
@@ -362,6 +385,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
   }, [setSheetFrac]);
 
   const handleSearch = async () => {
+    const searchMode = hasAutoSearch && !searched ? "restored" : "manual";
     setLoading(true);
     setSearched(true);
     setError(null);
@@ -384,6 +408,14 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
       const data: SpotWithForecast[] = await res.json();
       setResults(data);
       setSelectedDayMap({});
+      trackEvent("plan_search", {
+        search_mode: searchMode,
+        sport: sport.toLowerCase(),
+        radius_km: radius,
+        date_days: inclusiveDayCount(startDate, endDate),
+        has_location: lat !== null && lng !== null,
+        results_count: data.length,
+      });
       if (data.length > 0) setSheetFrac(SNAP_HALF);
     } catch {
       setError(t("forecastFailed"));
@@ -401,6 +433,10 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
     if (navigator.share) {
       try {
         await navigator.share({ title: "OpenWind — Planificateur", url });
+        trackEvent("share", {
+          method: "web_share",
+          content_type: "trip_plan",
+        });
         return;
       } catch {
         // User cancelled
@@ -408,6 +444,10 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
     }
     try {
       await navigator.clipboard.writeText(url);
+      trackEvent("share", {
+        method: "clipboard",
+        content_type: "trip_plan",
+      });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

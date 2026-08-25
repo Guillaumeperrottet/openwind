@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { User } from "@supabase/supabase-js";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * Manages the user's favorite spot IDs.
@@ -46,6 +47,9 @@ export function useFavorites(user: User | null) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
+        trackEvent(data.favorited ? "favorite_added" : "favorite_removed", {
+          spot_id: spotId,
+        });
         return data.favorited;
       } catch {
         // Rollback on error

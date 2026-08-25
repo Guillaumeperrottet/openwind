@@ -8,6 +8,7 @@ import { ReplyForm } from "./ReplyForm";
 import { Markdown } from "./Markdown";
 import { useFavContext } from "@/lib/FavContext";
 import { timeAgo } from "@/lib/forum";
+import { trackEvent } from "@/lib/analytics";
 
 interface Author {
   id: string;
@@ -84,9 +85,17 @@ export function PostThread({
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const url = `${window.location.href}#post-${post.id}`;
-    navigator.clipboard.writeText(url);
+    try {
+      await navigator.clipboard.writeText(url);
+      trackEvent("share", {
+        method: "clipboard",
+        content_type: "forum_post",
+      });
+    } catch {
+      // Clipboard access can be denied by the browser.
+    }
   };
 
   return (

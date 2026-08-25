@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Mail, Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 
 interface AuthModalProps {
   open: boolean;
@@ -41,6 +42,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
       if (authError) {
         setError(authError.message);
       } else {
+        trackEvent("sign_up", { method: "email" });
         setSignupDone(true);
       }
     } else {
@@ -56,6 +58,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
           setError(authError.message);
         }
       } else {
+        trackEvent("login", { method: "email" });
         // Sync user to Prisma (non-blocking)
         fetch("/api/auth/sync", { method: "POST" }).catch(() => {});
         onClose();
@@ -84,6 +87,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const handleOAuth = async (provider: "google" | "github") => {
     const supabase = createClient();
     const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`;
+    trackEvent("auth_oauth_started", { method: provider });
     await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo },

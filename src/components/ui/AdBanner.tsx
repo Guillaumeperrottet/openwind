@@ -7,6 +7,7 @@ import {
   useCallback,
   type CSSProperties,
 } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 interface BannerConfig {
   text: string;
@@ -51,6 +52,13 @@ export function AdBanner() {
 
   if (!banner) return null;
 
+  let destinationHost = "unknown";
+  try {
+    destinationHost = new URL(banner.url).hostname.replace(/^www\./, "");
+  } catch {
+    // Keep the neutral label for malformed legacy banner URLs.
+  }
+
   const marqueeStyle: CSSProperties = {
     animationDuration: `${banner.speedSec}s`,
     animationPlayState: banner.paused ? "paused" : "running",
@@ -65,6 +73,11 @@ export function AdBanner() {
         href={banner.url}
         target="_blank"
         rel="noopener noreferrer sponsored"
+        onClick={() =>
+          trackEvent("sponsor_click", {
+            destination_host: destinationHost,
+          })
+        }
         className="flex items-center h-7 whitespace-nowrap text-xs text-white/90 hover:text-white transition-colors"
       >
         {/* Hidden measuring span */}
