@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowLeft,
+  ArrowRight,
   MapPin,
   Wind,
   Zap,
@@ -652,30 +653,6 @@ export function SpotPageClient({
         </div>
       </div>
 
-      {locale === "fr" && spot.id === "cmnq613tx00it04kw1d0vraq4" && (
-        <div className="border-b border-sky-100 bg-sky-50 px-4 py-3 sm:px-6">
-          <Link
-            href="/vent-en-direct/lac-de-la-gruyere"
-            className="mx-auto flex max-w-5xl items-center justify-between gap-4 rounded-xl text-sky-900 transition hover:text-sky-600"
-          >
-            <span className="flex min-w-0 items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-sky-600 shadow-sm">
-                <MapPin className="h-4 w-4" />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-sky-600">
-                  Guide local
-                </span>
-                <span className="block truncate text-sm font-medium">
-                  Vent en direct et informations sur le lac de la Gruyère
-                </span>
-              </span>
-            </span>
-            <ExternalLink className="h-4 w-4 shrink-0" />
-          </Link>
-        </div>
-      )}
-
       {/* ── Main content ─────────────────────────────────────────── */}
       <div className="px-4 sm:px-6 py-8">
         {/* Unit toggle */}
@@ -920,6 +897,39 @@ export function SpotPageClient({
             </div>
           </div>
         </div>
+
+        {locale === "fr" && spot.id === "cmnq613tx00it04kw1d0vraq4" && (
+          <aside className="mb-10 max-w-2xl border-y border-gray-200 py-4">
+            <Link
+              href="/vent-en-direct/lac-de-la-gruyere"
+              className="group flex items-center gap-4 text-left"
+            >
+              {spot.images[0] && (
+                <span className="h-20 w-24 shrink-0 overflow-hidden rounded bg-gray-100 sm:h-24 sm:w-36">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={spot.images[0].url}
+                    alt="Lac de la Gruyère"
+                    className="h-full w-full object-cover grayscale-[15%] transition duration-300 group-hover:grayscale-0"
+                  />
+                </span>
+              )}
+              <span className="min-w-0 flex-1">
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  Le carnet Openwind · Guide local
+                </span>
+                <span className="mt-1 block font-serif text-lg font-semibold leading-snug text-gray-900 transition group-hover:text-sky-700 sm:text-xl">
+                  Comprendre le vent au lac de la Gruyère
+                </span>
+                <span className="mt-1.5 hidden text-xs leading-5 text-gray-500 sm:block">
+                  Balises, directions, accès et règles à connaître autour de
+                  Morlon.
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-sky-600" />
+            </Link>
+          </aside>
+        )}
 
         {/* ── Lightbox modal ─────────────────────────────────────── */}
         {lightboxIndex !== null && spot.images.length > 0 && (
