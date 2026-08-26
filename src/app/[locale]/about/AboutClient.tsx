@@ -32,7 +32,6 @@ export default function AboutClient() {
       <SectionForum />
       <SectionSports />
       <SectionOpenSource />
-      <Footer />
     </div>
   );
 }
@@ -409,23 +408,6 @@ function SectionOpenSource() {
         </div>
       </div>
     </section>
-  );
-}
-
-function Footer() {
-  const t = useTranslations("AboutPage");
-  return (
-    <footer className="px-6 py-10 border-t border-slate-200 text-center text-xs text-slate-400">
-      <p>
-        {t("footerText")}{" "}
-        <Link
-          href="/"
-          className="underline underline-offset-2 hover:text-slate-600"
-        >
-          {t("footerLink")}
-        </Link>
-      </p>
-    </footer>
   );
 }
 

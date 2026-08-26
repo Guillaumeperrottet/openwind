@@ -30,6 +30,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...multilingual("/plan", { changeFrequency: "weekly", priority: 0.85 }),
     ...multilingual("/forum", { changeFrequency: "daily", priority: 0.8 }),
     {
+      url: `${BASE_URL}/fr/carnet`,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: `${BASE_URL}/fr/vent-en-direct/lac-de-la-gruyere`,
       changeFrequency: "daily",
       priority: 0.9,
@@ -63,6 +68,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/fr/forum/${cat.slug}`,
       changeFrequency: "daily" as const,
       priority: 0.7,
+    }));
+  } catch {
+    // DB unavailable
+  }
+
+  // Carnet articles — FR only
+  let articlePages: MetadataRoute.Sitemap = [];
+  try {
+    const articles = await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true, updatedAt: true },
+    });
+    articlePages = articles.map((article: (typeof articles)[number]) => ({
+      url: `${BASE_URL}/fr/carnet/${article.slug}`,
+      lastModified: article.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     }));
   } catch {
     // DB unavailable
@@ -109,6 +131,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...spotPages,
     ...stationPages,
+    ...articlePages,
     ...forumPages,
     ...topicPages,
   ];

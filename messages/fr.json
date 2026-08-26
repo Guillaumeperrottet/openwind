@@ -32,6 +32,23 @@
     "menu": "Menu",
     "signIn": "Se connecter"
   },
+  "Footer": {
+    "eyebrow": "Créé au bord du vent",
+    "headline": "Le vent, le terrain, la communauté.",
+    "description": "Openwind réunit les balises, les prévisions et l'expérience locale pour mieux préparer chaque sortie.",
+    "explore": "Explorer",
+    "community": "Communauté",
+    "contact": "Contact",
+    "map": "Carte du vent",
+    "plan": "Planifier une sortie",
+    "webcams": "Webcams",
+    "carnet": "Le Carnet",
+    "forum": "Forum",
+    "addSpot": "Ajouter un spot",
+    "about": "À propos",
+    "region": "Suisse romande",
+    "openSource": "Un projet open source construit en Suisse romande."
+  },
   "SearchBar": {
     "placeholder": "Rechercher un spot ou une station…",
     "createSpot": "Créer ce spot",

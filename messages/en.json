@@ -32,6 +32,23 @@
     "menu": "Menu",
     "signIn": "Sign in"
   },
+  "Footer": {
+    "eyebrow": "Built where the wind blows",
+    "headline": "The wind, the terrain, the community.",
+    "description": "Openwind brings together live stations, forecasts and local experience to help prepare every outing.",
+    "explore": "Explore",
+    "community": "Community",
+    "contact": "Contact",
+    "map": "Wind map",
+    "plan": "Plan an outing",
+    "webcams": "Webcams",
+    "carnet": "The Journal",
+    "forum": "Forum",
+    "addSpot": "Add a spot",
+    "about": "About",
+    "region": "French-speaking Switzerland",
+    "openSource": "An open-source project built in French-speaking Switzerland."
+  },
   "SearchBar": {
     "placeholder": "Search a spot or station…",
     "createSpot": "Create this spot",

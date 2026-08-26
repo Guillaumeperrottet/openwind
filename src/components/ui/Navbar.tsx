@@ -18,6 +18,7 @@ import {
   MessagesSquare,
   Mail,
   Info,
+  Newspaper,
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,16 @@ export function Navbar() {
   const links = [
     { href: "/" as const, label: t("map"), icon: MapPin },
     { href: "/plan" as const, label: t("plan"), icon: Route },
+    ...(currentLocale === "fr"
+      ? [
+          {
+            href: "/carnet" as const,
+            label: "Carnet",
+            icon: Newspaper,
+            hideOnMobile: true,
+          },
+        ]
+      : []),
     {
       href: "/forum" as const,
       label: t("forum"),
@@ -195,6 +206,16 @@ export function Navbar() {
                       <MessagesSquare className="h-3.5 w-3.5" />
                       {t("forum")}
                     </Link>
+                    {currentLocale === "fr" && (
+                      <Link
+                        href="/carnet"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        <Newspaper className="h-3.5 w-3.5" />
+                        Carnet
+                      </Link>
+                    )}
                     <Link
                       href="/about"
                       onClick={() => setMenuOpen(false)}
@@ -293,6 +314,16 @@ export function Navbar() {
                       <MessagesSquare className="h-3.5 w-3.5" />
                       {t("forum")}
                     </Link>
+                    {currentLocale === "fr" && (
+                      <Link
+                        href="/carnet"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        <Newspaper className="h-3.5 w-3.5" />
+                        Carnet
+                      </Link>
+                    )}
                     <Link
                       href="/spots/new"
                       onClick={() => setMenuOpen(false)}

@@ -32,6 +32,23 @@
     "menu": "Menu",
     "signIn": "Accedi"
   },
+  "Footer": {
+    "eyebrow": "Creato dove soffia il vento",
+    "headline": "Il vento, il territorio, la comunità.",
+    "description": "Openwind riunisce stazioni in diretta, previsioni ed esperienza locale per preparare al meglio ogni uscita.",
+    "explore": "Esplora",
+    "community": "Comunità",
+    "contact": "Contatto",
+    "map": "Mappa del vento",
+    "plan": "Pianifica un'uscita",
+    "webcams": "Webcam",
+    "carnet": "Il Giornale",
+    "forum": "Forum",
+    "addSpot": "Aggiungi spot",
+    "about": "Chi siamo",
+    "region": "Svizzera romanda",
+    "openSource": "Un progetto open source creato nella Svizzera romanda."
+  },
   "SearchBar": {
     "placeholder": "Cerca uno spot o una stazione…",
     "createSpot": "Crea questo spot",

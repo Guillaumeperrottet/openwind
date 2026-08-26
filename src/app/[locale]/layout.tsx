@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Navbar } from "@/components/ui/Navbar";
+import { SiteFooter } from "@/components/ui/SiteFooter";
 import { FavProvider } from "@/lib/FavContext";
 import { routing } from "@/i18n/routing";
 import {
@@ -163,6 +164,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </noscript>
             {children}
           </main>
+          <SiteFooter />
         </FavProvider>
       </NextIntlClientProvider>
       <Analytics />

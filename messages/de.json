@@ -32,6 +32,23 @@
     "menu": "Menü",
     "signIn": "Anmelden"
   },
+  "Footer": {
+    "eyebrow": "Dort entwickelt, wo der Wind weht",
+    "headline": "Der Wind, das Gelände, die Gemeinschaft.",
+    "description": "Openwind vereint Live-Messstationen, Prognosen und lokale Erfahrung für eine bessere Vorbereitung jeder Tour.",
+    "explore": "Entdecken",
+    "community": "Gemeinschaft",
+    "contact": "Kontakt",
+    "map": "Windkarte",
+    "plan": "Tour planen",
+    "webcams": "Webcams",
+    "carnet": "Das Journal",
+    "forum": "Forum",
+    "addSpot": "Spot hinzufügen",
+    "about": "Über uns",
+    "region": "Westschweiz",
+    "openSource": "Ein Open-Source-Projekt aus der Westschweiz."
+  },
   "SearchBar": {
     "placeholder": "Spot oder Station suchen…",
     "createSpot": "Diesen Spot erstellen",

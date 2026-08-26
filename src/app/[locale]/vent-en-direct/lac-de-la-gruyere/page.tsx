@@ -17,6 +17,7 @@ import { LiveStations } from "./LiveStations";
 
 const PAGE_PATH = "/vent-en-direct/lac-de-la-gruyere";
 const PAGE_URL = localizedUrl("fr", PAGE_PATH);
+const CARNET_URL = localizedUrl("fr", "/carnet");
 const MORLON_SPOT_ID = "cmnq613tx00it04kw1d0vraq4";
 const HERO_IMAGE =
   "https://fnndeoqzqfxpznhcundq.supabase.co/storage/v1/object/public/spot-images/cmnq613tx00it04kw1d0vraq4/1776010538678.jpeg";
@@ -111,6 +112,12 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
           {
             "@type": "ListItem",
             position: 2,
+            name: "Le Carnet Openwind",
+            item: CARNET_URL,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
             name: "Vent au lac de la Gruyère",
             item: PAGE_URL,
           },
@@ -141,7 +148,7 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
           src={HERO_IMAGE}
           alt="Vue aérienne du lac de la Gruyère et des Préalpes"
           fill
-          priority
+          loading="eager"
           sizes="100vw"
           className="object-cover"
         />
@@ -150,8 +157,8 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
 
         <div className="relative mx-auto flex min-h-[540px] max-w-6xl flex-col justify-end px-5 pb-14 pt-20 sm:px-8 lg:px-10">
           <nav className="mb-auto flex items-center gap-2 text-xs text-white/70">
-            <Link href="/" className="transition hover:text-white">
-              Carte Openwind
+            <Link href="/carnet" className="transition hover:text-white">
+              Le Carnet Openwind
             </Link>
             <span>/</span>
             <span>Lac de la Gruyère</span>
@@ -160,7 +167,7 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
           <div className="max-w-3xl">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur">
               <MapPin className="h-3.5 w-3.5" />
-              Guide local · Fribourg
+              Carnet Nº01 · Fribourg
             </span>
             <h1 className="mt-5 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
               Vent en direct au lac de la Gruyère
@@ -389,6 +396,16 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
             <ArrowRight className="h-4 w-4" />
           </Link>
         </section>
+
+        <div className="mt-8 flex justify-center">
+          <Link
+            href="/carnet"
+            className="inline-flex items-center gap-2 border-b border-slate-400 pb-1 text-sm font-semibold text-slate-700 transition hover:border-sky-600 hover:text-sky-700"
+          >
+            Découvrir tous les Carnets Openwind
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
 
         <footer className="mt-10 text-xs leading-5 text-slate-500">
           Sources locales :{" "}

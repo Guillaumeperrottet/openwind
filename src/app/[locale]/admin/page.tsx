@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { Megaphone, ArrowLeft, Shield, MessagesSquare } from "lucide-react";
+import {
+  Megaphone,
+  ArrowLeft,
+  Shield,
+  MessagesSquare,
+  Newspaper,
+} from "lucide-react";
 
 export default function AdminPage() {
   return (
@@ -25,6 +31,22 @@ export default function AdminPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/admin/articles"
+            className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-sky-300"
+          >
+            <div className="mb-2 inline-flex rounded-lg bg-sky-50 p-2 text-sky-600 group-hover:bg-sky-100">
+              <Newspaper className="h-5 w-5" />
+            </div>
+            <h2 className="text-base font-semibold text-gray-900">
+              Articles du Carnet
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Créer, prévisualiser, publier, modifier ou supprimer les dossiers
+              éditoriaux Openwind.
+            </p>
+          </Link>
+
           <Link
             href="/admin/banner"
             className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-sky-300"

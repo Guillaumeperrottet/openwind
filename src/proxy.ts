@@ -12,16 +12,14 @@ const intlMiddleware = createIntlMiddleware(routing);
  */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isFrenchOnlyLocalGuide =
-    /^\/(?:fr|en|de|it)\/vent-en-direct\/lac-de-la-gruyere\/?$/.test(
-      pathname,
-    );
+  const frenchOnlyContent = pathname.match(
+    /^\/(fr|en|de|it)(\/(?:carnet(?:\/[^/]+)?|vent-en-direct\/lac-de-la-gruyere))\/?$/,
+  );
+  const isFrenchOnlyContent = Boolean(frenchOnlyContent);
 
-  if (
-    /^\/(?:en|de|it)\/vent-en-direct\/lac-de-la-gruyere\/?$/.test(pathname)
-  ) {
+  if (frenchOnlyContent && frenchOnlyContent[1] !== "fr") {
     return NextResponse.redirect(
-      new URL("/fr/vent-en-direct/lac-de-la-gruyere", request.url),
+      new URL(`/fr${frenchOnlyContent[2]}`, request.url),
       308,
     );
   }
@@ -74,7 +72,7 @@ export async function proxy(request: NextRequest) {
   // layout can read the locale to set <html lang="...">.
   if (intlResponse) {
     intlResponse.headers.forEach((value, key) => {
-      if (isFrenchOnlyLocalGuide && key === "link") return;
+      if (isFrenchOnlyContent && key === "link") return;
       supabaseResponse.headers.set(key, value);
     });
   }

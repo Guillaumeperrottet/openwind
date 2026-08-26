@@ -7,6 +7,35 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Article {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  title          String
+  excerpt        String
+  content        String
+  coverImage     String?
+  coverAlt       String?
+  category       String        @default("Carnet Openwind")
+  location       String?
+  readTime       Int           @default(8)
+  status         ArticleStatus @default(DRAFT)
+  seoTitle       String?
+  seoDescription String?
+  sources        Json
+  authorName     String        @default("Openwind")
+  publishedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status, publishedAt])
+}
+
 model Spot {
   id                 String       @id @default(cuid())
   name               String
