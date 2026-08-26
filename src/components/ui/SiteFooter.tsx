@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowUpRight, Mail, MapPin, Wind } from "lucide-react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 
@@ -107,11 +108,16 @@ export function SiteFooter() {
             <div>
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-2xl font-semibold tracking-[-0.04em] text-white"
+                className="inline-flex items-center rounded-xl bg-white px-4 py-2.5 shadow-sm transition hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950"
                 aria-label="Openwind — carte du vent"
               >
-                <Wind className="h-7 w-7 text-sky-300" />
-                <span>openwind</span>
+                <Image
+                  src="/logo_noback.png"
+                  alt=""
+                  width={2000}
+                  height={300}
+                  className="h-auto w-40 sm:w-44"
+                />
               </Link>
               <p className="mt-8 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-sky-300">
                 <Wind className="h-4 w-4" />

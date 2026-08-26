@@ -13,6 +13,7 @@ import {
   Wind,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { articlePublicPath } from "@/lib/articles";
 import { prisma } from "@/lib/prisma";
 import { localizedUrl } from "@/lib/site";
 
@@ -97,19 +98,37 @@ export default async function CarnetPage({ params }: Props) {
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
     })
     .catch(() => []);
+  const localGuide = publishedArticles.find(
+    (article) => article.kind === "LOCAL_GUIDE",
+  );
+  const editorialArticles = publishedArticles.filter(
+    (article) => article.kind === "EDITORIAL",
+  );
+  const publicationCount = publishedArticles.length || 1;
+  const guideDate = new Intl.DateTimeFormat("fr-CH", {
+    month: "long",
+    year: "numeric",
+  }).format(localGuide?.publishedAt ?? localGuide?.createdAt ?? new Date());
 
+  const listedArticles = localGuide
+    ? [localGuide, ...editorialArticles]
+    : editorialArticles;
   const itemListElement = [
-    {
+    ...(!localGuide
+      ? [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Comprendre le vent au lac de la Gruyère",
+            url: GRUYERE_URL,
+          },
+        ]
+      : []),
+    ...listedArticles.map((article, index) => ({
       "@type": "ListItem",
-      position: 1,
-      name: "Comprendre le vent au lac de la Gruyère",
-      url: GRUYERE_URL,
-    },
-    ...publishedArticles.map((article, index) => ({
-      "@type": "ListItem",
-      position: index + 2,
+      position: index + (localGuide ? 1 : 2),
       name: article.title,
-      url: localizedUrl("fr", `/carnet/${article.slug}`),
+      url: localizedUrl("fr", articlePublicPath(article)),
     })),
   ];
 
@@ -162,7 +181,7 @@ export default async function CarnetPage({ params }: Props) {
       />
 
       <header className="border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-5 pb-12 pt-10 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10">
+        <div className="mx-auto w-full max-w-[1480px] px-5 pb-12 pt-10 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10 xl:px-12">
           <div className="flex items-center justify-between border-y border-slate-900 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 sm:text-xs">
             <span>Journal de terrain</span>
             <span className="hidden sm:inline">Suisse romande</span>
@@ -177,7 +196,7 @@ export default async function CarnetPage({ params }: Props) {
                   Openwind présente
                 </span>
               </div>
-              <h1 className="mt-5 font-serif text-6xl font-semibold leading-[0.9] tracking-[-0.04em] text-slate-950 sm:text-7xl lg:text-[6.4rem]">
+              <h1 className="mt-5 font-serif text-6xl font-semibold leading-[0.9] tracking-[-0.04em] text-slate-950 sm:text-7xl lg:text-[6.4rem] xl:text-[7.4rem]">
                 Le Carnet{" "}
                 <span className="block italic text-sky-700">Openwind</span>
               </h1>
@@ -226,37 +245,42 @@ export default async function CarnetPage({ params }: Props) {
         </div>
       </header>
 
-      <main>
-        <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
+      <div>
+        <section className="mx-auto w-full max-w-[1480px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
           <div className="mb-8 flex items-end justify-between gap-6 border-b border-slate-900 pb-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
                 À la une
               </p>
               <h2 className="mt-1 font-serif text-3xl font-semibold sm:text-4xl">
-                Le premier carnet
+                Les Carnets à lire
               </h2>
             </div>
             <span className="hidden text-xs text-slate-500 sm:block">
-              Nº01 · Août 2026
+              {publicationCount} publication{publicationCount > 1 ? "s" : ""} ·
+              Édition 2026
             </span>
           </div>
 
-          <article className="grid overflow-hidden border border-slate-200 bg-white shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="grid items-stretch gap-6 xl:grid-cols-[1.22fr_0.78fr]">
+          <article className="grid h-full overflow-hidden border border-slate-200 bg-white shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
             <Link
               href={GRUYERE_PATH}
               className="group relative min-h-72 overflow-hidden sm:min-h-96 lg:min-h-[460px]"
             >
-              <Image
-                src={HERO_IMAGE}
-                alt="Lac de la Gruyère et Préalpes fribourgeoises"
-                fill
-                loading="eager"
-                sizes="(max-width: 1024px) 100vw, 52vw"
-                className="object-cover transition duration-700 group-hover:scale-[1.02]"
+              {/* The local guide cover can be changed to any admin-approved HTTPS source. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={localGuide?.coverImage || HERO_IMAGE}
+                alt={
+                  localGuide?.coverAlt ||
+                  "Lac de la Gruyère et Préalpes fribourgeoises"
+                }
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.02]"
               />
               <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-900 backdrop-blur">
-                Guide local
+                {localGuide?.category || "Guide local"}
               </span>
             </Link>
 
@@ -265,24 +289,24 @@ export default async function CarnetPage({ params }: Props) {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                   <span className="inline-flex items-center gap-1.5">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    Août 2026
+                    {guideDate}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <Clock3 className="h-3.5 w-3.5" />
-                    6 min
+                    {localGuide?.readTime || 6} min
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <MapPin className="h-3.5 w-3.5" />
-                    Fribourg
+                    {localGuide?.location || "Fribourg"}
                   </span>
                 </div>
                 <h3 className="mt-6 font-serif text-4xl font-semibold leading-tight tracking-[-0.02em] sm:text-5xl">
-                  Comprendre le vent au lac de la Gruyère
+                  {localGuide?.title ||
+                    "Comprendre le vent au lac de la Gruyère"}
                 </h3>
                 <p className="mt-5 text-base leading-7 text-slate-600">
-                  Deux balises, un relief qui change tout et un spot exigeant à
-                  Morlon. Ce premier numéro réunit les mesures, les directions,
-                  l&apos;accès et les règles à connaître avant d&apos;aller sur l&apos;eau.
+                  {localGuide?.excerpt ||
+                    "Deux balises, un relief qui change tout et un spot exigeant à Morlon. Les mesures, les directions, l’accès et les règles à connaître avant d’aller sur l’eau."}
                 </p>
               </div>
 
@@ -290,15 +314,95 @@ export default async function CarnetPage({ params }: Props) {
                 href={GRUYERE_PATH}
                 className="mt-9 inline-flex w-fit items-center gap-3 border-b border-slate-900 pb-1 text-sm font-semibold text-slate-950 transition hover:border-sky-600 hover:text-sky-700"
               >
-                Lire le carnet Nº01
+                Lire le guide local
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </article>
+
+            {editorialArticles.length > 0 ? (
+              <div
+                className={`grid gap-6 ${
+                  editorialArticles.length > 1 ? "sm:grid-cols-2" : ""
+                } xl:grid-cols-1`}
+              >
+                {editorialArticles.map((article) => (
+                  <article
+                    key={article.id}
+                    className="group flex h-full flex-col overflow-hidden border border-slate-200 bg-white shadow-sm"
+                  >
+                    <Link
+                      href={`/carnet/${article.slug}`}
+                      className="relative min-h-60 flex-1 overflow-hidden bg-slate-100 sm:min-h-72 xl:min-h-0"
+                    >
+                      {article.coverImage ? (
+                        <>
+                          {/* Article covers may come from any admin-approved HTTPS source. */}
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={article.coverImage}
+                            alt={article.coverAlt || article.title}
+                            loading="lazy"
+                            className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
+                          />
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-sky-100 to-slate-200" />
+                      )}
+                      <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-900 backdrop-blur">
+                        Dossier météo
+                      </span>
+                    </Link>
+
+                    <div className="flex flex-col justify-between p-6 sm:p-8 xl:min-h-[270px]">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          <span>{article.category}</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock3 className="h-3.5 w-3.5" />
+                            {article.readTime} min
+                          </span>
+                          {article.location && (
+                            <span className="inline-flex items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5" />
+                              {article.location}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="mt-5 font-serif text-3xl font-semibold leading-tight tracking-[-0.02em]">
+                          {article.title}
+                        </h3>
+                        <p className="mt-4 text-sm leading-6 text-slate-600">
+                          {article.excerpt}
+                        </p>
+                      </div>
+                      <Link
+                        href={`/carnet/${article.slug}`}
+                        className="mt-7 inline-flex w-fit items-center gap-2 border-b border-slate-900 pb-1 text-sm font-semibold transition hover:border-sky-600 hover:text-sky-700"
+                      >
+                        Lire le dossier
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <aside className="flex min-h-80 flex-col justify-end border border-slate-200 bg-slate-50 p-8">
+                <Wind className="h-7 w-7 text-sky-700" />
+                <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-sky-700">
+                  Dossiers météo
+                </p>
+                <h3 className="mt-3 font-serif text-3xl font-semibold">
+                  Le prochain Carnet se prépare.
+                </h3>
+              </aside>
+            )}
+          </div>
         </section>
 
         <section className="border-y border-slate-200 bg-slate-50">
-          <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
+          <div className="mx-auto w-full max-w-[1480px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
             <div className="max-w-3xl">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
                 Notre ligne éditoriale
@@ -335,84 +439,7 @@ export default async function CarnetPage({ params }: Props) {
           </div>
         </section>
 
-        {publishedArticles.length > 0 && (
-          <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20 lg:px-10">
-            <div className="mb-8 border-b border-slate-900 pb-3">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
-                Dossiers météo
-              </p>
-              <h2 className="mt-1 font-serif text-3xl font-semibold sm:text-4xl">
-                Comprendre les vents de la région
-              </h2>
-            </div>
-
-            <div
-              className={`grid gap-6 ${
-                publishedArticles.length > 1 ? "md:grid-cols-2" : ""
-              }`}
-            >
-              {publishedArticles.map((article, index) => (
-                <article
-                  key={article.id}
-                  className="group grid overflow-hidden border border-slate-200 bg-white shadow-sm md:grid-cols-[0.85fr_1.15fr]"
-                >
-                  <Link
-                    href={`/carnet/${article.slug}`}
-                    className="relative min-h-60 overflow-hidden bg-slate-100"
-                  >
-                    {article.coverImage ? (
-                      <>
-                        {/* Article covers may come from any admin-approved HTTPS source. */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={article.coverImage}
-                          alt={article.coverAlt || article.title}
-                          loading={index === 0 ? "eager" : "lazy"}
-                          className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
-                        />
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-sky-100 to-slate-200" />
-                    )}
-                  </Link>
-
-                  <div className="flex flex-col justify-between p-6 sm:p-8">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                        <span>{article.category}</span>
-                        <span className="inline-flex items-center gap-1">
-                          <Clock3 className="h-3.5 w-3.5" />
-                          {article.readTime} min
-                        </span>
-                        {article.location && (
-                          <span className="inline-flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" />
-                            {article.location}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="mt-5 font-serif text-3xl font-semibold leading-tight tracking-[-0.02em]">
-                        {article.title}
-                      </h3>
-                      <p className="mt-4 text-sm leading-6 text-slate-600">
-                        {article.excerpt}
-                      </p>
-                    </div>
-                    <Link
-                      href={`/carnet/${article.slug}`}
-                      className="mt-7 inline-flex w-fit items-center gap-2 border-b border-slate-900 pb-1 text-sm font-semibold transition hover:border-sky-600 hover:text-sky-700"
-                    >
-                      Lire le dossier
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="mx-auto max-w-6xl px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10">
+        <section className="mx-auto w-full max-w-[1480px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
           <aside className="border-l-2 border-sky-700 pl-6 sm:pl-8">
             <MessageSquare className="h-6 w-6 text-sky-700" />
             <h2 className="mt-5 font-serif text-3xl font-semibold">
@@ -433,7 +460,7 @@ export default async function CarnetPage({ params }: Props) {
           </aside>
         </section>
 
-      </main>
+      </div>
     </div>
   );
 }

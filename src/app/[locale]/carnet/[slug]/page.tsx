@@ -7,12 +7,18 @@ import {
   Clock3,
   ExternalLink,
   MapPin,
+  PenLine,
+  RefreshCcw,
   ShieldCheck,
 } from "lucide-react";
 import { ArticleMarkdown } from "@/components/carnet/ArticleMarkdown";
+import { ArticleConnections } from "@/components/carnet/ArticleConnections";
+import { ArticleShare } from "@/components/carnet/ArticleShare";
+import { RelatedArticles } from "@/components/carnet/RelatedArticles";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseArticleSources } from "@/lib/articles";
+import { resolveArticleConnections } from "@/lib/article-connections";
 import { localizedUrl } from "@/lib/site";
 
 interface Props {
@@ -21,7 +27,7 @@ interface Props {
 
 async function findPublishedArticle(slug: string) {
   return prisma.article.findFirst({
-    where: { slug, status: "PUBLISHED" },
+    where: { slug, status: "PUBLISHED", kind: "EDITORIAL" },
   });
 }
 
@@ -69,6 +75,9 @@ export default async function ArticlePage({ params }: Props) {
   const article = await findPublishedArticle(slug);
   if (!article) notFound();
 
+  const { spots, stations, relatedArticles } =
+    await resolveArticleConnections(article);
+
   const sources = parseArticleSources(article.sources);
   const articleUrl = localizedUrl("fr", `/carnet/${article.slug}`);
   const publishedAt = article.publishedAt ?? article.createdAt;
@@ -77,6 +86,11 @@ export default async function ArticlePage({ params }: Props) {
     month: "long",
     year: "numeric",
   }).format(publishedAt);
+  const formattedUpdatedDate = new Intl.DateTimeFormat("fr-CH", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(article.updatedAt);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -93,6 +107,19 @@ export default async function ArticlePage({ params }: Props) {
         author: { "@type": "Organization", name: article.authorName },
         publisher: { "@type": "Organization", name: "Openwind" },
         citation: sources.map((source) => source.url),
+        about: spots.map((spot) => ({
+          "@type": "Place",
+          name: spot.name,
+          url: localizedUrl("fr", `/spots/${spot.id}`),
+        })),
+        mentions: stations.map((station) => ({
+          "@type": "Thing",
+          name: `Balise vent ${station.name}`,
+          url: localizedUrl(
+            "fr",
+            `/stations/${encodeURIComponent(station.id)}`,
+          ),
+        })),
       },
       {
         "@type": "BreadcrumbList",
@@ -165,6 +192,14 @@ export default async function ArticlePage({ params }: Props) {
                   {article.location}
                 </span>
               )}
+              <span className="inline-flex items-center gap-1.5">
+                <PenLine className="h-4 w-4 text-sky-700" />
+                Par {article.authorName}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <RefreshCcw className="h-4 w-4 text-sky-700" />
+                Mis à jour le {formattedUpdatedDate}
+              </span>
             </div>
           </div>
         </div>
@@ -189,6 +224,15 @@ export default async function ArticlePage({ params }: Props) {
           )}
         </figure>
       )}
+
+      <div className="mx-auto max-w-5xl px-5 pt-8 sm:px-8 sm:pt-10 lg:px-10">
+        <ArticleShare
+          title={article.title}
+          text={article.excerpt}
+          url={articleUrl}
+          articleSlug={article.slug}
+        />
+      </div>
 
       <div className="mx-auto grid max-w-5xl gap-12 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_220px] lg:px-10 lg:py-20">
         <div className="min-w-0">
@@ -240,6 +284,18 @@ export default async function ArticlePage({ params }: Props) {
           </Link>
         </aside>
       </div>
+
+      {(spots.length > 0 || stations.length > 0) && (
+        <div className="mx-auto max-w-6xl px-5 pb-16 sm:px-8 sm:pb-20 lg:px-10">
+          <ArticleConnections spots={spots} stations={stations} />
+        </div>
+      )}
+
+      {relatedArticles.length > 0 && (
+        <div className="mx-auto max-w-6xl px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10">
+          <RelatedArticles articles={relatedArticles} />
+        </div>
+      )}
     </article>
   );
 }

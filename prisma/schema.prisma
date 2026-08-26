@@ -13,25 +13,34 @@ enum ArticleStatus {
   ARCHIVED
 }
 
+enum ArticleKind {
+  EDITORIAL
+  LOCAL_GUIDE
+}
+
 model Article {
-  id             String        @id @default(cuid())
-  slug           String        @unique
-  title          String
-  excerpt        String
-  content        String
-  coverImage     String?
-  coverAlt       String?
-  category       String        @default("Carnet Openwind")
-  location       String?
-  readTime       Int           @default(8)
-  status         ArticleStatus @default(DRAFT)
-  seoTitle       String?
-  seoDescription String?
-  sources        Json
-  authorName     String        @default("Openwind")
-  publishedAt    DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  kind              ArticleKind   @default(EDITORIAL)
+  slug              String        @unique
+  title             String
+  excerpt           String
+  content           String
+  coverImage        String?
+  coverAlt          String?
+  category          String        @default("Carnet Openwind")
+  location          String?
+  readTime          Int           @default(8)
+  status            ArticleStatus @default(DRAFT)
+  seoTitle          String?
+  seoDescription    String?
+  sources           Json
+  authorName        String        @default("Openwind")
+  linkedSpotIds     String[]      @default([])
+  linkedStationIds  String[]      @default([])
+  relatedArticleIds String[]      @default([])
+  publishedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   @@index([status, publishedAt])
 }

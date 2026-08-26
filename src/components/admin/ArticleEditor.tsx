@@ -15,14 +15,18 @@ import {
   Trash2,
 } from "lucide-react";
 import { ArticleMarkdown } from "@/components/carnet/ArticleMarkdown";
+import { ArticleRelationPicker } from "@/components/admin/ArticleRelationPicker";
 import {
   slugifyArticleTitle,
   type ArticleDto,
+  type ArticleKindValue,
+  type ArticleRelationOptions,
   type ArticleSource,
   type ArticleStatusValue,
 } from "@/lib/articles";
 
 interface EditableArticle {
+  kind: ArticleKindValue;
   slug: string;
   title: string;
   excerpt: string;
@@ -37,9 +41,13 @@ interface EditableArticle {
   seoDescription: string;
   authorName: string;
   sources: ArticleSource[];
+  linkedSpotIds: string[];
+  linkedStationIds: string[];
+  relatedArticleIds: string[];
 }
 
 const emptyArticle: EditableArticle = {
+  kind: "EDITORIAL",
   slug: "",
   title: "",
   excerpt: "",
@@ -54,6 +62,9 @@ const emptyArticle: EditableArticle = {
   seoDescription: "",
   authorName: "Openwind",
   sources: [],
+  linkedSpotIds: [],
+  linkedStationIds: [],
+  relatedArticleIds: [],
 };
 
 const fieldClass =
@@ -61,6 +72,7 @@ const fieldClass =
 
 function articleDtoToEditable(article: ArticleDto): EditableArticle {
   return {
+    kind: article.kind,
     slug: article.slug,
     title: article.title,
     excerpt: article.excerpt,
@@ -75,6 +87,9 @@ function articleDtoToEditable(article: ArticleDto): EditableArticle {
     seoDescription: article.seoDescription ?? "",
     authorName: article.authorName,
     sources: article.sources,
+    linkedSpotIds: article.linkedSpotIds,
+    linkedStationIds: article.linkedStationIds,
+    relatedArticleIds: article.relatedArticleIds,
   };
 }
 
@@ -84,6 +99,9 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
   const [loading, setLoading] = useState(Boolean(articleId));
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [relationOptions, setRelationOptions] =
+    useState<ArticleRelationOptions | null>(null);
+  const [relationsLoading, setRelationsLoading] = useState(true);
   const [slugTouched, setSlugTouched] = useState(Boolean(articleId));
   const [message, setMessage] = useState<{
     type: "ok" | "error";
@@ -105,10 +123,71 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
       .finally(() => setLoading(false));
   }, [articleId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/articles/relations", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Relations indisponibles");
+        return (await response.json()) as ArticleRelationOptions;
+      })
+      .then((data) => {
+        if (!cancelled) setRelationOptions(data);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMessage({
+            type: "error",
+            text: "Les spots et balises associés n’ont pas pu être chargés.",
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setRelationsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const previewTitle = article.title || "Titre de l’article";
+  const isLocalGuide = article.kind === "LOCAL_GUIDE";
   const previewContent = useMemo(
     () => article.content || "Commence à rédiger pour afficher l’aperçu…",
     [article.content],
+  );
+  const spotOptions = useMemo(
+    () =>
+      (relationOptions?.spots ?? []).map((spot) => ({
+        id: spot.id,
+        label: spot.name,
+        meta: [spot.region, spot.country, spot.sportType === "KITE" ? "Kite" : "Parapente"]
+          .filter(Boolean)
+          .join(" · "),
+      })),
+    [relationOptions],
+  );
+  const stationOptions = useMemo(
+    () =>
+      (relationOptions?.stations ?? []).map((station) => ({
+        id: station.id,
+        label: station.name,
+        meta: `${station.source} · ${station.id}`,
+      })),
+    [relationOptions],
+  );
+  const relatedArticleOptions = useMemo(
+    () =>
+      (relationOptions?.articles ?? [])
+        .filter((option) => option.id !== articleId)
+        .map((option) => ({
+          id: option.id,
+          label: option.title,
+          meta: `${option.kind === "LOCAL_GUIDE" ? "Guide local" : "Article"} · ${
+            option.status === "PUBLISHED" ? "Publié" : "Non publié"
+          }`,
+        })),
+    [articleId, relationOptions],
   );
 
   function setField<K extends keyof EditableArticle>(
@@ -175,7 +254,9 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
         type: "ok",
         text:
           data.status === "PUBLISHED"
-            ? "Article publié avec succès."
+            ? data.kind === "LOCAL_GUIDE"
+              ? "Guide local publié avec succès."
+              : "Article publié avec succès."
             : "Brouillon enregistré.",
       });
 
@@ -248,8 +329,19 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
               Retour aux articles
             </Link>
             <h1 className="text-2xl font-bold text-slate-950 sm:text-3xl">
-              {articleId ? "Modifier l’article" : "Nouvel article"}
+              {articleId
+                ? isLocalGuide
+                  ? "Modifier le guide local"
+                  : "Modifier l’article"
+                : "Nouvel article"}
             </h1>
+            {isLocalGuide && (
+              <p className="mt-2 max-w-2xl text-sm text-slate-500">
+                Ce contenu alimente la page publique du lac de la Gruyère. Les
+                balises en direct et les modules locaux restent automatiquement
+                intégrés autour de ton texte.
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -313,18 +405,25 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
                   </span>
                   <div className="flex rounded-lg border border-slate-300 bg-slate-50 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100">
                     <span className="hidden items-center border-r border-slate-200 px-3 text-xs text-slate-400 sm:flex">
-                      /fr/carnet/
+                      {isLocalGuide ? "/fr/vent-en-direct/" : "/fr/carnet/"}
                     </span>
                     <input
                       value={article.slug}
+                      disabled={isLocalGuide}
                       onChange={(event) => {
                         setSlugTouched(true);
                         setField("slug", slugifyArticleTitle(event.target.value));
                       }}
-                      className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none"
+                      className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none disabled:cursor-not-allowed disabled:text-slate-400"
                       placeholder="mon-article"
                     />
                   </div>
+                  {isLocalGuide && (
+                    <span className="mt-1.5 block text-xs text-slate-400">
+                      L’adresse du guide local est protégée pour préserver son
+                      référencement.
+                    </span>
+                  )}
                 </label>
 
                 <label className="block">
@@ -354,7 +453,9 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
                     Contenu complet
                   </h2>
                   <p className="mt-1 text-xs text-slate-500">
-                    Markdown : ## intertitre · **gras** · - liste · &gt; encadré
+                    {isLocalGuide
+                      ? "Ce texte apparaît sous les balises en direct. Markdown : ## intertitre · **gras** · - liste · > encadré"
+                      : "Markdown : ## intertitre · **gras** · - liste · > encadré"}
                   </p>
                 </div>
                 <span className="text-xs text-slate-400">
@@ -519,6 +620,52 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
             </section>
 
             <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="font-semibold text-slate-900">Liens éditoriaux</h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                Ces choix créent automatiquement les passerelles vers le
+                terrain et les autres Carnets.
+              </p>
+              <div className="mt-5 space-y-6">
+                {isLocalGuide ? (
+                  <div className="rounded-lg border border-sky-100 bg-sky-50 p-3 text-xs leading-5 text-sky-800">
+                    Les balises de Morlon et Marsens ainsi que la fiche du spot
+                    sont déjà intégrées directement dans ce guide local.
+                  </div>
+                ) : (
+                  <>
+                    <ArticleRelationPicker
+                      title="Spots associés"
+                      description="Affiche les fiches terrain à consulter après la lecture."
+                      options={spotOptions}
+                      selectedIds={article.linkedSpotIds}
+                      onChange={(ids) => setField("linkedSpotIds", ids)}
+                      loading={relationsLoading}
+                      emptyLabel="Aucun spot trouvé."
+                    />
+                    <ArticleRelationPicker
+                      title="Balises associées"
+                      description="Ajoute des accès directs aux mesures utiles pour l’article."
+                      options={stationOptions}
+                      selectedIds={article.linkedStationIds}
+                      onChange={(ids) => setField("linkedStationIds", ids)}
+                      loading={relationsLoading}
+                      emptyLabel="Aucune balise trouvée."
+                    />
+                  </>
+                )}
+                <ArticleRelationPicker
+                  title="Carnets recommandés"
+                  description="Contrôle précisément le bloc « À lire aussi »."
+                  options={relatedArticleOptions}
+                  selectedIds={article.relatedArticleIds}
+                  onChange={(ids) => setField("relatedArticleIds", ids)}
+                  loading={relationsLoading}
+                  emptyLabel="Aucun autre Carnet trouvé."
+                />
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="font-semibold text-slate-900">Référencement</h2>
               <div className="mt-4 space-y-4">
                 <label className="block">
@@ -628,7 +775,9 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
         <section className="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-4 sm:px-8">
             <Eye className="h-4 w-4 text-sky-600" />
-            <h2 className="font-semibold text-slate-900">Aperçu de l’article</h2>
+            <h2 className="font-semibold text-slate-900">
+              {isLocalGuide ? "Aperçu du guide local" : "Aperçu de l’article"}
+            </h2>
           </div>
           <div className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">

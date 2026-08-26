@@ -11,7 +11,11 @@ import {
   Loader2,
   Trash2,
 } from "lucide-react";
-import type { ArticleDto, ArticleStatusValue } from "@/lib/articles";
+import {
+  articlePublicPath,
+  type ArticleDto,
+  type ArticleStatusValue,
+} from "@/lib/articles";
 
 const statusCopy: Record<
   ArticleStatusValue,
@@ -96,10 +100,11 @@ export function ArticlesAdminClient() {
               Retour à l’administration
             </Link>
             <h1 className="text-3xl font-bold text-slate-950">
-              Articles du Carnet
+              Publications du Carnet
             </h1>
             <p className="mt-2 text-sm text-slate-500">
-              Crée, prévisualise, publie ou archive les dossiers Openwind.
+              Modifie le guide local et crée, publie ou archive les dossiers
+              Openwind.
             </p>
           </div>
 
@@ -150,6 +155,11 @@ export function ArticlesAdminClient() {
                       >
                         {status.label}
                       </span>
+                      {article.kind === "LOCAL_GUIDE" && (
+                        <span className="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-semibold text-sky-700 ring-1 ring-inset ring-sky-200">
+                          Guide local
+                        </span>
+                      )}
                       <span className="text-xs text-slate-400">
                         {article.category} · {article.readTime} min
                       </span>
@@ -172,7 +182,7 @@ export function ArticlesAdminClient() {
                   <div className="flex items-center gap-2 sm:justify-end">
                     {article.status === "PUBLISHED" && (
                       <a
-                        href={`/${locale}/carnet/${article.slug}`}
+                        href={`/${locale}${articlePublicPath(article)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-lg border border-slate-200 p-2.5 text-slate-500 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
@@ -188,19 +198,21 @@ export function ArticlesAdminClient() {
                       <Edit3 className="h-4 w-4" />
                       Modifier
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => deleteArticle(article)}
-                      disabled={deletingId === article.id}
-                      className="rounded-lg border border-slate-200 p-2.5 text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                      aria-label="Supprimer l’article"
-                    >
-                      {deletingId === article.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </button>
+                    {article.kind !== "LOCAL_GUIDE" && (
+                      <button
+                        type="button"
+                        onClick={() => deleteArticle(article)}
+                        disabled={deletingId === article.id}
+                        className="rounded-lg border border-slate-200 p-2.5 text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                        aria-label="Supprimer l’article"
+                      >
+                        {deletingId === article.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </article>
               );

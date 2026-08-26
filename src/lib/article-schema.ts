@@ -27,6 +27,15 @@ export const articleInputSchema = z.object({
   seoTitle: z.string().trim().max(70).default(""),
   seoDescription: z.string().trim().max(180).default(""),
   authorName: z.string().trim().min(2).max(100),
+  linkedSpotIds: z.array(z.string().trim().min(1).max(160)).max(20).default([]),
+  linkedStationIds: z
+    .array(z.string().trim().min(1).max(160))
+    .max(20)
+    .default([]),
+  relatedArticleIds: z
+    .array(z.string().trim().min(1).max(160))
+    .max(12)
+    .default([]),
   sources: z
     .array(
       z.object({

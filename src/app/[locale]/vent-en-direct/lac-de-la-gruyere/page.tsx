@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   ArrowRight,
+  CalendarDays,
+  Clock3,
   Compass,
   ExternalLink,
   Gauge,
   MapPin,
+  PenLine,
+  RefreshCcw,
   ShieldAlert,
   Waves,
   Wind,
 } from "lucide-react";
+import { ArticleMarkdown } from "@/components/carnet/ArticleMarkdown";
+import { ArticleShare } from "@/components/carnet/ArticleShare";
+import { RelatedArticles } from "@/components/carnet/RelatedArticles";
 import { Link } from "@/i18n/navigation";
+import { parseArticleSources } from "@/lib/articles";
+import { resolveArticleConnections } from "@/lib/article-connections";
+import { prisma } from "@/lib/prisma";
 import { localizedUrl } from "@/lib/site";
 import { LiveStations } from "./LiveStations";
 
@@ -21,9 +30,22 @@ const CARNET_URL = localizedUrl("fr", "/carnet");
 const MORLON_SPOT_ID = "cmnq613tx00it04kw1d0vraq4";
 const HERO_IMAGE =
   "https://fnndeoqzqfxpznhcundq.supabase.co/storage/v1/object/public/spot-images/cmnq613tx00it04kw1d0vraq4/1776010538678.jpeg";
+const FALLBACK_TITLE = "Vent en direct au lac de la Gruyère";
+const FALLBACK_DESCRIPTION =
+  "Les mesures de Morlon Beach et Marsens, le spot local, les directions à surveiller et les informations essentielles avant d’aller sur l’eau.";
 
 interface Props {
   params: Promise<{ locale: string }>;
+}
+
+async function findGruyereGuide() {
+  return prisma.article.findFirst({
+    where: {
+      kind: "LOCAL_GUIDE",
+      slug: "lac-de-la-gruyere",
+      status: "PUBLISHED",
+    },
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -33,9 +55,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { robots: { index: false, follow: false } };
   }
 
-  const title = "Vent au lac de la Gruyère en direct";
+  const guide = await findGruyereGuide().catch(() => null);
+  const title = guide?.seoTitle || guide?.title || FALLBACK_TITLE;
   const description =
-    "Vent en direct au lac de la Gruyère : balise de Morlon Beach, rafales, direction, spot de kitesurf, accès et conseils de sécurité locaux.";
+    guide?.seoDescription || guide?.excerpt || FALLBACK_DESCRIPTION;
+  const heroImage = guide?.coverImage || HERO_IMAGE;
 
   return {
     title,
@@ -47,12 +71,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: PAGE_URL,
       type: "article",
       locale: "fr_CH",
+      publishedTime: guide?.publishedAt?.toISOString(),
+      modifiedTime: guide?.updatedAt.toISOString(),
+      authors: guide ? [guide.authorName] : ["Openwind"],
       images: [
         {
-          url: HERO_IMAGE,
+          url: heroImage,
           width: 1200,
           height: 763,
-          alt: "Le lac de la Gruyère et les Préalpes fribourgeoises",
+          alt:
+            guide?.coverAlt ||
+            "Le lac de la Gruyère et les Préalpes fribourgeoises",
         },
       ],
     },
@@ -60,7 +89,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: `${title} — Openwind`,
       description,
-      images: [HERO_IMAGE],
+      images: [heroImage],
     },
   };
 }
@@ -87,19 +116,66 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
   const { locale } = await params;
   if (locale !== "fr") notFound();
 
+  const guide = await findGruyereGuide().catch(() => null);
+  const relatedArticles = guide
+    ? (await resolveArticleConnections(guide)).relatedArticles
+    : [];
+  const sources = parseArticleSources(guide?.sources);
+  const heroImage = guide?.coverImage || HERO_IMAGE;
+  const title = guide?.title || FALLBACK_TITLE;
+  const description = guide?.excerpt || FALLBACK_DESCRIPTION;
+  const publishedAt = guide?.publishedAt ?? guide?.createdAt;
+  const formattedPublishedDate = publishedAt
+    ? new Intl.DateTimeFormat("fr-CH", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(publishedAt)
+    : null;
+  const formattedUpdatedDate = guide
+    ? new Intl.DateTimeFormat("fr-CH", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(guide.updatedAt)
+    : null;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "WebPage",
-        name: "Vent au lac de la Gruyère en direct",
-        description:
-          "Balises de vent, informations locales et sécurité pour le lac de la Gruyère.",
+        name: title,
+        description,
         url: PAGE_URL,
         inLanguage: "fr-CH",
-        image: HERO_IMAGE,
-        author: { "@type": "Organization", name: "Openwind" },
+        image: heroImage,
+        author: {
+          "@type": "Organization",
+          name: guide?.authorName || "Openwind",
+        },
       },
+      ...(guide
+        ? [
+            {
+              "@type": "Article",
+              headline: guide.title,
+              description: guide.excerpt,
+              url: PAGE_URL,
+              mainEntityOfPage: PAGE_URL,
+              inLanguage: "fr-CH",
+              datePublished: publishedAt?.toISOString(),
+              dateModified: guide.updatedAt.toISOString(),
+              image: heroImage,
+              author: {
+                "@type": "Organization",
+                name: guide.authorName,
+              },
+              publisher: { "@type": "Organization", name: "Openwind" },
+              citation: sources.map((source) => source.url),
+            },
+          ]
+        : []),
       {
         "@type": "BreadcrumbList",
         itemListElement: [
@@ -144,13 +220,16 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
       />
 
       <section className="relative isolate min-h-[540px] overflow-hidden bg-slate-950">
-        <Image
-          src={HERO_IMAGE}
-          alt="Vue aérienne du lac de la Gruyère et des Préalpes"
-          fill
+        {/* The guide cover can be changed to any admin-approved HTTPS source. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={heroImage}
+          alt={
+            guide?.coverAlt ||
+            "Vue aérienne du lac de la Gruyère et des Préalpes"
+          }
           loading="eager"
-          sizes="100vw"
-          className="object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-slate-900/20" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
@@ -170,12 +249,10 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
               Carnet Nº01 · Fribourg
             </span>
             <h1 className="mt-5 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Vent en direct au lac de la Gruyère
+              {title}
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
-              Les mesures de Morlon Beach et Marsens, le spot local, les
-              directions à surveiller et les informations essentielles avant
-              d&apos;aller sur l&apos;eau.
+              {description}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <a
@@ -196,7 +273,40 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
         </div>
       </section>
 
-      <main className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:px-10">
+      <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:px-10">
+        {guide && (
+          <div className="mb-12">
+            <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">
+              {formattedPublishedDate && (
+                <span className="inline-flex items-center gap-1.5">
+                  <CalendarDays className="h-4 w-4 text-sky-700" />
+                  {formattedPublishedDate}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1.5">
+                <Clock3 className="h-4 w-4 text-sky-700" />
+                {guide.readTime} min
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <PenLine className="h-4 w-4 text-sky-700" />
+                Par {guide.authorName}
+              </span>
+              {formattedUpdatedDate && (
+                <span className="inline-flex items-center gap-1.5">
+                  <RefreshCcw className="h-4 w-4 text-sky-700" />
+                  Mis à jour le {formattedUpdatedDate}
+                </span>
+              )}
+            </div>
+            <ArticleShare
+              title={guide.title}
+              text={guide.excerpt}
+              url={PAGE_URL}
+              articleSlug={guide.slug}
+            />
+          </div>
+        )}
+
         <section id="vent-direct" className="scroll-mt-24">
           <div className="mb-7 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-600">
@@ -217,6 +327,27 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
             place et leur évolution avant de t&apos;engager.
           </p>
         </section>
+
+        {guide && (
+          <section className="mt-20 grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
+            <div className="min-w-0">
+              <p className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-sky-600">
+                Le Carnet local
+              </p>
+              <ArticleMarkdown>{guide.content}</ArticleMarkdown>
+            </div>
+            <aside className="h-fit border-l-2 border-sky-600 pl-5 lg:sticky lg:top-24">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-700">
+                Conseil terrain
+              </p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                Une mesure aide à comprendre le vent à un point précis. Elle ne
+                remplace jamais l’observation du lac, des rafales et de leur
+                évolution.
+              </p>
+            </aside>
+          </section>
+        )}
 
         <section className="mt-20 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
           <article className="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-200 sm:p-9">
@@ -316,50 +447,52 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
           </aside>
         </section>
 
-        <section className="mt-20">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-600">
-              Lire les conditions
-            </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-              Trois contrôles avant une sortie
-            </h2>
-          </div>
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            {[
-              {
-                number: "01",
-                title: "Comparer les balises",
-                text: "Morlon décrit le bord du lac, tandis que Marsens donne le contexte régional. Une différence marquée mérite de rester prudent.",
-              },
-              {
-                number: "02",
-                title: "Regarder les rafales",
-                text: "Sur un site irrégulier, l’écart entre vent moyen et rafales est aussi important que la vitesse affichée.",
-              },
-              {
-                number: "03",
-                title: "Observer le plan d’eau",
-                text: "Les lignes de vent, le clapot, les grains et les autres usagers donnent des informations qu’aucune balise ne remplace.",
-              },
-            ].map((item) => (
-              <article
-                key={item.number}
-                className="rounded-3xl border border-slate-200 bg-white p-6"
-              >
-                <span className="text-sm font-bold text-sky-600">
-                  {item.number}
-                </span>
-                <h3 className="mt-4 text-lg font-semibold text-slate-950">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {item.text}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
+        {!guide && (
+          <section className="mt-20">
+            <div className="max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-600">
+                Lire les conditions
+              </p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+                Trois contrôles avant une sortie
+              </h2>
+            </div>
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              {[
+                {
+                  number: "01",
+                  title: "Comparer les balises",
+                  text: "Morlon décrit le bord du lac, tandis que Marsens donne le contexte régional. Une différence marquée mérite de rester prudent.",
+                },
+                {
+                  number: "02",
+                  title: "Regarder les rafales",
+                  text: "Sur un site irrégulier, l’écart entre vent moyen et rafales est aussi important que la vitesse affichée.",
+                },
+                {
+                  number: "03",
+                  title: "Observer le plan d’eau",
+                  text: "Les lignes de vent, le clapot, les grains et les autres usagers donnent des informations qu’aucune balise ne remplace.",
+                },
+              ].map((item) => (
+                <article
+                  key={item.number}
+                  className="rounded-3xl border border-slate-200 bg-white p-6"
+                >
+                  <span className="text-sm font-bold text-sky-600">
+                    {item.number}
+                  </span>
+                  <h3 className="mt-4 text-lg font-semibold text-slate-950">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {item.text}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="mt-20 rounded-3xl border border-slate-200 bg-white p-7 sm:p-9">
           <h2 className="text-3xl font-bold tracking-tight text-slate-950">
@@ -397,6 +530,12 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
           </Link>
         </section>
 
+        {relatedArticles.length > 0 && (
+          <div className="mt-20">
+            <RelatedArticles articles={relatedArticles} />
+          </div>
+        )}
+
         <div className="mt-8 flex justify-center">
           <Link
             href="/carnet"
@@ -407,28 +546,36 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
           </Link>
         </div>
 
-        <footer className="mt-10 text-xs leading-5 text-slate-500">
-          Sources locales :{" "}
-          <a
-            href="https://fribourg.ch/fr/all/nature/lac-de-la-gruyere/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline decoration-slate-300 underline-offset-2 hover:text-slate-700"
-          >
-            Région de Fribourg
-          </a>{" "}
-          et{" "}
-          <a
-            href="https://www.fr.ch/dsjs/actualites/la-pratique-du-kitesurf-est-desormais-autorisee-sur-quatre-lacs-fribourgeois-moyennant-certaines-zones-dinterdiction-pour-preserver-lavifaune"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline decoration-slate-300 underline-offset-2 hover:text-slate-700"
-          >
-            État de Fribourg
-          </a>
-          . Les règles et la signalisation sur place restent prioritaires.
+        <footer className="mt-12 border-t border-slate-200 pt-8 text-xs leading-5 text-slate-500">
+          {sources.length > 0 ? (
+            <>
+              <p className="font-semibold uppercase tracking-[0.14em] text-slate-600">
+                Sources vérifiées
+              </p>
+              <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+                {sources.map((source) => (
+                  <li key={source.url}>
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 underline decoration-slate-300 underline-offset-2 hover:text-slate-700"
+                    >
+                      {source.label}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p>
+              Sources locales : Région de Fribourg et État de Fribourg. Les
+              règles et la signalisation sur place restent prioritaires.
+            </p>
+          )}
         </footer>
-      </main>
+      </div>
     </div>
   );
 }

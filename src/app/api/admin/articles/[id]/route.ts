@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedAdmin } from "@/lib/admin";
 import { articleInputSchema } from "@/lib/article-schema";
-import { articleToDto } from "@/lib/articles";
+import { articlePublicPath, articleToDto } from "@/lib/articles";
 import { deleteArticleCover } from "@/lib/article-storage";
 
 function forbidden() {
@@ -52,7 +52,7 @@ export async function PUT(
     const article = await prisma.article.update({
       where: { id },
       data: {
-        slug: input.slug,
+        slug: existing.kind === "LOCAL_GUIDE" ? existing.slug : input.slug,
         title: input.title,
         excerpt: input.excerpt,
         content: input.content,
@@ -66,6 +66,13 @@ export async function PUT(
         seoDescription: input.seoDescription || null,
         sources: input.sources,
         authorName: input.authorName,
+        linkedSpotIds: [...new Set(input.linkedSpotIds)],
+        linkedStationIds: [...new Set(input.linkedStationIds)],
+        relatedArticleIds: [
+          ...new Set(
+            input.relatedArticleIds.filter((articleId) => articleId !== id),
+          ),
+        ],
         publishedAt:
           input.status === "PUBLISHED"
             ? existing.publishedAt ?? new Date()
@@ -74,8 +81,8 @@ export async function PUT(
     });
 
     revalidatePath("/fr/carnet");
-    revalidatePath(`/fr/carnet/${existing.slug}`);
-    revalidatePath(`/fr/carnet/${article.slug}`);
+    revalidatePath(`/fr${articlePublicPath(existing)}`);
+    revalidatePath(`/fr${articlePublicPath(article)}`);
 
     if (existing.coverImage !== article.coverImage) {
       await deleteArticleCover(existing.coverImage).catch(() => undefined);
@@ -110,10 +117,20 @@ export async function DELETE(
     return NextResponse.json({ error: "Article introuvable" }, { status: 404 });
   }
 
+  if (existing.kind === "LOCAL_GUIDE") {
+    return NextResponse.json(
+      {
+        error:
+          "Le guide local ne peut pas être supprimé. Tu peux l’archiver ou le modifier.",
+      },
+      { status: 409 },
+    );
+  }
+
   await prisma.article.delete({ where: { id } });
   await deleteArticleCover(existing.coverImage).catch(() => undefined);
   revalidatePath("/fr/carnet");
-  revalidatePath(`/fr/carnet/${existing.slug}`);
+  revalidatePath(`/fr${articlePublicPath(existing)}`);
 
   return NextResponse.json({ ok: true });
 }

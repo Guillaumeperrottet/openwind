@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedAdmin } from "@/lib/admin";
 import { articleInputSchema } from "@/lib/article-schema";
-import { articleToDto } from "@/lib/articles";
+import { articlePublicPath, articleToDto } from "@/lib/articles";
 
 function forbidden() {
   return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
@@ -49,12 +49,15 @@ export async function POST(request: NextRequest) {
         seoDescription: input.seoDescription || null,
         sources: input.sources,
         authorName: input.authorName,
+        linkedSpotIds: [...new Set(input.linkedSpotIds)],
+        linkedStationIds: [...new Set(input.linkedStationIds)],
+        relatedArticleIds: [...new Set(input.relatedArticleIds)],
         publishedAt: input.status === "PUBLISHED" ? new Date() : null,
       },
     });
 
     revalidatePath("/fr/carnet");
-    revalidatePath(`/fr/carnet/${article.slug}`);
+    revalidatePath(`/fr${articlePublicPath(article)}`);
 
     return NextResponse.json(articleToDto(article), { status: 201 });
   } catch (error: unknown) {
