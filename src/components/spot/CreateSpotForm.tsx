@@ -310,7 +310,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
         setError(typeof err.error === "string" ? err.error : t("deleteError"));
         return;
       }
-      router.push("/");
+      router.push("/?view=map");
     } catch {
       setError(t("networkError"));
     } finally {

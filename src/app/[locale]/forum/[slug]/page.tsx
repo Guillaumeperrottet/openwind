@@ -43,6 +43,7 @@ export default async function CategoryPage({ params }: Props) {
     take: 30,
     include: {
       author: { select: { id: true, name: true, avatarUrl: true } },
+      spot: { select: { id: true, name: true } },
       _count: { select: { posts: true } },
       votes: { select: { value: true } },
     },
@@ -55,6 +56,7 @@ export default async function CategoryPage({ params }: Props) {
     pinned: t.pinned,
     locked: t.locked,
     author: t.author,
+    spot: t.spot,
     postCount: t._count.posts,
     score: t.votes.reduce((s: number, v: { value: number }) => s + v.value, 0),
     createdAt: t.createdAt.toISOString(),

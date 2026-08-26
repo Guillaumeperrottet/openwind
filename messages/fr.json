@@ -30,7 +30,8 @@
     "favorites": "{count, plural, one {# favori} other {# favoris}}",
     "searchAriaLabel": "Rechercher",
     "menu": "Menu",
-    "signIn": "Se connecter"
+    "signIn": "Se connecter",
+    "myOpenwind": "Mon Openwind"
   },
   "Footer": {
     "eyebrow": "Créé au bord du vent",
@@ -472,5 +473,153 @@
     "demoParaThermal": "thermique +",
     "demoParaNone": "aucune",
     "demoMapLoading": "Chargement de la carte…"
+  },
+  "MonOpenwind": {
+    "eyebrow": "Ton vent, tes repères",
+    "hello": "Bonjour, le vent t’attend.",
+    "helloName": "Bonjour {name}, le vent t’attend.",
+    "customize": "Personnaliser",
+    "favoriteCount": "{count, plural, =0 {Aucun spot} one {# spot} other {# spots}}",
+    "hero": {
+      "followedSpots": "spots suivis",
+      "goodWindows": "bonnes fenêtres",
+      "windUnits": "unités du vent",
+      "nextWindow": "Prochaine meilleure fenêtre",
+      "waitingTitle": "Le prochain créneau se prépare.",
+      "waitingDescription": "Ajoute des spots favoris et Openwind fera remonter ici la meilleure occasion de sortir.",
+      "chooseSpots": "Choisir mes spots",
+      "around": "vers {time}",
+      "wind": "Vent",
+      "gusts": "Rafales",
+      "direction": "Direction",
+      "suitableHours": "{count, plural, =0 {Créneau court à surveiller} one {# heure favorable prévue} other {# heures favorables prévues}}",
+      "viewWindow": "Voir le créneau"
+    },
+    "switch": {
+      "map": "Carte",
+      "dashboard": "Mon Openwind"
+    },
+    "summary": {
+      "empty": "Ajoute tes premiers spots favoris pour obtenir une vue vraiment personnelle.",
+      "promising": "{count, plural, one {Une belle fenêtre se dessine} other {# belles fenêtres se dessinent}} parmi tes {spots} spots favoris.",
+      "quiet": "Tes {count} spots favoris sont suivis. Les prochaines fenêtres apparaîtront ici dès qu’elles se précisent."
+    },
+    "onboarding": {
+      "eyebrow": "Bienvenue chez Openwind",
+      "title": "Comment veux-tu ouvrir Openwind ?",
+      "description": "Choisis ton point de départ. Ce réglage te suivra sur tous tes appareils et pourra être modifié à tout moment.",
+      "dashboardTitle": "Mon Openwind",
+      "dashboardDescription": "Mes spots, les bonnes fenêtres et les articles utiles en un coup d’œil.",
+      "mapTitle": "La carte",
+      "mapDescription": "Ouvrir directement la carte complète des spots et des balises.",
+      "changeLater": "Tu pourras modifier ce choix dans Personnaliser.",
+      "continue": "Continuer",
+      "saving": "Enregistrement…",
+      "error": "Impossible d’enregistrer pour le moment. Réessaie."
+    },
+    "private": {
+      "eyebrow": "Espace personnel",
+      "title": "Ton Openwind, rien qu’à toi.",
+      "description": "Connecte-toi pour retrouver tes spots, leurs conditions, tes articles et l’activité locale dans un tableau de bord personnel.",
+      "signIn": "Se connecter ou créer un compte",
+      "backToMap": "Retour à la carte",
+      "privacy": "Tes préférences restent liées uniquement à ton compte."
+    },
+    "favorites": {
+      "eyebrow": "Maintenant",
+      "title": "Mes spots favoris",
+      "description": "Les conditions qui comptent, sans devoir parcourir toute la carte.",
+      "manage": "Gérer sur la carte",
+      "kite": "Kitesurf",
+      "paraglide": "Parapente",
+      "remove": "Retirer des favoris",
+      "locationUnknown": "Localisation non précisée",
+      "favorable": "Favorable",
+      "watch": "À surveiller",
+      "wind": "Vent",
+      "gusts": "Rafales",
+      "direction": "Direction",
+      "live": "Mesure en direct",
+      "estimated": "Estimation actualisée",
+      "details": "Voir le spot",
+      "emptyTitle": "Ton tableau de bord attend ses premiers spots.",
+      "emptyDescription": "Explore la carte et touche l’étoile d’un spot pour le retrouver ici avec ses conditions et ses contenus.",
+      "explore": "Choisir mes spots"
+    },
+    "forecast": {
+      "eyebrow": "À venir",
+      "title": "Les prochaines bonnes fenêtres",
+      "description": "Une lecture rapide des créneaux les plus prometteurs sur tes spots.",
+      "openPlanner": "Ouvrir le planificateur",
+      "emptyTitle": "Rien de net pour le moment",
+      "emptyDescription": "Les prévisions évoluent : Openwind continue de suivre tes spots.",
+      "averageWind": "vent moyen prévu",
+      "hours": "{count, plural, =0 {créneau court} one {# h adaptée} other {# h adaptées}}",
+      "bestAround": "mieux vers {time}"
+    },
+    "articles": {
+      "eyebrow": "Carnet Openwind",
+      "title": "À lire pour mes spots",
+      "description": "Guides de terrain et décryptages directement reliés à tes favoris.",
+      "all": "Voir le Carnet",
+      "empty": "Aucun article n’est encore relié à ces spots. Ils apparaîtront automatiquement ici.",
+      "readTime": "{count} min de lecture"
+    },
+    "community": {
+      "eyebrow": "Autour de toi",
+      "title": "Activité locale",
+      "description": "Les discussions reliées à tes spots et les sujets auxquels tu participes.",
+      "forum": "Voir le forum",
+      "emptyTitle": "La conversation peut commencer avec toi.",
+      "emptyFavorite": "Partage les conditions observées sur l’un de tes spots favoris.",
+      "emptyNoFavorite": "Ajoute un favori ou rejoins une discussion de la communauté.",
+      "start": "Lancer un sujet"
+    },
+    "actions": {
+      "eyebrow": "Raccourcis",
+      "title": "Que veux-tu faire ?",
+      "map": "Ouvrir la carte",
+      "mapDetail": "Spots et balises en direct",
+      "plan": "Planifier une sortie",
+      "planDetail": "Comparer les prochaines conditions",
+      "share": "Partager une session",
+      "shareDetail": "Informer la communauté",
+      "read": "Lire le Carnet",
+      "readDetail": "Guides et météo locale"
+    },
+    "settings": {
+      "eyebrow": "Réglages personnels",
+      "title": "Personnaliser Mon Openwind",
+      "description": "Tout est enregistré dans ton compte et synchronisé sur tes appareils.",
+      "close": "Fermer",
+      "startTitle": "Page d’ouverture",
+      "startDescription": "Choisis ce qui apparaît lorsque tu ouvres Openwind.",
+      "dashboard": "Mon Openwind",
+      "map": "Carte",
+      "displayTitle": "Contenu du tableau de bord",
+      "displayDescription": "Affiche, masque et ordonne les rubriques.",
+      "modules": {
+        "favorites": "Mes spots favoris",
+        "forecast": "Prochaines fenêtres",
+        "articles": "Articles pour mes spots",
+        "community": "Activité locale",
+        "actions": "Raccourcis"
+      },
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "practiceTitle": "Ma pratique",
+      "practiceDescription": "Filtre les spots et recommandations affichés.",
+      "allSports": "Les deux",
+      "kite": "Kite",
+      "paraglide": "Parapente",
+      "unitsTitle": "Unités du vent",
+      "unitsDescription": "Ce choix est également utilisé sur la carte.",
+      "knots": "Nœuds",
+      "kilometersPerHour": "Kilomètres/heure",
+      "save": "Enregistrer mes réglages",
+      "saving": "Enregistrement…",
+      "saved": "Réglages enregistrés",
+      "error": "L’enregistrement a échoué. Réessaie."
+    }
   }
 }

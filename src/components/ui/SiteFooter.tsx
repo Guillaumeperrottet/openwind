@@ -107,7 +107,7 @@ export function SiteFooter() {
           <div className="grid gap-12 border-b border-white/10 pb-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
             <div>
               <Link
-                href="/"
+                href="/?view=map"
                 className="inline-flex items-center rounded-xl bg-white px-4 py-2.5 shadow-sm transition hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950"
                 aria-label="Openwind — carte du vent"
               >
@@ -140,7 +140,7 @@ export function SiteFooter() {
                   {t("explore")}
                 </h3>
                 <div className="mt-5 flex flex-col gap-3.5">
-                  <Link href="/" className={linkClass}>
+                  <Link href="/?view=map" className={linkClass}>
                     {t("map")}
                   </Link>
                   <Link href="/plan" className={linkClass}>

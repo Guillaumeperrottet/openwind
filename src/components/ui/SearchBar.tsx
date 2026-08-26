@@ -256,7 +256,7 @@ export function SearchBar({
       setQuery("");
       setResults([]);
       onNavigate?.();
-      router.push("/", { scroll: false });
+      router.push("/?view=map", { scroll: false });
     },
     [onNavigate, router],
   );

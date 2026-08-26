@@ -1316,7 +1316,7 @@ export function TripPlanner({ searchParams }: TripPlannerProps) {
                     }
                   }
                   setLastQuickRadius(null);
-                  router.push("/");
+                  router.push("/?view=map");
                 }}
                 className={nextRadiusUp ? "shrink-0" : "flex-1"}
               >

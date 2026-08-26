@@ -30,7 +30,8 @@
     "favorites": "{count, plural, one {# favorite} other {# favorites}}",
     "searchAriaLabel": "Search",
     "menu": "Menu",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "myOpenwind": "My Openwind"
   },
   "Footer": {
     "eyebrow": "Built where the wind blows",
@@ -472,5 +473,76 @@
     "demoParaThermal": "thermal +",
     "demoParaNone": "none",
     "demoMapLoading": "Loading map…"
+  },
+  "MonOpenwind": {
+    "eyebrow": "Your wind, your places",
+    "hello": "Hello, the wind is waiting.",
+    "helloName": "Hello {name}, the wind is waiting.",
+    "customize": "Customize",
+    "favoriteCount": "{count, plural, =0 {No spots} one {# spot} other {# spots}}",
+    "hero": {
+      "followedSpots": "tracked spots",
+      "goodWindows": "good windows",
+      "windUnits": "wind units",
+      "nextWindow": "Next best window",
+      "waitingTitle": "The next window is taking shape.",
+      "waitingDescription": "Add favorite spots and Openwind will surface your best upcoming opportunity here.",
+      "chooseSpots": "Choose my spots",
+      "around": "around {time}",
+      "wind": "Wind",
+      "gusts": "Gusts",
+      "direction": "Direction",
+      "suitableHours": "{count, plural, =0 {A short window to watch} one {# suitable hour forecast} other {# suitable hours forecast}}",
+      "viewWindow": "View window"
+    },
+    "switch": { "map": "Map", "dashboard": "My Openwind" },
+    "summary": {
+      "empty": "Add your first favorite spots to create a truly personal view.",
+      "promising": "{count, plural, one {One promising window is forming} other {# promising windows are forming}} across your {spots} favorite spots.",
+      "quiet": "Your {count} favorite spots are being watched. Upcoming windows will appear here as they become clearer."
+    },
+    "onboarding": {
+      "eyebrow": "Welcome to Openwind",
+      "title": "How would you like Openwind to open?",
+      "description": "Choose your starting point. This setting follows you across devices and can be changed at any time.",
+      "dashboardTitle": "My Openwind",
+      "dashboardDescription": "My spots, good windows and useful articles at a glance.",
+      "mapTitle": "The map",
+      "mapDescription": "Open the complete map of spots and live stations directly.",
+      "changeLater": "You can change this later under Customize.",
+      "continue": "Continue",
+      "saving": "Saving…",
+      "error": "Unable to save right now. Please try again."
+    },
+    "private": {
+      "eyebrow": "Personal space",
+      "title": "Your Openwind, just for you.",
+      "description": "Sign in to find your spots, conditions, articles and local activity in a personal dashboard.",
+      "signIn": "Sign in or create an account",
+      "backToMap": "Back to map",
+      "privacy": "Your preferences are linked only to your account."
+    },
+    "favorites": {
+      "eyebrow": "Right now", "title": "My favorite spots", "description": "The conditions that matter, without browsing the entire map.", "manage": "Manage on map",
+      "kite": "Kitesurf", "paraglide": "Paragliding", "remove": "Remove from favorites", "locationUnknown": "Location not specified", "favorable": "Favorable", "watch": "Keep watch", "wind": "Wind", "gusts": "Gusts", "direction": "Direction", "live": "Live measurement", "estimated": "Updated estimate", "details": "View spot",
+      "emptyTitle": "Your dashboard is waiting for its first spots.", "emptyDescription": "Explore the map and tap a spot's star to see it here with its conditions and content.", "explore": "Choose my spots"
+    },
+    "forecast": {
+      "eyebrow": "Coming up", "title": "The next good windows", "description": "A quick view of the most promising times at your spots.", "openPlanner": "Open planner", "emptyTitle": "Nothing clear yet", "emptyDescription": "Forecasts evolve: Openwind keeps watching your spots.", "averageWind": "forecast average wind", "hours": "{count, plural, =0 {short window} one {# suitable hour} other {# suitable hours}}", "bestAround": "best around {time}"
+    },
+    "articles": {
+      "eyebrow": "Openwind Journal", "title": "Reading for my spots", "description": "Field guides and explainers directly connected to your favorites.", "all": "View the Journal", "empty": "No article is connected to these spots yet. New ones will appear here automatically.", "readTime": "{count} min read"
+    },
+    "community": {
+      "eyebrow": "Around you", "title": "Local activity", "description": "Discussions connected to your spots and topics you take part in.", "forum": "View forum", "emptyTitle": "The conversation can start with you.", "emptyFavorite": "Share the conditions you observed at one of your favorite spots.", "emptyNoFavorite": "Add a favorite or join a community discussion.", "start": "Start a topic"
+    },
+    "actions": {
+      "eyebrow": "Shortcuts", "title": "What do you want to do?", "map": "Open the map", "mapDetail": "Live spots and stations", "plan": "Plan a session", "planDetail": "Compare upcoming conditions", "share": "Share a session", "shareDetail": "Inform the community", "read": "Read the Journal", "readDetail": "Guides and local weather"
+    },
+    "settings": {
+      "eyebrow": "Personal settings", "title": "Customize My Openwind", "description": "Everything is saved to your account and synced across devices.", "close": "Close", "startTitle": "Opening page", "startDescription": "Choose what appears when you open Openwind.", "dashboard": "My Openwind", "map": "Map", "displayTitle": "Dashboard content", "displayDescription": "Show, hide and order sections.",
+      "modules": { "favorites": "My favorite spots", "forecast": "Upcoming windows", "articles": "Articles for my spots", "community": "Local activity", "actions": "Shortcuts" },
+      "moveUp": "Move up", "moveDown": "Move down", "practiceTitle": "My activity", "practiceDescription": "Filter the displayed spots and recommendations.", "allSports": "Both", "kite": "Kite", "paraglide": "Paragliding", "unitsTitle": "Wind units", "unitsDescription": "This setting is also used on the map.", "knots": "Knots", "kilometersPerHour": "Kilometres/hour", "save": "Save my settings", "saving": "Saving…", "saved": "Settings saved", "error": "Saving failed. Please try again."
+    }
   }
 }

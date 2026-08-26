@@ -75,5 +75,12 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  // Surface freshly active discussions in Mon Openwind even when the newest
+  // contribution is a reply rather than a new topic.
+  await prisma.forumTopic.update({
+    where: { id: topicId },
+    data: { updatedAt: new Date() },
+  });
+
   return NextResponse.json(post, { status: 201 });
 }

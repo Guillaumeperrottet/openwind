@@ -44,6 +44,7 @@ export default async function TopicPage({ params }: Props) {
     include: {
       author: { select: { id: true, name: true, avatarUrl: true } },
       category: { select: { id: true, name: true, slug: true } },
+      spot: { select: { id: true, name: true } },
       votes: { select: { value: true, userId: true } },
       posts: {
         orderBy: { createdAt: "asc" },
@@ -108,6 +109,7 @@ export default async function TopicPage({ params }: Props) {
     authorId: topic.authorId,
     author: topic.author,
     category: topic.category,
+    spot: topic.spot,
     score: topic.votes.reduce(
       (s: number, v: { value: number }) => s + v.value,
       0,

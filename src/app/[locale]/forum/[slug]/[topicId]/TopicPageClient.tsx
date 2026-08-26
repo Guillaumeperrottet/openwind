@@ -31,6 +31,7 @@ interface TopicData {
   authorId: string;
   author: { id: string; name: string | null; avatarUrl: string | null };
   category: { id: string; name: string; slug: string };
+  spot: { id: string; name: string } | null;
   score: number;
   votes: { value: number; userId: string }[];
   createdAt: string;
@@ -123,6 +124,14 @@ export function TopicPageClient({ topic, categorySlug, isAdmin }: Props) {
             </h1>
           )}
         </div>
+        {topic.spot && (
+          <Link
+            href={`/spots/${topic.spot.id}`}
+            className="mt-2 inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 transition-colors hover:bg-sky-100"
+          >
+            Spot · {topic.spot.name}
+          </Link>
+        )}
       </div>
 
       {/* OP post — Reddit style */}

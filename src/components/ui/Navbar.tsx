@@ -20,6 +20,7 @@ import {
   Info,
   Newspaper,
   Shield,
+  LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
@@ -30,7 +31,7 @@ export function Navbar() {
   const params = useParams();
   const currentLocale = (params?.locale as string) ?? "fr";
   const links = [
-    { href: "/" as const, label: t("map"), icon: MapPin },
+    { href: "/?view=map" as const, label: t("map"), icon: MapPin },
     { href: "/plan" as const, label: t("plan"), icon: Route },
     ...(currentLocale === "fr"
       ? [
@@ -50,19 +51,13 @@ export function Navbar() {
     },
   ];
   const pathname = usePathname();
-  const { user, favoriteIds, requestAuth, signOut } = useFavContext();
+  const { user, favoriteIds, preferences, requestAuth, signOut } =
+    useFavContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
   const [isAdminState, setIsAdmin] = useState(false);
   const isAdmin = user ? isAdminState : false;
   const menuRef = useRef<HTMLDivElement>(null);
-
-  // Sync user to Prisma DB after login
-  useEffect(() => {
-    if (user) {
-      fetch("/api/auth/sync", { method: "POST" }).catch(() => {});
-    }
-  }, [user]);
 
   // Resolve admin role server-side for the current authenticated user
   useEffect(() => {
@@ -102,7 +97,14 @@ export function Navbar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center px-3 sm:px-4 bg-white border-b border-gray-100 shadow-sm gap-2">
         {/* Logo */}
-        <Link href="/" className="flex items-center shrink-0">
+        <Link
+          href={
+            user && preferences?.defaultView === "DASHBOARD"
+              ? "/mon-openwind"
+              : "/"
+          }
+          className="flex items-center shrink-0"
+        >
           <Image
             src="/logo_noback.png"
             alt="Openwind"
@@ -135,10 +137,11 @@ export function Navbar() {
             <Link
               key={href}
               href={href}
+              aria-label={label}
               className={cn(
                 "items-center justify-center gap-1.5 rounded-lg px-2 py-2 sm:px-3 sm:py-1.5 text-sm transition-colors min-w-10 min-h-10 sm:min-w-0 sm:min-h-0",
                 hideOnMobile ? "hidden sm:flex" : "flex",
-                pathname === href
+                (href.startsWith("/?") ? pathname === "/" : pathname === href)
                   ? "bg-sky-50 text-sky-600"
                   : "text-gray-500 hover:text-gray-900 hover:bg-gray-50",
               )}
@@ -147,6 +150,22 @@ export function Navbar() {
               <span className="hidden lg:inline">{label}</span>
             </Link>
           ))}
+
+          {user && (
+            <Link
+              href="/mon-openwind"
+              aria-label={t("myOpenwind")}
+              className={cn(
+                "hidden min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm transition-colors sm:flex sm:min-h-0 sm:px-3 sm:py-1.5",
+                pathname === "/mon-openwind"
+                  ? "bg-sky-50 text-sky-600"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900",
+              )}
+            >
+              <LayoutDashboard className="h-4 w-4 shrink-0" />
+              <span className="hidden xl:inline">{t("myOpenwind")}</span>
+            </Link>
+          )}
 
           <Link
             href="/spots/new"
@@ -188,7 +207,15 @@ export function Navbar() {
                   </div>
                   <div className="py-1">
                     <Link
-                      href="/?openSearch=1"
+                      href="/mon-openwind"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-sky-50 hover:text-sky-700"
+                    >
+                      <LayoutDashboard className="h-3.5 w-3.5 text-sky-500" />
+                      {t("myOpenwind")}
+                    </Link>
+                    <Link
+                      href="/?view=map&openSearch=1"
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
                     >

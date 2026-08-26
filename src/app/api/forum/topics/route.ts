@@ -7,6 +7,7 @@ const createTopicSchema = z.object({
   title: z.string().min(1).max(200),
   body: z.string().min(1).max(50000),
   categorySlug: z.string().min(1),
+  spotId: z.string().min(1).nullable().optional(),
 });
 
 /** GET /api/forum/topics?category=slug&page=1 */
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
       include: {
         author: { select: { id: true, name: true, avatarUrl: true } },
         category: { select: { name: true, slug: true } },
+        spot: { select: { id: true, name: true } },
         _count: { select: { posts: true, votes: true } },
         votes: { select: { value: true } },
       },
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
-  const { title, body: topicBody, categorySlug } = parsed.data;
+  const { title, body: topicBody, categorySlug, spotId } = parsed.data;
 
   const category = await prisma.forumCategory.findUnique({
     where: { slug: categorySlug },
@@ -80,6 +82,13 @@ export async function POST(request: NextRequest) {
       { error: "Catégorie introuvable" },
       { status: 404 },
     );
+  }
+
+  if (spotId) {
+    const spotExists = await prisma.spot.count({ where: { id: spotId } });
+    if (!spotExists) {
+      return NextResponse.json({ error: "Spot introuvable" }, { status: 404 });
+    }
   }
 
   // Ensure user exists in DB
@@ -109,10 +118,12 @@ export async function POST(request: NextRequest) {
       body: topicBody.trim(),
       authorId: user.id,
       categoryId: category.id,
+      spotId: spotId ?? null,
     },
     include: {
       author: { select: { id: true, name: true, avatarUrl: true } },
       category: { select: { name: true, slug: true } },
+      spot: { select: { id: true, name: true } },
     },
   });
 

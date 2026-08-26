@@ -84,7 +84,7 @@ function Hero() {
         </p>
         <div className="mt-10 flex items-center justify-center gap-3">
           <Link
-            href="/"
+            href="/?view=map"
             className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
           >
             {t("heroCtaExplore")}

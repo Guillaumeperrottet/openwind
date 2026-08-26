@@ -20,6 +20,7 @@ interface TopicSummary {
   pinned: boolean;
   locked: boolean;
   author: { id: string; name: string | null; avatarUrl: string | null };
+  spot: { id: string; name: string } | null;
   postCount: number;
   score: number;
   createdAt: string;
@@ -123,6 +124,9 @@ export function CategoryPageClient({ category, topics }: Props) {
                 <div className="text-[11px] text-gray-400 mt-0.5">
                   posté par {topic.author.name ?? "Anonyme"} ·{" "}
                   {timeAgo(topic.createdAt)}
+                  {topic.spot && (
+                    <span className="ml-1 text-sky-600">· {topic.spot.name}</span>
+                  )}
                 </div>
               </div>
 

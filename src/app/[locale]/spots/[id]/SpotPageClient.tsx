@@ -452,7 +452,7 @@ export function SpotPageClient({
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-6">
         <div className="flex items-center justify-between mb-5">
           <Link
-            href="/"
+            href="/?view=map"
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />

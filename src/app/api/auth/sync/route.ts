@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { shouldOnboardAccount } from "@/lib/user-preferences";
 
 /**
  * POST /api/auth/sync
@@ -32,5 +33,20 @@ export async function POST() {
     },
   });
 
-  return NextResponse.json({ user: dbUser });
+  const preferences = await prisma.userPreference.upsert({
+    where: { userId: user.id },
+    update: {},
+    create: {
+      userId: user.id,
+      // Only genuinely new accounts see the one-time choice. Existing
+      // accounts with no preference row retain the historical map default.
+      onboardingCompleted: !shouldOnboardAccount(user.created_at),
+    },
+  });
+
+  return NextResponse.json({
+    user: dbUser,
+    needsOnboarding: !preferences.onboardingCompleted,
+    preferences,
+  });
 }

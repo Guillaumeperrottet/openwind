@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { KiteMapLazy } from "@/components/map/KiteMapLazy";
 import type { Spot } from "@/types";
 import type { WindStation } from "@/lib/stations";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import {
   DEFAULT_OG_IMAGE,
   HOME_SEO,
@@ -51,7 +53,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+  searchParams,
+}: Props & {
+  searchParams: Promise<{ view?: string | string[] }>;
+}) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
+  const explicitMapView = query.view === "map";
+
+  // The root URL is the user's durable launch point. An explicit map link
+  // bypasses the preference so switching back to the map always remains easy.
+  if (!explicitMapView) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const preference = await prisma.userPreference.findUnique({
+        where: { userId: user.id },
+        select: { defaultView: true, onboardingCompleted: true },
+      });
+      if (
+        preference?.onboardingCompleted &&
+        preference.defaultView === "DASHBOARD"
+      ) {
+        redirect(`/${locale}/mon-openwind`);
+      }
+    }
+  }
+
   // Fetch spots + cached stations in parallel from DB (both instant)
   let spots: Spot[] = [];
   let initialStations: WindStation[] = [];
