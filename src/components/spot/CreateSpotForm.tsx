@@ -265,11 +265,15 @@ export function CreateSpotForm({ initialData }: Props = {}) {
 
       // Delete removed images
       if (deletedImageIds.length > 0) {
-        await fetch(`/api/spots/${spot.id}/images`, {
+        const deleteImagesResponse = await fetch(`/api/spots/${spot.id}/images`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ imageIds: deletedImageIds }),
         });
+
+        if (!deleteImagesResponse.ok) {
+          throw new Error("Unable to delete spot images");
+        }
       }
 
       // Upload new images via server-side API route
@@ -277,10 +281,14 @@ export function CreateSpotForm({ initialData }: Props = {}) {
         for (const file of images) {
           const formData = new FormData();
           formData.append("file", file);
-          await fetch(`/api/spots/${spot.id}/images`, {
+          const uploadImageResponse = await fetch(`/api/spots/${spot.id}/images`, {
             method: "POST",
             body: formData,
           });
+
+          if (!uploadImageResponse.ok) {
+            throw new Error("Unable to upload spot image");
+          }
         }
       }
 

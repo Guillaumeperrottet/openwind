@@ -8,7 +8,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import {
   Route,
-  MapPin,
+  Map,
   Plus,
   User,
   LogOut,
@@ -31,7 +31,7 @@ export function Navbar() {
   const params = useParams();
   const currentLocale = (params?.locale as string) ?? "fr";
   const links = [
-    { href: "/?view=map" as const, label: t("map"), icon: MapPin },
+    { href: "/?view=map" as const, label: t("map"), icon: Map },
     { href: "/plan" as const, label: t("plan"), icon: Route },
     ...(currentLocale === "fr"
       ? [
@@ -146,7 +146,12 @@ export function Navbar() {
                   : "text-gray-500 hover:text-gray-900 hover:bg-gray-50",
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              <Icon
+                className={cn(
+                  "h-4 w-4 shrink-0",
+                  href === "/?view=map" && "lg:hidden",
+                )}
+              />
               <span className="hidden lg:inline">{label}</span>
             </Link>
           ))}

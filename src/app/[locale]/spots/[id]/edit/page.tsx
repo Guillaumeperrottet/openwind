@@ -65,6 +65,10 @@ export default async function EditSpotPage({ params }: Props) {
       id: img.id,
       url: img.url,
       caption: img.caption,
+      credit: img.credit,
+      sourceUrl: img.sourceUrl,
+      license: img.license,
+      licenseUrl: img.licenseUrl,
     })),
   };
 

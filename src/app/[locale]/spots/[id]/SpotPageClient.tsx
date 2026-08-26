@@ -172,7 +172,15 @@ interface SpotData {
   accessDe?: string | null;
   accessIt?: string | null;
   nearestStationId: string | null;
-  images: { id: string; url: string; caption: string | null }[];
+  images: {
+    id: string;
+    url: string;
+    caption: string | null;
+    credit: string | null;
+    sourceUrl: string | null;
+    license: string | null;
+    licenseUrl: string | null;
+  }[];
   reports: {
     id: string;
     date: string;

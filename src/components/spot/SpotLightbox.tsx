@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 
 interface LightboxImage {
   id: string;
   url: string;
   caption: string | null;
+  credit: string | null;
+  sourceUrl: string | null;
+  license: string | null;
+  licenseUrl: string | null;
 }
 
 interface SpotLightboxProps {
@@ -91,8 +95,44 @@ export function SpotLightbox({
           alt={image.caption || spotName}
           className="max-h-[78vh] max-w-full object-contain rounded-lg"
         />
-        {image.caption && (
-          <p className="text-white/60 text-sm text-center">{image.caption}</p>
+        {(image.caption || image.credit || image.license) && (
+          <div className="max-w-2xl text-center">
+            {image.caption && (
+              <p className="text-sm text-white/75">{image.caption}</p>
+            )}
+            {(image.credit || image.license) && (
+              <p className="mt-1 text-xs text-white/50">
+                {image.credit && <span>Photo : {image.credit}</span>}
+                {image.credit && image.license && <span> · </span>}
+                {image.licenseUrl ? (
+                  <a
+                    href={image.licenseUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline decoration-white/25 underline-offset-2 hover:text-white/80"
+                  >
+                    {image.license}
+                  </a>
+                ) : (
+                  image.license
+                )}
+                {image.sourceUrl && (
+                  <>
+                    <span> · </span>
+                    <a
+                      href={image.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 underline decoration-white/25 underline-offset-2 hover:text-white/80"
+                    >
+                      Source
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </>
+                )}
+              </p>
+            )}
+          </div>
         )}
       </div>
 

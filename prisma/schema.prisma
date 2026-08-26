@@ -124,12 +124,16 @@ model Favorite {
 }
 
 model SpotImage {
-  id        String   @id @default(cuid())
-  spotId    String
-  url       String
-  caption   String?
-  createdAt DateTime @default(now())
-  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  spotId     String
+  url        String
+  caption    String?
+  credit     String?
+  sourceUrl  String?
+  license    String?
+  licenseUrl String?
+  createdAt  DateTime @default(now())
+  spot       Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
 }
 
 model WindReport {

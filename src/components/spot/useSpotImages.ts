@@ -6,6 +6,10 @@ export interface ExistingImage {
   id: string;
   url: string;
   caption: string | null;
+  credit: string | null;
+  sourceUrl: string | null;
+  license: string | null;
+  licenseUrl: string | null;
 }
 
 /**
