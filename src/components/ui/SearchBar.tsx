@@ -367,7 +367,7 @@ function SearchItem({
   const subtitle = isStation
     ? [
         stationSourceLabel(result.source),
-        typeof result.altitudeM === "number"
+        typeof result.altitudeM === "number" && result.altitudeM > 0
           ? `${Math.round(result.altitudeM)} m`
           : null,
       ]

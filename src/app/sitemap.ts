@@ -28,6 +28,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...multilingual("", { changeFrequency: "daily", priority: 1 }),
     ...multilingual("/about", { changeFrequency: "monthly", priority: 0.9 }),
     ...multilingual("/plan", { changeFrequency: "weekly", priority: 0.85 }),
+    ...multilingual("/balises", {
+      changeFrequency: "daily",
+      priority: 0.9,
+    }),
     ...multilingual("/forum", { changeFrequency: "daily", priority: 0.8 }),
     {
       url: `${BASE_URL}/fr/carnet`,

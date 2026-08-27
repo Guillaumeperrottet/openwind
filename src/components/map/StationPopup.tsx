@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { X, ExternalLink } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { windConditionLabel, windDirectionLabel, barColors } from "@/lib/utils";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import type { HistoryPoint } from "@/types";
@@ -377,13 +378,13 @@ export function StationPopup({
         <span className="text-[10px] text-gray-400">
           {sourceLabel} · {t("everyN", { freq: sourceFreq })}
         </span>
-        {!isPioupiou && !isNetatmo ? (
-          <a
+        {!isNetatmo ? (
+          <Link
             href={`/stations/${encodeURIComponent(station.id)}`}
             className="text-xs font-semibold text-sky-500 hover:text-sky-600 inline-flex items-center gap-1 transition-colors"
           >
             {t("allData")} <ExternalLink className="h-3 w-3" />
-          </a>
+          </Link>
         ) : isNetatmo ? (
           <a
             href="https://weathermap.netatmo.com/"
@@ -393,16 +394,7 @@ export function StationPopup({
           >
             weathermap.netatmo.com <ExternalLink className="h-2.5 w-2.5" />
           </a>
-        ) : (
-          <a
-            href="https://openwindmap.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] text-gray-400 hover:text-sky-500 inline-flex items-center gap-1 transition-colors"
-          >
-            openwindmap.org <ExternalLink className="h-2.5 w-2.5" />
-          </a>
-        )}
+        ) : null}
       </div>
     </div>
   );

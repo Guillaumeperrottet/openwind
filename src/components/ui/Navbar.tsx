@@ -21,6 +21,7 @@ import {
   Newspaper,
   Shield,
   LayoutDashboard,
+  RadioTower,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
@@ -43,12 +44,6 @@ export function Navbar() {
           },
         ]
       : []),
-    {
-      href: "/forum" as const,
-      label: t("forum"),
-      icon: MessagesSquare,
-      hideOnMobile: true,
-    },
   ];
   const pathname = usePathname();
   const { user, favoriteIds, preferences, requestAuth, signOut } =
@@ -228,8 +223,15 @@ export function Navbar() {
                       {t("favorites", { count: favoriteIds.size })}
                     </Link>
                   </div>
-                  {/* Mobile-only links */}
-                  <div className="border-t border-gray-100 sm:hidden">
+                  <div className="border-t border-gray-100">
+                    <Link
+                      href="/balises"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <RadioTower className="h-3.5 w-3.5" />
+                      {t("stations")}
+                    </Link>
                     <Link
                       href="/forum"
                       onClick={() => setMenuOpen(false)}
@@ -242,7 +244,7 @@ export function Navbar() {
                       <Link
                         href="/carnet"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
                       >
                         <Newspaper className="h-3.5 w-3.5" />
                         Carnet
@@ -251,7 +253,7 @@ export function Navbar() {
                     <Link
                       href="/about"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
                     >
                       <Info className="h-3.5 w-3.5" />
                       {t("about")}
@@ -259,7 +261,7 @@ export function Navbar() {
                     <Link
                       href="/spots/new"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       {t("addSpot")}
@@ -336,8 +338,15 @@ export function Navbar() {
                     <Info className="h-3.5 w-3.5" />
                     {t("about")}
                   </Link>
-                  {/* Mobile-only links */}
-                  <div className="border-t border-gray-100 sm:hidden">
+                  <div className="border-t border-gray-100">
+                    <Link
+                      href="/balises"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <RadioTower className="h-3.5 w-3.5" />
+                      {t("stations")}
+                    </Link>
                     <Link
                       href="/forum"
                       onClick={() => setMenuOpen(false)}
@@ -350,7 +359,7 @@ export function Navbar() {
                       <Link
                         href="/carnet"
                         onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
                       >
                         <Newspaper className="h-3.5 w-3.5" />
                         Carnet
@@ -359,7 +368,7 @@ export function Navbar() {
                     <Link
                       href="/spots/new"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       {t("addSpot")}
@@ -367,7 +376,7 @@ export function Navbar() {
                     <Link
                       href="/about"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
                     >
                       <Info className="h-3.5 w-3.5" />
                       {t("about")}

@@ -6,6 +6,7 @@ import {
   getStationHistory,
 } from "@/lib/stationData";
 import { fetchFullForecast } from "@/lib/forecast";
+import { getMeteoSwissStationWeather } from "@/lib/meteoswissWeather";
 import {
   DEFAULT_OG_IMAGE,
   localizedAlternates,
@@ -75,15 +76,19 @@ export default async function StationPage({ params }: Props) {
   // Fetch live wind, 48h history and 7-day forecast in parallel.
   // allowOpenMeteoFallback=false → show stale obs with isFresh=false badge
   // rather than an Open-Meteo estimate (page is dedicated to THIS station).
-  const [liveResult, bundleResult, forecastResult] = await Promise.allSettled([
-    getStationLive(stationId, {
-      lat: station.lat,
-      lng: station.lng,
-      allowOpenMeteoFallback: false,
-    }),
-    getStationHistory(stationId, { lat: station.lat, lng: station.lng }),
-    fetchFullForecast(station.lat, station.lng),
-  ]);
+  const [liveResult, bundleResult, forecastResult, swissWeatherResult] =
+    await Promise.allSettled([
+      getStationLive(stationId, {
+        lat: station.lat,
+        lng: station.lng,
+        allowOpenMeteoFallback: false,
+      }),
+      getStationHistory(stationId, { lat: station.lat, lng: station.lng }),
+      fetchFullForecast(station.lat, station.lng),
+      station.source === "meteoswiss"
+        ? getMeteoSwissStationWeather(stationId)
+        : Promise.resolve(null),
+    ]);
 
   // StationPageClient still consumes a flat HistoryPoint[] — keep that contract
   // while Phase 4 hasn't migrated it to WindHistoryBundle.
@@ -101,6 +106,11 @@ export default async function StationPage({ params }: Props) {
         forecastResult.status === "fulfilled" ? forecastResult.value : null
       }
       history={history}
+      meteoswissWeather={
+        swissWeatherResult.status === "fulfilled"
+          ? swissWeatherResult.value
+          : null
+      }
     />
   );
 }

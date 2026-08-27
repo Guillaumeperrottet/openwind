@@ -13,6 +13,7 @@ import {
   ExternalLink,
   TrendingUp,
   Camera,
+  RadioTower,
 } from "lucide-react";
 import { WindCompass } from "@/components/spot/WindCompass";
 import { WindChart } from "@/components/spot/WindChart";
@@ -23,13 +24,16 @@ import { roundKnots } from "@/lib/forecast";
 import { useStationLive } from "@/lib/useStationLive";
 import type { WindStation } from "@/lib/stations";
 import type { FullForecast } from "@/lib/forecast";
+import type { MeteoSwissStationWeather } from "@/lib/meteoswissWeather";
 import type { HistoryPoint, WindLive } from "@/types";
+import { MeteoSwissDetailsPanel } from "./MeteoSwissDetailsPanel";
 
 interface Props {
   station: WindStation;
   live: WindLive | null;
   forecast: FullForecast | null;
   history: HistoryPoint[] | null;
+  meteoswissWeather: MeteoSwissStationWeather | null;
 }
 
 /* ── Source metadata for dynamic labels ─────────────────────────── */
@@ -47,7 +51,7 @@ const SOURCE_META: Record<
   pioupiou: {
     label: "Pioupiou OpenWindMap",
     freq: "~4 min",
-    url: "https://www.pioupiou.fr",
+    url: "https://openwindmap.org",
     attribution: "~600 stations communautaires mondiales, données ouvertes.",
   },
   netatmo: {
@@ -109,6 +113,7 @@ export function StationPageClient({
   live: initialLive,
   forecast,
   history,
+  meteoswissWeather,
 }: Props) {
   const t = useTranslations("StationPage");
   const tWind = useTranslations("WindConditions");
@@ -156,15 +161,9 @@ export function StationPageClient({
   const liveIsNewer = Boolean(
     live && !isNaN(liveTime) && (isNaN(stationTime) || liveTime >= stationTime),
   );
-  const curWindKmh = liveIsNewer
-    ? live!.windSpeedKmh
-    : station.windSpeedKmh;
-  const curDir = liveIsNewer
-    ? live!.windDirection
-    : station.windDirection;
-  const curGustsKmh = liveIsNewer
-    ? live!.gustsKmh
-    : station.gustsKmh;
+  const curWindKmh = liveIsNewer ? live!.windSpeedKmh : station.windSpeedKmh;
+  const curDir = liveIsNewer ? live!.windDirection : station.windDirection;
+  const curGustsKmh = liveIsNewer ? live!.gustsKmh : station.gustsKmh;
   const curUpdatedAt = liveIsNewer ? live!.updatedAt : station.updatedAt;
   const isCurrentStale = liveIsNewer ? !live!.isFresh : false;
 
@@ -172,13 +171,7 @@ export function StationPageClient({
   // bars and the map flag so the colour is identical everywhere.
   const color = barColors(curWindKmh)[0];
   type WindCondKey =
-    | "calm"
-    | "light"
-    | "gentle"
-    | "good"
-    | "strong"
-    | "veryStrong"
-    | "danger";
+    "calm" | "light" | "gentle" | "good" | "strong" | "veryStrong" | "danger";
   const condLabel = tWind(
     windConditionKey(curWindKmh).split(".")[1] as WindCondKey,
   );
@@ -247,72 +240,92 @@ export function StationPageClient({
   return (
     <div className="min-h-screen bg-white pb-20">
       {/* ── Header ───────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-6">
-        <Link
-          href="/?view=map"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-5"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("backToMap")}
-        </Link>
-
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              {station.name}
-            </h1>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-              <span className="flex items-center gap-1">
-                <Mountain className="h-3.5 w-3.5" />
-                {station.altitudeM} m alt.
-              </span>
-              <span>·</span>
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
-                {station.lat.toFixed(4)}°N, {station.lng.toFixed(4)}°E
-              </span>
-              <span>·</span>
-              <span className="font-mono text-gray-500">{station.id}</span>
-            </div>
-            <div className="flex items-center gap-3 mt-1 flex-wrap">
-              <p className="text-xs text-gray-500">
-                {t("lastMeasurement")} {updateDate} à {updateTime}
-              </p>
-              {isCurrentStale && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
-                  {t("staleData")}
-                </span>
-              )}
-              {lastRefreshed && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-gray-500">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  {t("autoRefresh", {
-                    time: lastRefreshed.toLocaleTimeString(undefined, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }),
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+      <div className="border-b border-gray-200 bg-white px-4 py-6 sm:px-6">
+        <div className="mx-auto max-w-[1480px]">
+          <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link
-              href={`/webcams?lat=${station.lat}&lng=${station.lng}&name=${encodeURIComponent(station.name)}&back=${encodeURIComponent(`/stations/${station.id}`)}`}
-              className="inline-flex items-center justify-center text-gray-400 hover:text-blue-500 transition-colors"
-              title={t("webcams")}
+              href="/?view=map"
+              className="inline-flex items-center gap-1.5 text-sm text-gray-500 transition-colors hover:text-gray-800"
             >
-              <Camera className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
+              {t("backToMap")}
             </Link>
-            <div className="text-xs font-bold px-3 py-1.5 rounded-full bg-gray-100 text-gray-700">
-              {condLabel}
+            <Link
+              href="/balises"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-700 transition-colors hover:text-sky-900"
+            >
+              <RadioTower className="h-4 w-4" />
+              {t("backToStations")}
+            </Link>
+          </div>
+
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                {station.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+                {station.altitudeM > 0 && (
+                  <>
+                    <span className="flex items-center gap-1">
+                      <Mountain className="h-3.5 w-3.5" />
+                      {station.altitudeM} m alt.
+                    </span>
+                    <span>·</span>
+                  </>
+                )}
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {station.lat.toFixed(4)}°N, {station.lng.toFixed(4)}°E
+                </span>
+                <span>·</span>
+                <span className="font-mono text-gray-500">{station.id}</span>
+              </div>
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
+                <p className="text-xs text-gray-500">
+                  {t("lastMeasurement")} {updateDate} à {updateTime}
+                </p>
+                {isCurrentStale && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
+                    {t("staleData")}
+                  </span>
+                )}
+                {lastRefreshed && (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-gray-500">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    {t("autoRefresh", {
+                      time: lastRefreshed.toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                    })}
+                  </span>
+                )}
+              </div>
+              {station.description && (
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">
+                  {station.description}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href={`/webcams?lat=${station.lat}&lng=${station.lng}&name=${encodeURIComponent(station.name)}&back=${encodeURIComponent(`/stations/${station.id}`)}`}
+                className="inline-flex items-center justify-center text-gray-400 hover:text-blue-500 transition-colors"
+                title={t("webcams")}
+              >
+                <Camera className="h-4 w-4" />
+              </Link>
+              <div className="text-xs font-bold px-3 py-1.5 rounded-full bg-gray-100 text-gray-700">
+                {condLabel}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Main content ─────────────────────────────────────────── */}
-      <div className="px-4 sm:px-6 py-8">
+      <div className="mx-auto max-w-[1480px] px-4 py-8 sm:px-6">
         {/* Unit toggle */}
         <div className="flex justify-end mb-5">
           <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-sm shadow-sm">
@@ -340,7 +353,7 @@ export function StationPageClient({
         </div>
 
         {/* ── Vent en direct + 48h Historique ────────────────────────────── */}
-        <div className="flex flex-col md:flex-row items-start gap-3 mb-10">
+        <div className="mb-10 grid grid-cols-1 items-start gap-3 sm:grid-cols-[auto_auto] xl:grid-cols-[auto_auto_minmax(0,1fr)]">
           {/* Compass */}
           <div className="hidden sm:flex flex-col items-center gap-2 bg-gray-50 border border-gray-200 rounded-2xl p-4 shrink-0">
             <WindCompass
@@ -466,7 +479,7 @@ export function StationPageClient({
           </div>
 
           {/* 48h history chart */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-w-0 flex-1">
+          <div className="w-full min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden sm:col-span-2 xl:col-span-1">
             <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
               <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
                 <TrendingUp className="h-4 w-4 text-gray-500" />
@@ -497,6 +510,43 @@ export function StationPageClient({
             </div>
           </div>
         </div>
+
+        {station.source === "pioupiou" && (
+          <section
+            className="mb-10 flex flex-col gap-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5 sm:flex-row sm:items-center sm:justify-between"
+            aria-labelledby="pioupiou-station-heading"
+          >
+            <div className="flex gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-100">
+                <RadioTower className="h-5 w-5" />
+              </span>
+              <div>
+                <h2
+                  id="pioupiou-station-heading"
+                  className="text-sm font-bold text-emerald-950"
+                >
+                  {t("communityStation")}
+                </h2>
+                <p className="mt-1 max-w-3xl text-xs leading-5 text-emerald-900/70 sm:text-sm">
+                  {t("communityStationDescription")}
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://openwindmap.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex shrink-0 items-center gap-1.5 self-start text-xs font-semibold text-emerald-800 hover:text-emerald-950 sm:self-center"
+            >
+              {t("viewOriginalNetwork")}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          </section>
+        )}
+
+        {meteoswissWeather && (
+          <MeteoSwissDetailsPanel weather={meteoswissWeather} />
+        )}
 
         {/* ── Graphique vent Open-Meteo · 7 jours ─────────────────── */}
         {forecast && (

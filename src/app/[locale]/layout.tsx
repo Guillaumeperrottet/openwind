@@ -125,6 +125,11 @@ export default async function LocaleLayout({ children, params }: Props) {
       },
       {
         "@type": "SiteNavigationElement",
+        name: "Balises météo et vent",
+        url: localizedUrl(locale, "/balises"),
+      },
+      {
+        "@type": "SiteNavigationElement",
         name: "Forum",
         url: localizedUrl(locale, "/forum"),
       },

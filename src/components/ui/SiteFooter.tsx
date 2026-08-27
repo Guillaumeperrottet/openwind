@@ -143,6 +143,9 @@ export function SiteFooter() {
                   <Link href="/?view=map" className={linkClass}>
                     {t("map")}
                   </Link>
+                  <Link href="/balises" className={linkClass}>
+                    {t("stations")}
+                  </Link>
                   <Link href="/plan" className={linkClass}>
                     {t("plan")}
                   </Link>

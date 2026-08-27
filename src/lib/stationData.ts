@@ -150,6 +150,24 @@ export async function getStationFromCache(
   }
 }
 
+/**
+ * Read the complete station snapshot used by the map and station pages.
+ * Keeping directory reads behind this helper avoids duplicating the cache
+ * contract in route components.
+ */
+export async function getStationsFromCache(): Promise<WindStation[]> {
+  try {
+    const cached = await prisma.systemConfig.findUnique({
+      where: { key: "stations_cache" },
+    });
+    if (!cached) return [];
+    const stations = JSON.parse(cached.value) as WindStation[];
+    return Array.isArray(stations) ? stations : [];
+  } catch {
+    return [];
+  }
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**

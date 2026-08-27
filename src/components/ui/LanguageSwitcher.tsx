@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Globe } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
@@ -36,10 +36,9 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors min-h-10 sm:min-h-0"
+        className="flex items-center gap-0.5 px-1.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors min-h-10 sm:min-h-0 sm:px-2"
         aria-label="Changer de langue"
       >
-        <Globe className="h-3.5 w-3.5 shrink-0" />
         <span>{LOCALE_LABELS[currentLocale]}</span>
         <ChevronDown
           className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`}
