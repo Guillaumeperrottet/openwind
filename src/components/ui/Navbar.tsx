@@ -182,6 +182,8 @@ export function Navbar() {
             <div ref={menuRef} className="relative ml-1">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
+                aria-label={t("menu")}
+                aria-expanded={menuOpen}
                 className="flex items-center justify-center h-8 w-8 rounded-full overflow-hidden border-2 border-gray-200 hover:border-sky-400 transition-colors"
               >
                 {user.user_metadata?.avatar_url ? (
@@ -217,9 +219,9 @@ export function Navbar() {
                     <Link
                       href="/?view=map&openSearch=1"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-sky-50 hover:text-sky-700"
                     >
-                      <Star className="h-3 w-3 text-amber-400" />
+                      <Star className="h-3.5 w-3.5 text-sky-500" />
                       {t("favorites", { count: favoriteIds.size })}
                     </Link>
                   </div>
@@ -313,6 +315,8 @@ export function Navbar() {
             <div ref={menuRef} className="relative ml-1">
               <button
                 onClick={() => setMenuOpen((v) => !v)}
+                aria-label={t("menu")}
+                aria-expanded={menuOpen}
                 className="flex items-center justify-center h-8 w-8 rounded-full border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors"
                 title="Menu"
               >

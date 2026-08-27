@@ -160,7 +160,6 @@ export function MonOpenwindClient({ initialData }: Props) {
               firstName={firstName}
               favoriteCount={visibleSpots.length}
               promisingCount={promisingCount}
-              useKnots={preferences.useKnots}
             />
             <BestWindowHeroCard
               window={bestWindow}
@@ -190,12 +189,10 @@ function DashboardHeroIntro({
   firstName,
   favoriteCount,
   promisingCount,
-  useKnots,
 }: {
   firstName: string | null;
   favoriteCount: number;
   promisingCount: number;
-  useKnots: boolean;
 }) {
   const t = useTranslations("MonOpenwind");
   const locale = useLocale();
@@ -206,74 +203,25 @@ function DashboardHeroIntro({
   }).format(new Date());
 
   return (
-    <div className="flex min-w-0 flex-col justify-between py-1 md:py-3">
-      <div>
-        <p className="mb-2 flex flex-wrap items-center gap-x-2 text-[11px] font-semibold uppercase tracking-[0.17em] text-sky-600">
-          <span>{t("eyebrow")}</span>
-          <span className="h-1 w-1 rounded-full bg-slate-300" />
-          <span className="capitalize text-slate-400">{today}</span>
-        </p>
-        <h1 className="max-w-3xl text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl lg:text-[44px] lg:leading-[1.05]">
-          {firstName ? t("helloName", { name: firstName }) : t("hello")}
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
-          {favoriteCount === 0
-            ? t("summary.empty")
-            : promisingCount > 0
-              ? t("summary.promising", {
-                  count: promisingCount,
-                  spots: favoriteCount,
-                })
-              : t("summary.quiet", { count: favoriteCount })}
-        </p>
-      </div>
-
-      <div className="mt-6 grid max-w-xl grid-cols-3 divide-x divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 sm:mt-8">
-        <HeroStat
-          icon={Star}
-          value={String(favoriteCount)}
-          label={t("hero.followedSpots")}
-          iconClassName="fill-amber-400 text-amber-400"
-        />
-        <HeroStat
-          icon={CalendarDays}
-          value={String(promisingCount)}
-          label={t("hero.goodWindows")}
-          iconClassName="text-emerald-500"
-        />
-        <HeroStat
-          icon={Gauge}
-          value={useKnots ? "kts" : "km/h"}
-          label={t("hero.windUnits")}
-          iconClassName="text-sky-500"
-        />
-      </div>
-    </div>
-  );
-}
-
-function HeroStat({
-  icon: Icon,
-  value,
-  label,
-  iconClassName,
-}: {
-  icon: typeof Star;
-  value: string;
-  label: string;
-  iconClassName: string;
-}) {
-  return (
-    <div className="min-w-0 px-3 py-3.5 sm:px-4">
-      <div className="flex items-center gap-1.5">
-        <Icon className={cn("h-3.5 w-3.5 shrink-0", iconClassName)} />
-        <strong className="truncate text-sm tabular-nums text-slate-900 sm:text-base">
-          {value}
-        </strong>
-      </div>
-      <span className="mt-1 block truncate text-[10px] text-slate-400 sm:text-[11px]">
-        {label}
-      </span>
+    <div className="flex min-w-0 flex-col justify-center py-2 md:py-4">
+      <p className="mb-2 flex flex-wrap items-center gap-x-2 text-[11px] font-semibold uppercase tracking-[0.17em] text-sky-600">
+        <span>{t("eyebrow")}</span>
+        <span className="h-1 w-1 rounded-full bg-slate-300" />
+        <span className="capitalize text-slate-400">{today}</span>
+      </p>
+      <h1 className="max-w-3xl text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl lg:text-[44px] lg:leading-[1.05]">
+        {firstName ? t("helloName", { name: firstName }) : t("hello")}
+      </h1>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+        {favoriteCount === 0
+          ? t("summary.empty")
+          : promisingCount > 0
+            ? t("summary.promising", {
+                count: promisingCount,
+                spots: favoriteCount,
+              })
+            : t("summary.quiet", { count: favoriteCount })}
+      </p>
     </div>
   );
 }
