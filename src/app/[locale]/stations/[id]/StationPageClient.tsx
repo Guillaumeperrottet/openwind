@@ -25,8 +25,10 @@ import { useStationLive } from "@/lib/useStationLive";
 import type { WindStation } from "@/lib/stations";
 import type { FullForecast } from "@/lib/forecast";
 import type { MeteoSwissStationWeather } from "@/lib/meteoswissWeather";
+import type { StationConnections as StationConnectionsData } from "@/lib/station-connections";
 import type { HistoryPoint, WindLive } from "@/types";
 import { MeteoSwissDetailsPanel } from "./MeteoSwissDetailsPanel";
+import { StationConnections } from "./StationConnections";
 
 interface Props {
   station: WindStation;
@@ -34,6 +36,7 @@ interface Props {
   forecast: FullForecast | null;
   history: HistoryPoint[] | null;
   meteoswissWeather: MeteoSwissStationWeather | null;
+  connections: StationConnectionsData;
 }
 
 /* ── Source metadata for dynamic labels ─────────────────────────── */
@@ -114,6 +117,7 @@ export function StationPageClient({
   forecast,
   history,
   meteoswissWeather,
+  connections,
 }: Props) {
   const t = useTranslations("StationPage");
   const tWind = useTranslations("WindConditions");
@@ -588,6 +592,8 @@ export function StationPageClient({
             {t("forecastUnavailable")}
           </div>
         )}
+
+        <StationConnections connections={connections} />
 
         {/* ── Attributions ─────────────────────────────────────────── */}
         <div className="mt-14 pt-6 border-t border-gray-200">

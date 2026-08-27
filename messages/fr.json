@@ -221,7 +221,21 @@
     "backToStations": "Toutes les balises",
     "communityStation": "Balise communautaire Pioupiou",
     "communityStationDescription": "Cette fiche repose sur les mesures réellement publiées par la balise : vent moyen, rafales et direction. Les données complémentaires absentes du réseau ne sont pas estimées.",
-    "viewOriginalNetwork": "Voir le réseau OpenWindMap"
+    "viewOriginalNetwork": "Voir le réseau OpenWindMap",
+    "connectedEyebrow": "Autour de cette balise",
+    "connectedTitle": "Spots et lectures associés",
+    "connectedDescription": "Ces liens reposent sur les associations enregistrées dans Openwind : la balise utilisée par chaque spot et les contenus sélectionnés dans le Carnet.",
+    "connectedSpots": "Spots utilisant cette balise",
+    "connectedArticles": "À lire dans le Carnet",
+    "sportKite": "Kitesurf",
+    "sportParaglide": "Parapente",
+    "difficulty": {
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "advanced": "Avancé",
+      "expert": "Expert"
+    },
+    "readTime": "{count} min de lecture"
   },
   "StationsDirectory": {
     "eyebrow": "Annuaire des balises",

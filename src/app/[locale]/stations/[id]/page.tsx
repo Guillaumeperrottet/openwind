@@ -7,6 +7,7 @@ import {
 } from "@/lib/stationData";
 import { fetchFullForecast } from "@/lib/forecast";
 import { getMeteoSwissStationWeather } from "@/lib/meteoswissWeather";
+import { resolveStationConnections } from "@/lib/station-connections";
 import {
   DEFAULT_OG_IMAGE,
   localizedAlternates,
@@ -76,7 +77,13 @@ export default async function StationPage({ params }: Props) {
   // Fetch live wind, 48h history and 7-day forecast in parallel.
   // allowOpenMeteoFallback=false → show stale obs with isFresh=false badge
   // rather than an Open-Meteo estimate (page is dedicated to THIS station).
-  const [liveResult, bundleResult, forecastResult, swissWeatherResult] =
+  const [
+    liveResult,
+    bundleResult,
+    forecastResult,
+    swissWeatherResult,
+    connectionsResult,
+  ] =
     await Promise.allSettled([
       getStationLive(stationId, {
         lat: station.lat,
@@ -88,6 +95,7 @@ export default async function StationPage({ params }: Props) {
       station.source === "meteoswiss"
         ? getMeteoSwissStationWeather(stationId)
         : Promise.resolve(null),
+      resolveStationConnections(stationId),
     ]);
 
   // StationPageClient still consumes a flat HistoryPoint[] — keep that contract
@@ -110,6 +118,11 @@ export default async function StationPage({ params }: Props) {
         swissWeatherResult.status === "fulfilled"
           ? swissWeatherResult.value
           : null
+      }
+      connections={
+        connectionsResult.status === "fulfilled"
+          ? connectionsResult.value
+          : { spots: [], articles: [] }
       }
     />
   );

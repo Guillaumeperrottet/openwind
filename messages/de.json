@@ -221,7 +221,21 @@
     "backToStations": "Alle Stationen",
     "communityStation": "Pioupiou-Gemeinschaftsstation",
     "communityStationDescription": "Diese Seite nutzt die tatsächlich veröffentlichten Messungen der Station: Mittelwind, Böen und Richtung. Fehlende Netzwerkparameter werden nicht geschätzt.",
-    "viewOriginalNetwork": "OpenWindMap-Netzwerk öffnen"
+    "viewOriginalNetwork": "OpenWindMap-Netzwerk öffnen",
+    "connectedEyebrow": "Rund um diese Station",
+    "connectedTitle": "Verknüpfte Spots und Beiträge",
+    "connectedDescription": "Diese Links basieren auf den in Openwind gespeicherten Beziehungen: der für jeden Spot ausgewählten Station und den im Journal zugeordneten Inhalten.",
+    "connectedSpots": "Spots mit dieser Station",
+    "connectedArticles": "Aus dem Openwind-Journal",
+    "sportKite": "Kitesurfen",
+    "sportParaglide": "Gleitschirmfliegen",
+    "difficulty": {
+      "beginner": "Anfänger",
+      "intermediate": "Fortgeschritten",
+      "advanced": "Erfahren",
+      "expert": "Experte"
+    },
+    "readTime": "{count} Min. Lesezeit"
   },
   "StationsDirectory": {
     "eyebrow": "Stationsverzeichnis",

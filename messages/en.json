@@ -221,7 +221,21 @@
     "backToStations": "All stations",
     "communityStation": "Pioupiou community station",
     "communityStationDescription": "This page uses the measurements actually published by the station: average wind, gusts and direction. Missing network parameters are not estimated.",
-    "viewOriginalNetwork": "View the OpenWindMap network"
+    "viewOriginalNetwork": "View the OpenWindMap network",
+    "connectedEyebrow": "Around this station",
+    "connectedTitle": "Related spots and reading",
+    "connectedDescription": "These links use the relationships saved in Openwind: the station selected for each spot and the content associated in the Journal.",
+    "connectedSpots": "Spots using this station",
+    "connectedArticles": "From the Openwind Journal",
+    "sportKite": "Kitesurfing",
+    "sportParaglide": "Paragliding",
+    "difficulty": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "expert": "Expert"
+    },
+    "readTime": "{count} min read"
   },
   "StationsDirectory": {
     "eyebrow": "Station directory",

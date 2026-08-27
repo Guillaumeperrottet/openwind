@@ -221,7 +221,21 @@
     "backToStations": "Tutte le stazioni",
     "communityStation": "Stazione comunitaria Pioupiou",
     "communityStationDescription": "Questa pagina utilizza le misure realmente pubblicate dalla stazione: vento medio, raffiche e direzione. I parametri mancanti della rete non vengono stimati.",
-    "viewOriginalNetwork": "Apri la rete OpenWindMap"
+    "viewOriginalNetwork": "Apri la rete OpenWindMap",
+    "connectedEyebrow": "Intorno a questa stazione",
+    "connectedTitle": "Spot e articoli collegati",
+    "connectedDescription": "Questi link utilizzano le relazioni salvate in Openwind: la stazione scelta per ogni spot e i contenuti associati nel Diario.",
+    "connectedSpots": "Spot che usano questa stazione",
+    "connectedArticles": "Dal Diario Openwind",
+    "sportKite": "Kitesurf",
+    "sportParaglide": "Parapendio",
+    "difficulty": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzato",
+      "expert": "Esperto"
+    },
+    "readTime": "{count} min di lettura"
   },
   "StationsDirectory": {
     "eyebrow": "Elenco delle stazioni",
