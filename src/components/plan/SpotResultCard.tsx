@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Clock, AlertTriangle } from "lucide-react";
 import { windColor, windConditionLabel } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 import type { SpotWithForecast } from "@/types";
 
 function scoreColor(score: number): string {
@@ -61,7 +62,15 @@ export function SpotResultCard({
       <Link
         href={`/spots/${spot.id}`}
         className="block px-3 pt-3 pb-2"
-        onClick={onSelect ? (e) => e.preventDefault() : undefined}
+        onClick={(event) => {
+          trackEvent("plan_result_open", {
+            spot_id: spot.id,
+            sport: spot.sportType.toLowerCase(),
+            score: Math.round(sc),
+            interaction: onSelect ? "preview" : "navigate",
+          });
+          if (onSelect) event.preventDefault();
+        }}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-2">

@@ -17,11 +17,21 @@ interface BannerConfig {
   paused: boolean;
 }
 
+function getDestinationHost(url: string | undefined) {
+  if (!url) return "unknown";
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "unknown";
+  }
+}
+
 export function AdBanner() {
   const [banner, setBanner] = useState<BannerConfig | null>(null);
   const [copies, setCopies] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
+  const viewTrackedRef = useRef(false);
 
   useEffect(() => {
     fetch("/api/admin/banner")
@@ -50,14 +60,39 @@ export function AdBanner() {
     return () => window.removeEventListener("resize", calcCopies);
   }, [banner, calcCopies]);
 
-  if (!banner) return null;
+  const destinationHost = getDestinationHost(banner?.url);
 
-  let destinationHost = "unknown";
-  try {
-    destinationHost = new URL(banner.url).hostname.replace(/^www\./, "");
-  } catch {
-    // Keep the neutral label for malformed legacy banner URLs.
-  }
+  useEffect(() => {
+    if (!banner || viewTrackedRef.current || !containerRef.current) return;
+
+    const recordView = () => {
+      if (viewTrackedRef.current) return;
+      viewTrackedRef.current = true;
+      trackEvent("sponsor_view", {
+        sponsor: destinationHost,
+        placement: "map_bottom",
+      });
+    };
+
+    if (typeof IntersectionObserver === "undefined") {
+      recordView();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && entry.intersectionRatio >= 0.5) {
+          recordView();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [banner, destinationHost]);
+
+  if (!banner) return null;
 
   const marqueeStyle: CSSProperties = {
     animationDuration: `${banner.speedSec}s`,
@@ -75,7 +110,8 @@ export function AdBanner() {
         rel="noopener noreferrer sponsored"
         onClick={() =>
           trackEvent("sponsor_click", {
-            destination_host: destinationHost,
+            sponsor: destinationHost,
+            placement: "map_bottom",
           })
         }
         className="flex items-center h-7 whitespace-nowrap text-xs text-white/90 hover:text-white transition-colors"

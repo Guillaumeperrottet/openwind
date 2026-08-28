@@ -1,6 +1,9 @@
+"use client";
+
 import { ArrowRight, Compass, Gauge, MapPin, Radio, Wind } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import type { ResolvedArticleConnections } from "@/lib/article-connections";
+import { trackEvent } from "@/lib/analytics";
 import { NETWORK_LABELS } from "@/lib/stationConstants";
 import { windDirectionLabel } from "@/lib/utils";
 
@@ -41,6 +44,13 @@ export function ArticleConnections({ spots, stations }: Connections) {
               <Link
                 key={station.id}
                 href={`/stations/${encodeURIComponent(station.id)}`}
+                onClick={() =>
+                  trackEvent("related_content_click", {
+                    content_type: "station",
+                    content_id: station.id,
+                    placement: "article_connections",
+                  })
+                }
                 className="group flex items-center justify-between gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md"
               >
                 <div className="min-w-0">
@@ -76,6 +86,13 @@ export function ArticleConnections({ spots, stations }: Connections) {
               <Link
                 key={spot.id}
                 href={`/spots/${spot.id}`}
+                onClick={() =>
+                  trackEvent("related_content_click", {
+                    content_type: "spot",
+                    content_id: spot.id,
+                    placement: "article_connections",
+                  })
+                }
                 className="group rounded-2xl border border-slate-200 bg-slate-950 p-5 text-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-500 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-4">

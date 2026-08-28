@@ -15,6 +15,7 @@ import {
   Wind,
 } from "lucide-react";
 import { ArticleMarkdown } from "@/components/carnet/ArticleMarkdown";
+import { ArticleReadTracker } from "@/components/carnet/ArticleReadTracker";
 import { ArticleShare } from "@/components/carnet/ArticleShare";
 import { RelatedArticles } from "@/components/carnet/RelatedArticles";
 import { Link } from "@/i18n/navigation";
@@ -360,6 +361,10 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
                 Le Carnet local
               </p>
               <ArticleMarkdown>{guide.content}</ArticleMarkdown>
+              <ArticleReadTracker
+                articleSlug={guide.slug}
+                contentType="local_guide"
+              />
             </div>
             <aside className="h-fit border-l-2 border-sky-600 pl-5 lg:sticky lg:top-24">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-700">

@@ -1,6 +1,9 @@
+"use client";
+
 import { ArrowRight, Clock3, MapPin } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { articlePublicPath, type ArticleDto } from "@/lib/articles";
+import { trackEvent } from "@/lib/analytics";
 
 type RelatedArticle = Pick<
   ArticleDto,
@@ -51,6 +54,13 @@ export function RelatedArticles({ articles }: { articles: RelatedArticle[] }) {
           >
             <Link
               href={articlePublicPath(article)}
+              onClick={() =>
+                trackEvent("related_content_click", {
+                  content_type: "article",
+                  content_id: article.id,
+                  placement: "related_articles",
+                })
+              }
               className="relative block aspect-[16/9] overflow-hidden bg-slate-100"
             >
               {article.coverImage ? (
@@ -91,6 +101,13 @@ export function RelatedArticles({ articles }: { articles: RelatedArticle[] }) {
               </p>
               <Link
                 href={articlePublicPath(article)}
+                onClick={() =>
+                  trackEvent("related_content_click", {
+                    content_type: "article",
+                    content_id: article.id,
+                    placement: "related_articles",
+                  })
+                }
                 className="mt-6 inline-flex w-fit items-center gap-2 border-b border-slate-900 pb-1 text-sm font-semibold transition hover:border-sky-600 hover:text-sky-700"
               >
                 Lire le Carnet

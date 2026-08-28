@@ -12,6 +12,7 @@ import {
   MAP_FOCUS_STORAGE_KEY,
   type StoredMapFocusRequest,
 } from "@/lib/mapFocus";
+import { trackEvent } from "@/lib/analytics";
 
 interface SearchBarProps {
   favoriteIds: Set<string>;
@@ -232,6 +233,12 @@ export function SearchBar({
 
   const navigateToMapResult = useCallback(
     (result: SearchResult) => {
+      trackEvent("search_result_open", {
+        result_type: result.kind,
+        result_id: result.id,
+        source: query.trim() ? "search" : "favorites",
+      });
+
       const target: StoredMapFocusRequest = {
         kind: result.kind,
         id: result.id,
@@ -258,7 +265,7 @@ export function SearchBar({
       onNavigate?.();
       router.push("/?view=map", { scroll: false });
     },
-    [onNavigate, router],
+    [onNavigate, query, router],
   );
 
   const showDropdown = open && (query.trim() || favorites.length > 0);

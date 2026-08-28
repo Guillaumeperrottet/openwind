@@ -1,3 +1,7 @@
+"use client";
+
+import { track as trackVercelEvent } from "@vercel/analytics";
+
 type AnalyticsValue = string | number | boolean;
 
 export type AnalyticsParams = Record<
@@ -29,6 +33,14 @@ export function trackEvent(
   const cleanParams: Record<string, AnalyticsValue> = {};
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null) cleanParams[key] = value;
+  }
+
+  // Vercel powers the concise product/sponsor reporting in the project
+  // dashboard. Analytics must never interrupt the user action that triggered it.
+  try {
+    trackVercelEvent(eventName, cleanParams);
+  } catch {
+    // Ignore analytics failures and continue with the Google fallback below.
   }
 
   if (typeof window.gtag === "function") {

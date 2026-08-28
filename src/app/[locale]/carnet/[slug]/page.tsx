@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { ArticleMarkdown } from "@/components/carnet/ArticleMarkdown";
+import { ArticleReadTracker } from "@/components/carnet/ArticleReadTracker";
 import { ArticleConnections } from "@/components/carnet/ArticleConnections";
 import { ArticleShare } from "@/components/carnet/ArticleShare";
 import { RelatedArticles } from "@/components/carnet/RelatedArticles";
@@ -237,6 +238,10 @@ export default async function ArticlePage({ params }: Props) {
       <div className="mx-auto grid max-w-5xl gap-12 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_220px] lg:px-10 lg:py-20">
         <div className="min-w-0">
           <ArticleMarkdown>{article.content}</ArticleMarkdown>
+          <ArticleReadTracker
+            articleSlug={article.slug}
+            contentType="carnet_article"
+          />
 
           {sources.length > 0 && (
             <section className="mt-16 border-t border-slate-200 pt-10">
