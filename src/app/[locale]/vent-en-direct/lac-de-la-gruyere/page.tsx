@@ -22,7 +22,10 @@ import { parseArticleSources } from "@/lib/articles";
 import { resolveArticleConnections } from "@/lib/article-connections";
 import { prisma } from "@/lib/prisma";
 import { localizedUrl } from "@/lib/site";
-import { LiveStations } from "./LiveStations";
+import {
+  LiveStations,
+  type LiveStationSummary,
+} from "./LiveStations";
 
 const PAGE_PATH = "/vent-en-direct/lac-de-la-gruyere";
 const PAGE_URL = localizedUrl("fr", PAGE_PATH);
@@ -33,6 +36,18 @@ const HERO_IMAGE =
 const FALLBACK_TITLE = "Vent en direct au lac de la Gruyère";
 const FALLBACK_DESCRIPTION =
   "Les mesures de Morlon Beach et Marsens, le spot local, les directions à surveiller et les informations essentielles avant d’aller sur l’eau.";
+const FALLBACK_STATIONS: LiveStationSummary[] = [
+  {
+    id: "windball-wf-35",
+    name: "Morlon Beach",
+    source: "windball",
+  },
+  {
+    id: "MAS",
+    name: "Marsens",
+    source: "meteoswiss",
+  },
+];
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -98,7 +113,7 @@ const faq = [
   {
     question: "Où voir le vent en direct au lac de la Gruyère ?",
     answer:
-      "La balise Windfox de Morlon Beach fournit la mesure la plus locale affichée sur cette page. La station MétéoSuisse de Marsens sert de repère régional complémentaire.",
+      "Les balises sélectionnées pour ce guide sont affichées dans le bloc « Le vent mesuré autour du lac ». Elles permettent de comparer plusieurs points du lac et un repère régional complémentaire.",
   },
   {
     question: "Le kitesurf est-il autorisé sur le lac de la Gruyère ?",
@@ -117,9 +132,15 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
   if (locale !== "fr") notFound();
 
   const guide = await findGruyereGuide().catch(() => null);
-  const relatedArticles = guide
-    ? (await resolveArticleConnections(guide)).relatedArticles
-    : [];
+  const connections = guide ? await resolveArticleConnections(guide) : null;
+  const relatedArticles = connections?.relatedArticles ?? [];
+  const displayedStations: LiveStationSummary[] = guide
+    ? (connections?.stations ?? []).map(({ id, name, source }) => ({
+        id,
+        name,
+        source,
+      }))
+    : FALLBACK_STATIONS;
   const sources = parseArticleSources(guide?.sources);
   const heroImage = guide?.coverImage || HERO_IMAGE;
   const title = guide?.title || FALLBACK_TITLE;
@@ -255,13 +276,15 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
               {description}
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <a
-                href="#vent-direct"
-                className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-400"
-              >
-                Voir le vent maintenant
-                <ArrowRight className="h-4 w-4" />
-              </a>
+              {displayedStations.length > 0 && (
+                <a
+                  href="#vent-direct"
+                  className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-400"
+                >
+                  Voir le vent maintenant
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              )}
               <Link
                 href={`/spots/${MORLON_SPOT_ID}`}
                 className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
@@ -307,26 +330,28 @@ export default async function LacDeLaGruyerePage({ params }: Props) {
           </div>
         )}
 
-        <section id="vent-direct" className="scroll-mt-24">
-          <div className="mb-7 max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-600">
-              Balises en direct
+        {displayedStations.length > 0 && (
+          <section id="vent-direct" className="scroll-mt-24">
+            <div className="mb-7 max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-600">
+                Balises en direct
+              </p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+                Le vent mesuré autour du lac
+              </h2>
+              <p className="mt-3 leading-7 text-slate-600">
+                Compare les directions, les rafales et l&apos;heure de mise à jour
+                des balises choisies pour ce guide. Les écarts entre deux points
+                peuvent révéler un effet très local lié au relief ou à la rive.
+              </p>
+            </div>
+            <LiveStations stations={displayedStations} />
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              Les mesures sont indicatives. Observe toujours les conditions sur
+              place et leur évolution avant de t&apos;engager.
             </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
-              Le vent mesuré autour du lac
-            </h2>
-            <p className="mt-3 leading-7 text-slate-600">
-              Morlon donne la lecture la plus proche du plan d&apos;eau. Marsens
-              permet de comparer la situation régionale : un écart entre les
-              deux peut signaler un effet très local lié au relief ou à la rive.
-            </p>
-          </div>
-          <LiveStations />
-          <p className="mt-3 text-xs leading-5 text-slate-500">
-            Les mesures sont indicatives. Observe toujours les conditions sur
-            place et leur évolution avant de t&apos;engager.
-          </p>
-        </section>
+          </section>
+        )}
 
         {guide && (
           <section className="mt-20 grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">

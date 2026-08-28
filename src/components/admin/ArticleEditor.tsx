@@ -628,31 +628,36 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
               <div className="mt-5 space-y-6">
                 {isLocalGuide ? (
                   <div className="rounded-lg border border-sky-100 bg-sky-50 p-3 text-xs leading-5 text-sky-800">
-                    Les balises de Morlon et Marsens ainsi que la fiche du spot
-                    sont déjà intégrées directement dans ce guide local.
+                    Les balises choisies ici alimentent directement le bloc de
+                    mesures en direct du guide. La fiche du spot de Morlon reste
+                    intégrée à sa mise en page locale.
                   </div>
                 ) : (
-                  <>
-                    <ArticleRelationPicker
-                      title="Spots associés"
-                      description="Affiche les fiches terrain à consulter après la lecture."
-                      options={spotOptions}
-                      selectedIds={article.linkedSpotIds}
-                      onChange={(ids) => setField("linkedSpotIds", ids)}
-                      loading={relationsLoading}
-                      emptyLabel="Aucun spot trouvé."
-                    />
-                    <ArticleRelationPicker
-                      title="Balises associées"
-                      description="Ajoute des accès directs aux mesures utiles pour l’article."
-                      options={stationOptions}
-                      selectedIds={article.linkedStationIds}
-                      onChange={(ids) => setField("linkedStationIds", ids)}
-                      loading={relationsLoading}
-                      emptyLabel="Aucune balise trouvée."
-                    />
-                  </>
+                  <ArticleRelationPicker
+                    title="Spots associés"
+                    description="Affiche les fiches terrain à consulter après la lecture."
+                    options={spotOptions}
+                    selectedIds={article.linkedSpotIds}
+                    onChange={(ids) => setField("linkedSpotIds", ids)}
+                    loading={relationsLoading}
+                    emptyLabel="Aucun spot trouvé."
+                  />
                 )}
+                <ArticleRelationPicker
+                  title={
+                    isLocalGuide ? "Balises affichées" : "Balises associées"
+                  }
+                  description={
+                    isLocalGuide
+                      ? "Choisis les balises qui apparaissent dans le bloc de mesures en direct, dans l’ordre de sélection."
+                      : "Ajoute des accès directs aux mesures utiles pour l’article."
+                  }
+                  options={stationOptions}
+                  selectedIds={article.linkedStationIds}
+                  onChange={(ids) => setField("linkedStationIds", ids)}
+                  loading={relationsLoading}
+                  emptyLabel="Aucune balise trouvée."
+                />
                 <ArticleRelationPicker
                   title="Carnets recommandés"
                   description="Contrôle précisément le bloc « À lire aussi »."

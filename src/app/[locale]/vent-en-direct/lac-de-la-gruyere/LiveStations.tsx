@@ -3,23 +3,30 @@
 import { ArrowUpRight, Radio, RefreshCw } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { roundKnots } from "@/lib/forecast";
+import { NETWORK_LABELS, type NetworkId } from "@/lib/stationConstants";
 import { useStationLive } from "@/lib/useStationLive";
 import { windDirectionLabel } from "@/lib/utils";
 
-const STATIONS = [
-  {
-    id: "windball-wf-35",
-    name: "Morlon Beach",
-    network: "Windfox · Windball",
-    role: "Mesure au bord du lac",
-  },
-  {
-    id: "MAS",
-    name: "Marsens",
-    network: "MétéoSuisse",
-    role: "Repère régional",
-  },
-] as const;
+export interface LiveStationSummary {
+  id: string;
+  name: string;
+  source: NetworkId;
+}
+
+const STATION_ROLES: Record<string, string> = {
+  "windball-wf-35": "Mesure au bord du lac",
+  "piou-2153": "Mesure au Camping du Lac",
+  MAS: "Repère régional",
+};
+
+function stationRole(stationId: string) {
+  return STATION_ROLES[stationId] ?? "Balise associée au guide";
+}
+
+function stationNetwork(station: LiveStationSummary) {
+  if (station.id === "windball-wf-35") return "Windfox · Windball";
+  return NETWORK_LABELS[station.source];
+}
 
 function windColor(kmh: number): string {
   if (kmh < 8) return "#94a3b8";
@@ -34,7 +41,7 @@ function windColor(kmh: number): string {
 function LiveStationCard({
   station,
 }: {
-  station: (typeof STATIONS)[number];
+  station: LiveStationSummary;
 }) {
   const { data, isLoading } = useStationLive(station.id);
 
@@ -46,12 +53,14 @@ function LiveStationCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-600">
-            {station.role}
+            {stationRole(station.id)}
           </p>
           <h3 className="mt-1 text-lg font-semibold text-slate-950">
             {station.name}
           </h3>
-          <p className="text-xs text-slate-500">{station.network}</p>
+          <p className="text-xs text-slate-500">
+            {stationNetwork(station)}
+          </p>
         </div>
         <ArrowUpRight className="h-4 w-4 text-slate-300 transition group-hover:text-sky-600" />
       </div>
@@ -148,10 +157,14 @@ function LiveStationCard({
   );
 }
 
-export function LiveStations() {
+export function LiveStations({
+  stations,
+}: {
+  stations: LiveStationSummary[];
+}) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {STATIONS.map((station) => (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {stations.map((station) => (
         <LiveStationCard key={station.id} station={station} />
       ))}
     </div>
