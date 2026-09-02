@@ -160,15 +160,17 @@ Spots triés par score vent pour une période donnée.
 
 ### `GET /api/favorites`
 
-**Auth** : optionnelle (retourne `{ spotIds: [] }` si non connecté).
+**Auth** : optionnelle (retourne `{ spotIds: [], stationIds: [] }` si non connecté).
+
+**Réponse** : `{ spotIds: string[], stationIds: string[] }`.
 
 ### `POST /api/favorites`
 
 **Auth** : requise.
 
-**Body** : `{ spotId: string }`
+**Body** : `{ spotId: string }` ou `{ stationId: string }`.
 
-Toggle : ajoute si absent, supprime si présent. **Réponse** : `{ favorited: boolean }`.
+Toggle : ajoute si absent, supprime si présent. Les métadonnées d’une balise sont résolues côté serveur depuis le cache partagé. **Réponse** : `{ favorited: boolean, kind: "spot" | "station" }`.
 
 ---
 

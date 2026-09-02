@@ -53,7 +53,8 @@
     "openSource": "Un projet open source construit en Suisse romande."
   },
   "SearchBar": {
-    "placeholder": "Rechercher un spot ou une station…",
+    "placeholder": "Rechercher un spot ou une balise…",
+    "favorites": "Favoris",
     "createSpot": "Créer ce spot",
     "favoriteSpots": "Spots favoris",
     "allSpots": "Tous les spots",
@@ -64,7 +65,7 @@
     "signupTitle": "Créer un compte",
     "forgotTitle": "Mot de passe oublié",
     "loginSubtitle": "Connectez-vous pour accéder à vos favoris et au forum.",
-    "signupSubtitle": "Inscrivez-vous pour sauvegarder vos spots favoris.",
+    "signupSubtitle": "Inscrivez-vous pour sauvegarder vos spots et balises favoris.",
     "forgotSubtitle": "Entrez votre email pour recevoir un lien de réinitialisation.",
     "resetSentTitle": "Lien envoyé à",
     "resetSentBody": "Vérifiez votre boîte mail et cliquez sur le lien pour définir un nouveau mot de passe.",
@@ -170,6 +171,8 @@
   },
   "StationPage": {
     "backToMap": "Retour à la carte",
+    "addFavorite": "Ajouter la balise aux favoris",
+    "removeFavorite": "Retirer la balise des favoris",
     "windAverage": "Vent moyen",
     "gusts": "Rafales",
     "direction": "Direction",
@@ -267,6 +270,8 @@
     "direction": "Direction",
     "history48h": "Historique mesuré · 48 h",
     "details": "Voir la fiche",
+    "addFavorite": "Ajouter la balise aux favoris",
+    "removeFavorite": "Retirer la balise des favoris",
     "promiseRealTitle": "Des mesures réelles",
     "promiseRealDescription": "Les valeurs des balises sont distinguées clairement des prévisions numériques.",
     "promiseHistoryTitle": "Une lecture dans le temps",
@@ -554,7 +559,7 @@
     "hello": "Bonjour, le vent t’attend.",
     "helloName": "Bonjour {name}, le vent t’attend.",
     "customize": "Personnaliser",
-    "favoriteCount": "{count, plural, =0 {Aucun spot} one {# spot} other {# spots}}",
+    "favoriteCount": "{count, plural, =0 {Aucun favori} one {# favori} other {# favoris}}",
     "hero": {
       "followedSpots": "spots suivis",
       "goodWindows": "bonnes fenêtres",
@@ -575,16 +580,16 @@
       "dashboard": "Mon Openwind"
     },
     "summary": {
-      "empty": "Ajoute tes premiers spots favoris pour obtenir une vue vraiment personnelle.",
-      "promising": "{count, plural, one {Une belle fenêtre se dessine} other {# belles fenêtres se dessinent}} parmi tes {spots} spots favoris.",
-      "quiet": "Tes {count} spots favoris sont suivis. Les prochaines fenêtres apparaîtront ici dès qu’elles se précisent."
+      "empty": "Ajoute tes premiers spots ou balises favoris pour obtenir une vue vraiment personnelle.",
+      "promising": "{count, plural, one {Une belle fenêtre se dessine} other {# belles fenêtres se dessinent}} parmi tes {spots} favoris.",
+      "quiet": "Tes {count} favoris sont suivis. Les prochaines fenêtres apparaîtront ici dès qu’elles se précisent."
     },
     "onboarding": {
       "eyebrow": "Bienvenue chez Openwind",
       "title": "Comment veux-tu ouvrir Openwind ?",
       "description": "Choisis ton point de départ. Ce réglage te suivra sur tous tes appareils et pourra être modifié à tout moment.",
       "dashboardTitle": "Mon Openwind",
-      "dashboardDescription": "Mes spots, les bonnes fenêtres et les articles utiles en un coup d’œil.",
+      "dashboardDescription": "Mes spots, mes balises, les bonnes fenêtres et les articles utiles en un coup d’œil.",
       "mapTitle": "La carte",
       "mapDescription": "Ouvrir directement la carte complète des spots et des balises.",
       "changeLater": "Tu pourras modifier ce choix dans Personnaliser.",
@@ -595,19 +600,22 @@
     "private": {
       "eyebrow": "Espace personnel",
       "title": "Ton Openwind, rien qu’à toi.",
-      "description": "Connecte-toi pour retrouver tes spots, leurs conditions, tes articles et l’activité locale dans un tableau de bord personnel.",
+      "description": "Connecte-toi pour retrouver tes spots, tes balises, leurs conditions et tes contenus dans un tableau de bord personnel.",
       "signIn": "Se connecter ou créer un compte",
       "backToMap": "Retour à la carte",
       "privacy": "Tes préférences restent liées uniquement à ton compte."
     },
     "favorites": {
       "eyebrow": "Maintenant",
-      "title": "Mes spots favoris",
-      "description": "Les conditions qui comptent, sans devoir parcourir toute la carte.",
+      "title": "Mes favoris",
+      "description": "Tes spots et balises, avec les conditions qui comptent.",
       "manage": "Gérer sur la carte",
+      "spotFavorites": "{count, plural, one {# spot favori} other {# spots favoris}}",
+      "stationFavorites": "{count, plural, one {# balise favorite} other {# balises favorites}}",
       "kite": "Kitesurf",
       "paraglide": "Parapente",
       "remove": "Retirer des favoris",
+      "removeStation": "Retirer la balise des favoris",
       "locationUnknown": "Localisation non précisée",
       "favorable": "Favorable",
       "watch": "À surveiller",
@@ -617,9 +625,14 @@
       "live": "Mesure en direct",
       "estimated": "Estimation actualisée",
       "details": "Voir le spot",
-      "emptyTitle": "Ton tableau de bord attend ses premiers spots.",
-      "emptyDescription": "Explore la carte et touche l’étoile d’un spot pour le retrouver ici avec ses conditions et ses contenus.",
-      "explore": "Choisir mes spots"
+      "stationLive": "Mesure en direct",
+      "stationCached": "Dernière mesure",
+      "stationUnavailable": "Balise indisponible",
+      "stationMeasuredAt": "Mesuré le {time}",
+      "stationDetails": "Voir la balise",
+      "emptyTitle": "Ton tableau de bord attend ses premiers favoris.",
+      "emptyDescription": "Explore la carte et touche l’étoile d’un spot ou d’une balise pour le retrouver ici.",
+      "explore": "Choisir mes favoris"
     },
     "forecast": {
       "eyebrow": "À venir",
@@ -634,10 +647,10 @@
     },
     "articles": {
       "eyebrow": "Carnet Openwind",
-      "title": "À lire pour mes spots",
+      "title": "À lire pour mes favoris",
       "description": "Guides de terrain et décryptages directement reliés à tes favoris.",
       "all": "Voir le Carnet",
-      "empty": "Aucun article n’est encore relié à ces spots. Ils apparaîtront automatiquement ici.",
+      "empty": "Aucun article n’est encore relié à ces spots ou balises. Ils apparaîtront automatiquement ici.",
       "readTime": "{count} min de lecture"
     },
     "community": {
@@ -674,7 +687,7 @@
       "displayTitle": "Contenu du tableau de bord",
       "displayDescription": "Affiche, masque et ordonne les rubriques.",
       "modules": {
-        "favorites": "Mes spots favoris",
+        "favorites": "Mes favoris",
         "forecast": "Prochaines fenêtres",
         "articles": "Articles pour mes spots",
         "community": "Activité locale",

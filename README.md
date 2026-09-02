@@ -93,7 +93,7 @@ src/
       stations/               # MeteoSwiss + Pioupiou + Netatmo + Météo-France + Windball combinés
       wind/                   # Vent courant + grille batch
       plan/                   # Planificateur de voyages (scoring multi-sport)
-      favorites/              # Toggle favoris utilisateur
+      favorites/              # Toggle favoris spots et balises
       preferences/            # Préférences UI (sport, unités)
       forum/                  # Categories, topics, posts, votes
       auth/sync/              # Sync Supabase Auth → Prisma User
@@ -120,7 +120,7 @@ src/
     supabase/                 # Client/Server Supabase
   types/                      # Types TypeScript partagés
 prisma/
-  schema.prisma               # 12 modèles + 3 enums
+  schema.prisma               # 14 modèles + 5 enums
   migrations/                 # Historique migrations SQL
 ```
 

@@ -46,8 +46,15 @@ export function Navbar() {
       : []),
   ];
   const pathname = usePathname();
-  const { user, favoriteIds, preferences, requestAuth, signOut } =
-    useFavContext();
+  const {
+    user,
+    favoriteSpotIds,
+    favoriteStationIds,
+    preferences,
+    requestAuth,
+    signOut,
+  } = useFavContext();
+  const favoriteCount = favoriteSpotIds.size + favoriteStationIds.size;
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
   const [isAdminState, setIsAdmin] = useState(false);
@@ -114,7 +121,10 @@ export function Navbar() {
         {/* Search bar — center, fills available space (hidden on mobile, toggle via icon) */}
         <div className="hidden sm:block flex-1 max-w-md mx-2 sm:mx-4">
           <Suspense fallback={null}>
-            <SearchBar favoriteIds={favoriteIds} />
+            <SearchBar
+              favoriteSpotIds={favoriteSpotIds}
+              favoriteStationIds={favoriteStationIds}
+            />
           </Suspense>
         </div>
 
@@ -222,7 +232,7 @@ export function Navbar() {
                       className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-sky-50 hover:text-sky-700"
                     >
                       <Star className="h-3.5 w-3.5 text-sky-500" />
-                      {t("favorites", { count: favoriteIds.size })}
+                      {t("favorites", { count: favoriteCount })}
                     </Link>
                   </div>
                   <div className="border-t border-gray-100">
@@ -408,7 +418,8 @@ export function Navbar() {
           <div className="flex-1">
             <Suspense fallback={null}>
               <SearchBar
-                favoriteIds={favoriteIds}
+                favoriteSpotIds={favoriteSpotIds}
+                favoriteStationIds={favoriteStationIds}
                 autoFocus
                 onNavigate={() => setMobileSearch(false)}
               />

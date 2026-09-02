@@ -14,6 +14,7 @@ import {
   TrendingUp,
   Camera,
   RadioTower,
+  Star,
 } from "lucide-react";
 import { WindCompass } from "@/components/spot/WindCompass";
 import { WindChart } from "@/components/spot/WindChart";
@@ -29,6 +30,7 @@ import type { StationConnections as StationConnectionsData } from "@/lib/station
 import type { HistoryPoint, WindLive } from "@/types";
 import { MeteoSwissDetailsPanel } from "./MeteoSwissDetailsPanel";
 import { StationConnections } from "./StationConnections";
+import { useFavContext } from "@/lib/FavContext";
 
 interface Props {
   station: WindStation;
@@ -125,6 +127,8 @@ export function StationPageClient({
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const router = useRouter();
   const { data: polledLive } = useStationLive(station.id);
+  const { favoriteStationIds, toggleStationFavorite } = useFavContext();
+  const isFavorite = favoriteStationIds.has(station.id);
 
   const srcMeta = getSourceMeta(station.source);
 
@@ -313,6 +317,22 @@ export function StationPageClient({
               )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => toggleStationFavorite(station.id)}
+                aria-label={
+                  isFavorite ? t("removeFavorite") : t("addFavorite")
+                }
+                aria-pressed={isFavorite}
+                title={isFavorite ? t("removeFavorite") : t("addFavorite")}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-500"
+              >
+                <Star
+                  className={`h-4 w-4 ${
+                    isFavorite ? "fill-amber-400 text-amber-400" : ""
+                  }`}
+                />
+              </button>
               <Link
                 href={`/webcams?lat=${station.lat}&lng=${station.lng}&name=${encodeURIComponent(station.name)}&back=${encodeURIComponent(`/stations/${station.id}`)}`}
                 className="inline-flex items-center justify-center text-gray-400 hover:text-blue-500 transition-colors"

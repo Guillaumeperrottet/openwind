@@ -82,16 +82,17 @@ model Spot {
 
 /// Synced from Supabase Auth on first login.
 model User {
-  id          String          @id
-  email       String          @unique
-  name        String?
-  avatarUrl   String?
-  createdAt   DateTime        @default(now())
-  favorites   Favorite[]
-  posts       ForumPost[]
-  topics      ForumTopic[]
-  votes       ForumVote[]
-  preferences UserPreference?
+  id               String            @id
+  email            String            @unique
+  name             String?
+  avatarUrl        String?
+  createdAt        DateTime          @default(now())
+  favorites        Favorite[]
+  stationFavorites StationFavorite[]
+  posts            ForumPost[]
+  topics           ForumTopic[]
+  votes            ForumVote[]
+  preferences      UserPreference?
 }
 
 /// Per-user UI preferences (map filters, units, etc.)
@@ -120,6 +121,24 @@ model Favorite {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, spotId])
+  @@index([userId])
+}
+
+/// A saved external wind station. Metadata is snapshotted so favorites stay
+/// identifiable while a provider or the shared station cache is unavailable.
+model StationFavorite {
+  id          String   @id @default(cuid())
+  userId      String
+  stationId   String
+  stationName String
+  source      String
+  latitude    Float
+  longitude   Float
+  altitudeM   Float
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stationId])
   @@index([userId])
 }
 

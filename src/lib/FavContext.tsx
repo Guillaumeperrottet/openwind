@@ -29,11 +29,16 @@ export type AccountPreferencePatch = Partial<
 interface FavContextValue {
   user: User | null;
   authLoading: boolean;
+  /** Backward-compatible alias for favoriteSpotIds. */
   favoriteIds: Set<string>;
+  favoriteSpotIds: Set<string>;
+  favoriteStationIds: Set<string>;
   preferences: AccountPreferences | null;
   preferencesLoading: boolean;
   /** Toggle favorite. Returns null if not logged in (modal opens). */
   toggleFavorite: (spotId: string) => Promise<boolean | null>;
+  toggleSpotFavorite: (spotId: string) => Promise<boolean | null>;
+  toggleStationFavorite: (stationId: string) => Promise<boolean | null>;
   /** Open the auth modal programmatically. */
   requestAuth: () => void;
   updatePreferences: (
@@ -47,9 +52,13 @@ const FavContext = createContext<FavContextValue>({
   user: null,
   authLoading: true,
   favoriteIds: new Set(),
+  favoriteSpotIds: new Set(),
+  favoriteStationIds: new Set(),
   preferences: null,
   preferencesLoading: true,
   toggleFavorite: async () => null,
+  toggleSpotFavorite: async () => null,
+  toggleStationFavorite: async () => null,
   requestAuth: () => {},
   updatePreferences: async () => null,
   signOut: async () => {},
@@ -65,7 +74,13 @@ export function useFavContext() {
  */
 export function FavProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { favoriteIds, toggleFavorite: rawToggle } = useFavorites(user);
+  const {
+    favoriteIds,
+    favoriteSpotIds,
+    favoriteStationIds,
+    toggleFavorite: rawToggle,
+    toggleStationFavorite: rawToggleStation,
+  } = useFavorites(user);
   const [showAuth, setShowAuth] = useState(false);
   const [preferenceState, setPreferenceState] = useState<{
     userId: string;
@@ -110,6 +125,17 @@ export function FavProvider({ children }: { children: React.ReactNode }) {
     [user, rawToggle],
   );
 
+  const toggleStationFavorite = useCallback(
+    async (stationId: string) => {
+      if (!user) {
+        setShowAuth(true);
+        return null;
+      }
+      return rawToggleStation(stationId);
+    },
+    [user, rawToggleStation],
+  );
+
   const requestAuth = useCallback(() => setShowAuth(true), []);
 
   const updatePreferences = useCallback(
@@ -139,9 +165,13 @@ export function FavProvider({ children }: { children: React.ReactNode }) {
       user,
       authLoading,
       favoriteIds,
+      favoriteSpotIds,
+      favoriteStationIds,
       preferences,
       preferencesLoading,
       toggleFavorite,
+      toggleSpotFavorite: toggleFavorite,
+      toggleStationFavorite,
       requestAuth,
       updatePreferences,
       signOut,
@@ -150,9 +180,12 @@ export function FavProvider({ children }: { children: React.ReactNode }) {
       user,
       authLoading,
       favoriteIds,
+      favoriteSpotIds,
+      favoriteStationIds,
       preferences,
       preferencesLoading,
       toggleFavorite,
+      toggleStationFavorite,
       requestAuth,
       updatePreferences,
       signOut,

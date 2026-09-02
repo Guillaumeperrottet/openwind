@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Search, Star, X, MapPin, Plus, Wind } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -15,7 +15,8 @@ import {
 import { trackEvent } from "@/lib/analytics";
 
 interface SearchBarProps {
-  favoriteIds: Set<string>;
+  favoriteSpotIds: Set<string>;
+  favoriteStationIds: Set<string>;
   autoFocus?: boolean;
   onNavigate?: () => void;
 }
@@ -107,7 +108,8 @@ function scoreSearchResult(
 }
 
 export function SearchBar({
-  favoriteIds,
+  favoriteSpotIds,
+  favoriteStationIds,
   autoFocus,
   onNavigate,
 }: SearchBarProps) {
@@ -115,32 +117,31 @@ export function SearchBar({
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [favorites, setFavorites] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load all spots once (lightweight, cached) for client-side search
-  const allSpotsRef = useRef<SearchResult[]>([]);
-  const allStationsRef = useRef<SearchResult[]>([]);
-  const [spotsLoaded, setSpotsLoaded] = useState(false);
+  const [allSpots, setAllSpots] = useState<SearchResult[]>([]);
+  const [allStations, setAllStations] = useState<SearchResult[]>([]);
 
   useEffect(() => {
     fetch("/api/spots")
       .then((r) => r.json())
       .then((data: Spot[]) => {
-        allSpotsRef.current = data.map((s) => ({
-          id: s.id,
-          name: s.name,
-          country: s.country,
-          region: s.region,
-          kind: "spot",
-          lat: s.latitude,
-          lng: s.longitude,
-          sportType: s.sportType,
-        }));
-        setSpotsLoaded(true);
+        setAllSpots(
+          data.map((s) => ({
+            id: s.id,
+            name: s.name,
+            country: s.country,
+            region: s.region,
+            kind: "spot",
+            lat: s.latitude,
+            lng: s.longitude,
+            sportType: s.sportType,
+          })),
+        );
       })
       .catch(() => {});
   }, []);
@@ -149,33 +150,37 @@ export function SearchBar({
     fetch("/api/stations")
       .then((r) => r.json())
       .then((data: WindStation[]) => {
-        allStationsRef.current = data.map((s) => ({
-          id: s.id,
-          name: s.name,
-          country: null,
-          region: s.description ?? stationSourceLabel(s.source),
-          kind: "station",
-          lat: s.lat,
-          lng: s.lng,
-          source: s.source,
-          altitudeM: s.altitudeM,
-        }));
+        setAllStations(
+          data.map((s) => ({
+            id: s.id,
+            name: s.name,
+            country: null,
+            region: s.description ?? stationSourceLabel(s.source),
+            kind: "station",
+            lat: s.lat,
+            lng: s.lng,
+            source: s.source,
+            altitudeM: s.altitudeM,
+          })),
+        );
       })
       .catch(() => {});
   }, []);
 
-  // Update favorite spots when favoriteIds or spots change
-  useEffect(() => {
-    if (!spotsLoaded) return;
-    const favs = allSpotsRef.current.filter((s) => favoriteIds.has(s.id));
-    setFavorites(favs);
-  }, [favoriteIds, spotsLoaded]);
+  const favorites = useMemo(
+    () => [
+      ...allSpots.filter((spot) => favoriteSpotIds.has(spot.id)),
+      ...allStations.filter((station) => favoriteStationIds.has(station.id)),
+    ],
+    [allSpots, allStations, favoriteSpotIds, favoriteStationIds],
+  );
 
   // Auto-open when ?openSearch=1 is present (e.g. from «Favoris» in user menu)
   const router = useRouter();
   const searchParams = useSearchParams();
   useEffect(() => {
     if (searchParams.get("openSearch") === "1") {
+      // The URL flag is an external navigation signal that opens this UI.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(true);
       // Focus on next tick so the input is mounted
@@ -195,14 +200,14 @@ export function SearchBar({
       setLoading(false);
       return;
     }
-    const scored = [...allSpotsRef.current, ...allStationsRef.current]
+    const scored = [...allSpots, ...allStations]
       .map((s) => ({ ...s, score: scoreSearchResult(s, q) }))
       .filter((s) => s.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
     setResults(scored);
     setLoading(false);
-  }, []);
+  }, [allSpots, allStations]);
 
   const handleChange = (value: string) => {
     setQuery(value);
@@ -305,11 +310,11 @@ export function SearchBar({
             <div>
               <div className="px-3 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider bg-gray-50">
                 <Star className="inline h-3 w-3 mr-1 text-amber-400" />
-                Favoris
+                {t("favorites")}
               </div>
               {favorites.map((s) => (
                 <SearchItem
-                  key={s.id}
+                  key={`${s.kind}-${s.id}`}
                   result={s}
                   isFav
                   onSelect={() => navigateToMapResult(s)}
@@ -330,7 +335,11 @@ export function SearchBar({
                   <SearchItem
                     key={`${s.kind}-${s.id}`}
                     result={s}
-                    isFav={s.kind === "spot" && favoriteIds.has(s.id)}
+                    isFav={
+                      s.kind === "spot"
+                        ? favoriteSpotIds.has(s.id)
+                        : favoriteStationIds.has(s.id)
+                    }
                     onSelect={() => navigateToMapResult(s)}
                   />
                 ))

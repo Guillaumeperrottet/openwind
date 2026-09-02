@@ -18,6 +18,7 @@ import {
   MessageCircle,
   Newspaper,
   Plus,
+  RadioTower,
   Route,
   Settings2,
   SlidersHorizontal,
@@ -31,6 +32,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
 import { useSpotLive } from "@/lib/useSpotLive";
+import { useStationLive } from "@/lib/useStationLive";
 import { cn, windArrow, windDirectionLabel } from "@/lib/utils";
 import { timeAgo } from "@/lib/forum";
 import { trackEvent } from "@/lib/analytics";
@@ -45,9 +47,11 @@ import type {
   DashboardArticle,
   DashboardCommunityItem,
   DashboardFavoriteSpot,
+  DashboardFavoriteStation,
   DashboardForecastDay,
   MonOpenwindData,
 } from "@/components/dashboard/types";
+import { NETWORK_LABELS } from "@/lib/stationConstants";
 
 interface Props {
   initialData: MonOpenwindData;
@@ -58,11 +62,16 @@ export function MonOpenwindClient({ initialData }: Props) {
   const { preferences: contextPreferences } = useFavContext();
   const preferences = contextPreferences ?? initialData.preferences;
   const [favoriteSpots, setFavoriteSpots] = useState(initialData.favoriteSpots);
+  const [favoriteStations, setFavoriteStations] = useState(
+    initialData.favoriteStations,
+  );
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     trackEvent("mon_openwind_viewed", {
-      favorite_count: favoriteSpots.length,
+      favorite_count: favoriteSpots.length + favoriteStations.length,
+      favorite_spot_count: favoriteSpots.length,
+      favorite_station_count: favoriteStations.length,
     });
     // A dashboard view should be counted once per mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,9 +91,15 @@ export function MonOpenwindClient({ initialData }: Props) {
     () => new Set(visibleSpots.map((spot) => spot.id)),
     [visibleSpots],
   );
+  const favoriteStationIds = useMemo(
+    () => new Set(favoriteStations.map((station) => station.id)),
+    [favoriteStations],
+  );
 
-  const articles = initialData.articles.filter((article) =>
-    article.linkedSpotIds.some((id) => visibleSpotIds.has(id)),
+  const articles = initialData.articles.filter(
+    (article) =>
+      article.linkedSpotIds.some((id) => visibleSpotIds.has(id)) ||
+      article.linkedStationIds.some((id) => favoriteStationIds.has(id)),
   );
   const community = initialData.community.filter(
     (item) => item.spotId === null || visibleSpotIds.has(item.spotId),
@@ -110,10 +125,16 @@ export function MonOpenwindClient({ initialData }: Props) {
     FAVORITES: (
       <FavoritesSection
         spots={visibleSpots}
+        stations={favoriteStations}
         useKnots={preferences.useKnots}
-        onRemoved={(spotId) =>
+        onSpotRemoved={(spotId) =>
           setFavoriteSpots((current) =>
             current.filter((spot) => spot.id !== spotId),
+          )
+        }
+        onStationRemoved={(stationId) =>
+          setFavoriteStations((current) =>
+            current.filter((station) => station.id !== stationId),
           )
         }
       />
@@ -158,7 +179,7 @@ export function MonOpenwindClient({ initialData }: Props) {
           <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_minmax(310px,0.72fr)] md:items-stretch lg:gap-10">
             <DashboardHeroIntro
               firstName={firstName}
-              favoriteCount={visibleSpots.length}
+              favoriteCount={visibleSpots.length + favoriteStations.length}
               promisingCount={promisingCount}
             />
             <BestWindowHeroCard
@@ -381,12 +402,16 @@ function SectionHeading({
 
 function FavoritesSection({
   spots,
+  stations,
   useKnots,
-  onRemoved,
+  onSpotRemoved,
+  onStationRemoved,
 }: {
   spots: DashboardFavoriteSpot[];
+  stations: DashboardFavoriteStation[];
   useKnots: boolean;
-  onRemoved: (spotId: string) => void;
+  onSpotRemoved: (spotId: string) => void;
+  onStationRemoved: (stationId: string) => void;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   return (
@@ -406,18 +431,47 @@ function FavoritesSection({
         }
       />
 
-      {spots.length === 0 ? (
+      {spots.length === 0 && stations.length === 0 ? (
         <EmptyFavorites />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {spots.map((spot) => (
-            <FavoriteSpotCard
-              key={spot.id}
-              spot={spot}
-              useKnots={useKnots}
-              onRemoved={() => onRemoved(spot.id)}
-            />
-          ))}
+        <div className="space-y-7">
+          {spots.length > 0 && (
+            <div>
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-800">
+                <MapPin className="h-4 w-4 text-sky-600" />
+                {t("spotFavorites", { count: spots.length })}
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {spots.map((spot) => (
+                  <FavoriteSpotCard
+                    key={spot.id}
+                    spot={spot}
+                    useKnots={useKnots}
+                    onRemoved={() => onSpotRemoved(spot.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {stations.length > 0 && (
+            <div>
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-800">
+                <RadioTower className="h-4 w-4 text-sky-600" />
+                {t("stationFavorites", { count: stations.length })}
+              </h3>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {stations.map((station) => (
+                  <FavoriteStationCard
+                    key={station.id}
+                    station={station}
+                    useKnots={useKnots}
+                    onRemoved={() => onStationRemoved(station.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>
@@ -566,6 +620,160 @@ function FavoriteSpotCard({
             className="inline-flex items-center gap-1 font-semibold text-sky-700 hover:text-sky-900"
           >
             {t("details")}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function FavoriteStationCard({
+  station,
+  useKnots,
+  onRemoved,
+}: {
+  station: DashboardFavoriteStation;
+  useKnots: boolean;
+  onRemoved: () => void;
+}) {
+  const t = useTranslations("MonOpenwind.favorites");
+  const locale = useLocale();
+  const { toggleStationFavorite } = useFavContext();
+  const { data: live, isLoading } = useStationLive(station.id);
+  const [removing, setRemoving] = useState(false);
+  const windSpeedKmh = live?.windSpeedKmh ?? station.windSpeedKmh;
+  const gustsKmh = live?.gustsKmh ?? station.gustsKmh;
+  const direction = live?.windDirection ?? station.windDirection;
+  const updatedAt = live?.updatedAt ?? station.updatedAt;
+  const speed =
+    windSpeedKmh === null
+      ? null
+      : Math.round(useKnots ? windSpeedKmh / 1.852 : windSpeedKmh);
+  const gusts =
+    gustsKmh === null
+      ? null
+      : Math.round(useKnots ? gustsKmh / 1.852 : gustsKmh);
+  const unit = useKnots ? "kts" : "km/h";
+  const measurementTime = updatedAt
+    ? new Intl.DateTimeFormat(locale, {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Europe/Zurich",
+      }).format(new Date(updatedAt))
+    : null;
+  const networkLabel = NETWORK_LABELS[station.source] ?? station.source;
+
+  const remove = async () => {
+    if (removing) return;
+    setRemoving(true);
+    const result = await toggleStationFavorite(station.id);
+    setRemoving(false);
+    if (result === false) onRemoved();
+  };
+
+  return (
+    <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
+      <div className="relative flex h-28 items-end overflow-hidden bg-[linear-gradient(135deg,#e0f2fe,#f8fafc)] p-4 sm:h-32">
+        <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-sky-200/50 blur-2xl" />
+        <RadioTower className="absolute left-4 top-4 h-7 w-7 text-sky-400" />
+        <span className="relative rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-700 backdrop-blur">
+          {networkLabel}
+        </span>
+        <button
+          type="button"
+          onClick={remove}
+          disabled={removing}
+          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
+          aria-label={t("removeStation")}
+          title={t("removeStation")}
+        >
+          <Star className="h-4 w-4 fill-current" />
+        </button>
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <Link
+              href={`/stations/${encodeURIComponent(station.id)}`}
+              className="text-base font-bold text-slate-950 hover:text-sky-700"
+            >
+              {station.name}
+            </Link>
+            <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-slate-400">
+              <RadioTower className="h-3 w-3 shrink-0" />
+              {station.id}
+              {station.altitudeM > 0
+                ? ` · ${Math.round(station.altitudeM)} m`
+                : ""}
+            </p>
+          </div>
+          <span
+            className={cn(
+              "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
+              live?.isFresh
+                ? "bg-emerald-50 text-emerald-700"
+                : windSpeedKmh !== null
+                  ? "bg-amber-50 text-amber-700"
+                  : "bg-slate-100 text-slate-500",
+            )}
+          >
+            {live?.isFresh
+              ? t("stationLive")
+              : windSpeedKmh !== null
+                ? t("stationCached")
+                : t("stationUnavailable")}
+          </span>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 divide-x divide-slate-100 rounded-xl bg-slate-50 px-2 py-3">
+          <div className="px-2">
+            <span className="block text-[10px] uppercase tracking-wide text-slate-400">
+              {t("wind")}
+            </span>
+            <strong className="mt-0.5 block text-base tabular-nums text-slate-900">
+              {isLoading && speed === null ? "…" : speed ?? "—"}
+              {speed !== null && (
+                <span className="ml-1 text-[10px] font-medium text-slate-400">
+                  {unit}
+                </span>
+              )}
+            </strong>
+          </div>
+          <div className="px-2">
+            <span className="block text-[10px] uppercase tracking-wide text-slate-400">
+              {t("gusts")}
+            </span>
+            <strong className="mt-0.5 block text-base tabular-nums text-slate-900">
+              {isLoading && gusts === null ? "…" : gusts ?? "—"}
+            </strong>
+          </div>
+          <div className="px-2">
+            <span className="block text-[10px] uppercase tracking-wide text-slate-400">
+              {t("direction")}
+            </span>
+            <strong className="mt-0.5 block text-base text-slate-900">
+              {direction !== null
+                ? `${windArrow(direction)} ${windDirectionLabel(direction)}`
+                : "—"}
+            </strong>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-3 text-xs">
+          <span className="truncate text-slate-400">
+            {measurementTime
+              ? t("stationMeasuredAt", { time: measurementTime })
+              : t("stationUnavailable")}
+          </span>
+          <Link
+            href={`/stations/${encodeURIComponent(station.id)}`}
+            className="inline-flex shrink-0 items-center gap-1 font-semibold text-sky-700 hover:text-sky-900"
+          >
+            {t("stationDetails")}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

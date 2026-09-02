@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { X, ExternalLink } from "lucide-react";
+import { X, ExternalLink, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { windConditionLabel, windDirectionLabel, barColors } from "@/lib/utils";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import type { HistoryPoint } from "@/types";
 import { useStationLive } from "@/lib/useStationLive";
+import { useFavContext } from "@/lib/FavContext";
 
 interface StationInfo {
   id: string;
@@ -49,6 +50,8 @@ export function StationPopup({
   onLiveUpdate,
 }: StationPopupProps) {
   const { data: stationLive } = useStationLive(station.id);
+  const { favoriteStationIds, toggleStationFavorite } = useFavContext();
+  const isFavorite = favoriteStationIds.has(station.id);
   const t = useTranslations("StationPage");
   const tCommon = useTranslations("Common");
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
@@ -293,12 +296,30 @@ export function StationPopup({
             </p>
           )}
         </div>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-700 shrink-0 mt-0.5"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => toggleStationFavorite(station.id)}
+            aria-label={isFavorite ? t("removeFavorite") : t("addFavorite")}
+            aria-pressed={isFavorite}
+            title={isFavorite ? t("removeFavorite") : t("addFavorite")}
+            className="rounded-full p-1 text-gray-400 transition-colors hover:bg-amber-50 hover:text-amber-500"
+          >
+            <Star
+              className={`h-4 w-4 ${
+                isFavorite ? "fill-amber-400 text-amber-400" : ""
+              }`}
+            />
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={tCommon("close")}
+            className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Wind info row */}

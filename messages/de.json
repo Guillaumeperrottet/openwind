@@ -54,6 +54,7 @@
   },
   "SearchBar": {
     "placeholder": "Spot oder Station suchen…",
+    "favorites": "Favoriten",
     "createSpot": "Diesen Spot erstellen",
     "favoriteSpots": "Favoriten-Spots",
     "allSpots": "Alle Spots",
@@ -64,7 +65,7 @@
     "signupTitle": "Konto erstellen",
     "forgotTitle": "Passwort vergessen",
     "loginSubtitle": "Melden Sie sich an, um auf Ihre Favoriten und das Forum zuzugreifen.",
-    "signupSubtitle": "Registrieren Sie sich, um Ihre Lieblings-Spots zu speichern.",
+    "signupSubtitle": "Registrieren Sie sich, um Ihre Lieblings-Spots und -Stationen zu speichern.",
     "forgotSubtitle": "Geben Sie Ihre E-Mail ein, um einen Reset-Link zu erhalten.",
     "resetSentTitle": "Link gesendet an",
     "resetSentBody": "Prüfen Sie Ihren Posteingang und klicken Sie auf den Link, um ein neues Passwort festzulegen.",
@@ -170,6 +171,8 @@
   },
   "StationPage": {
     "backToMap": "Zurück zur Karte",
+    "addFavorite": "Station zu Favoriten hinzufügen",
+    "removeFavorite": "Station aus Favoriten entfernen",
     "windAverage": "Mittlerer Wind",
     "gusts": "Böen",
     "direction": "Richtung",
@@ -267,6 +270,8 @@
     "direction": "Richtung",
     "history48h": "Gemessener Verlauf · 48 h",
     "details": "Details ansehen",
+    "addFavorite": "Station zu Favoriten hinzufügen",
+    "removeFavorite": "Station aus Favoriten entfernen",
     "promiseRealTitle": "Reale Messungen",
     "promiseRealDescription": "Stationswerte werden klar von numerischen Prognosen unterschieden.",
     "promiseHistoryTitle": "Entwicklung im Zeitverlauf",
@@ -550,17 +555,17 @@
     "demoMapLoading": "Karte wird geladen…"
   },
   "MonOpenwind": {
-    "eyebrow": "Dein Wind, deine Orte", "hello": "Hallo, der Wind wartet.", "helloName": "Hallo {name}, der Wind wartet.", "customize": "Anpassen", "favoriteCount": "{count, plural, =0 {Keine Spots} one {# Spot} other {# Spots}}",
+    "eyebrow": "Dein Wind, deine Orte", "hello": "Hallo, der Wind wartet.", "helloName": "Hallo {name}, der Wind wartet.", "customize": "Anpassen", "favoriteCount": "{count, plural, =0 {Keine Favoriten} one {# Favorit} other {# Favoriten}}",
     "hero": { "followedSpots": "beobachtete Spots", "goodWindows": "gute Zeitfenster", "windUnits": "Windeinheiten", "nextWindow": "Nächstes bestes Zeitfenster", "waitingTitle": "Das nächste Zeitfenster entsteht.", "waitingDescription": "Füge Lieblingsspots hinzu und Openwind zeigt dir hier die beste nächste Gelegenheit.", "chooseSpots": "Meine Spots wählen", "around": "gegen {time}", "wind": "Wind", "gusts": "Böen", "direction": "Richtung", "suitableHours": "{count, plural, =0 {Kurzes Zeitfenster im Blick behalten} one {# passende Stunde erwartet} other {# passende Stunden erwartet}}", "viewWindow": "Zeitfenster ansehen" },
     "switch": { "map": "Karte", "dashboard": "Mein Openwind" },
-    "summary": { "empty": "Füge deine ersten Lieblingsspots hinzu, um deine persönliche Übersicht zu erstellen.", "promising": "{count, plural, one {Ein gutes Zeitfenster zeichnet sich ab} other {# gute Zeitfenster zeichnen sich ab}} bei deinen {spots} Lieblingsspots.", "quiet": "Deine {count} Lieblingsspots werden beobachtet. Neue Zeitfenster erscheinen hier, sobald sie klarer werden." },
-    "onboarding": { "eyebrow": "Willkommen bei Openwind", "title": "Wie soll Openwind starten?", "description": "Wähle deinen Startpunkt. Diese Einstellung gilt auf allen Geräten und kann jederzeit geändert werden.", "dashboardTitle": "Mein Openwind", "dashboardDescription": "Meine Spots, gute Zeitfenster und nützliche Artikel auf einen Blick.", "mapTitle": "Die Karte", "mapDescription": "Direkt die vollständige Karte mit Spots und Live-Stationen öffnen.", "changeLater": "Du kannst dies später unter Anpassen ändern.", "continue": "Weiter", "saving": "Speichern…", "error": "Speichern derzeit nicht möglich. Bitte erneut versuchen." },
-    "private": { "eyebrow": "Persönlicher Bereich", "title": "Dein Openwind, nur für dich.", "description": "Melde dich an, um deine Spots, Bedingungen, Artikel und lokalen Aktivitäten in einer persönlichen Übersicht zu sehen.", "signIn": "Anmelden oder Konto erstellen", "backToMap": "Zurück zur Karte", "privacy": "Deine Einstellungen sind nur mit deinem Konto verknüpft." },
-    "favorites": { "eyebrow": "Jetzt", "title": "Meine Lieblingsspots", "description": "Die wichtigen Bedingungen, ohne die ganze Karte zu durchsuchen.", "manage": "Auf der Karte verwalten", "kite": "Kitesurfen", "paraglide": "Gleitschirm", "remove": "Aus Favoriten entfernen", "locationUnknown": "Ort nicht angegeben", "favorable": "Günstig", "watch": "Beobachten", "wind": "Wind", "gusts": "Böen", "direction": "Richtung", "live": "Live-Messung", "estimated": "Aktuelle Schätzung", "details": "Spot ansehen", "emptyTitle": "Deine Übersicht wartet auf die ersten Spots.", "emptyDescription": "Erkunde die Karte und tippe auf den Stern eines Spots, um ihn hier mit Bedingungen und Inhalten zu sehen.", "explore": "Spots auswählen" },
+    "summary": { "empty": "Füge deine ersten Lieblingsspots oder -stationen hinzu, um deine persönliche Übersicht zu erstellen.", "promising": "{count, plural, one {Ein gutes Zeitfenster zeichnet sich ab} other {# gute Zeitfenster zeichnen sich ab}} bei deinen {spots} Favoriten.", "quiet": "Deine {count} Favoriten werden beobachtet. Neue Zeitfenster erscheinen hier, sobald sie klarer werden." },
+    "onboarding": { "eyebrow": "Willkommen bei Openwind", "title": "Wie soll Openwind starten?", "description": "Wähle deinen Startpunkt. Diese Einstellung gilt auf allen Geräten und kann jederzeit geändert werden.", "dashboardTitle": "Mein Openwind", "dashboardDescription": "Meine Spots, Stationen, gute Zeitfenster und nützliche Artikel auf einen Blick.", "mapTitle": "Die Karte", "mapDescription": "Direkt die vollständige Karte mit Spots und Live-Stationen öffnen.", "changeLater": "Du kannst dies später unter Anpassen ändern.", "continue": "Weiter", "saving": "Speichern…", "error": "Speichern derzeit nicht möglich. Bitte erneut versuchen." },
+    "private": { "eyebrow": "Persönlicher Bereich", "title": "Dein Openwind, nur für dich.", "description": "Melde dich an, um deine Spots, Stationen, Bedingungen und Inhalte in einer persönlichen Übersicht zu sehen.", "signIn": "Anmelden oder Konto erstellen", "backToMap": "Zurück zur Karte", "privacy": "Deine Einstellungen sind nur mit deinem Konto verknüpft." },
+    "favorites": { "eyebrow": "Jetzt", "title": "Meine Favoriten", "description": "Deine Spots und Stationen mit den wichtigsten Bedingungen.", "manage": "Auf der Karte verwalten", "spotFavorites": "{count, plural, one {# Lieblingsspot} other {# Lieblingsspots}}", "stationFavorites": "{count, plural, one {# Lieblingsstation} other {# Lieblingsstationen}}", "kite": "Kitesurfen", "paraglide": "Gleitschirm", "remove": "Aus Favoriten entfernen", "removeStation": "Station aus Favoriten entfernen", "locationUnknown": "Ort nicht angegeben", "favorable": "Günstig", "watch": "Beobachten", "wind": "Wind", "gusts": "Böen", "direction": "Richtung", "live": "Live-Messung", "estimated": "Aktuelle Schätzung", "details": "Spot ansehen", "stationLive": "Live-Messung", "stationCached": "Letzte Messung", "stationUnavailable": "Station nicht verfügbar", "stationMeasuredAt": "Gemessen {time}", "stationDetails": "Station ansehen", "emptyTitle": "Deine Übersicht wartet auf die ersten Favoriten.", "emptyDescription": "Erkunde die Karte und tippe auf den Stern eines Spots oder einer Station, um ihn hier wiederzufinden.", "explore": "Favoriten auswählen" },
     "forecast": { "eyebrow": "Demnächst", "title": "Die nächsten guten Zeitfenster", "description": "Ein schneller Blick auf die vielversprechendsten Zeiten an deinen Spots.", "openPlanner": "Planer öffnen", "emptyTitle": "Noch nichts Eindeutiges", "emptyDescription": "Die Prognosen ändern sich: Openwind beobachtet deine Spots weiter.", "averageWind": "erwarteter Mittelwind", "hours": "{count, plural, =0 {kurzes Fenster} one {# passende Stunde} other {# passende Stunden}}", "bestAround": "am besten gegen {time}" },
-    "articles": { "eyebrow": "Openwind Journal", "title": "Lesestoff für meine Spots", "description": "Praxis-Guides und Erklärungen direkt zu deinen Favoriten.", "all": "Journal öffnen", "empty": "Noch kein Artikel ist mit diesen Spots verbunden. Neue erscheinen automatisch hier.", "readTime": "{count} Min. Lesezeit" },
+    "articles": { "eyebrow": "Openwind Journal", "title": "Lesestoff für meine Favoriten", "description": "Praxis-Guides und Erklärungen direkt zu deinen Favoriten.", "all": "Journal öffnen", "empty": "Noch kein Artikel ist mit diesen Spots oder Stationen verbunden. Neue erscheinen automatisch hier.", "readTime": "{count} Min. Lesezeit" },
     "community": { "eyebrow": "In deiner Nähe", "title": "Lokale Aktivität", "description": "Diskussionen zu deinen Spots und Themen, an denen du teilnimmst.", "forum": "Forum öffnen", "emptyTitle": "Das Gespräch kann mit dir beginnen.", "emptyFavorite": "Teile die beobachteten Bedingungen an einem deiner Lieblingsspots.", "emptyNoFavorite": "Füge einen Favoriten hinzu oder beteilige dich an einer Diskussion.", "start": "Thema starten" },
     "actions": { "eyebrow": "Schnellzugriff", "title": "Was möchtest du tun?", "map": "Karte öffnen", "mapDetail": "Spots und Stationen live", "plan": "Ausflug planen", "planDetail": "Kommende Bedingungen vergleichen", "share": "Session teilen", "shareDetail": "Community informieren", "read": "Journal lesen", "readDetail": "Guides und lokales Wetter" },
-    "settings": { "eyebrow": "Persönliche Einstellungen", "title": "Mein Openwind anpassen", "description": "Alles wird in deinem Konto gespeichert und geräteübergreifend synchronisiert.", "close": "Schließen", "startTitle": "Startseite", "startDescription": "Wähle, was beim Öffnen von Openwind erscheint.", "dashboard": "Mein Openwind", "map": "Karte", "displayTitle": "Inhalt der Übersicht", "displayDescription": "Bereiche anzeigen, ausblenden und sortieren.", "modules": { "favorites": "Meine Lieblingsspots", "forecast": "Nächste Zeitfenster", "articles": "Artikel für meine Spots", "community": "Lokale Aktivität", "actions": "Schnellzugriff" }, "moveUp": "Nach oben", "moveDown": "Nach unten", "practiceTitle": "Meine Aktivität", "practiceDescription": "Angezeigte Spots und Empfehlungen filtern.", "allSports": "Beide", "kite": "Kite", "paraglide": "Gleitschirm", "unitsTitle": "Windeinheiten", "unitsDescription": "Diese Einstellung gilt auch auf der Karte.", "knots": "Knoten", "kilometersPerHour": "Kilometer/Stunde", "save": "Einstellungen speichern", "saving": "Speichern…", "saved": "Einstellungen gespeichert", "error": "Speichern fehlgeschlagen. Bitte erneut versuchen." }
+    "settings": { "eyebrow": "Persönliche Einstellungen", "title": "Mein Openwind anpassen", "description": "Alles wird in deinem Konto gespeichert und geräteübergreifend synchronisiert.", "close": "Schließen", "startTitle": "Startseite", "startDescription": "Wähle, was beim Öffnen von Openwind erscheint.", "dashboard": "Mein Openwind", "map": "Karte", "displayTitle": "Inhalt der Übersicht", "displayDescription": "Bereiche anzeigen, ausblenden und sortieren.", "modules": { "favorites": "Meine Favoriten", "forecast": "Nächste Zeitfenster", "articles": "Artikel für meine Favoriten", "community": "Lokale Aktivität", "actions": "Schnellzugriff" }, "moveUp": "Nach oben", "moveDown": "Nach unten", "practiceTitle": "Meine Aktivität", "practiceDescription": "Angezeigte Spots und Empfehlungen filtern.", "allSports": "Beide", "kite": "Kite", "paraglide": "Gleitschirm", "unitsTitle": "Windeinheiten", "unitsDescription": "Diese Einstellung gilt auch auf der Karte.", "knots": "Knoten", "kilometersPerHour": "Kilometer/Stunde", "save": "Einstellungen speichern", "saving": "Speichern…", "saved": "Einstellungen gespeichert", "error": "Speichern fehlgeschlagen. Bitte erneut versuchen." }
   }
 }

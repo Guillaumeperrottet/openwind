@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { fetchForecastBatch, analyzeMultiDay } from "@/lib/wind";
 import { articlePublicPath } from "@/lib/articles";
+import { getStationsFromCache } from "@/lib/stationData";
+import type { WindStation } from "@/lib/stations";
 import {
   DEFAULT_DASHBOARD_LAYOUT,
   normalizeDashboardLayout,
@@ -10,6 +12,7 @@ import {
 } from "@/lib/user-preferences";
 import type {
   DashboardFavoriteSpot,
+  DashboardFavoriteStation,
   MonOpenwindData,
 } from "@/components/dashboard/types";
 import { DashboardLoginGate } from "@/components/dashboard/DashboardLoginGate";
@@ -45,33 +48,51 @@ export default async function MonOpenwindPage() {
 
   // Secure query: every personal record is filtered by the verified Supabase
   // user id. Only the fields used by the dashboard cross the server boundary.
-  const [dbUser, preference, favorites] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: user.id },
-      select: { name: true },
-    }),
-    prisma.userPreference.findUnique({ where: { userId: user.id } }),
-    prisma.favorite.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 16,
-      include: {
-        spot: {
-          include: {
-            images: { orderBy: { createdAt: "asc" }, take: 1 },
+  const [dbUser, preference, favorites, stationFavorites, stations] =
+    await Promise.all([
+      prisma.user.findUnique({
+        where: { id: user.id },
+        select: { name: true },
+      }),
+      prisma.userPreference.findUnique({ where: { userId: user.id } }),
+      prisma.favorite.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 16,
+        include: {
+          spot: {
+            include: {
+              images: { orderBy: { createdAt: "asc" }, take: 1 },
+            },
           },
         },
-      },
-    }),
-  ]);
+      }),
+      prisma.stationFavorite.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 16,
+      }),
+      getStationsFromCache(),
+    ]);
 
   const favoriteIds = favorites.map((favorite) => favorite.spotId);
+  const favoriteStationIds = stationFavorites.map(
+    (favorite) => favorite.stationId,
+  );
+  const articleFavoriteFilters = [
+    ...(favoriteIds.length
+      ? [{ linkedSpotIds: { hasSome: favoriteIds } }]
+      : []),
+    ...(favoriteStationIds.length
+      ? [{ linkedStationIds: { hasSome: favoriteStationIds } }]
+      : []),
+  ];
   const [articles, community, forecasts] = await Promise.all([
-    favoriteIds.length
+    articleFavoriteFilters.length
       ? prisma.article.findMany({
           where: {
             status: "PUBLISHED",
-            linkedSpotIds: { hasSome: favoriteIds },
+            OR: articleFavoriteFilters,
           },
           orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
           take: 6,
@@ -152,6 +173,26 @@ export default async function MonOpenwindPage() {
     },
   );
 
+  const stationsById = new Map(stations.map((station) => [station.id, station]));
+  const favoriteStations: DashboardFavoriteStation[] = stationFavorites.map(
+    (favorite) => {
+      const station = stationsById.get(favorite.stationId);
+      return {
+        id: favorite.stationId,
+        name: station?.name ?? favorite.stationName,
+        source: (station?.source ?? favorite.source) as WindStation["source"],
+        latitude: station?.lat ?? favorite.latitude,
+        longitude: station?.lng ?? favorite.longitude,
+        altitudeM: station?.altitudeM ?? favorite.altitudeM,
+        windSpeedKmh: station?.windSpeedKmh ?? null,
+        gustsKmh: station?.gustsKmh ?? null,
+        windDirection: station?.windDirection ?? null,
+        updatedAt: station?.updatedAt ?? null,
+        isAvailable: Boolean(station),
+      };
+    },
+  );
+
   const accountPreferences: AccountPreferences = {
     sportFilter:
       preference?.sportFilter === "KITE" ||
@@ -183,6 +224,7 @@ export default async function MonOpenwindPage() {
       null,
     preferences: accountPreferences,
     favoriteSpots,
+    favoriteStations,
     articles: articles.map((article) => ({
       id: article.id,
       title: article.title,
@@ -193,6 +235,7 @@ export default async function MonOpenwindPage() {
       readTime: article.readTime,
       path: articlePublicPath(article),
       linkedSpotIds: article.linkedSpotIds,
+      linkedStationIds: article.linkedStationIds,
     })),
     community: community.map((topic) => ({
       id: topic.id,

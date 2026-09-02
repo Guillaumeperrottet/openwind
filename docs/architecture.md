@@ -24,7 +24,7 @@ src/
       stations/               # Lecture stations multi-réseau
       wind/                   # Grille batch pour overlay carte (texture + grid)
       plan/                   # Planificateur de voyages
-      favorites/              # Toggle favoris (auth)
+      favorites/              # Toggle favoris spots et balises (auth)
       preferences/            # Préférences UI (auth)
       forum/                  # Categories, topics, posts, votes
       auth/sync/              # Sync Supabase Auth → Prisma User
@@ -43,7 +43,7 @@ src/
   types/                      # Types TypeScript partagés
   generated/prisma/           # Client Prisma auto-généré (ne pas éditer)
 prisma/
-  schema.prisma               # 12 modèles + 3 enums
+  schema.prisma               # 14 modèles + 5 enums
   migrations/                 # SQL historique
 ```
 
@@ -304,16 +304,18 @@ Les posts utilisent `parentId` (self-referential). L'arbre est construit côté 
 
 ## Base de données (Prisma)
 
-### 12 modèles
+### 14 modèles
 
 | Modèle               | Description                                                              |
 | -------------------- | ------------------------------------------------------------------------ |
+| `Article`            | Articles éditoriaux et guides locaux liés aux spots et balises           |
 | `Spot`               | Lieu kite/parapente avec sportType, bestWindDirections, nearestStationId |
 | `SpotImage`          | Photos Supabase Storage (cascade delete)                                 |
 | `WindReport`         | Observations communautaires (rating 1–5)                                 |
 | `User`               | Sync Supabase Auth (UUID)                                                |
 | `UserPreference`     | sportFilter + useKnots                                                   |
 | `Favorite`           | Bookmarks (unique userId+spotId)                                         |
+| `StationFavorite`    | Balises favorites avec instantané du nom, réseau et emplacement           |
 | `StationMeasurement` | Mesures temps réel (cron 10min, pruning 3j)                              |
 | `SystemConfig`       | Key-value (token Netatmo rotatif)                                        |
 | `ForumCategory`      | Sections (slug, ordre, icône)                                            |
@@ -321,7 +323,10 @@ Les posts utilisent `parentId` (self-referential). L'arbre est construit côté 
 | `ForumPost`          | Réponses threadées (parentId récursif)                                   |
 | `ForumVote`          | Votes +1/-1 (uniques par user)                                           |
 
-### 3 enums
+### 5 enums
+
+- `ArticleStatus` : DRAFT, PUBLISHED, ARCHIVED
+- `ArticleKind` : EDITORIAL, LOCAL_GUIDE
 
 - `Difficulty` : BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
 - `WaterType` : FLAT, CHOP, WAVES, MIXED
@@ -330,7 +335,7 @@ Les posts utilisent `parentId` (self-referential). L'arbre est construit côté 
 ### Relations principales
 
 - Spot → SpotImage, WindReport, Favorite (1:N, cascade)
-- User → Favorite, ForumTopic, ForumPost, ForumVote, UserPreference (1:N/1:1, cascade)
+- User → Favorite, StationFavorite, ForumTopic, ForumPost, ForumVote, UserPreference (1:N/1:1, cascade)
 - ForumCategory → ForumTopic (1:N, cascade)
 - ForumTopic → ForumPost, ForumVote (1:N, cascade)
 - ForumPost → ForumPost (self-referential via `parentId`, cascade)

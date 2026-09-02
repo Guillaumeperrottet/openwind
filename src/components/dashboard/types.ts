@@ -1,5 +1,6 @@
 import type { AccountPreferences } from "@/lib/user-preferences";
 import type { SportType } from "@/types";
+import type { WindStation } from "@/lib/stations";
 
 export interface DashboardForecastDay {
   date: string;
@@ -28,6 +29,20 @@ export interface DashboardFavoriteSpot {
   forecastDays: DashboardForecastDay[];
 }
 
+export interface DashboardFavoriteStation {
+  id: string;
+  name: string;
+  source: WindStation["source"];
+  latitude: number;
+  longitude: number;
+  altitudeM: number;
+  windSpeedKmh: number | null;
+  gustsKmh: number | null;
+  windDirection: number | null;
+  updatedAt: string | null;
+  isAvailable: boolean;
+}
+
 export interface DashboardArticle {
   id: string;
   title: string;
@@ -38,6 +53,7 @@ export interface DashboardArticle {
   readTime: number;
   path: string;
   linkedSpotIds: string[];
+  linkedStationIds: string[];
 }
 
 export interface DashboardCommunityItem {
@@ -58,6 +74,7 @@ export interface MonOpenwindData {
   userName: string | null;
   preferences: AccountPreferences;
   favoriteSpots: DashboardFavoriteSpot[];
+  favoriteStations: DashboardFavoriteStation[];
   articles: DashboardArticle[];
   community: DashboardCommunityItem[];
 }
