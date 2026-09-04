@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { windPaletteGradient, windSpeedColor } from "@/lib/windField";
 
 type WindCondKey =
   | "calm"
@@ -17,23 +18,23 @@ type LegendEntry = {
 };
 
 const LEGEND_KTS: LegendEntry[] = [
-  { range: "< 4", condKey: null, color: "#c8d4dc" },
-  { range: "4-8", condKey: "calm", color: "#d0d0d0" },
-  { range: "8-12", condKey: "light", color: "#a8bdd4" },
-  { range: "12-16", condKey: "gentle", color: "#6a9cbd" },
-  { range: "16-21", condKey: "good", color: "#3a7fa8" },
-  { range: "21-27", condKey: "strong", color: "#e07720" },
-  { range: "> 27", condKey: "veryStrong", color: "#cc3333" },
+  { range: "< 4", condKey: null, color: colorCss(2) },
+  { range: "4-8", condKey: "calm", color: colorCss(6) },
+  { range: "8-12", condKey: "light", color: colorCss(10) },
+  { range: "12-16", condKey: "gentle", color: colorCss(14) },
+  { range: "16-21", condKey: "good", color: colorCss(18) },
+  { range: "21-27", condKey: "strong", color: colorCss(24) },
+  { range: "> 27", condKey: "veryStrong", color: colorCss(33) },
 ];
 
 const LEGEND_KMH: LegendEntry[] = [
-  { range: "< 8", condKey: null, color: "#c8d4dc" },
-  { range: "8-15", condKey: "calm", color: "#d0d0d0" },
-  { range: "15-22", condKey: "light", color: "#a8bdd4" },
-  { range: "22-30", condKey: "gentle", color: "#6a9cbd" },
-  { range: "30-38", condKey: "good", color: "#3a7fa8" },
-  { range: "38-50", condKey: "strong", color: "#e07720" },
-  { range: "> 50", condKey: "veryStrong", color: "#cc3333" },
+  { range: "< 8", condKey: null, color: colorCss(2) },
+  { range: "8-15", condKey: "calm", color: colorCss(6) },
+  { range: "15-22", condKey: "light", color: colorCss(10) },
+  { range: "22-30", condKey: "gentle", color: colorCss(14) },
+  { range: "30-38", condKey: "good", color: colorCss(18) },
+  { range: "38-50", condKey: "strong", color: colorCss(24) },
+  { range: "> 50", condKey: "veryStrong", color: colorCss(33) },
 ];
 
 interface MapLegendProps {
@@ -42,6 +43,12 @@ interface MapLegendProps {
   legendOpen: boolean;
   setLegendOpen: (v: boolean) => void;
   pickMode: boolean;
+  windOverlayActive?: boolean;
+}
+
+function colorCss(knots: number): string {
+  const [red, green, blue] = windSpeedColor(knots * 1.852);
+  return `rgb(${red} ${green} ${blue})`;
 }
 
 export function MapLegend({
@@ -50,6 +57,7 @@ export function MapLegend({
   legendOpen,
   setLegendOpen,
   pickMode,
+  windOverlayActive = false,
 }: MapLegendProps) {
   const tCond = useTranslations("WindConditions");
   const tCommon = useTranslations("Common");
@@ -108,16 +116,35 @@ export function MapLegend({
               </button>
             </div>
           </div>
-          {entries.map(({ range, condKey, color }, i) => (
-            <div key={i} className="flex items-center gap-2 mb-1">
-              <span
-                className="w-3 h-3 rounded-full shrink-0 border border-gray-200"
-                style={{ background: color }}
+          {windOverlayActive ? (
+            <div className="w-56">
+              <div
+                className="h-3.5 rounded-full border border-black/10 shadow-inner"
+                style={{ background: windPaletteGradient() }}
               />
-              {range}
-              {condKey ? ` – ${tCond(condKey)}` : " – -"}
+              <div className="mt-1 flex justify-between font-medium tabular-nums text-[9px] text-gray-600">
+                {[0, 10, 20, 30, 40, 50].map((knots) => (
+                  <span key={knots}>
+                    {useKnots ? knots : Math.round(knots * 1.852)}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 text-[10px] leading-snug text-gray-500">
+                {tCommon("windOverlayLegendHint")}
+              </p>
             </div>
-          ))}
+          ) : (
+            entries.map(({ range, condKey, color }, i) => (
+              <div key={i} className="flex items-center gap-2 mb-1">
+                <span
+                  className="w-3 h-3 rounded-full shrink-0 border border-gray-200"
+                  style={{ background: color }}
+                />
+                {range}
+                {condKey ? ` – ${tCond(condKey)}` : " – -"}
+              </div>
+            ))
+          )}
         </div>
       ) : (
         <button

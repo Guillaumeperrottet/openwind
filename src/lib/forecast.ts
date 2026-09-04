@@ -1,3 +1,5 @@
+import { windPaletteBand } from "@/lib/windPalette";
+
 const FORECAST_BASE = "https://api.open-meteo.com/v1/forecast";
 const MARINE_BASE = "https://marine-api.open-meteo.com/v1/marine";
 
@@ -86,24 +88,15 @@ function calcKitableScore(kmh: number, gustsKmh: number): 0 | 1 | 2 | 3 {
 
 /**
  * Background + foreground colors for a wind-speed cell.
- * Windguru-inspired color scale, slightly muted for readability.
+ * Canonical Openwind color scale, with readable foreground colors.
  * Input is km/h, thresholds in knots.
  */
 export function windCellStyle(kmh: number): {
   background: string;
   color: string;
 } {
-  const kn = kmh / 1.852;
-  if (kn < 2) return { background: "#f5f5f5", color: "#555" };
-  if (kn < 5) return { background: "#d5f0d5", color: "#333" };
-  if (kn < 8) return { background: "#8edb8e", color: "#1a4a1a" };
-  if (kn < 12) return { background: "#3dbc3d", color: "#0a350a" };
-  if (kn < 16) return { background: "#e8e540", color: "#555" };
-  if (kn < 20) return { background: "#e8b830", color: "#4a2e00" };
-  if (kn < 25) return { background: "#e07020", color: "#ffffff" };
-  if (kn < 30) return { background: "#d42020", color: "#ffffff" };
-  if (kn < 35) return { background: "#b00058", color: "#ffffff" };
-  return { background: "#800080", color: "#ffffff" };
+  const band = windPaletteBand(kmh);
+  return { background: band.fill, color: band.foreground };
 }
 
 /** Background + foreground colors for a temperature cell (°C). */

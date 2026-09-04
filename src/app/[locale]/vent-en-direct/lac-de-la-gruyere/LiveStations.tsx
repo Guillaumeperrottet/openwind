@@ -6,6 +6,7 @@ import { roundKnots } from "@/lib/forecast";
 import { NETWORK_LABELS, type NetworkId } from "@/lib/stationConstants";
 import { useStationLive } from "@/lib/useStationLive";
 import { windDirectionLabel } from "@/lib/utils";
+import { windPaletteColor } from "@/lib/windPalette";
 
 export interface LiveStationSummary {
   id: string;
@@ -26,16 +27,6 @@ function stationRole(stationId: string) {
 function stationNetwork(station: LiveStationSummary) {
   if (station.id === "windball-wf-35") return "Windfox · Windball";
   return NETWORK_LABELS[station.source];
-}
-
-function windColor(kmh: number): string {
-  if (kmh < 8) return "#94a3b8";
-  if (kmh < 15) return "#22c55e";
-  if (kmh < 22) return "#14b8a6";
-  if (kmh < 30) return "#0284c7";
-  if (kmh < 38) return "#f59e0b";
-  if (kmh < 50) return "#f97316";
-  return "#dc2626";
 }
 
 function LiveStationCard({
@@ -77,7 +68,9 @@ function LiveStationCard({
               <div className="flex items-baseline gap-1">
                 <span
                   className="text-4xl font-bold tabular-nums"
-                  style={{ color: windColor(data.windSpeedKmh) }}
+                  style={{
+                    color: windPaletteColor(data.windSpeedKmh, "accent"),
+                  }}
                 >
                   {roundKnots(data.windSpeedKmh)}
                 </span>

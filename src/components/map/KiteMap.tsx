@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Wind } from "lucide-react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -133,6 +134,7 @@ export function KiteMap({
   initialCenter,
   initialZoom,
 }: KiteMapProps) {
+  const tCommon = useTranslations("Common");
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const pickMarkerRef = useRef<maplibregl.Marker | null>(null);
@@ -215,7 +217,6 @@ export function KiteMap({
       body: JSON.stringify({ useKnots: v }),
     }).catch(() => {});
   }, []);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(true);
@@ -1321,7 +1322,7 @@ export function KiteMap({
   }, [showStations, mapLoaded, renderStations]);
 
   // GPU-accelerated wind particle overlay (MapLibre custom layer)
-  useWindOverlay(mapRef, showWindOverlay, mapLoaded);
+  const windOverlay = useWindOverlay(mapRef, showWindOverlay, mapLoaded);
 
   // Push spots to GeoJSON layer — assigned station first, Open-Meteo fallback
   // for visible kite spots without a fresh assigned station.
@@ -1436,7 +1437,178 @@ export function KiteMap({
             );
           })}
         </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            setShowWindOverlay((visible) => {
+              const nextVisible = !visible;
+              setLegendOpen(nextVisible);
+              return nextVisible;
+            })
+          }
+          aria-pressed={showWindOverlay}
+          aria-label={tCommon("liveWind")}
+          title={
+            windOverlay.status === "error"
+              ? tCommon("liveWindUnavailable")
+              : windOverlay.validAt
+                ? `${tCommon("liveWind")} · ${new Date(
+                    windOverlay.validAt,
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZone: "Europe/Zurich",
+                  })}`
+                : tCommon("liveWind")
+          }
+          className={`group inline-flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-lg backdrop-blur transition-all ${
+            showWindOverlay
+              ? "border-sky-300 bg-sky-600 text-white hover:bg-sky-700"
+              : "border-gray-200 bg-white/95 text-gray-700 hover:bg-white hover:text-sky-700"
+          }`}
+        >
+          <Wind
+            className={`h-4 w-4 ${
+              windOverlay.status === "loading" ? "animate-pulse" : ""
+            }`}
+          />
+          <span>{tCommon("liveWind")}</span>
+          {showWindOverlay && windOverlay.status === "ready" && (
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_0_3px_rgba(110,231,183,0.2)]"
+              aria-hidden="true"
+            />
+          )}
+          {showWindOverlay && windOverlay.status === "error" && (
+            <span
+              className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-700"
+              aria-hidden="true"
+            >
+              !
+            </span>
+          )}
+        </button>
+
+        {showWindOverlay &&
+          windOverlay.status === "ready" &&
+          windOverlay.details && (
+            <div
+              className="w-fit max-w-56 rounded-xl border border-white/70 bg-zinc-950/75 px-3 py-2 text-[10px] leading-snug text-white shadow-lg backdrop-blur-md"
+              data-wind-overlay-status="ready"
+              data-wind-quality={
+                windOverlay.details.performance?.tier ?? "high"
+              }
+              data-wind-particles={
+                windOverlay.details.performance?.particleCount ?? "warming-up"
+              }
+              data-wind-target-fps={
+                windOverlay.details.performance?.targetFramesPerSecond ??
+                "warming-up"
+              }
+              data-wind-measured-fps={
+                windOverlay.details.performance?.measuredFramesPerSecond ??
+                "warming-up"
+              }
+            >
+              <div className="flex items-center gap-1.5 font-semibold">
+                <span>{windOverlay.details.model.label}</span>
+                {windOverlay.details.model.resolutionKm != null && (
+                  <>
+                    <span className="text-white/40">·</span>
+                    <span>{windOverlay.details.model.resolutionKm} km</span>
+                  </>
+                )}
+              </div>
+              <div className="mt-0.5 text-white/70">
+                {windOverlay.details.dataSource === "openwind_tiles"
+                  ? tCommon("windOpenwindGrid")
+                  : windOverlay.details.dataSource === "native"
+                  ? tCommon("windNativeGrid")
+                  : windOverlay.details.dataSource === "stations"
+                    ? tCommon("windStationFallback")
+                    : tCommon("windSampling", {
+                        distance:
+                          windOverlay.details.sampleSpacingKm < 10
+                            ? windOverlay.details.sampleSpacingKm.toFixed(1)
+                            : Math.round(windOverlay.details.sampleSpacingKm),
+                      })}
+                {windOverlay.validAt && (
+                  <>
+                    <span className="mx-1 text-white/35">·</span>
+                    {new Date(windOverlay.validAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      timeZone: "Europe/Zurich",
+                    })}
+                  </>
+                )}
+                {windOverlay.details.stale && (
+                  <>
+                    <span className="mx-1 text-white/35">·</span>
+                    <span className="text-amber-200">
+                      {tCommon("windDataStale")}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
       </div>
+
+      {windOverlay.hoveredWind && windOverlay.status === "ready" && (
+        <div
+          className="pointer-events-none absolute z-20 min-w-40 rounded-xl border border-white/70 bg-white/95 px-3 py-2.5 text-xs text-zinc-700 shadow-xl backdrop-blur-md"
+          style={{
+            left:
+              windOverlay.hoveredWind.x +
+              (windOverlay.hoveredWind.flipX ? -12 : 12),
+            top:
+              windOverlay.hoveredWind.y +
+              (windOverlay.hoveredWind.flipY ? -12 : 12),
+            transform: `translate(${windOverlay.hoveredWind.flipX ? "-100%" : "0"}, ${windOverlay.hoveredWind.flipY ? "-100%" : "0"})`,
+          }}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-semibold text-zinc-950">
+              {tCommon("windMean")}
+            </span>
+            <span className="font-bold tabular-nums text-zinc-950">
+              {useKnots
+                ? (windOverlay.hoveredWind.speedKmh / 1.852).toFixed(1)
+                : windOverlay.hoveredWind.speedKmh.toFixed(1)}{" "}
+              {useKnots ? "kts" : "km/h"}
+            </span>
+          </div>
+          {windOverlay.details?.gustsAvailable && (
+            <div className="mt-1 flex items-center justify-between gap-4">
+              <span>{tCommon("windGusts")}</span>
+              <span className="font-semibold tabular-nums">
+                {useKnots
+                  ? (windOverlay.hoveredWind.gustsKmh / 1.852).toFixed(1)
+                  : windOverlay.hoveredWind.gustsKmh.toFixed(1)}{" "}
+                {useKnots ? "kts" : "km/h"}
+              </span>
+            </div>
+          )}
+          <div className="mt-1 flex items-center justify-between gap-4 border-t border-zinc-200 pt-1.5">
+            <span className="flex items-center gap-1.5">
+              <span
+                className="inline-block text-sm leading-none text-sky-700"
+                style={{
+                  transform: `rotate(${windOverlay.hoveredWind.direction + 180}deg)`,
+                }}
+              >
+                ↑
+              </span>
+              {windDirectionLabel(windOverlay.hoveredWind.direction)}
+            </span>
+            <span className="font-medium tabular-nums">
+              {Math.round(windOverlay.hoveredWind.direction)}°
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Wind legend + unit toggle */}
       <MapLegend
@@ -1445,6 +1617,7 @@ export function KiteMap({
         legendOpen={legendOpen}
         setLegendOpen={setLegendOpen}
         pickMode={pickMode}
+        windOverlayActive={showWindOverlay}
       />
 
       {/* « Ça souffle ? » floating button — hidden in pickMode (planner) */}

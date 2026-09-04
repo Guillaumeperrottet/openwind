@@ -9,6 +9,10 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "wind:audit": "tsx scripts/audit-wind-accuracy.ts",
+    "wind:tiles:icon-eu": "python3 scripts/build-icon-eu-wind-tiles.py",
+    "wind:tiles:publish": "python3 scripts/publish_wind_tiles.py",
+    "wind:tiles:test": "python3 -m unittest scripts.test_publish_wind_tiles -v",
     "images:import:commons": "node scripts/import-commons-spot-images.mjs"
   },
   "dependencies": {
@@ -16,6 +20,7 @@
     "@deck.gl/layers": "^9.3.1",
     "@deck.gl/mapbox": "^9.3.1",
     "@hookform/resolvers": "^5.2.2",
+    "@openmeteo/weather-map-layer": "0.1.0",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
     "@supabase/ssr": "^0.10.0",
@@ -26,8 +31,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^1.7.0",
-    "maplibre-gl": "^5.21.1",
-    "maplibre-gl-wind": "^0.2.0",
+    "maplibre-gl": "^5.24.0",
     "next": "16.2.2",
     "next-intl": "^4.11.1",
     "pg": "^8.20.0",
@@ -55,6 +59,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5",
     "vitest": "^4.1.5"
   }

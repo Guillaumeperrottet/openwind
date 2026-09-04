@@ -21,6 +21,10 @@ jobs:
           node-version: 20
           cache: pnpm
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
@@ -31,3 +35,9 @@ jobs:
 
       - name: ESLint
         run: pnpm lint
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Wind publisher tests
+        run: python -m unittest scripts.test_publish_wind_tiles -v

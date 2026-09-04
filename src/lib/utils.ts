@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { WindData } from "@/types";
+import { windPaletteBand, windPaletteColor } from "@/lib/windPalette";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -11,17 +12,8 @@ export function cn(...inputs: ClassValue[]) {
  * Returns [solid, light] — solid for text/stroke, light for background fills.
  */
 export function barColors(kmh: number): [string, string] {
-  const kn = kmh / 1.852;
-  if (kn < 2) return ["#c0cdda", "#e0e8ef"];
-  if (kn < 5) return ["#90e86a", "#c8f4b0"];
-  if (kn < 8) return ["#6de840", "#b0f590"];
-  if (kn < 12) return ["#50d818", "#8eed60"];
-  if (kn < 16) return ["#e6d620", "#f2ec78"];
-  if (kn < 20) return ["#f0a818", "#f8cc60"];
-  if (kn < 25) return ["#fc762d", "#fda56a"];
-  if (kn < 30) return ["#e04010", "#f48050"];
-  if (kn < 35) return ["#8f0905", "#c83830"];
-  return ["#6a0020", "#a83050"];
+  const band = windPaletteBand(kmh);
+  return [band.accent, band.tint];
 }
 
 /** Haversine distance between two lat/lng points, returns km */
@@ -51,21 +43,11 @@ export function windDirectionLabel(deg: number): string {
 }
 
 /**
- * Wind speed → color (Windguru-inspired palette, slightly muted)
+ * Wind speed → canonical Openwind fill color.
  * Used for chart bars, map markers, and other graphical elements.
  */
 export function windColor(kmh: number): string {
-  const kn = kmh / 1.852;
-  if (kn < 2) return "#f5f5f5";
-  if (kn < 5) return "#d5f0d5";
-  if (kn < 8) return "#8edb8e";
-  if (kn < 12) return "#3dbc3d";
-  if (kn < 16) return "#e8e540";
-  if (kn < 20) return "#e8b830";
-  if (kn < 25) return "#e07020";
-  if (kn < 30) return "#d42020";
-  if (kn < 35) return "#b00058";
-  return "#800080";
+  return windPaletteColor(kmh);
 }
 
 export function windConditionLabel(kmh: number): string {

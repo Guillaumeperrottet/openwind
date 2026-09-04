@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { windDirectionLabel } from "@/lib/utils";
+import { windPaletteColor } from "@/lib/windPalette";
 import { roundKnots } from "@/lib/forecast";
 import type { StationWithDist } from "@/components/spot/useNearbyStations";
 
@@ -17,13 +18,7 @@ const SOURCE_LABELS: Record<string, string> = {
 
 /** Marker color for station wind speed (same palette as map) */
 function stationColor(kmh: number): string {
-  if (kmh < 8) return "#c8d4dc";
-  if (kmh < 15) return "#d0d0d0";
-  if (kmh < 22) return "#a8bdd4";
-  if (kmh < 30) return "#6a9cbd";
-  if (kmh < 38) return "#3a7fa8";
-  if (kmh < 50) return "#e07720";
-  return "#cc3333";
+  return windPaletteColor(kmh, "accent");
 }
 
 interface Props {

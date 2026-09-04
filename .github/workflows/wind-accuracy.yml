@@ -1,0 +1,31 @@
+name: Wind accuracy
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Keep this away from the usual GFS publication window (~05:17 UTC).
+    - cron: "43 8 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  compare-native-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Compare native wind cells and rendered tile seams
+        run: pnpm wind:audit

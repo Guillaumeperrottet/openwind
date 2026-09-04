@@ -1,4 +1,27 @@
 import type maplibregl from "maplibre-gl";
+import { OPENWIND_WIND_PALETTE_KTS } from "@/lib/windPalette";
+
+function windAccentStepExpression(
+  value: maplibregl.ExpressionSpecification,
+  options: { fromKnots?: number; baseColor?: string } = {},
+): maplibregl.ExpressionSpecification {
+  const fromKnots = options.fromKnots ?? 0;
+  const bands = OPENWIND_WIND_PALETTE_KTS.filter(
+    ({ minKnots }) => minKnots >= fromKnots,
+  );
+  const firstStopIndex = fromKnots === 0 ? 1 : 0;
+  const stops = bands.slice(firstStopIndex).flatMap(({ minKnots, accent }) => [
+    minKnots * 1.852,
+    accent,
+  ]);
+
+  return [
+    "step",
+    value,
+    options.baseColor ?? bands[0].accent,
+    ...stops,
+  ] as maplibregl.ExpressionSpecification;
+}
 
 /**
  * Inject CSS to neutralise MapLibre's default popup styling.
@@ -265,29 +288,7 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
       ],
     },
     paint: {
-      "icon-color": [
-        "step",
-        ["get", "windSpeedKmh"],
-        "#c0cdda", // < 2 kts
-        3.7,
-        "#90e86a", // 2–5 kts
-        9.3,
-        "#6de840", // 5–8 kts
-        14.8,
-        "#50d818", // 8–12 kts
-        22.2,
-        "#e6d620", // 12–16 kts
-        29.6,
-        "#f0a818", // 16–20 kts
-        37.0,
-        "#fc762d", // 20–25 kts
-        46.3,
-        "#e04010", // 25–30 kts
-        55.6,
-        "#8f0905", // 30–35 kts
-        64.8,
-        "#6a0020", // ≥ 35 kts
-      ],
+      "icon-color": windAccentStepExpression(["get", "windSpeedKmh"]),
       // Dim stations whose last measurement is older than FRESHNESS_BY_NETWORK[network]
       // (default false = legacy data without isFresh property → treat as fresh).
       "icon-opacity": ["case", ["==", ["get", "isFresh"], false], 0.35, 1],
@@ -296,29 +297,12 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
 
   // Kite only: pulse starts at 12 kts (22.2 km/h), no pulse for para.
   // Colors match the solid palette used by the 48h history chart.
-  const SPOT_PULSE_COLOR: maplibregl.ExpressionSpecification = [
-    "step",
-    ["coalesce", ["to-number", ["get", "windSpeedKmh"]], 0],
-    "#c0cdda", // < 2 kts
-    3.7,
-    "#90e86a", // 2–5 kts
-    9.3,
-    "#6de840", // 5–8 kts
-    14.8,
-    "#50d818", // 8–12 kts
-    22.2,
-    "#e6d620", // 12–16 kts
-    29.6,
-    "#f0a818", // 16–20 kts
-    37.0,
-    "#fc762d", // 20–25 kts
-    46.3,
-    "#e04010", // 25–30 kts
-    55.6,
-    "#8f0905", // 30–35 kts
-    64.8,
-    "#6a0020", // ≥ 35 kts
+  const windValue: maplibregl.ExpressionSpecification = [
+    "coalesce",
+    ["to-number", ["get", "windSpeedKmh"]],
+    0,
   ];
+  const SPOT_PULSE_COLOR = windAccentStepExpression(windValue);
   const SPOT_PULSE_FILTER: maplibregl.FilterSpecification = [
     "all",
     ["!", ["has", "point_count"]],
@@ -360,23 +344,10 @@ export function addMapLayers(map: maplibregl.Map, pickMode: boolean) {
   // ── Spot layers ──
   // Wind-based color for KITE spots (matches the pulse/chart palette).
   // < 12 kts shows neutral grey so the icon stays readable at calm conditions.
-  const KITE_WIND_COLOR: maplibregl.ExpressionSpecification = [
-    "step",
-    ["coalesce", ["to-number", ["get", "windSpeedKmh"]], 0],
-    "#9ca3af", // < 12 kts (calm/sub-kite) → neutral grey
-    22.2,
-    "#e6d620", // 12–16 kts
-    29.6,
-    "#f0a818", // 16–20 kts
-    37.0,
-    "#fc762d", // 20–25 kts
-    46.3,
-    "#e04010", // 25–30 kts
-    55.6,
-    "#8f0905", // 30–35 kts
-    64.8,
-    "#6a0020", // ≥ 35 kts
-  ];
+  const KITE_WIND_COLOR = windAccentStepExpression(windValue, {
+    fromKnots: 12,
+    baseColor: "#9ca3af",
+  });
 
   map.addLayer({
     id: "spots-circle",

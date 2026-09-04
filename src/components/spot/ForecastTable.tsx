@@ -298,26 +298,50 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
       >
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
           {[
-            { bg: "#d5f0d5", label: t("legendCalm"), range: "< 5 kn" },
-            { bg: "#8edb8e", label: t("legendLight"), range: "5–8" },
-            { bg: "#3dbc3d", label: t("legendModerate"), range: "8–12" },
-            { bg: "#e8e540", label: t("legendKitable"), range: "12–16" },
-            { bg: "#e8b830", label: t("legendGood"), range: "16–20" },
-            { bg: "#e07020", label: t("legendStrong"), range: "20–25" },
             {
-              bg: "#d42020",
+              bg: windCellStyle(3 * 1.852).background,
+              label: t("legendCalm"),
+              range: "< 5 kn",
+            },
+            {
+              bg: windCellStyle(6 * 1.852).background,
+              label: t("legendLight"),
+              range: "5–8",
+            },
+            {
+              bg: windCellStyle(10 * 1.852).background,
+              label: t("legendModerate"),
+              range: "8–12",
+            },
+            {
+              bg: windCellStyle(14 * 1.852).background,
+              label: t("legendKitable"),
+              range: "12–16",
+            },
+            {
+              bg: windCellStyle(18 * 1.852).background,
+              label: t("legendGood"),
+              range: "16–20",
+            },
+            {
+              bg: windCellStyle(22 * 1.852).background,
+              label: t("legendStrong"),
+              range: "20–25",
+            },
+            {
+              bg: windCellStyle(27 * 1.852).background,
               label: t("legendVeryStrong"),
               range: "25–30",
               white: true,
             },
             {
-              bg: "#b00058",
+              bg: windCellStyle(32 * 1.852).background,
               label: t("legendExtreme"),
               range: "30–35",
               white: true,
             },
             {
-              bg: "#800080",
+              bg: windCellStyle(36 * 1.852).background,
               label: t("legendDanger"),
               range: "> 35",
               white: true,

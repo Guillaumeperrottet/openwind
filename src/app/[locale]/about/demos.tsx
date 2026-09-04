@@ -21,6 +21,7 @@ import {
   TrendingUp,
   MessageCircle,
 } from "lucide-react";
+import { windPaletteColor } from "@/lib/windPalette";
 
 // ─── Mini map demo (real MapLibre + live /api/stations) ───────────────────────
 
@@ -71,17 +72,6 @@ export function MiniForecastDemo() {
           ? "bg-amber-300/60"
           : "bg-slate-100";
 
-  const windColor = (kmh: number) =>
-    kmh >= 38
-      ? "#e07720"
-      : kmh >= 30
-        ? "#3a7fa8"
-        : kmh >= 22
-          ? "#6a9cbd"
-          : kmh >= 15
-            ? "#a8bdd4"
-            : "#c8d4dc";
-
   return (
     <div className="rounded-2xl bg-white border border-black/5 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-black/5">
@@ -118,14 +108,14 @@ export function MiniForecastDemo() {
                 </td>
                 <td
                   className="px-2 text-right font-semibold"
-                  style={{ color: windColor(r.kmh) }}
+                  style={{ color: windPaletteColor(r.kmh, "accent") }}
                 >
                   {r.kt}
                   <span className="text-[9px] text-slate-400 ml-0.5">kt</span>
                 </td>
                 <td
                   className="px-2 text-right"
-                  style={{ color: windColor(r.gust) }}
+                  style={{ color: windPaletteColor(r.gust, "accent") }}
                 >
                   {Math.round(r.gust / 1.852)}
                 </td>

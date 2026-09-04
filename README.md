@@ -83,6 +83,43 @@ pnpm dev
 
 Ouvre [http://localhost:3000](http://localhost:3000).
 
+### Valider la précision de la couche vent
+
+```bash
+pnpm wind:audit
+```
+
+Cet audit compare les cellules des grilles natives aux réponses ponctuelles du
+même modèle Open-Meteo et de la même échéance. Il contrôle ICON-CH1 et GFS, les
+rafales disponibles et, avec l'interpolation linéaire réellement affichée, les
+raccords entre tuiles. Il conserve des tolérances strictes liées à l'arrondi de
+l'API et réessaie brièvement si deux services Open-Meteo se synchronisent. Le
+même contrôle est lancé quotidiennement par GitHub Actions afin de détecter une
+dérive des modèles ou du format source avant qu'elle ne devienne une régression
+visible.
+
+### Prototype de tuiles ICON-EU indépendantes
+
+Le générateur local télécharge directement les champs officiels U10, V10 et
+rafales ICON-EU du DWD, puis produit le format binaire compact `OWW1` :
+
+```bash
+python3 -m venv .venv-wind
+.venv-wind/bin/pip install -r scripts/requirements-wind.txt
+.venv-wind/bin/python scripts/build-icon-eu-wind-tiles.py
+```
+
+Les fichiers générés dans `public/wind-data/` sont volontairement ignorés par
+Git. Pour essayer ce fournisseur local sans supprimer le chemin Open-Meteo,
+ajouter `OPENWIND_WIND_TILE_SOURCE=local` dans `.env.local`. Sans cette variable,
+l'application conserve automatiquement le fournisseur existant.
+
+La publication de production vers un stockage S3/Cloudflare R2 est atomique :
+les tuiles sont relues depuis le stockage et son domaine public avant que
+`latest.json` ne change. Le workflow horaire, les secrets nécessaires, le CORS,
+la rétention et l'activation progressive sont détaillés dans
+[docs/wind-tiles-production.md](docs/wind-tiles-production.md).
+
 ## Structure du projet
 
 ```

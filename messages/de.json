@@ -17,6 +17,16 @@
     "windUnit_kmh": "km/h",
     "openMeteo": "Open-Meteo · NWP open source",
     "wind": "Wind",
+    "liveWind": "Live-Wind",
+    "liveWindUnavailable": "Live-Wind ist vorübergehend nicht verfügbar",
+    "windOverlayLegendHint": "Die Farbe zeigt die mittlere Geschwindigkeit; die Spuren zeigen die Richtung.",
+    "windMean": "Mittlerer Wind",
+    "windGusts": "Böen",
+    "windNativeGrid": "Natives Wettergitter",
+    "windOpenwindGrid": "Hochauflösendes Openwind-Gitter",
+    "windDataStale": "vorheriger Lauf",
+    "windSampling": "Abtastung ≈ {distance} km",
+    "windStationFallback": "Aus Live-Stationen interpoliertes Feld",
     "share": "Teilen"
   },
   "Navbar": {

@@ -12,6 +12,9 @@
 
 # testing
 /coverage
+/.cache/wind-icon-eu/
+/public/wind-data/
+/.venv-wind/
 
 # next.js
 /.next/
@@ -22,6 +25,7 @@
 
 # misc
 .DS_Store
+__pycache__/
 *.pem
 
 # debug
