@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "wind:audit": "tsx scripts/audit-wind-accuracy.ts",
+    "wind:health": "tsx scripts/check-wind-health.ts",
     "wind:tiles:icon-eu": "python3 scripts/build-icon-eu-wind-tiles.py",
     "wind:tiles:publish": "python3 scripts/publish_wind_tiles.py",
     "wind:tiles:test": "python3 -m unittest scripts.test_publish_wind_tiles -v",

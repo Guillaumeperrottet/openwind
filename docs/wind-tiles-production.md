@@ -2,8 +2,8 @@
 
 La couche ICON-EU peut être produite indépendamment d'Open-Meteo et publiée
 dans un bucket compatible S3. Le chemin recommandé pour la production est un
-bucket Cloudflare R2 relié à un domaine dédié, par exemple
-`https://wind-data.openwind.ch`.
+bucket Cloudflare R2 relié au domaine dédié
+`https://tiles.openwind.ch`.
 
 ## Garanties du pipeline
 
@@ -39,8 +39,8 @@ Ajouter les secrets du dépôt suivants :
 
 Ajouter également la variable de dépôt :
 
-- `WIND_TILE_PUBLIC_BASE_URL` : domaine public sans slash final, par exemple
-  `https://wind-data.openwind.ch`
+- `WIND_TILE_PUBLIC_BASE_URL` : domaine public sans slash final,
+  `https://tiles.openwind.ch`
 
 Variables facultatives :
 
@@ -53,7 +53,7 @@ Le workflow **Publish wind tiles** peut alors être lancé manuellement. Après
 ce premier passage, vérifier :
 
 ```text
-https://wind-data.openwind.ch/dwd_icon_eu/latest.json
+https://tiles.openwind.ch/dwd_icon_eu/latest.json
 ```
 
 Il s'exécutera ensuite toutes les heures, à la minute 37, sans publier deux
@@ -65,7 +65,7 @@ Une fois le domaine public vérifié, définir dans l'environnement de
 préproduction Vercel :
 
 ```text
-OPENWIND_WIND_TILE_SOURCE=https://wind-data.openwind.ch
+OPENWIND_WIND_TILE_SOURCE=https://tiles.openwind.ch
 ```
 
 Tester la carte européenne, les petits et grands écrans, puis appliquer la
@@ -76,7 +76,7 @@ les tuiles indépendantes et remet le chemin Open-Meteo existant en service.
 
 ```bash
 python3 -m unittest scripts.test_publish_wind_tiles -v
-WIND_TILE_PUBLIC_BASE_URL=https://wind-data.openwind.ch \
+WIND_TILE_PUBLIC_BASE_URL=https://tiles.openwind.ch \
   python3 scripts/publish_wind_tiles.py --validate-only
 ```
 
@@ -86,3 +86,20 @@ La publication complète utilise les mêmes variables que le workflow. L'option
 ```bash
 python3 scripts/publish_wind_tiles.py --skip-public-verification
 ```
+
+## Surveillance en production
+
+Le workflow **Wind health** s’exécute chaque heure, indépendamment de la
+publication. Il contrôle le manifeste public, sa fraîcheur, le décodage d’une
+vraie tuile, le CORS et l’API de production. Un incident fait échouer le
+workflow et déclenche les notifications GitHub configurées pour le dépôt.
+
+Le même contrôle peut être lancé à la demande :
+
+```bash
+pnpm wind:health
+```
+
+Les administrateurs disposent aussi de la page `/admin/wind`, actualisée
+automatiquement toutes les 60 secondes. Elle ne requiert aucune clé R2 dans le
+navigateur et reste protégée par la liste `ADMIN_USER_IDS` existante.
