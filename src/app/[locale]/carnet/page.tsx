@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import {
   ArrowRight,
   Compass,
@@ -21,8 +22,6 @@ import { localizedUrl } from "@/lib/site";
 
 const PAGE_PATH = "/carnet";
 const PAGE_URL = localizedUrl("fr", PAGE_PATH);
-const GRUYERE_PATH = "/vent-en-direct/lac-de-la-gruyere";
-const GRUYERE_URL = localizedUrl("fr", GRUYERE_PATH);
 const HERO_IMAGE =
   "https://fnndeoqzqfxpznhcundq.supabase.co/storage/v1/object/public/spot-images/cmnq613tx00it04kw1d0vraq4/1776010538678.jpeg";
 
@@ -94,22 +93,32 @@ export default async function CarnetPage({ params }: Props) {
   const { locale } = await params;
   if (locale !== "fr") notFound();
 
-  const publishedArticles = await prisma.article
-    .findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-    })
-    .catch(() => []);
-  const localGuide = publishedArticles.find(
-    (article) => article.kind === "LOCAL_GUIDE",
-  );
-  const editorialArticles = publishedArticles.filter(
-    (article) => article.kind === "EDITORIAL",
-  );
-  const guideDate = new Intl.DateTimeFormat("fr-CH", {
-    month: "long",
+  // Include publications added through the admin or migrations after deployment.
+  await connection();
+  const publishedArticles = await prisma.article.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }, { id: "asc" }],
+    select: {
+      id: true,
+      kind: true,
+      slug: true,
+      title: true,
+      excerpt: true,
+      coverImage: true,
+      coverAlt: true,
+      category: true,
+      location: true,
+      readTime: true,
+      publishedAt: true,
+      createdAt: true,
+    },
+  });
+  const publicationDate = new Intl.DateTimeFormat("fr-CH", {
+    day: "numeric",
+    month: "short",
     year: "numeric",
-  }).format(localGuide?.publishedAt ?? localGuide?.createdAt ?? new Date());
+    timeZone: "Europe/Zurich",
+  });
 
   const carnetIndexArticles: CarnetIndexArticle[] = publishedArticles.map(
     (article) => ({
@@ -123,48 +132,18 @@ export default async function CarnetPage({ params }: Props) {
       category: article.category,
       location: article.location,
       readTime: article.readTime,
-      publishedLabel: article.kind === "LOCAL_GUIDE" ? guideDate : null,
+      publishedLabel: publicationDate.format(
+        article.publishedAt ?? article.createdAt,
+      ),
     }),
   );
 
-  if (!localGuide) {
-    carnetIndexArticles.unshift({
-      id: "fallback-guide-gruyere",
-      kind: "LOCAL_GUIDE",
-      href: GRUYERE_PATH,
-      title: "Comprendre le vent au lac de la Gruyère",
-      excerpt:
-        "Deux balises, un relief qui change tout et un spot exigeant à Morlon. Les mesures, les directions, l’accès et les règles à connaître avant d’aller sur l’eau.",
-      coverImage: HERO_IMAGE,
-      coverAlt: "Lac de la Gruyère et Préalpes fribourgeoises",
-      category: "Guide local",
-      location: "Fribourg",
-      readTime: 6,
-      publishedLabel: guideDate,
-    });
-  }
-
-  const listedArticles = localGuide
-    ? [localGuide, ...editorialArticles]
-    : editorialArticles;
-  const itemListElement = [
-    ...(!localGuide
-      ? [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "Comprendre le vent au lac de la Gruyère",
-            url: GRUYERE_URL,
-          },
-        ]
-      : []),
-    ...listedArticles.map((article, index) => ({
-      "@type": "ListItem",
-      position: index + (localGuide ? 1 : 2),
-      name: article.title,
-      url: localizedUrl("fr", articlePublicPath(article)),
-    })),
-  ];
+  const itemListElement = carnetIndexArticles.map((article, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: article.title,
+    url: localizedUrl("fr", article.href),
+  }));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -284,7 +263,7 @@ export default async function CarnetPage({ params }: Props) {
           <div className="mb-8 border-b border-slate-900 pb-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
-                À la une
+                Toutes les publications
               </p>
               <h2 className="mt-1 font-serif text-3xl font-semibold sm:text-4xl">
                 Les Carnets à lire

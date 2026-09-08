@@ -81,6 +81,7 @@ export async function PUT(
     });
 
     revalidatePath("/fr/carnet");
+    revalidatePath("/sitemap.xml");
     revalidatePath(`/fr${articlePublicPath(existing)}`);
     revalidatePath(`/fr${articlePublicPath(article)}`);
 
@@ -130,6 +131,7 @@ export async function DELETE(
   await prisma.article.delete({ where: { id } });
   await deleteArticleCover(existing.coverImage).catch(() => undefined);
   revalidatePath("/fr/carnet");
+  revalidatePath("/sitemap.xml");
   revalidatePath(`/fr${articlePublicPath(existing)}`);
 
   return NextResponse.json({ ok: true });

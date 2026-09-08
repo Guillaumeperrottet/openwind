@@ -48,12 +48,7 @@ export function CarnetArticleIndex({ articles }: Props) {
 
     return articles.filter((article) => {
       const searchableText = normalizeSearch(
-        [
-          article.title,
-          article.excerpt,
-          article.category,
-          article.location,
-        ]
+        [article.title, article.excerpt, article.category, article.location]
           .filter(Boolean)
           .join(" "),
       );
@@ -62,13 +57,11 @@ export function CarnetArticleIndex({ articles }: Props) {
     });
   }, [articles, normalizedQuery]);
 
-  const localGuide = filteredArticles.find(
-    (article) => article.kind === "LOCAL_GUIDE",
-  );
-  const editorialArticles = filteredArticles.filter(
-    (article) => article.kind === "EDITORIAL",
-  );
   const hasQuery = normalizedQuery.length > 0;
+  const featuredArticle = hasQuery ? undefined : filteredArticles[0];
+  const gridArticles = featuredArticle
+    ? filteredArticles.slice(1)
+    : filteredArticles;
 
   return (
     <div>
@@ -88,6 +81,7 @@ export function CarnetArticleIndex({ articles }: Props) {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Rechercher un vent, un spot, une région…"
             autoComplete="off"
+            aria-controls="carnet-results"
             className="h-12 w-full rounded-none border border-slate-300 bg-white pl-11 pr-12 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-sky-700 focus:ring-1 focus:ring-sky-700"
           />
           {query && (
@@ -95,7 +89,7 @@ export function CarnetArticleIndex({ articles }: Props) {
               type="button"
               onClick={() => setQuery("")}
               aria-label="Effacer la recherche"
-              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-sky-700"
             >
               <X className="h-4 w-4" />
             </button>
@@ -104,6 +98,7 @@ export function CarnetArticleIndex({ articles }: Props) {
 
         <p
           aria-live="polite"
+          aria-atomic="true"
           className="shrink-0 text-xs font-medium text-slate-500"
         >
           {hasQuery
@@ -112,59 +107,72 @@ export function CarnetArticleIndex({ articles }: Props) {
         </p>
       </div>
 
-      {filteredArticles.length === 0 ? (
-        <div className="flex min-h-72 flex-col items-center justify-center border border-slate-200 bg-slate-50 px-6 py-12 text-center">
-          <Search className="h-7 w-7 text-sky-700" />
-          <h3 className="mt-5 font-serif text-3xl font-semibold text-slate-950">
-            Aucun Carnet trouvé
-          </h3>
-          <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
-            Essaie un autre mot-clé, une région ou une catégorie comme « vent »,
-            « Gruyère » ou « mode d’emploi ».
-          </p>
-          <button
-            type="button"
-            onClick={() => setQuery("")}
-            className="mt-6 border-b border-slate-900 pb-1 text-sm font-semibold text-slate-950 transition hover:border-sky-700 hover:text-sky-700"
-          >
-            Afficher tous les Carnets
-          </button>
-        </div>
-      ) : (
-        <div
-          className={
-            localGuide && editorialArticles.length > 0
-              ? "grid items-stretch gap-6 xl:grid-cols-[1.22fr_0.78fr]"
-              : "grid items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3"
-          }
-        >
-          {localGuide && <LocalGuideCard article={localGuide} />}
+      <div id="carnet-results">
+        {filteredArticles.length === 0 ? (
+          <div className="flex min-h-72 flex-col items-center justify-center border border-slate-200 bg-slate-50 px-6 py-12 text-center">
+            <Search className="h-7 w-7 text-sky-700" aria-hidden="true" />
+            <h3 className="mt-5 font-serif text-3xl font-semibold text-slate-950">
+              {hasQuery ? "Aucun Carnet trouvé" : "Les prochains Carnets arrivent"}
+            </h3>
+            <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
+              {hasQuery
+                ? "Essaie un autre mot-clé, une région ou une catégorie comme « vent », « Gruyère » ou « mode d’emploi »."
+                : "Retrouve bientôt nos guides locaux, décryptages météo et conseils pour préparer tes sorties."}
+            </p>
+            {hasQuery && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="mt-6 border-b border-slate-900 pb-1 text-sm font-semibold text-slate-950 transition hover:border-sky-700 hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-sky-700"
+              >
+                Afficher tous les Carnets
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-10">
+            {featuredArticle && (
+              <ArticleCard article={featuredArticle} featured />
+            )}
 
-          {editorialArticles.length > 0 && (
-            <div
-              className={`grid gap-6 ${
-                localGuide
-                  ? `${editorialArticles.length > 1 ? "sm:grid-cols-2" : ""} xl:grid-cols-1`
-                  : "contents"
-              }`}
-            >
-              {editorialArticles.map((article) => (
-                <EditorialCard key={article.id} article={article} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+            {gridArticles.length > 0 && (
+              <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {gridArticles.map((article) => (
+                  <ArticleCard key={article.id} article={article} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function LocalGuideCard({ article }: { article: CarnetIndexArticle }) {
+function ArticleCard({
+  article,
+  featured = false,
+}: {
+  article: CarnetIndexArticle;
+  featured?: boolean;
+}) {
+  const titleId = `carnet-title-${article.id}`;
+  const readLabel =
+    article.kind === "LOCAL_GUIDE" ? "Lire le guide local" : "Lire l’article";
+
   return (
-    <article className="grid h-full overflow-hidden border border-slate-200 bg-white shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
+    <article
+      aria-labelledby={titleId}
+      className={`group min-w-0 overflow-hidden border border-slate-200 bg-white shadow-sm ${
+        featured ? "grid lg:grid-cols-2" : "flex h-full flex-col"
+      }`}
+    >
       <Link
         href={article.href}
-        className="group relative min-h-72 overflow-hidden bg-slate-100 sm:min-h-96 lg:min-h-[460px]"
+        aria-label={`${readLabel} : ${article.title}`}
+        className={`relative block aspect-[16/10] min-w-0 shrink-0 overflow-hidden bg-slate-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-700 ${
+          featured ? "lg:aspect-auto lg:min-h-96" : ""
+        }`}
       >
         {article.coverImage ? (
           // Article covers may come from any admin-approved HTTPS source.
@@ -173,108 +181,71 @@ function LocalGuideCard({ article }: { article: CarnetIndexArticle }) {
             src={article.coverImage}
             alt={article.coverAlt || article.title}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.02]"
+            className="absolute inset-0 h-full w-full object-cover transition duration-700 motion-safe:group-hover:scale-[1.025]"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-sky-100 to-slate-200" />
         )}
-        <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-900 backdrop-blur">
+        <span className="absolute left-4 right-4 top-4 w-fit max-w-[calc(100%-2rem)] rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-900 [overflow-wrap:anywhere]">
           {article.category}
         </span>
       </Link>
 
-      <div className="flex flex-col justify-between p-7 sm:p-10 lg:p-12">
-        <div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-            {article.publishedLabel && (
-              <span className="inline-flex items-center gap-1.5">
-                <CalendarDays className="h-3.5 w-3.5" />
-                {article.publishedLabel}
-              </span>
-            )}
+      <div
+        className={`flex min-w-0 flex-1 flex-col p-6 ${
+          featured ? "sm:p-8 lg:p-10 xl:p-12" : "sm:p-7"
+        }`}
+      >
+        {featured && (
+          <p className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
+            À la une
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+          {article.publishedLabel && (
             <span className="inline-flex items-center gap-1.5">
-              <Clock3 className="h-3.5 w-3.5" />
-              {article.readTime} min
+              <CalendarDays className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              {article.publishedLabel}
             </span>
-            {article.location && (
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5" />
-                {article.location}
-              </span>
-            )}
-          </div>
-          <h3 className="mt-6 font-serif text-4xl font-semibold leading-tight tracking-[-0.02em] sm:text-5xl">
-            {article.title}
-          </h3>
-          <p className="mt-5 text-base leading-7 text-slate-600">
-            {article.excerpt}
-          </p>
+          )}
+          <span className="inline-flex items-center gap-1.5">
+            <Clock3 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {article.readTime} min
+          </span>
+          {article.location && (
+            <span className="inline-flex min-w-0 items-center gap-1.5 [overflow-wrap:anywhere]">
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              {article.location}
+            </span>
+          )}
         </div>
-
+        <h3
+          id={titleId}
+          className={`mt-5 font-serif font-semibold leading-tight tracking-[-0.02em] [overflow-wrap:anywhere] ${
+            featured ? "text-3xl sm:text-4xl xl:text-5xl" : "text-3xl"
+          }`}
+        >
+          <Link
+            href={article.href}
+            className="transition hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-sky-700"
+          >
+            {article.title}
+          </Link>
+        </h3>
+        <p
+          className={`mb-7 mt-4 text-slate-600 [overflow-wrap:anywhere] ${
+            featured ? "text-base leading-7" : "text-sm leading-6"
+          }`}
+        >
+          {article.excerpt}
+        </p>
         <Link
           href={article.href}
-          className="mt-9 inline-flex w-fit items-center gap-3 border-b border-slate-900 pb-1 text-sm font-semibold text-slate-950 transition hover:border-sky-600 hover:text-sky-700"
+          aria-label={`${readLabel} : ${article.title}`}
+          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 border-b border-slate-900 text-sm font-semibold transition hover:border-sky-600 hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-sky-700"
         >
-          Lire le guide local
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-    </article>
-  );
-}
-
-function EditorialCard({ article }: { article: CarnetIndexArticle }) {
-  return (
-    <article className="group flex h-full flex-col overflow-hidden border border-slate-200 bg-white shadow-sm">
-      <Link
-        href={article.href}
-        className="relative min-h-60 flex-1 overflow-hidden bg-slate-100 sm:min-h-72 xl:min-h-0"
-      >
-        {article.coverImage ? (
-          // Article covers may come from any admin-approved HTTPS source.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={article.coverImage}
-            alt={article.coverAlt || article.title}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-100 to-slate-200" />
-        )}
-        <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-900 backdrop-blur">
-          {article.category}
-        </span>
-      </Link>
-
-      <div className="flex flex-col justify-between p-6 sm:p-8 xl:min-h-[270px]">
-        <div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-            <span>{article.category}</span>
-            <span className="inline-flex items-center gap-1">
-              <Clock3 className="h-3.5 w-3.5" />
-              {article.readTime} min
-            </span>
-            {article.location && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3.5 w-3.5" />
-                {article.location}
-              </span>
-            )}
-          </div>
-          <h3 className="mt-5 font-serif text-3xl font-semibold leading-tight tracking-[-0.02em]">
-            {article.title}
-          </h3>
-          <p className="mt-4 text-sm leading-6 text-slate-600">
-            {article.excerpt}
-          </p>
-        </div>
-        <Link
-          href={article.href}
-          className="mt-7 inline-flex w-fit items-center gap-2 border-b border-slate-900 pb-1 text-sm font-semibold transition hover:border-sky-600 hover:text-sky-700"
-        >
-          Lire l’article
-          <ArrowRight className="h-4 w-4" />
+          {readLabel}
+          <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
         </Link>
       </div>
     </article>

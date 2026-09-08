@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
     });
 
     revalidatePath("/fr/carnet");
+    revalidatePath("/sitemap.xml");
     revalidatePath(`/fr${articlePublicPath(article)}`);
 
     return NextResponse.json(articleToDto(article), { status: 201 });
