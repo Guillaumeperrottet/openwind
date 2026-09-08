@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSpotLive } from "@/lib/stationData";
 import {
+  buildSpotTitle,
   buildSpotDescription,
   buildArticleSchema,
   buildPlaceSchema,
@@ -39,16 +40,17 @@ export async function generateMetadata({ params }: Props) {
     const spot = await getSpot(id);
     if (!spot) return { title: "Spot introuvable" };
 
-    // Build optimized, keyword-focused description
+    // Derive metadata from the same editable fields as the visible spot page.
+    const title = buildSpotTitle(spot, locale);
     const description = buildSpotDescription(spot, locale);
     const socialImage = `${SITE_URL}/api/og?id=${id}`;
 
     return {
-      title: spot.name,
+      title,
       description,
       alternates: localizedAlternates(locale, `/spots/${id}`),
       openGraph: {
-        title: `${spot.name} — Openwind`,
+        title: `${title} — Openwind`,
         description,
         url: localizedUrl(locale, `/spots/${id}`),
         type: "article",
@@ -64,7 +66,7 @@ export async function generateMetadata({ params }: Props) {
       },
       twitter: {
         card: "summary_large_image",
-        title: `${spot.name} — Openwind`,
+        title: `${title} — Openwind`,
         description,
         images: [socialImage],
       },

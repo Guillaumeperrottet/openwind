@@ -17,71 +17,41 @@ const SPORT_LABELS: Record<Locale, { kite: string; para: string }> = {
   it: { kite: "Kitesurf", para: "Parapendio" },
 };
 
-const DIFFICULTY_LABELS: Record<Locale, Record<string, string>> = {
-  fr: {
-    BEGINNER: "pour débuter",
-    INTERMEDIATE: "technique et accessible",
-    ADVANCED: "pour confirmés",
-    EXPERT: "spot expert",
-    default: "populaire",
-  },
-  en: {
-    BEGINNER: "for beginners",
-    INTERMEDIATE: "technical and accessible",
-    ADVANCED: "for advanced riders",
-    EXPERT: "expert spot",
-    default: "popular",
-  },
-  de: {
-    BEGINNER: "für Einsteiger",
-    INTERMEDIATE: "technisch und zugänglich",
-    ADVANCED: "für Fortgeschrittene",
-    EXPERT: "Expertenspot",
-    default: "beliebt",
-  },
-  it: {
-    BEGINNER: "per principianti",
-    INTERMEDIATE: "tecnico e accessibile",
-    ADVANCED: "per esperti",
-    EXPERT: "spot esperto",
-    default: "popolare",
-  },
-};
-
-const DESC_TEMPLATES: Record<
+const SPOT_COPY: Record<
   Locale,
   {
-    withLocation: (sport: string, loc: string, angle: string) => string;
-    withoutLocation: (sport: string, angle: string) => string;
+    title: (sport: string, place: string) => string;
+    introduction: (sport: string, place: string) => string;
+    fallbackDescription: string;
     spotDe: (sport: string) => string;
   }
 > = {
   fr: {
-    withLocation: (s, l, a) =>
-      `${s} à ${l} - spot ${a} - Prévisions vent 7j, archives, avis`,
-    withoutLocation: (s, a) =>
-      `${s} - spot ${a} - Prévisions vent 7j et archives`,
+    title: (sport, place) => `${sport} à ${place} : vent en direct`,
+    introduction: (sport, place) => `${place} : spot de ${sport.toLowerCase()}.`,
+    fallbackDescription:
+      "Consultez le vent, les prévisions et les informations du spot pour préparer votre sortie.",
     spotDe: (s) => `Spot de ${s}`,
   },
   en: {
-    withLocation: (s, l, a) =>
-      `${s} in ${l} - ${a} spot - 7-day wind forecasts, archives, reviews`,
-    withoutLocation: (s, a) =>
-      `${s} - ${a} spot - 7-day wind forecasts and archives`,
+    title: (sport, place) => `${sport} at ${place}: live wind`,
+    introduction: (sport, place) => `${place}: ${sport.toLowerCase()} spot.`,
+    fallbackDescription:
+      "Check wind conditions, forecasts and spot information to plan your next session.",
     spotDe: (s) => `${s} spot`,
   },
   de: {
-    withLocation: (s, l, a) =>
-      `${s} in ${l} - ${a} Spot - 7-Tage Windvorhersagen, Archive, Bewertungen`,
-    withoutLocation: (s, a) =>
-      `${s} - ${a} Spot - 7-Tage Windvorhersagen und Archive`,
+    title: (sport, place) => `${sport} in ${place}: Live-Wind`,
+    introduction: (sport, place) => `${place}: Spot für ${sport}.`,
+    fallbackDescription:
+      "Windbedingungen, Vorhersagen und Spot-Informationen für die Planung deiner nächsten Session.",
     spotDe: (s) => `${s}-Spot`,
   },
   it: {
-    withLocation: (s, l, a) =>
-      `${s} a ${l} - spot ${a} - Previsioni vento 7 giorni, archivi, recensioni`,
-    withoutLocation: (s, a) =>
-      `${s} - spot ${a} - Previsioni vento 7 giorni e archivi`,
+    title: (sport, place) => `${sport} a ${place}: vento in diretta`,
+    introduction: (sport, place) => `${place}: spot di ${sport.toLowerCase()}.`,
+    fallbackDescription:
+      "Consulta il vento, le previsioni e le informazioni sullo spot per preparare la tua prossima uscita.",
     spotDe: (s) => `Spot di ${s}`,
   },
 };
@@ -99,30 +69,70 @@ function toLocale(locale?: string): Locale {
   return "fr";
 }
 
-/**
- * Build optimized meta description for a spot
- * Format: "{sport} à {lieu} - {angle unique} - Infos vent"
- * Target: ~155 characters (Google truncates at ~160 on desktop)
- */
+type SpotIdentity = Pick<Spot, "name" | "sportType" | "region" | "country">;
+type SpotDescriptions = Partial<
+  Pick<Spot, "description" | "descriptionEn" | "descriptionDe" | "descriptionIt">
+>;
+
+function normalizeText(text: string | null | undefined): string {
+  return text?.replace(/\s+/g, " ").trim() ?? "";
+}
+
+function spotLocation(spot: SpotIdentity, compact = false): string {
+  const parts = [spot.region, spot.country].map(normalizeText).filter(Boolean);
+  const unique = parts.filter(
+    (part, index) =>
+      parts.findIndex((other) => other.toLowerCase() === part.toLowerCase()) === index,
+  );
+  return (compact ? unique.slice(0, 1) : unique).join(", ");
+}
+
+function spotPlace(spot: SpotIdentity, compact = false): string {
+  const name = normalizeText(spot.name);
+  const location = spotLocation(spot, compact);
+  return location && location.toLowerCase() !== name.toLowerCase()
+    ? `${name} (${location})`
+    : name;
+}
+
+function localizedSpotDescription(spot: SpotDescriptions, locale: Locale): string {
+  const translated =
+    locale === "en"
+      ? spot.descriptionEn
+      : locale === "de"
+        ? spot.descriptionDe
+        : locale === "it"
+          ? spot.descriptionIt
+          : spot.description;
+  return normalizeText(translated) || normalizeText(spot.description);
+}
+
+/** The layout appends the brand; keep the spot's full name and real location. */
+export function buildSpotTitle(spot: SpotIdentity, locale?: string): string {
+  const l = toLocale(locale);
+  const sport =
+    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
+  return SPOT_COPY[l].title(sport, spotPlace(spot, true));
+}
+
+/** Use editable local content, with a concise fallback for incomplete spots. */
 export function buildSpotDescription(
-  spot: Pick<Spot, "name" | "sportType" | "region" | "country" | "difficulty">,
+  spot: SpotIdentity & SpotDescriptions,
   locale?: string,
 ): string {
   const l = toLocale(locale);
   const sport =
     spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
-  const location = [spot.region, spot.country].filter(Boolean).join(", ");
-  const angle =
-    DIFFICULTY_LABELS[l][spot.difficulty] ?? DIFFICULTY_LABELS[l].default;
-  const tpl = DESC_TEMPLATES[l];
+  const copy = SPOT_COPY[l];
+  const detail = localizedSpotDescription(spot, l) || copy.fallbackDescription;
+  const description = `${copy.introduction(sport, spotPlace(spot))} ${detail}`;
 
-  const description = location
-    ? tpl.withLocation(sport, location, angle)
-    : tpl.withoutLocation(sport, angle);
-
-  return description.length > 155
-    ? description.substring(0, 152) + "..."
-    : description;
+  // An editorial length budget, not a guarantee of Google's snippet length.
+  // Prefer word boundaries rather than cutting ordinary words in half.
+  if (description.length <= 160) return description;
+  const excerpt = description.slice(0, 159);
+  const boundary = excerpt.lastIndexOf(" ");
+  return `${(boundary > 0 ? excerpt.slice(0, boundary) : excerpt).trimEnd()}…`;
 }
 
 /**
@@ -141,10 +151,11 @@ export function buildArticleSchema(
     | "difficulty"
     | "createdAt"
     | "updatedAt"
-  > & {
-    images: Array<{ url: string }>;
-    reports: Array<WindReport>;
-  },
+  > &
+    SpotDescriptions & {
+      images: Array<{ url: string }>;
+      reports: Array<WindReport>;
+    },
   locale?: string,
 ) {
   const l = toLocale(locale);
@@ -161,7 +172,8 @@ export function buildArticleSchema(
     "@type": "Article",
     headline,
     name: spot.name,
-    description: spot.description || buildSpotDescription(spot, locale),
+    description:
+      localizedSpotDescription(spot, l) || buildSpotDescription(spot, locale),
     image: spot.images[0]?.url || DEFAULT_OG_IMAGE,
     datePublished: spot.createdAt.toISOString(),
     dateModified: spot.updatedAt.toISOString(),
@@ -217,9 +229,10 @@ export function buildPlaceSchema(
     | "difficulty"
     | "sportType"
     | "access"
-  > & {
-    images: Array<{ url: string }>;
-  },
+  > &
+    SpotDescriptions & {
+      images: Array<{ url: string }>;
+    },
   locale?: string,
 ) {
   const l = toLocale(locale);
@@ -230,9 +243,8 @@ export function buildPlaceSchema(
     "@context": "https://schema.org",
     "@type": "Place",
     name: spot.name,
-    description: spot.description
-      ? spot.description.substring(0, 500)
-      : DESC_TEMPLATES[l].spotDe(sport),
+    description:
+      localizedSpotDescription(spot, l).slice(0, 500) || SPOT_COPY[l].spotDe(sport),
     geo: {
       "@type": "GeoCoordinates",
       latitude: spot.latitude,
