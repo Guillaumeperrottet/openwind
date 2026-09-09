@@ -134,7 +134,7 @@ export function buildWindSystemHealthReport(
   const fullyOperational =
     primary.status === "operational" &&
     fallback.status === "operational" &&
-    consistency.status === "pass";
+    consistency.status !== "fail";
   const activeProvider =
     primary.status !== "outage"
       ? "openmeteo_spatial"

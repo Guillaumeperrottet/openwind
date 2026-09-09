@@ -106,6 +106,23 @@ describe("wind system health", () => {
     expect(comparison.maxVectorDifferenceMps).toBeGreaterThan(1.5);
   });
 
+  it("stays operational during a normal timestep rollover", () => {
+    const report = buildWindSystemHealthReport(
+      {
+        ...primary,
+        dataset: {
+          ...primary.dataset!,
+          validAt: "2026-09-09T07:00:00.000Z",
+        },
+      },
+      fallback,
+    );
+
+    expect(report.status).toBe("operational");
+    expect(report.consistency.comparable).toBe(false);
+    expect(report.consistency.status).toBe("warn");
+  });
+
   it("never compares values sampled at different coordinates", () => {
     const comparison = compareWindHealthSources(
       {
