@@ -7,7 +7,6 @@ import { BitmapLayer, LineLayer } from "@deck.gl/layers";
 import {
   meteorologicalWindToVector,
   paddedWindBounds,
-  selectWindModel,
   WIND_COLOR_STOPS_KTS,
   windBoundsCoverView,
   windPerformanceSignal,
@@ -21,7 +20,9 @@ import {
   type WindPerformanceWindow,
 } from "@/lib/windField";
 import {
+  SPATIAL_WIND_MODELS,
   SPATIAL_WIND_GUST_VARIABLE,
+  selectPreferredSpatialWindModel,
   type SpatialWindManifest,
 } from "@/lib/windSpatial";
 import {
@@ -38,7 +39,7 @@ import type {
 } from "@openmeteo/weather-map-layer";
 
 const FIELD_REFRESH_MS = 10 * 60 * 1000;
-const NATIVE_LOAD_TIMEOUT_MS = 12_000;
+const NATIVE_LOAD_TIMEOUT_MS = 10_000;
 const NATIVE_SOURCE_SETTLE_TIMEOUT_MS = 5_000;
 const CLIENT_MANIFEST_TIMEOUT_MS = 10_000;
 const CLIENT_TILE_TIMEOUT_MS = 12_000;
@@ -95,6 +96,11 @@ type OverlayDataSource =
   | "native"
   | "openwind_tiles";
 type OverlayStatus = "idle" | "loading" | "ready" | "error";
+
+export type WindOverlayProvider =
+  | "auto"
+  | "openwind_tiles"
+  | "openmeteo_spatial";
 
 type VectorPoint = {
   x: number;
@@ -167,6 +173,7 @@ export type WindOverlayDetails = {
   pointCount: number;
   gustsAvailable: boolean;
   stale: boolean;
+  loadDurationMs: number;
   performance: {
     tier: WindPerformanceTier;
     particleCount: number;
@@ -439,7 +446,10 @@ function sampleWindField(
   return Object.values(sampled).every(Number.isFinite) ? sampled : null;
 }
 
-function buildRasterCanvas(field: VectorField): HTMLCanvasElement {
+function buildRasterCanvas(
+  field: VectorField,
+  opaque = false,
+): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.width = field.width;
   canvas.height = field.height;
@@ -453,7 +463,9 @@ function buildRasterCanvas(field: VectorField): HTMLCanvasElement {
       image.data[index * 4 + 3] = 0;
       continue;
     }
-    const alpha = Math.round(105 + Math.min(1, speed / 65) * 85);
+    const alpha = opaque
+      ? 255
+      : Math.round(105 + Math.min(1, speed / 65) * 85);
     const color = windSpeedColor(speed, alpha);
     const pixel = index * 4;
     image.data[pixel] = color[0];
@@ -706,6 +718,7 @@ export function useWindOverlay(
   mapRef: React.RefObject<maplibregl.Map | null>,
   showWindOverlay: boolean,
   mapLoaded: boolean,
+  provider: WindOverlayProvider = "auto",
 ) {
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const [status, setStatus] = useState<OverlayStatus>("idle");
@@ -757,6 +770,8 @@ export function useWindOverlay(
     let activatedWithGusts = false;
     let retryAttempt = 0;
     let windTileProviderDisabled = false;
+    let fallbackGeneration = -1;
+    let loadStartedAt = performance.now();
     const reducedMotionQuery = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     );
@@ -1104,6 +1119,7 @@ export function useWindOverlay(
         pointCount: field.width * field.height,
         gustsAvailable: sampler.gustsLoaded,
         stale: activeManifest.stale,
+        loadDurationMs: Math.round(performance.now() - loadStartedAt),
         performance: {
           tier: animationProfile.tier,
           particleCount: animationProfile.particleCount,
@@ -1137,14 +1153,14 @@ export function useWindOverlay(
       refetchTimer = setTimeout(loadNativeWind, delay);
     };
 
-    const loadFallback = async (generation: number) => {
+    const loadFallback = async (generation: number): Promise<boolean> => {
       if (
         !alive ||
         generation !== loadGeneration ||
         !requestedBounds ||
         !fetchAbort
       )
-        return;
+        return false;
       const boundsString = requestedBounds
         .map((value) => value.toFixed(2))
         .join(",");
@@ -1172,7 +1188,7 @@ export function useWindOverlay(
           data.points.length < 4 ||
           !overlayRef.current
         )
-          return;
+          return false;
 
         const profile = currentRenderProfile();
         const field = buildFallbackVectorField(
@@ -1205,6 +1221,7 @@ export function useWindOverlay(
             Number.isFinite(point.gusts),
           ),
           stale: false,
+          loadDurationMs: Math.round(performance.now() - loadStartedAt),
           performance: {
             tier: animationProfile.tier,
             particleCount: animationProfile.particleCount,
@@ -1214,8 +1231,9 @@ export function useWindOverlay(
         });
         setStatus("ready");
         retryAttempt = 0;
+        return true;
       } catch {
-        if (fetchAbort.signal.aborted) return;
+        if (fetchAbort.signal.aborted) return false;
         if (!hasField) setStatus("error");
         else {
           setDetails((current) =>
@@ -1223,6 +1241,7 @@ export function useWindOverlay(
           );
         }
         scheduleRetry(retryAfterMs);
+        return false;
       }
     };
 
@@ -1256,6 +1275,7 @@ export function useWindOverlay(
       const manifest = parseOpenwindWindTileManifest(
         (await manifestResponse.json()) as unknown,
       );
+      if (provider === "auto" && manifest.stale) return false;
       const tileSet = await loadOpenwindWindTileSet(manifest, bounds, {
         signal: fetchAbort.signal,
         concurrency: 6,
@@ -1299,7 +1319,9 @@ export function useWindOverlay(
       currentField = field;
       fallbackRasterLayer = new BitmapLayer({
         id: "wind-speed-raster-openwind-tiles",
-        image: buildRasterCanvas(field),
+        // The admin comparison forces the same 0.82 presentation opacity as
+        // the native S3 raster. Public rendering keeps its adaptive alpha.
+        image: buildRasterCanvas(field, provider === "openwind_tiles"),
         bounds,
         opacity: 0.82,
         pickable: false,
@@ -1320,6 +1342,7 @@ export function useWindOverlay(
         pointCount: sourcePointCount,
         gustsAvailable: manifest.gustsAvailable,
         stale: manifest.stale,
+        loadDurationMs: Math.round(performance.now() - loadStartedAt),
         performance: {
           tier: animationProfile.tier,
           particleCount: animationProfile.particleCount,
@@ -1332,6 +1355,66 @@ export function useWindOverlay(
       return true;
     };
 
+    const markCurrentFieldUnavailable = () => {
+      if (!hasField) setStatus("error");
+      else {
+        setDetails((current) =>
+          current ? { ...current, stale: true } : current,
+        );
+      }
+    };
+
+    const loadAutoFallback = async (
+      generation: number,
+      preferredModelId: WindModelMetadata["id"],
+    ): Promise<boolean> => {
+      if (
+        provider !== "auto" ||
+        !alive ||
+        generation !== loadGeneration ||
+        !requestedBounds ||
+        fallbackGeneration === generation
+      ) {
+        return false;
+      }
+      fallbackGeneration = generation;
+      clearLoadTimers();
+      if (refreshTimer) clearTimeout(refreshTimer);
+      removeNativeLayers(map);
+      activeManifest = null;
+      activeOmModule = null;
+      activeOmSettings = null;
+      nativeSampler = null;
+
+      const tileModel = selectOpenwindWindTileModel(requestedBounds);
+      if (tileModel && !windTileProviderDisabled) {
+        try {
+          if (
+            await loadOpenwindTileWind(
+              tileModel,
+              requestedBounds,
+              generation,
+            )
+          ) {
+            // Keep the requested primary model as the selection key so a
+            // successful fallback is not retried after every small pan.
+            activeModelId = preferredModelId;
+            refreshTimer = setTimeout(loadNativeWind, FIELD_REFRESH_MS);
+            return true;
+          }
+        } catch {
+          if (fetchAbort?.signal.aborted) return false;
+        }
+      }
+
+      const loaded = await loadFallback(generation);
+      if (loaded) {
+        activeModelId = preferredModelId;
+        refreshTimer = setTimeout(loadNativeWind, FIELD_REFRESH_MS);
+      }
+      return loaded;
+    };
+
     const installNativeSources = async (
       om: OmModule,
       manifest: SpatialWindManifest,
@@ -1342,6 +1425,8 @@ export function useWindOverlay(
       // Let those shared reads settle before removing their source so their
       // workers complete normally and the next model starts from a clean state.
       if (!(await waitForNativeSourcesToSettle(generation))) return false;
+      if (provider === "auto" && fallbackGeneration === generation)
+        return false;
       removeNativeLayers(map);
       om.updateCurrentBounds(bounds);
 
@@ -1399,20 +1484,25 @@ export function useWindOverlay(
       }
 
       pollNativeField(generation);
-      nativeTimeoutTimer = setTimeout(() => {
-        if (
-          generation === loadGeneration &&
-          activatedGeneration !== generation
-        ) {
-          void loadFallback(generation);
-        }
-      }, NATIVE_LOAD_TIMEOUT_MS);
+      if (provider === "openmeteo_spatial") {
+        nativeTimeoutTimer = setTimeout(() => {
+          if (
+            generation === loadGeneration &&
+            activatedGeneration !== generation
+          ) {
+            markCurrentFieldUnavailable();
+            scheduleRetry();
+          }
+        }, NATIVE_LOAD_TIMEOUT_MS);
+      }
       return true;
     };
 
     async function loadNativeWind() {
       if (!alive) return;
       const generation = ++loadGeneration;
+      loadStartedAt = performance.now();
+      fallbackGeneration = -1;
       activatedGeneration = -1;
       activatedWithGusts = false;
       clearLoadTimers();
@@ -1421,27 +1511,43 @@ export function useWindOverlay(
       if (refetchTimer) clearTimeout(refetchTimer);
       fetchAbort = new AbortController();
       requestedBounds = paddedWindBounds(currentViewBounds(activeMap));
-      const model = selectWindModel(requestedBounds);
+      const model =
+        provider === "openmeteo_spatial"
+          ? SPATIAL_WIND_MODELS.dwd_icon_eu.metadata
+          : selectPreferredSpatialWindModel(requestedBounds);
       if (!hasField) setStatus("loading");
 
-      const tileModel =
-        model.id === "gfs_global"
-          ? selectOpenwindWindTileModel(requestedBounds)
-          : null;
-      if (tileModel && !windTileProviderDisabled) {
+      if (provider === "auto") {
+        // Bound the complete primary path, including manifest and OM blocks.
+        // R2 starts after ten seconds even if an upstream read is still stuck.
+        nativeTimeoutTimer = setTimeout(() => {
+          if (
+            generation === loadGeneration &&
+            activatedGeneration !== generation
+          ) {
+            void loadAutoFallback(generation, model.id);
+          }
+        }, NATIVE_LOAD_TIMEOUT_MS);
+      }
+
+      if (provider === "openwind_tiles") {
         try {
           if (
-            await loadOpenwindTileWind(tileModel, requestedBounds, generation)
+            await loadOpenwindTileWind(
+              "dwd_icon_eu",
+              requestedBounds,
+              generation,
+            )
           ) {
             refreshTimer = setTimeout(loadNativeWind, FIELD_REFRESH_MS);
             return;
           }
         } catch {
           if (fetchAbort.signal.aborted) return;
-          // The independent feed is still a staged provider. Keep the current
-          // Open-Meteo path as a seamless fallback until production storage is
-          // provisioned and the scheduled publisher is continuously healthy.
         }
+        markCurrentFieldUnavailable();
+        scheduleRetry();
+        return;
       }
 
       try {
@@ -1450,14 +1556,26 @@ export function useWindOverlay(
           fetchWithRetry(
             `/api/wind/spatial/manifest?model=${model.id}`,
             { signal: fetchAbort.signal },
-            { timeoutMs: CLIENT_MANIFEST_TIMEOUT_MS, attempts: 2 },
+            {
+              timeoutMs: CLIENT_MANIFEST_TIMEOUT_MS,
+              attempts: provider === "auto" ? 1 : 2,
+            },
           ),
         ]);
         if (!response.ok) {
           throw new Error(`Manifest returned ${response.status}`);
         }
         const manifest = (await response.json()) as SpatialWindManifest;
-        if (!alive || generation !== loadGeneration) return;
+        if (
+          !alive ||
+          generation !== loadGeneration ||
+          fallbackGeneration === generation
+        )
+          return;
+        if (provider === "auto" && manifest.stale) {
+          await loadAutoFallback(generation, model.id);
+          return;
+        }
 
         activeManifest = manifest;
         activeOmModule = om;
@@ -1471,7 +1589,12 @@ export function useWindOverlay(
       } catch {
         if (fetchAbort.signal.aborted) return;
         if (!alive || generation !== loadGeneration) return;
-        await loadFallback(generation);
+        if (provider === "openmeteo_spatial") {
+          markCurrentFieldUnavailable();
+          scheduleRetry();
+          return;
+        }
+        await loadAutoFallback(generation, model.id);
       }
     }
 
@@ -1479,11 +1602,12 @@ export function useWindOverlay(
       setHoveredWind(null);
       const viewBounds = currentViewBounds(map);
       const paddedBounds = paddedWindBounds(viewBounds);
-      const fallbackModel = selectWindModel(paddedBounds);
       const requestedModelId =
-        fallbackModel.id === "gfs_global" && !windTileProviderDisabled
-          ? (selectOpenwindWindTileModel(paddedBounds) ?? fallbackModel.id)
-          : fallbackModel.id;
+        provider === "openmeteo_spatial"
+          ? "dwd_icon_eu"
+          : provider === "openwind_tiles"
+            ? "dwd_icon_eu"
+            : selectPreferredSpatialWindModel(paddedBounds).id;
       if (
         activeModelId === requestedModelId &&
         loadedBounds &&
@@ -1617,7 +1741,7 @@ export function useWindOverlay(
         overlayRef.current = null;
       }
     };
-  }, [showWindOverlay, mapLoaded, mapRef]);
+  }, [showWindOverlay, mapLoaded, mapRef, provider]);
 
   return {
     status: showWindOverlay ? status : "idle",

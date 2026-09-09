@@ -14,7 +14,8 @@ bucket Cloudflare R2 relié au domaine dédié
 - les tuiles et le manifeste du jeu sont immuables ;
 - `latest.json` n'est remplacé qu'après toutes les vérifications ;
 - douze jeux restent disponibles par défaut pour le diagnostic ou le rollback ;
-- l'application conserve son repli automatique vers Open-Meteo.
+- l'application utilise les fichiers spatiaux Open-Meteo en priorité et garde
+  ces tuiles R2 comme repli indépendant.
 
 ## Préparer Cloudflare R2
 
@@ -59,7 +60,7 @@ https://tiles.openwind.ch/dwd_icon_eu/latest.json
 Il s'exécutera ensuite toutes les heures, à la minute 37, sans publier deux
 jeux en parallèle.
 
-## Activer progressivement l'application
+## Activer le repli R2
 
 Une fois le domaine public vérifié, définir dans l'environnement de
 préproduction Vercel :
@@ -69,8 +70,11 @@ OPENWIND_WIND_TILE_SOURCE=https://tiles.openwind.ch
 ```
 
 Tester la carte européenne, les petits et grands écrans, puis appliquer la
-même variable en production. Retirer cette variable désactive immédiatement
-les tuiles indépendantes et remet le chemin Open-Meteo existant en service.
+même variable en production. Open-Meteo AWS S3 reste la source principale ;
+R2 est utilisé automatiquement si le manifeste Open-Meteo est trop ancien ou
+si son champ spatial ne peut pas être chargé dans le délai prévu. Retirer cette
+variable désactive immédiatement ce premier repli, sans modifier le chemin
+Open-Meteo principal.
 
 ## Vérifications locales
 
@@ -90,9 +94,14 @@ python3 scripts/publish_wind_tiles.py --skip-public-verification
 ## Surveillance en production
 
 Le workflow **Wind health** s’exécute chaque heure, indépendamment de la
-publication. Il contrôle le manifeste public, sa fraîcheur, le décodage d’une
-vraie tuile, le CORS et l’API de production. Un incident fait échouer le
-workflow et déclenche les notifications GitHub configurées pour le dépôt.
+publication. Il contrôle séparément la source primaire Open-Meteo AWS S3 et le
+secours Cloudflare R2 : fraîcheur des deux manifestes, présence de U10/V10 et
+des rafales, lecture partielle et décodage d’un vrai fichier `.om`, décodage
+d’une vraie tuile OWW1, CORS et API de production. Quand les deux sources
+exposent exactement le même run et la même échéance, trois points sont comparés
+numériquement ; un écart anormal est signalé. Une indisponibilité totale fait
+échouer le workflow et déclenche les notifications GitHub configurées pour le
+dépôt, tandis qu’une perte de redondance produit un avertissement.
 
 Le même contrôle peut être lancé à la demande :
 
@@ -101,5 +110,24 @@ pnpm wind:health
 ```
 
 Les administrateurs disposent aussi de la page `/admin/wind`, actualisée
-automatiquement toutes les 60 secondes. Elle ne requiert aucune clé R2 dans le
-navigateur et reste protégée par la liste `ADMIN_USER_IDS` existante.
+automatiquement toutes les 60 secondes. Elle indique la source primaire, l’état
+du secours, la raison d’une éventuelle bascule et la cohérence S3 ↔ R2. Elle ne
+requiert aucune clé R2 dans le navigateur et reste protégée par la liste
+`ADMIN_USER_IDS` existante.
+
+## Comparer R2 à la source Open-Meteo
+
+La page protégée `/admin/wind/compare` affiche deux cartes ICON-EU
+synchronisées. Elle force les tuiles OWW1 de `tiles.openwind.ch` à gauche et le
+fichier `data_spatial` officiel à droite, tout en conservant la palette et le
+moteur de particules Openwind. Les échéances, le premier rendu, le nombre de
+réponses, le volume HTTP exposé et la fluidité sont affichés côte à côte.
+
+La source de référence est l'URL AWS S3 ouverte communiquée par Open-Meteo :
+
+```text
+https://openmeteo.s3.amazonaws.com/data_spatial
+```
+
+Le comparateur ne modifie pas le fournisseur utilisé par la carte publique et
+n'utilise pas le CDN européen privé d'Open-Meteo.

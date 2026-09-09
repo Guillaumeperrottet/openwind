@@ -10,6 +10,7 @@ import {
   Database,
   ExternalLink,
   Gauge,
+  GitCompareArrows,
   Loader2,
   RefreshCw,
   TriangleAlert,
@@ -17,9 +18,9 @@ import {
 } from "lucide-react";
 import type {
   WindHealthCheck,
-  WindHealthReport,
   WindHealthStatus,
 } from "@/lib/windHealth";
+import type { WindSystemHealthReport } from "@/lib/windSystemHealth";
 
 const statusStyle: Record<
   WindHealthStatus,
@@ -66,7 +67,7 @@ function formatAge(minutes: number): string {
 }
 
 export function WindHealthClient() {
-  const [report, setReport] = useState<WindHealthReport | null>(null);
+  const [report, setReport] = useState<WindSystemHealthReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,7 +86,7 @@ export function WindHealthClient() {
           body?.error ?? `Contrôle impossible (${response.status})`,
         );
       }
-      setReport((await response.json()) as WindHealthReport);
+      setReport((await response.json()) as WindSystemHealthReport);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -126,26 +127,35 @@ export function WindHealthClient() {
                   Santé du vent en direct
                 </h1>
                 <p className="mt-1 text-sm text-slate-500">
-                  Contrôle réel du manifeste, de la fraîcheur, des tuiles et du
-                  chargement navigateur.
+                  Contrôle réel de la source Open-Meteo, du secours R2 et de la
+                  cohérence de leurs valeurs.
                 </p>
               </div>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => void loadHealth()}
-            disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-wait disabled:opacity-60"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            Actualiser
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link
+              href="/admin/wind/compare"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-sky-200 bg-white px-4 py-2.5 text-sm font-semibold text-sky-700 transition hover:bg-sky-50"
+            >
+              <GitCompareArrows className="h-4 w-4" />
+              Comparer les sources
+            </Link>
+            <button
+              type="button"
+              onClick={() => void loadHealth()}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-wait disabled:opacity-60"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Actualiser
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -177,119 +187,244 @@ export function WindHealthClient() {
                     </span>
                   </div>
                 </div>
-                {report.sourceUrl && (
-                  <a
-                    href={report.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-700 hover:text-sky-800"
-                  >
-                    {report.sourceUrl.replace("https://", "")}
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
+                <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm">
+                  <span className="text-slate-500">Source active prévue</span>
+                  <p className="mt-0.5 font-semibold text-slate-900">
+                    {report.activeProvider === "openmeteo_spatial"
+                      ? "Open-Meteo S3"
+                      : report.activeProvider === "openwind_tiles"
+                        ? "Secours Openwind R2"
+                        : "Aucune source disponible"}
+                  </p>
+                </div>
               </div>
             </section>
+
+            {report.fallbackReason && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Bascule automatique active : {report.fallbackReason}
+              </div>
+            )}
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <ProviderCard
+                title="Open-Meteo S3"
+                role="Source primaire"
+                status={report.primary.status}
+                sourceUrl={report.primary.sourceUrl}
+                detail={
+                  report.primary.dataset
+                    ? `${report.primary.model.label} · ${formatDate(report.primary.dataset.validAt)}`
+                    : "Manifeste indisponible"
+                }
+              />
+              <ProviderCard
+                title="Openwind R2"
+                role="Secours indépendant"
+                status={report.fallback.status}
+                sourceUrl={report.fallback.sourceUrl}
+                detail={
+                  report.fallback.dataset
+                    ? `${report.fallback.model?.label ?? "ICON-EU"} · ${formatDate(report.fallback.dataset.validAt)}`
+                    : "Jeu de données indisponible"
+                }
+              />
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard
                 icon={Clock3}
-                label="Dernière publication"
+                label="Mise à jour Open-Meteo"
                 value={
-                  report.dataset
-                    ? formatAge(report.dataset.ageMinutes)
+                  report.primary.dataset
+                    ? formatAge(report.primary.dataset.ageMinutes)
                     : "Indisponible"
                 }
                 detail={
-                  report.dataset
-                    ? formatDate(report.dataset.updatedAt)
+                  report.primary.dataset
+                    ? formatDate(report.primary.dataset.updatedAt)
                     : undefined
                 }
               />
               <MetricCard
                 icon={Gauge}
-                label="Échéance affichée"
+                label="Fichier Open-Meteo"
                 value={
-                  report.dataset
-                    ? formatDate(report.dataset.validAt)
+                  report.primary.file
+                    ? `${report.primary.file.durationMs} ms`
                     : "Indisponible"
                 }
                 detail={
-                  report.model
-                    ? `${report.model.label} · ${report.model.resolutionKm} km`
+                  report.primary.file?.bytes
+                    ? `${Math.round(report.primary.file.bytes / 1024 / 1024)} Mo · lecture partielle`
                     : undefined
                 }
               />
               <MetricCard
                 icon={Database}
-                label="Jeu de données"
-                value={report.dataset?.runId ?? "Indisponible"}
-                detail={report.dataset?.id}
+                label="Secours R2"
+                value={report.fallbackReady ? "Prêt" : "Indisponible"}
+                detail={report.fallback.dataset?.id}
               />
               <MetricCard
                 icon={Activity}
-                label="Tuile testée"
-                value={report.tile ? `${report.tile.durationMs} ms` : "Indisponible"}
+                label="Cohérence des valeurs"
+                value={
+                  report.consistency.status === "pass"
+                    ? "Conforme"
+                    : report.consistency.status === "warn"
+                      ? "À contrôler"
+                      : "Écart anormal"
+                }
                 detail={
-                  report.tile
-                    ? `${report.tile.x}/${report.tile.y} · ${Math.round(report.tile.bytes / 1024)} Ko`
-                    : undefined
+                  report.consistency.comparable
+                    ? `${report.consistency.checkedPoints} points · max. ${report.consistency.maxVectorDifferenceMps?.toFixed(2)} m/s`
+                    : report.consistency.message
                 }
               />
             </div>
 
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
-                <h2 className="font-semibold text-slate-950">
-                  Contrôles techniques
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Ces tests sont également lancés automatiquement chaque heure.
-                </p>
-              </div>
-              <div>
-                {report.checks.map((check, index) => {
-                  const style = checkStyle[check.status];
+            <HealthChecksSection
+              title="Source primaire Open-Meteo"
+              subtitle="Manifeste officiel, fichier OM, variables, décodage réel et CORS."
+              checks={report.primary.checks}
+            />
+            <HealthChecksSection
+              title="Secours Openwind R2"
+              subtitle="Manifeste, fraîcheur, tuile binaire réelle et accès navigateur."
+              checks={report.fallback.checks}
+            />
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex items-start gap-3">
+                {(() => {
+                  const style = checkStyle[report.consistency.status];
                   const Icon = style.icon;
                   return (
-                    <div
-                      key={check.id}
-                      className={`flex gap-3 px-5 py-4 sm:px-6 ${
-                        index > 0 ? "border-t border-slate-100" : ""
-                      }`}
-                    >
-                      <Icon
-                        className={`mt-0.5 h-5 w-5 shrink-0 ${style.className}`}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h3 className="text-sm font-semibold text-slate-900">
-                            {check.label}
-                          </h3>
-                          {typeof check.durationMs === "number" && (
-                            <span className="text-xs tabular-nums text-slate-400">
-                              {check.durationMs} ms
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1 break-words text-sm text-slate-500">
-                          {check.message}
-                        </p>
-                      </div>
-                    </div>
+                    <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${style.className}`} />
                   );
-                })}
+                })()}
+                <div>
+                  <h2 className="font-semibold text-slate-950">
+                    Comparaison numérique S3 ↔ R2
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {report.consistency.message}
+                  </p>
+                </div>
               </div>
             </section>
 
             <p className="text-center text-xs text-slate-400">
-              Actualisation automatique toutes les 60 secondes · Rétention des
-              12 dernières générations dans R2
+              Actualisation toutes les 60 secondes · Contrôle externe chaque
+              heure · 12 générations conservées dans R2
             </p>
           </div>
         ) : null}
       </div>
     </div>
+  );
+}
+
+function ProviderCard({
+  title,
+  role,
+  status,
+  sourceUrl,
+  detail,
+}: {
+  title: string;
+  role: string;
+  status: WindHealthStatus;
+  sourceUrl: string | null;
+  detail: string;
+}) {
+  const presentation = statusStyle[status];
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            {role}
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-slate-950">{title}</h2>
+        </div>
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${presentation.className}`}
+        >
+          {presentation.label}
+        </span>
+      </div>
+      <p className="mt-4 text-sm text-slate-500">{detail}</p>
+      {sourceUrl && (
+        <a
+          href={sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-sky-700 hover:text-sky-800"
+        >
+          {sourceUrl.replace("https://", "")}
+          <ExternalLink className="h-4 w-4" />
+        </a>
+      )}
+    </section>
+  );
+}
+
+type TechnicalCheck = Pick<
+  WindHealthCheck,
+  "label" | "status" | "message" | "durationMs"
+> & { id: string };
+
+function HealthChecksSection({
+  title,
+  subtitle,
+  checks,
+}: {
+  title: string;
+  subtitle: string;
+  checks: TechnicalCheck[];
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-5 py-4 sm:px-6">
+        <h2 className="font-semibold text-slate-950">{title}</h2>
+        <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+      </div>
+      <div>
+        {checks.map((check, index) => {
+          const style = checkStyle[check.status];
+          const Icon = style.icon;
+          return (
+            <div
+              key={check.id}
+              className={`flex gap-3 px-5 py-4 sm:px-6 ${
+                index > 0 ? "border-t border-slate-100" : ""
+              }`}
+            >
+              <Icon
+                className={`mt-0.5 h-5 w-5 shrink-0 ${style.className}`}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    {check.label}
+                  </h3>
+                  {typeof check.durationMs === "number" && (
+                    <span className="text-xs tabular-nums text-slate-400">
+                      {check.durationMs} ms
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 break-words text-sm text-slate-500">
+                  {check.message}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

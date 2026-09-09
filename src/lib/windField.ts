@@ -17,10 +17,13 @@ export type WindVector = {
   v: number;
 };
 
-export type WindModelId = "gfs_global" | "meteoswiss_icon_ch1";
+export type WindModelId =
+  | "gfs_global"
+  | "meteoswiss_icon_ch1"
+  | "dwd_icon_eu";
 
 export type WindModelMetadata = {
-  id: WindModelId | "dwd_icon_eu" | "live_stations";
+  id: WindModelId | "live_stations";
   label: string;
   source: string;
   resolutionKm: number | null;

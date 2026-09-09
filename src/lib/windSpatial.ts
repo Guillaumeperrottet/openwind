@@ -1,7 +1,10 @@
-import type {
-  WindModelId,
-  WindModelMetadata,
+import {
+  selectWindModel,
+  type WindBounds,
+  type WindModelId,
+  type WindModelMetadata,
 } from "@/lib/windField";
+import { selectOpenwindWindTileModel } from "@/lib/windTiles";
 
 export const OPEN_METEO_SPATIAL_BASE_URL =
   "https://openmeteo.s3.amazonaws.com/data_spatial";
@@ -13,6 +16,15 @@ export const SPATIAL_WIND_MODELS: Record<
     metadata: WindModelMetadata;
   }
 > = {
+  dwd_icon_eu: {
+    domain: "dwd_icon_eu",
+    metadata: {
+      id: "dwd_icon_eu",
+      label: "ICON-EU",
+      source: "Open-Meteo · DWD",
+      resolutionKm: 6.5,
+    },
+  },
   gfs_global: {
     domain: "ncep_gfs013",
     metadata: {
@@ -75,6 +87,23 @@ function pad(value: number): string {
 
 export function isWindModelId(value: string | null): value is WindModelId {
   return value !== null && value in SPATIAL_WIND_MODELS;
+}
+
+/**
+ * Prefer the finest native Open-Meteo model covering the complete viewport:
+ * ICON-CH1 locally, ICON-EU across Europe, then GFS worldwide.
+ */
+export function selectPreferredSpatialWindModel(
+  bounds: WindBounds,
+): WindModelMetadata {
+  const localOrGlobal = selectWindModel(bounds);
+  if (
+    localOrGlobal.id === "gfs_global" &&
+    selectOpenwindWindTileModel(bounds) === "dwd_icon_eu"
+  ) {
+    return SPATIAL_WIND_MODELS.dwd_icon_eu.metadata;
+  }
+  return localOrGlobal;
 }
 
 /** Pick the available model time closest to now without inventing a timestep. */

@@ -35,5 +35,5 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Check live manifest, freshness, tile and production API
+      - name: Check Open-Meteo primary, R2 fallback and production API
         run: pnpm wind:health

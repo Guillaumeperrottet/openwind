@@ -1,5 +1,5 @@
 import { parseOpenwindWindTileManifest } from "../src/lib/windTiles";
-import { checkWindHealth } from "../src/lib/windHealth";
+import { checkWindSystemHealth } from "../src/lib/windSystemHealth";
 
 const source =
   process.env.WIND_TILE_PUBLIC_BASE_URL?.trim() ||
@@ -41,28 +41,37 @@ async function checkProductionApi(expectedDatasetId: string | undefined) {
 }
 
 async function main() {
-  const report = await checkWindHealth({
+  const report = await checkWindSystemHealth({
     source,
     origin: productionUrl,
   });
 
   console.log(`Wind status: ${report.status}`);
-  for (const check of report.checks) {
+  console.log(`Active provider: ${report.activeProvider}`);
+  for (const check of report.primary.checks) {
     console.log(
-      `${check.status.toUpperCase()} ${check.label}: ${check.message}`,
+      `${check.status.toUpperCase()} Open-Meteo / ${check.label}: ${check.message}`,
     );
   }
+  for (const check of report.fallback.checks) {
+    console.log(
+      `${check.status.toUpperCase()} R2 / ${check.label}: ${check.message}`,
+    );
+  }
+  console.log(
+    `${report.consistency.status.toUpperCase()} Cohérence: ${report.consistency.message}`,
+  );
 
   if (report.status === "outage") {
-    annotation("error", "The live wind tile service is unavailable or stale");
+    annotation("error", "Both live wind providers are unavailable or stale");
     process.exitCode = 1;
     return;
   }
   if (report.status === "degraded") {
-    annotation("warning", "The live wind tile service needs attention");
+    annotation("warning", "The live wind service is running without full redundancy");
   }
 
-  await checkProductionApi(report.dataset?.id);
+  await checkProductionApi(report.fallback.dataset?.id);
 }
 
 main().catch((error) => {

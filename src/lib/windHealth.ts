@@ -1,5 +1,6 @@
 import {
   decodeOpenwindWindTile,
+  OPENWIND_WIND_TILE_MISSING_VALUE,
   openwindWindTileUrl,
   parseOpenwindWindTileManifest,
   type OpenwindWindTileManifest,
@@ -51,7 +52,16 @@ export type WindHealthReport = {
     bytes: number;
     durationMs: number;
   } | null;
+  samples: WindHealthSample[];
   checks: WindHealthCheck[];
+};
+
+export type WindHealthSample = {
+  longitude: number;
+  latitude: number;
+  uMps: number;
+  vMps: number;
+  gustMps: number;
 };
 
 export type WindHealthFetcher = (
@@ -99,6 +109,7 @@ function baseReport(
     model: null,
     dataset: null,
     tile: null,
+    samples: [],
     checks,
   };
 }
@@ -123,6 +134,63 @@ function expectedTileDimensions(
       manifest.grid.rows - y * manifest.grid.tileSize,
     ),
   };
+}
+
+function sampleTileForHealth(
+  manifest: OpenwindWindTileManifest,
+  tile: ReturnType<typeof decodeOpenwindWindTile>,
+  tileX: number,
+  tileY: number,
+): WindHealthSample[] {
+  const channelCount = tile.gustsAvailable ? 3 : 2;
+  const fractions = [0.25, 0.5, 0.75];
+  const seen = new Set<string>();
+
+  return fractions.flatMap((fraction) => {
+    const localColumn = Math.min(
+      tile.width - 1,
+      Math.max(0, Math.round((tile.width - 1) * fraction)),
+    );
+    const localRow = Math.min(
+      tile.height - 1,
+      Math.max(0, Math.round((tile.height - 1) * fraction)),
+    );
+    const key = `${localColumn}:${localRow}`;
+    if (seen.has(key)) return [];
+    seen.add(key);
+
+    const offset = (localRow * tile.width + localColumn) * channelCount;
+    const quantizedU = tile.values[offset];
+    const quantizedV = tile.values[offset + 1];
+    if (
+      quantizedU === OPENWIND_WIND_TILE_MISSING_VALUE ||
+      quantizedV === OPENWIND_WIND_TILE_MISSING_VALUE
+    ) {
+      return [];
+    }
+    const uMps = quantizedU * tile.scaleMps;
+    const vMps = quantizedV * tile.scaleMps;
+    const quantizedGust = tile.gustsAvailable
+      ? tile.values[offset + 2]
+      : OPENWIND_WIND_TILE_MISSING_VALUE;
+    const gustValue = tile.gustsAvailable
+      ? quantizedGust === OPENWIND_WIND_TILE_MISSING_VALUE
+        ? Math.hypot(uMps, vMps)
+        : quantizedGust * tile.scaleMps
+      : Math.hypot(uMps, vMps);
+    const column = tileX * manifest.grid.tileSize + localColumn;
+    const row = tileY * manifest.grid.tileSize + localRow;
+
+    return [
+      {
+        longitude: manifest.grid.west + column * manifest.grid.longitudeStep,
+        latitude: manifest.grid.north - row * manifest.grid.latitudeStep,
+        uMps,
+        vMps,
+        gustMps: Math.max(Math.hypot(uMps, vMps), gustValue),
+      },
+    ];
+  });
 }
 
 export async function checkWindHealth(
@@ -227,6 +295,7 @@ export async function checkWindHealth(
   const y = Math.floor(manifest.grid.tileRows / 2);
   const tileUrl = openwindWindTileUrl(manifest, { x, y });
   let tileResult: WindHealthReport["tile"] = null;
+  let samples: WindHealthSample[] = [];
   let tileResponse: Response | null = null;
   const tileStartedAt = Date.now();
 
@@ -262,6 +331,7 @@ export async function checkWindHealth(
       bytes: buffer.byteLength,
       durationMs,
     };
+    samples = sampleTileForHealth(manifest, tile, x, y);
     checks.push({
       id: "tile",
       label: "Tuile réelle",
@@ -313,6 +383,7 @@ export async function checkWindHealth(
       gustsAvailable: manifest.gustsAvailable,
     },
     tile: tileResult,
+    samples,
     checks,
   };
 }

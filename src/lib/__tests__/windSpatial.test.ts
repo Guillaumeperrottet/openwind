@@ -4,6 +4,7 @@ import {
   isWindModelId,
   parseSpatialWindManifest,
   selectClosestSpatialValidTime,
+  selectPreferredSpatialWindModel,
 } from "@/lib/windSpatial";
 
 const metadata = {
@@ -26,7 +27,20 @@ describe("spatial wind manifests", () => {
   it("accepts only allow-listed model identifiers", () => {
     expect(isWindModelId("gfs_global")).toBe(true);
     expect(isWindModelId("meteoswiss_icon_ch1")).toBe(true);
+    expect(isWindModelId("dwd_icon_eu")).toBe(true);
     expect(isWindModelId("../../secret")).toBe(false);
+  });
+
+  it("prefers the finest native spatial model covering the viewport", () => {
+    expect(selectPreferredSpatialWindModel([5, 44, 12, 49]).id).toBe(
+      "meteoswiss_icon_ch1",
+    );
+    expect(selectPreferredSpatialWindModel([-6, 38, 25, 57]).id).toBe(
+      "dwd_icon_eu",
+    );
+    expect(selectPreferredSpatialWindModel([-30, 38, 25, 57]).id).toBe(
+      "gfs_global",
+    );
   });
 
   it("selects an actual timestep closest to now", () => {
@@ -64,6 +78,26 @@ describe("spatial wind manifests", () => {
       stale: false,
       model: { id: "gfs_global", resolutionKm: 13 },
     });
+  });
+
+  it("normalizes the official Open-Meteo ICON-EU spatial feed", () => {
+    const result = parseSpatialWindManifest("dwd_icon_eu", metadata, {
+      baseUrl: "https://openmeteo.s3.amazonaws.com/data_spatial",
+      now: new Date("2026-09-03T11:34:00Z"),
+    });
+
+    expect(result).toMatchObject({
+      domain: "dwd_icon_eu",
+      gustsAvailable: true,
+      stale: false,
+      model: {
+        id: "dwd_icon_eu",
+        label: "ICON-EU",
+        source: "Open-Meteo · DWD",
+        resolutionKm: 6.5,
+      },
+    });
+    expect(result.fileUrl).toContain("/data_spatial/dwd_icon_eu/");
   });
 
   it("rejects incomplete runs and runs missing vector data", () => {

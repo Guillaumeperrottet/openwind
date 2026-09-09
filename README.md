@@ -120,6 +120,15 @@ les tuiles sont relues depuis le stockage et son domaine public avant que
 la rétention et l'activation progressive sont détaillés dans
 [docs/wind-tiles-production.md](docs/wind-tiles-production.md).
 
+Sur la carte publique, le moteur lit en priorité les fichiers spatiaux officiels
+Open-Meteo sur AWS S3 : ICON-CH1 en Suisse, ICON-EU en Europe et GFS ailleurs.
+Si cette lecture échoue, dépasse le délai de chargement ou annonce des données
+trop anciennes, les tuiles R2 ICON-EU prennent automatiquement le relais en
+Europe, puis l'API de texture légère reste disponible en dernier recours.
+Le contrôle horaire et la page protégée `/admin/wind` vérifient les deux sources
+jusqu'au décodage de valeurs U10/V10/rafales et comparent leurs données lorsque
+le run et l'échéance coïncident.
+
 ## Structure du projet
 
 ```

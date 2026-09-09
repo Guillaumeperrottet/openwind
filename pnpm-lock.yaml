@@ -20,6 +20,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.72.0(react@19.2.4))
+      '@openmeteo/file-reader':
+        specifier: 0.0.18
+        version: 0.0.18
       '@openmeteo/weather-map-layer':
         specifier: 0.1.0
         version: 0.1.0

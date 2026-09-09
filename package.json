@@ -21,6 +21,7 @@
     "@deck.gl/layers": "^9.3.1",
     "@deck.gl/mapbox": "^9.3.1",
     "@hookform/resolvers": "^5.2.2",
+    "@openmeteo/file-reader": "0.0.18",
     "@openmeteo/weather-map-layer": "0.1.0",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "^7.6.0",
