@@ -168,6 +168,33 @@ export async function getStationsFromCache(): Promise<WindStation[]> {
   }
 }
 
+/** Difference between the current speed and a real measurement roughly one
+ * hour earlier. Returns null when the database cannot provide a trustworthy
+ * reference point. */
+export async function getStationTrendKmh(
+  stationId: string,
+  currentSpeedKmh: number,
+): Promise<number | null> {
+  const now = Date.now();
+  try {
+    const reference = await prisma.stationMeasurement.findFirst({
+      where: {
+        stationId,
+        time: {
+          gte: new Date(now - 2 * 60 * 60 * 1000),
+          lte: new Date(now - 45 * 60 * 1000),
+        },
+      },
+      orderBy: { time: "desc" },
+      select: { windSpeedKmh: true },
+    });
+    if (!reference) return null;
+    return Math.round((currentSpeedKmh - reference.windSpeedKmh) * 10) / 10;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { getStationLive, getStationCoordsOrNull } from "@/lib/stationData";
+import {
+  getStationLive,
+  getStationCoordsOrNull,
+  getStationTrendKmh,
+} from "@/lib/stationData";
 
 /**
  * GET /api/stations/:id/live
@@ -27,7 +31,11 @@ export async function GET(
       // use /api/spots/:id/live instead.
       allowOpenMeteoFallback: false,
     });
-    return NextResponse.json(live, {
+    const trendKmh =
+      live.source === "station"
+        ? await getStationTrendKmh(stationId, live.windSpeedKmh)
+        : null;
+    return NextResponse.json({ ...live, trendKmh }, {
       headers: {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       },

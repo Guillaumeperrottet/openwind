@@ -119,6 +119,9 @@ model Favorite {
   sortOrder         Int      @default(0)
   dashboardSelected Boolean  @default(false)
   dashboardOrder    Int      @default(0)
+  windAlertEnabled  Boolean  @default(false)
+  windAlertMinKmh   Float?
+  windAlertMaxKmh   Float?
   createdAt         DateTime @default(now())
   spot              Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -143,6 +146,9 @@ model StationFavorite {
   sortOrder         Int      @default(0)
   dashboardSelected Boolean  @default(false)
   dashboardOrder    Int      @default(0)
+  windAlertEnabled  Boolean  @default(false)
+  windAlertMinKmh   Float?
+  windAlertMaxKmh   Float?
   createdAt         DateTime @default(now())
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

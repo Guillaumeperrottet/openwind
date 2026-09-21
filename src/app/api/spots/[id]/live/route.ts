@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { getSpotLive, getStationLive } from "@/lib/stationData";
+import {
+  getSpotLive,
+  getStationLive,
+  getStationTrendKmh,
+} from "@/lib/stationData";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -34,7 +38,11 @@ export async function GET(
         lng: spot.longitude,
         allowOpenMeteoFallback: true,
       });
-      return NextResponse.json(live, {
+      const trendKmh =
+        live.source === "station" && live.stationId
+          ? await getStationTrendKmh(live.stationId, live.windSpeedKmh)
+          : null;
+      return NextResponse.json({ ...live, trendKmh }, {
         headers: {
           "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
         },
@@ -42,7 +50,11 @@ export async function GET(
     }
 
     const live = await getSpotLive(id);
-    return NextResponse.json(live, {
+    const trendKmh =
+      live.source === "station" && live.stationId
+        ? await getStationTrendKmh(live.stationId, live.windSpeedKmh)
+        : null;
+    return NextResponse.json({ ...live, trendKmh }, {
       headers: {
         "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       },

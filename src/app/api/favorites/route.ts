@@ -19,18 +19,33 @@ const dashboardFavoriteSchema = z.discriminatedUnion("kind", [
     .strict(),
 ]);
 
+const favoriteAlertSchema = z
+  .object({
+    kind: z.enum(["spot", "station"]),
+    id: z.string().trim().min(1),
+    enabled: z.boolean(),
+    minWindKmh: z.number().min(0).max(200),
+    maxWindKmh: z.number().min(0).max(200),
+  })
+  .strict()
+  .refine((value) => value.minWindKmh <= value.maxWindKmh, {
+    message: "La vitesse minimale doit précéder la vitesse maximale",
+  });
+
 const reorderFavoritesSchema = z
   .object({
     spotIds: z.array(z.string().trim().min(1)).max(50).optional(),
     stationIds: z.array(z.string().trim().min(1)).max(50).optional(),
     dashboardFavorites: z.array(dashboardFavoriteSchema).max(3).optional(),
+    favoriteAlerts: z.array(favoriteAlertSchema).max(3).optional(),
   })
   .strict()
   .refine(
     (value) =>
       value.spotIds !== undefined ||
       value.stationIds !== undefined ||
-      value.dashboardFavorites !== undefined,
+      value.dashboardFavorites !== undefined ||
+      value.favoriteAlerts !== undefined,
     {
       message: "Une modification de favoris est requise",
     },
@@ -50,6 +65,16 @@ const reorderFavoritesSchema = z
   .refine((value) => value.dashboardFavorites?.length !== 0, {
     message: "Sélectionne au moins un favori pour le tableau de bord",
   })
+  .refine(
+    (value) =>
+      !value.favoriteAlerts ||
+      new Set(
+        value.favoriteAlerts.map((favorite) =>
+          `${favorite.kind}:${favorite.id}`,
+        ),
+      ).size === value.favoriteAlerts.length,
+    { message: "Une alerte ne peut apparaître qu’une fois" },
+  )
   .refine(
     (value) =>
       (!value.spotIds || new Set(value.spotIds).size === value.spotIds.length) &&
@@ -263,11 +288,27 @@ export async function PATCH(request: NextRequest) {
       index,
     ]) ?? [],
   );
+  const alertSpotIds =
+    parsed.data.favoriteAlerts
+      ?.filter((favorite) => favorite.kind === "spot")
+      .map((favorite) => favorite.id) ?? [];
+  const alertStationIds =
+    parsed.data.favoriteAlerts
+      ?.filter((favorite) => favorite.kind === "station")
+      .map((favorite) => favorite.id) ?? [];
   const requestedSpotIds = [
-    ...new Set([...(parsed.data.spotIds ?? []), ...dashboardSpotIds]),
+    ...new Set([
+      ...(parsed.data.spotIds ?? []),
+      ...dashboardSpotIds,
+      ...alertSpotIds,
+    ]),
   ];
   const requestedStationIds = [
-    ...new Set([...(parsed.data.stationIds ?? []), ...dashboardStationIds]),
+    ...new Set([
+      ...(parsed.data.stationIds ?? []),
+      ...dashboardStationIds,
+      ...alertStationIds,
+    ]),
   ];
 
   const [ownedSpots, ownedStations] = await Promise.all([
@@ -347,6 +388,41 @@ export async function PATCH(request: NextRequest) {
               },
             }),
           ),
+        ]
+      : []),
+    ...(parsed.data.favoriteAlerts
+      ? [
+          prisma.favorite.updateMany({
+            where: { userId: user.id },
+            data: { windAlertEnabled: false },
+          }),
+          prisma.stationFavorite.updateMany({
+            where: { userId: user.id },
+            data: { windAlertEnabled: false },
+          }),
+          ...parsed.data.favoriteAlerts.map((alert) => {
+            const data = {
+              windAlertEnabled: alert.enabled,
+              windAlertMinKmh: alert.minWindKmh,
+              windAlertMaxKmh: alert.maxWindKmh,
+            };
+            return alert.kind === "spot"
+              ? prisma.favorite.update({
+                  where: {
+                    userId_spotId: { userId: user.id, spotId: alert.id },
+                  },
+                  data,
+                })
+              : prisma.stationFavorite.update({
+                  where: {
+                    userId_stationId: {
+                      userId: user.id,
+                      stationId: alert.id,
+                    },
+                  },
+                  data,
+                });
+          }),
         ]
       : []),
   ];

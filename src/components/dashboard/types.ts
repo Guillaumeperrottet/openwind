@@ -20,11 +20,16 @@ export interface DashboardFavoriteSpot {
   id: string;
   dashboardSelected: boolean;
   dashboardOrder: number;
+  windAlertEnabled: boolean;
+  windAlertMinKmh: number | null;
+  windAlertMaxKmh: number | null;
   name: string;
   region: string | null;
   country: string | null;
   sportType: SportType;
   imageUrl: string | null;
+  latitude: number;
+  longitude: number;
   minWindKmh: number;
   maxWindKmh: number;
   bestWindDirections: string[];
@@ -35,6 +40,9 @@ export interface DashboardFavoriteStation {
   id: string;
   dashboardSelected: boolean;
   dashboardOrder: number;
+  windAlertEnabled: boolean;
+  windAlertMinKmh: number | null;
+  windAlertMaxKmh: number | null;
   name: string;
   source: WindStation["source"];
   latitude: number;

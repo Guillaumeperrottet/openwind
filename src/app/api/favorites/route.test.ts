@@ -278,4 +278,75 @@ describe("favorites API", () => {
     expect(response.status).toBe(400);
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
+
+  it("persists wind alert rules for spots and stations", async () => {
+    mocks.favoriteFindMany.mockResolvedValue([{ spotId: "spot-1" }]);
+    mocks.stationFavoriteFindMany.mockResolvedValue([{ stationId: "VEV" }]);
+
+    const response = await PATCH(
+      patchRequest({
+        favoriteAlerts: [
+          {
+            kind: "spot",
+            id: "spot-1",
+            enabled: true,
+            minWindKmh: 18,
+            maxWindKmh: 32,
+          },
+          {
+            kind: "station",
+            id: "VEV",
+            enabled: false,
+            minWindKmh: 12,
+            maxWindKmh: 40,
+          },
+        ],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.favoriteUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      data: { windAlertEnabled: false },
+    });
+    expect(mocks.stationFavoriteUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      data: { windAlertEnabled: false },
+    });
+    expect(mocks.favoriteUpdate).toHaveBeenCalledWith({
+      where: { userId_spotId: { userId: "user-1", spotId: "spot-1" } },
+      data: {
+        windAlertEnabled: true,
+        windAlertMinKmh: 18,
+        windAlertMaxKmh: 32,
+      },
+    });
+    expect(mocks.stationFavoriteUpdate).toHaveBeenCalledWith({
+      where: { userId_stationId: { userId: "user-1", stationId: "VEV" } },
+      data: {
+        windAlertEnabled: false,
+        windAlertMinKmh: 12,
+        windAlertMaxKmh: 40,
+      },
+    });
+  });
+
+  it("rejects an inverted wind alert range", async () => {
+    const response = await PATCH(
+      patchRequest({
+        favoriteAlerts: [
+          {
+            kind: "spot",
+            id: "spot-1",
+            enabled: true,
+            minWindKmh: 40,
+            maxWindKmh: 20,
+          },
+        ],
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
 });

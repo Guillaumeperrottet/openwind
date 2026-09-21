@@ -31,6 +31,8 @@ export type WindLive = {
   staleAt: string;
   /** True if Date.now() < new Date(staleAt).getTime(). */
   isFresh: boolean;
+  /** Difference from a real observation around one hour earlier. */
+  trendKmh?: number | null;
 };
 
 /** Unified response for 48h history. Observations and NWP strictly separated. */

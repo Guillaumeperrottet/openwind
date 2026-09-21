@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
+  Bell,
+  BellOff,
   BookOpen,
   CalendarDays,
   Check,
@@ -16,6 +18,7 @@ import {
   Map,
   MapPin,
   MessageCircle,
+  Minus,
   Newspaper,
   Plus,
   RadioTower,
@@ -24,6 +27,8 @@ import {
   SlidersHorizontal,
   Sparkles,
   Star,
+  TrendingDown,
+  TrendingUp,
   Users,
   Wind,
   X,
@@ -62,6 +67,14 @@ type DashboardFavoriteChoice = {
   kind: "spot" | "station";
   id: string;
 };
+
+type FavoriteAlertChoice = DashboardFavoriteChoice & {
+  enabled: boolean;
+  minWindKmh: number;
+  maxWindKmh: number;
+};
+
+type FavoriteAlertDraft = Omit<FavoriteAlertChoice, "kind" | "id">;
 
 type DashboardFavoriteItem =
   | { kind: "spot"; item: DashboardFavoriteSpot }
@@ -110,24 +123,139 @@ function isDirectionCompatible(direction: number, bestDirections: string[]) {
   });
 }
 
-function isLiveWindCompatible(spot: DashboardFavoriteSpot, live: WindLive) {
-  const sourceUsable = live.source === "openmeteo" || live.isFresh;
-  const speedCompatible =
+function getLiveWindChecks(spot: DashboardFavoriteSpot, live: WindLive) {
+  const freshness = live.source === "openmeteo" || live.isFresh;
+  const speed =
     spot.sportType === "PARAGLIDE"
       ? live.windSpeedKmh <= 15
       : live.windSpeedKmh >= spot.minWindKmh &&
         live.windSpeedKmh <= spot.maxWindKmh;
-  const gustsCompatible =
+  const gusts =
     spot.sportType === "PARAGLIDE"
       ? live.gustsKmh <= 25
       : live.gustsKmh / Math.max(live.windSpeedKmh, 1) <= 1.45;
-  const directionCompatible =
+  const direction =
     spot.sportType === "PARAGLIDE" ||
     isDirectionCompatible(live.windDirection, spot.bestWindDirections);
+  return { freshness, speed, gusts, direction };
+}
 
-  return (
-    sourceUsable && speedCompatible && gustsCompatible && directionCompatible
+function isLiveWindCompatible(spot: DashboardFavoriteSpot, live: WindLive) {
+  return Object.values(getLiveWindChecks(spot, live)).every(Boolean);
+}
+
+function useWindAlert({
+  key,
+  name,
+  enabled,
+  minWindKmh,
+  maxWindKmh,
+  live,
+}: {
+  key: string;
+  name: string;
+  enabled: boolean;
+  minWindKmh: number | null;
+  maxWindKmh: number | null;
+  live: WindLive | null;
+}) {
+  const matches = Boolean(
+    enabled &&
+      live &&
+      live.isFresh &&
+      minWindKmh !== null &&
+      maxWindKmh !== null &&
+      live.windSpeedKmh >= minWindKmh &&
+      live.windSpeedKmh <= maxWindKmh,
   );
+
+  useEffect(() => {
+    if (!matches || !live || !("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+    const storageKey = `openwind-alert:${key}`;
+    const lastNotified = Number(window.localStorage.getItem(storageKey) ?? 0);
+    if (Date.now() - lastNotified < 3 * 60 * 60 * 1000) return;
+    new Notification(name, {
+      body: `${Math.round(live.windSpeedKmh)} km/h · ${Math.round(live.gustsKmh)} km/h`,
+      icon: "/icon-192.png",
+      tag: storageKey,
+    });
+    window.localStorage.setItem(storageKey, String(Date.now()));
+  }, [key, live, matches, name]);
+
+  return matches;
+}
+
+function WindTrend({
+  trendKmh,
+  useKnots,
+}: {
+  trendKmh: number | null | undefined;
+  useKnots: boolean;
+}) {
+  const t = useTranslations("MonOpenwind.favorites");
+  if (trendKmh == null) {
+    return <span className="text-slate-400">{t("trendUnavailable")}</span>;
+  }
+  const converted = useKnots ? trendKmh / 1.852 : trendKmh;
+  const absolute = Math.round(Math.abs(converted));
+  const unit = useKnots ? "kts" : "km/h";
+  if (Math.abs(trendKmh) < 2) {
+    return (
+      <span className="inline-flex items-center gap-1 text-slate-500">
+        <Minus className="h-3.5 w-3.5" /> {t("trendStable")}
+      </span>
+    );
+  }
+  return trendKmh > 0 ? (
+    <span className="inline-flex items-center gap-1 text-emerald-700">
+      <TrendingUp className="h-3.5 w-3.5" />
+      {t("trendRising", { value: absolute, unit })}
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 text-amber-700">
+      <TrendingDown className="h-3.5 w-3.5" />
+      {t("trendFalling", { value: absolute, unit })}
+    </span>
+  );
+}
+
+function StatusCheck({ label, passed }: { label: string; passed: boolean }) {
+  const t = useTranslations("MonOpenwind.favorites");
+  return (
+    <li className="flex items-center justify-between gap-3">
+      <span className="text-slate-500">{label}</span>
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 font-semibold",
+          passed ? "text-emerald-700" : "text-amber-700",
+        )}
+      >
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full",
+            passed ? "bg-emerald-500" : "bg-amber-500",
+          )}
+        />
+        {passed ? t("checkPass") : t("checkFail")}
+      </span>
+    </li>
+  );
+}
+
+function getPlannerHref(spot: DashboardFavoriteSpot) {
+  const start = new Date();
+  const end = new Date(start);
+  end.setDate(end.getDate() + 3);
+  const params = new URLSearchParams({
+    lat: String(spot.latitude),
+    lng: String(spot.longitude),
+    sport: spot.sportType,
+    startDate: start.toISOString().slice(0, 10),
+    endDate: end.toISOString().slice(0, 10),
+    radius: "50",
+  });
+  return `/plan?${params.toString()}`;
 }
 
 export function MonOpenwindClient({ initialData }: Props) {
@@ -216,31 +344,60 @@ export function MonOpenwindClient({ initialData }: Props) {
 
   const selectDashboardFavorites = async (
     choices: DashboardFavoriteChoice[],
+    alerts?: FavoriteAlertChoice[],
   ): Promise<boolean> => {
     try {
       const response = await fetch("/api/favorites", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dashboardFavorites: choices }),
+        body: JSON.stringify({
+          dashboardFavorites: choices,
+          ...(alerts ? { favoriteAlerts: alerts } : {}),
+        }),
       });
       if (!response.ok) return false;
 
       const selected = new globalThis.Map(
         choices.map((choice, index) => [favoriteChoiceKey(choice), index]),
       );
+      const alertByKey = alerts
+        ? new globalThis.Map(
+            alerts.map((alert) => [favoriteChoiceKey(alert), alert]),
+          )
+        : null;
       setFavoriteSpots((current) =>
-        current.map((spot) => ({
-          ...spot,
-          dashboardSelected: selected.has(`spot:${spot.id}`),
-          dashboardOrder: selected.get(`spot:${spot.id}`) ?? 0,
-        })),
+        current.map((spot) => {
+          const alert = alertByKey?.get(`spot:${spot.id}`);
+          return {
+            ...spot,
+            dashboardSelected: selected.has(`spot:${spot.id}`),
+            dashboardOrder: selected.get(`spot:${spot.id}`) ?? 0,
+            ...(alertByKey
+              ? {
+                  windAlertEnabled: alert?.enabled ?? false,
+                  windAlertMinKmh: alert?.minWindKmh ?? null,
+                  windAlertMaxKmh: alert?.maxWindKmh ?? null,
+                }
+              : {}),
+          };
+        }),
       );
       setFavoriteStations((current) =>
-        current.map((station) => ({
-          ...station,
-          dashboardSelected: selected.has(`station:${station.id}`),
-          dashboardOrder: selected.get(`station:${station.id}`) ?? 0,
-        })),
+        current.map((station) => {
+          const alert = alertByKey?.get(`station:${station.id}`);
+          return {
+            ...station,
+            dashboardSelected: selected.has(`station:${station.id}`),
+            dashboardOrder: selected.get(`station:${station.id}`) ?? 0,
+            ...(alertByKey
+              ? {
+                  windAlertEnabled: alert?.enabled ?? false,
+                  windAlertMinKmh: alert?.minWindKmh ?? null,
+                  windAlertMaxKmh: alert?.maxWindKmh ?? null,
+                }
+              : {}),
+          };
+        }),
       );
       trackEvent("dashboard_favorites_selected", {
         favorite_count: choices.length,
@@ -327,7 +484,15 @@ export function MonOpenwindClient({ initialData }: Props) {
 
       <div className="mx-auto max-w-[1500px] space-y-12 px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
         {preferences.dashboardLayout.map((module) => (
-          <div key={module}>{moduleContent[module]}</div>
+          <DashboardModuleContainer
+            key={module}
+            module={module}
+            label={t(`settings.modules.${
+              module === "QUICK_ACTIONS" ? "actions" : module.toLowerCase()
+            }`)}
+          >
+            {moduleContent[module]}
+          </DashboardModuleContainer>
         ))}
       </div>
 
@@ -340,6 +505,51 @@ export function MonOpenwindClient({ initialData }: Props) {
           onClose={() => setSettingsOpen(false)}
         />
       )}
+    </div>
+  );
+}
+
+function DashboardModuleContainer({
+  module,
+  label,
+  children,
+}: {
+  module: DashboardModule;
+  label: string;
+  children: React.ReactNode;
+}) {
+  const t = useTranslations("MonOpenwind");
+  const primary = module === "FAVORITES" || module === "FORECAST";
+  const [open, setOpen] = useState(primary);
+  const contentId = `dashboard-module-${module.toLowerCase()}`;
+
+  return (
+    <div>
+      {!primary && (
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={contentId}
+          onClick={() => setOpen((current) => !current)}
+          className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-left md:hidden"
+        >
+          <span className="text-sm font-semibold text-slate-800">{label}</span>
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-sky-700">
+            {open ? t("hideSection") : t("showSection")}
+            {open ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </span>
+        </button>
+      )}
+      <div
+        id={contentId}
+        className={cn(!primary && "mt-4 md:mt-0", !open && "hidden md:block")}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -606,12 +816,18 @@ function DashboardFavoriteSelector({
   selectedKeys,
   onToggle,
   onMove,
+  alerts,
+  onToggleAlert,
+  onAlertChange,
 }: {
   spots: DashboardFavoriteSpot[];
   stations: DashboardFavoriteStation[];
   selectedKeys: string[];
   onToggle: (key: string) => void;
   onMove: (index: number, direction: -1 | 1) => void;
+  alerts: Record<string, FavoriteAlertDraft>;
+  onToggleAlert: (key: string) => void;
+  onAlertChange: (key: string, patch: Partial<FavoriteAlertDraft>) => void;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   const selected = new Set(selectedKeys);
@@ -663,22 +879,25 @@ function DashboardFavoriteSelector({
         {orderedOptions.map((option) => {
           const selectedIndex = selectedKeys.indexOf(option.key);
           return (
-          <DashboardFavoriteOption
-            key={option.key}
-            icon={option.icon}
-            label={option.label}
-            detail={option.detail}
-            selected={selected.has(option.key)}
-            disabled={
-              !selected.has(option.key) &&
-              selectedKeys.length >= MAX_DASHBOARD_FAVORITES
-            }
-            position={selectedIndex >= 0 ? selectedIndex : null}
-            selectedTotal={selectedKeys.length}
-            onClick={() => onToggle(option.key)}
-            onMoveUp={() => onMove(selectedIndex, -1)}
-            onMoveDown={() => onMove(selectedIndex, 1)}
-          />
+            <DashboardFavoriteOption
+              key={option.key}
+              icon={option.icon}
+              label={option.label}
+              detail={option.detail}
+              selected={selected.has(option.key)}
+              disabled={
+                !selected.has(option.key) &&
+                selectedKeys.length >= MAX_DASHBOARD_FAVORITES
+              }
+              position={selectedIndex >= 0 ? selectedIndex : null}
+              selectedTotal={selectedKeys.length}
+              alert={alerts[option.key]}
+              onClick={() => onToggle(option.key)}
+              onMoveUp={() => onMove(selectedIndex, -1)}
+              onMoveDown={() => onMove(selectedIndex, 1)}
+              onToggleAlert={() => onToggleAlert(option.key)}
+              onAlertChange={(patch) => onAlertChange(option.key, patch)}
+            />
           );
         })}
       </div>
@@ -694,9 +913,12 @@ function DashboardFavoriteOption({
   disabled,
   position,
   selectedTotal,
+  alert,
   onClick,
   onMoveUp,
   onMoveDown,
+  onToggleAlert,
+  onAlertChange,
 }: {
   icon: typeof MapPin;
   label: string;
@@ -705,64 +927,125 @@ function DashboardFavoriteOption({
   disabled: boolean;
   position: number | null;
   selectedTotal: number;
+  alert: FavoriteAlertDraft | undefined;
   onClick: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  onToggleAlert: () => void;
+  onAlertChange: (patch: Partial<FavoriteAlertDraft>) => void;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   return (
     <div
       className={cn(
-        "flex min-h-14 items-center gap-2 rounded-xl border p-2 transition-colors",
+        "rounded-xl border p-2 transition-colors",
         selected
           ? "border-sky-300 bg-sky-50/60 text-slate-950"
           : "border-slate-200 bg-white text-slate-600",
         disabled && "cursor-not-allowed opacity-45",
       )}
     >
-      <button
-        type="button"
-        aria-pressed={selected}
-        aria-describedby="dashboard-favorite-selector-help"
-        disabled={disabled}
-        onClick={onClick}
-        className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
-      >
-        <span
-          className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-            selected ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-500",
-          )}
+      <div className="flex min-h-10 items-center gap-2">
+        <button
+          type="button"
+          aria-pressed={selected}
+          aria-describedby="dashboard-favorite-selector-help"
+          disabled={disabled}
+          onClick={onClick}
+          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
         >
-          {selected ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
-        </span>
-        <span className="min-w-0 flex-1">
-          <strong className="block truncate text-sm">{label}</strong>
-          <span className="mt-0.5 block truncate text-[11px] text-slate-400">
-            {detail}
+          <span
+            className={cn(
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+              selected ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-500",
+            )}
+          >
+            {selected ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
           </span>
-        </span>
-      </button>
-      {selected && position !== null && (
-        <div className="flex shrink-0">
-          <button
-            type="button"
-            onClick={onMoveUp}
-            disabled={position === 0}
-            className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
-            aria-label={t("moveFavoriteUp", { name: label })}
-          >
-            <ChevronUp className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={onMoveDown}
-            disabled={position === selectedTotal - 1}
-            className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
-            aria-label={t("moveFavoriteDown", { name: label })}
-          >
-            <ChevronDown className="h-4 w-4" />
-          </button>
+          <span className="min-w-0 flex-1">
+            <strong className="block truncate text-sm">{label}</strong>
+            <span className="mt-0.5 block truncate text-[11px] text-slate-400">
+              {detail}
+            </span>
+          </span>
+        </button>
+        {selected && position !== null && (
+          <div className="flex shrink-0">
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={position === 0}
+              className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
+              aria-label={t("moveFavoriteUp", { name: label })}
+            >
+              <ChevronUp className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={position === selectedTotal - 1}
+              className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
+              aria-label={t("moveFavoriteDown", { name: label })}
+            >
+              <ChevronDown className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+      </div>
+      {selected && alert && (
+        <div className="mt-2 border-t border-sky-100 pt-2">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              aria-pressed={alert.enabled}
+              onClick={onToggleAlert}
+              className={cn(
+                "inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold",
+                alert.enabled
+                  ? "bg-sky-600 text-white"
+                  : "bg-white text-slate-500 ring-1 ring-slate-200",
+              )}
+            >
+              {alert.enabled ? (
+                <Bell className="h-3.5 w-3.5" />
+              ) : (
+                <BellOff className="h-3.5 w-3.5" />
+              )}
+              {alert.enabled ? t("alertActive") : t("alertInactive")}
+            </button>
+            {alert.enabled && (
+              <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                <label className="flex items-center gap-1">
+                  <span className="sr-only">{t("alertMinimum")}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="200"
+                    value={alert.minWindKmh}
+                    onChange={(event) =>
+                      onAlertChange({ minWindKmh: Number(event.target.value) })
+                    }
+                    className="h-8 w-12 rounded-lg border border-slate-200 bg-white px-1.5 text-center tabular-nums"
+                  />
+                </label>
+                <span>–</span>
+                <label className="flex items-center gap-1">
+                  <span className="sr-only">{t("alertMaximum")}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="200"
+                    value={alert.maxWindKmh}
+                    onChange={(event) =>
+                      onAlertChange({ maxWindKmh: Number(event.target.value) })
+                    }
+                    className="h-8 w-12 rounded-lg border border-slate-200 bg-white px-1.5 text-center tabular-nums"
+                  />
+                </label>
+                <span>km/h</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -783,6 +1066,7 @@ function FavoriteSpotCard({
   const { toggleFavorite } = useFavContext();
   const { data: live, isLoading, error } = useSpotLive(spot.id);
   const [removing, setRemoving] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const speed = live
     ? useKnots
       ? Math.round(live.windSpeedKmh / 1.852)
@@ -795,6 +1079,15 @@ function FavoriteSpotCard({
     : null;
   const unit = useKnots ? "kts" : "km/h";
   const windCompatible = live ? isLiveWindCompatible(spot, live) : false;
+  const windChecks = live ? getLiveWindChecks(spot, live) : null;
+  const alertMatches = useWindAlert({
+    key: `spot:${spot.id}`,
+    name: spot.name,
+    enabled: spot.windAlertEnabled,
+    minWindKmh: spot.windAlertMinKmh,
+    maxWindKmh: spot.windAlertMaxKmh,
+    live,
+  });
   const measuredAt = live
     ? new Intl.DateTimeFormat(locale, {
         hour: "2-digit",
@@ -826,7 +1119,7 @@ function FavoriteSpotCard({
   };
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
       <div className="relative h-28 overflow-hidden bg-[linear-gradient(135deg,#e0f2fe,#f8fafc)] sm:h-32">
         {spot.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -856,7 +1149,7 @@ function FavoriteSpotCard({
         </button>
       </div>
 
-      <div className="p-4">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <Link
@@ -872,20 +1165,22 @@ function FavoriteSpotCard({
             </p>
           </div>
           {live && (
-            <span
+            <button
+              type="button"
+              aria-expanded={detailsOpen}
+              onClick={() => setDetailsOpen((current) => !current)}
               className={cn(
-                "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
+                "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors hover:ring-2 hover:ring-offset-1",
                 windCompatible
                   ? "bg-emerald-50 text-emerald-700"
                   : "bg-amber-50 text-amber-700",
               )}
-              title={t("windStatusHelp")}
               aria-label={`${
                 windCompatible ? t("windCompatible") : t("windCaution")
-              }. ${t("windStatusHelp")}`}
+              }. ${detailsOpen ? t("hideStatus") : t("explainStatus")}`}
             >
               {windCompatible ? t("windCompatible") : t("windCaution")}
-            </span>
+            </button>
           )}
         </div>
 
@@ -923,7 +1218,35 @@ function FavoriteSpotCard({
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-xs">
+        <div className="mt-2 flex min-h-5 items-center justify-between gap-2 text-[11px]">
+          <WindTrend trendKmh={live?.trendKmh} useKnots={useKnots} />
+          {alertMatches && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-1 font-semibold text-sky-700">
+              <Bell className="h-3 w-3" />
+              {t("alertMatched")}
+            </span>
+          )}
+        </div>
+
+        {detailsOpen && windChecks && (
+          <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs">
+            <p className="mb-2 leading-5 text-slate-500">{t("windStatusHelp")}</p>
+            <ul className="space-y-1.5">
+              <StatusCheck label={t("checkSpeed")} passed={windChecks.speed} />
+              <StatusCheck label={t("checkGusts")} passed={windChecks.gusts} />
+              <StatusCheck
+                label={t("checkDirection")}
+                passed={windChecks.direction}
+              />
+              <StatusCheck
+                label={t("checkFreshness")}
+                passed={windChecks.freshness}
+              />
+            </ul>
+          </div>
+        )}
+
+        <div className="mt-auto flex items-center justify-between pt-4 text-xs">
           <span
             className={cn(
               "truncate text-slate-400",
@@ -933,12 +1256,20 @@ function FavoriteSpotCard({
           >
             {status}
           </span>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <Link
             href={`/spots/${spot.id}`}
-            className="inline-flex items-center gap-1 font-semibold text-sky-700 hover:text-sky-900"
+            className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             {t("details")}
-            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            href={getPlannerHref(spot)}
+            className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-sky-600 px-3 text-xs font-semibold text-white hover:bg-sky-700"
+          >
+            <Route className="h-3.5 w-3.5" />
+            {t("planSpot")}
           </Link>
         </div>
       </div>
@@ -960,6 +1291,7 @@ function FavoriteStationCard({
   const { toggleStationFavorite } = useFavContext();
   const { data: live, isLoading } = useStationLive(station.id);
   const [removing, setRemoving] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const windSpeedKmh = live?.windSpeedKmh ?? station.windSpeedKmh;
   const gustsKmh = live?.gustsKmh ?? station.gustsKmh;
   const direction = live?.windDirection ?? station.windDirection;
@@ -983,6 +1315,16 @@ function FavoriteStationCard({
       }).format(new Date(updatedAt))
     : null;
   const networkLabel = NETWORK_LABELS[station.source] ?? station.source;
+  const alertMatches = useWindAlert({
+    key: `station:${station.id}`,
+    name: station.name,
+    enabled: station.windAlertEnabled,
+    minWindKmh: station.windAlertMinKmh,
+    maxWindKmh: station.windAlertMaxKmh,
+    live,
+  });
+  const stationAvailable = windSpeedKmh !== null;
+  const stationFresh = Boolean(live?.source === "station" && live.isFresh);
 
   const remove = async () => {
     if (removing) return;
@@ -993,7 +1335,7 @@ function FavoriteStationCard({
   };
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
       <div className="relative flex h-28 items-end overflow-hidden bg-[linear-gradient(135deg,#e0f2fe,#f8fafc)] p-4 sm:h-32">
         <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-sky-200/50 blur-2xl" />
         <RadioTower className="absolute left-4 top-4 h-7 w-7 text-sky-400" />
@@ -1012,7 +1354,7 @@ function FavoriteStationCard({
         </button>
       </div>
 
-      <div className="p-4">
+      <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <Link
@@ -1029,22 +1371,32 @@ function FavoriteStationCard({
                 : ""}
             </p>
           </div>
-          <span
+          <button
+            type="button"
+            aria-expanded={detailsOpen}
+            onClick={() => setDetailsOpen((current) => !current)}
             className={cn(
-              "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
+              "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors hover:ring-2 hover:ring-offset-1",
               live?.source === "station" && live.isFresh
                 ? "bg-emerald-50 text-emerald-700"
                 : windSpeedKmh !== null
                   ? "bg-amber-50 text-amber-700"
                   : "bg-slate-100 text-slate-500",
             )}
+            aria-label={`${
+              stationFresh
+                ? t("stationLive")
+                : stationAvailable
+                  ? t("stationCached")
+                  : t("stationUnavailable")
+            }. ${detailsOpen ? t("hideStatus") : t("explainStatus")}`}
           >
             {live?.source === "station" && live.isFresh
               ? t("stationLive")
               : windSpeedKmh !== null
                 ? t("stationCached")
                 : t("stationUnavailable")}
-          </span>
+          </button>
         </div>
 
         <div className="mt-4 grid grid-cols-3 divide-x divide-slate-100 rounded-xl bg-slate-50 px-2 py-3">
@@ -1081,20 +1433,45 @@ function FavoriteStationCard({
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-3 text-xs">
+        <div className="mt-2 flex min-h-5 items-center justify-between gap-2 text-[11px]">
+          <WindTrend trendKmh={live?.trendKmh} useKnots={useKnots} />
+          {alertMatches && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-1 font-semibold text-sky-700">
+              <Bell className="h-3 w-3" />
+              {t("alertMatched")}
+            </span>
+          )}
+        </div>
+
+        {detailsOpen && (
+          <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs">
+            <p className="mb-2 leading-5 text-slate-500">{t("stationStatusHelp")}</p>
+            <ul className="space-y-1.5">
+              <StatusCheck label={t("checkAvailable")} passed={stationAvailable} />
+              <StatusCheck label={t("checkFreshness")} passed={stationFresh} />
+              <StatusCheck
+                label={t("checkStationSource")}
+                passed={live?.source === "station"}
+              />
+            </ul>
+          </div>
+        )}
+
+        <div className="mt-auto flex items-center justify-between gap-3 pt-4 text-xs">
           <span className="truncate text-slate-400">
             {measurementTime
               ? t("stationMeasuredAt", { time: measurementTime })
               : t("stationUnavailable")}
           </span>
-          <Link
-            href={`/stations/${encodeURIComponent(station.id)}`}
-            className="inline-flex shrink-0 items-center gap-1 font-semibold text-sky-700 hover:text-sky-900"
-          >
-            {t("stationDetails")}
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
         </div>
+        <Link
+          href={`/stations/${encodeURIComponent(station.id)}`}
+          className="mt-3 inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-sky-600 px-3 text-xs font-semibold text-white hover:bg-sky-700"
+        >
+          <RadioTower className="h-3.5 w-3.5" />
+          {t("stationDetails")}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </article>
   );
@@ -1449,7 +1826,10 @@ function DashboardSettings({
   preferences: AccountPreferences;
   spots: DashboardFavoriteSpot[];
   stations: DashboardFavoriteStation[];
-  onSelectionChange: (choices: DashboardFavoriteChoice[]) => Promise<boolean>;
+  onSelectionChange: (
+    choices: DashboardFavoriteChoice[],
+    alerts?: FavoriteAlertChoice[],
+  ) => Promise<boolean>;
   onClose: () => void;
 }) {
   const t = useTranslations("MonOpenwind.settings");
@@ -1473,6 +1853,29 @@ function DashboardSettings({
       .sort((a, b) => a.item.dashboardOrder - b.item.dashboardOrder)
       .map(({ key }) => key),
   );
+  const [favoriteAlerts, setFavoriteAlerts] = useState<
+    Record<string, FavoriteAlertDraft>
+  >(() =>
+    Object.fromEntries([
+      ...spots.map((spot) => [
+        `spot:${spot.id}`,
+        {
+          enabled: spot.windAlertEnabled,
+          minWindKmh: spot.windAlertMinKmh ?? spot.minWindKmh,
+          maxWindKmh: spot.windAlertMaxKmh ?? spot.maxWindKmh,
+        },
+      ]),
+      ...stations.map((station) => [
+        `station:${station.id}`,
+        {
+          enabled: station.windAlertEnabled,
+          minWindKmh: station.windAlertMinKmh ?? 15,
+          maxWindKmh: station.windAlertMaxKmh ?? 45,
+        },
+      ]),
+    ]),
+  );
+  const [notificationError, setNotificationError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -1555,6 +1958,37 @@ function DashboardSettings({
     setFavoriteSelection((current) => moveArrayItem(current, index, direction));
   };
 
+  const updateFavoriteAlert = (
+    key: string,
+    patch: Partial<FavoriteAlertDraft>,
+  ) => {
+    setSaved(false);
+    setFavoriteAlerts((current) => ({
+      ...current,
+      [key]: { ...current[key], ...patch },
+    }));
+  };
+
+  const toggleFavoriteAlert = async (key: string) => {
+    const nextEnabled = !favoriteAlerts[key]?.enabled;
+    if (nextEnabled) {
+      if (!("Notification" in window)) {
+        setNotificationError(true);
+        return;
+      }
+      const permission =
+        Notification.permission === "granted"
+          ? "granted"
+          : await Notification.requestPermission();
+      if (permission !== "granted") {
+        setNotificationError(true);
+        return;
+      }
+    }
+    setNotificationError(false);
+    updateFavoriteAlert(key, { enabled: nextEnabled });
+  };
+
   const save = async () => {
     setSaveError(false);
     setSaving(true);
@@ -1565,6 +1999,14 @@ function DashboardSettings({
         id: idParts.join(":"),
       };
     });
+    const alerts = choices.map((choice): FavoriteAlertChoice => {
+      const draft = favoriteAlerts[favoriteChoiceKey(choice)] ?? {
+        enabled: false,
+        minWindKmh: 15,
+        maxWindKmh: 45,
+      };
+      return { ...choice, ...draft };
+    });
     const [result, favoritesSaved] = await Promise.all([
       updatePreferences({
         defaultView,
@@ -1573,7 +2015,7 @@ function DashboardSettings({
         dashboardLayout: layout,
       }),
       spots.length + stations.length > 0
-        ? onSelectionChange(choices)
+        ? onSelectionChange(choices, alerts)
         : Promise.resolve(true),
     ]);
     setSaving(false);
@@ -1651,6 +2093,9 @@ function DashboardSettings({
                 selectedKeys={favoriteSelection}
                 onToggle={toggleFavoriteSelection}
                 onMove={moveFavoriteSelection}
+                alerts={favoriteAlerts}
+                onToggleAlert={toggleFavoriteAlert}
+                onAlertChange={updateFavoriteAlert}
               />
             ) : (
               <Link
@@ -1661,6 +2106,14 @@ function DashboardSettings({
                 {t("chooseOnMap")}
               </Link>
             )}
+            {notificationError && (
+              <p className="mt-2 text-xs leading-5 text-amber-700" role="alert">
+                {t("notificationPermissionError")}
+              </p>
+            )}
+            <p className="mt-2 text-[11px] leading-5 text-slate-400">
+              {t("alertsBrowserHelp")}
+            </p>
           </SettingsGroup>
 
           <SettingsGroup
