@@ -166,8 +166,6 @@ export default async function MonOpenwindPage() {
         country: spot.country,
         sportType: spot.sportType,
         imageUrl: spot.images[0]?.url ?? null,
-        latitude: spot.latitude,
-        longitude: spot.longitude,
         minWindKmh: spot.minWindKmh,
         maxWindKmh: spot.maxWindKmh,
         bestWindDirections: spot.bestWindDirections,

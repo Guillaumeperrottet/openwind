@@ -28,8 +28,6 @@ export interface DashboardFavoriteSpot {
   country: string | null;
   sportType: SportType;
   imageUrl: string | null;
-  latitude: number;
-  longitude: number;
   minWindKmh: number;
   maxWindKmh: number;
   bestWindDirections: string[];

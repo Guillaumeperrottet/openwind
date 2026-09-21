@@ -243,21 +243,6 @@ function StatusCheck({ label, passed }: { label: string; passed: boolean }) {
   );
 }
 
-function getPlannerHref(spot: DashboardFavoriteSpot) {
-  const start = new Date();
-  const end = new Date(start);
-  end.setDate(end.getDate() + 3);
-  const params = new URLSearchParams({
-    lat: String(spot.latitude),
-    lng: String(spot.longitude),
-    sport: spot.sportType,
-    startDate: start.toISOString().slice(0, 10),
-    endDate: end.toISOString().slice(0, 10),
-    radius: "50",
-  });
-  return `/plan?${params.toString()}`;
-}
-
 export function MonOpenwindClient({ initialData }: Props) {
   const t = useTranslations("MonOpenwind");
   const { preferences: contextPreferences } = useFavContext();
@@ -1257,21 +1242,14 @@ function FavoriteSpotCard({
             {status}
           </span>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Link
-            href={`/spots/${spot.id}`}
-            className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            {t("details")}
-          </Link>
-          <Link
-            href={getPlannerHref(spot)}
-            className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-sky-600 px-3 text-xs font-semibold text-white hover:bg-sky-700"
-          >
-            <Route className="h-3.5 w-3.5" />
-            {t("planSpot")}
-          </Link>
-        </div>
+        <Link
+          href={`/spots/${spot.id}`}
+          className="mt-3 inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-sky-600 px-3 text-xs font-semibold text-white hover:bg-sky-700"
+        >
+          <MapPin className="h-3.5 w-3.5" />
+          {t("details")}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </article>
   );
