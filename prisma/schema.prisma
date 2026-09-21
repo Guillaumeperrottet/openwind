@@ -118,6 +118,7 @@ model Favorite {
   spotId            String
   sortOrder         Int      @default(0)
   dashboardSelected Boolean  @default(false)
+  dashboardOrder    Int      @default(0)
   createdAt         DateTime @default(now())
   spot              Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -125,7 +126,7 @@ model Favorite {
   @@unique([userId, spotId])
   @@index([userId])
   @@index([userId, sortOrder])
-  @@index([userId, dashboardSelected, sortOrder])
+  @@index([userId, dashboardSelected, dashboardOrder])
 }
 
 /// A saved external wind station. Metadata is snapshotted so favorites stay
@@ -141,13 +142,14 @@ model StationFavorite {
   altitudeM         Float
   sortOrder         Int      @default(0)
   dashboardSelected Boolean  @default(false)
+  dashboardOrder    Int      @default(0)
   createdAt         DateTime @default(now())
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, stationId])
   @@index([userId])
   @@index([userId, sortOrder])
-  @@index([userId, dashboardSelected, sortOrder])
+  @@index([userId, dashboardSelected, dashboardOrder])
 }
 
 model SpotImage {

@@ -59,6 +59,7 @@ export default async function MonOpenwindPage() {
         where: { userId: user.id },
         orderBy: [
           { dashboardSelected: "desc" },
+          { dashboardOrder: "asc" },
           { sortOrder: "asc" },
           { createdAt: "desc" },
         ],
@@ -75,6 +76,7 @@ export default async function MonOpenwindPage() {
         where: { userId: user.id },
         orderBy: [
           { dashboardSelected: "desc" },
+          { dashboardOrder: "asc" },
           { sortOrder: "asc" },
           { createdAt: "desc" },
         ],
@@ -155,6 +157,7 @@ export default async function MonOpenwindPage() {
       return {
         id: spot.id,
         dashboardSelected: favorite.dashboardSelected,
+        dashboardOrder: favorite.dashboardOrder,
         name: spot.name,
         region: spot.region,
         country: spot.country,
@@ -189,6 +192,7 @@ export default async function MonOpenwindPage() {
       return {
         id: favorite.stationId,
         dashboardSelected: favorite.dashboardSelected,
+        dashboardOrder: favorite.dashboardOrder,
         name: station?.name ?? favorite.stationName,
         source: (station?.source ?? favorite.source) as WindStation["source"],
         latitude: station?.lat ?? favorite.latitude,

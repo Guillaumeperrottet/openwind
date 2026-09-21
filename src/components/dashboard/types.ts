@@ -19,6 +19,7 @@ export interface DashboardForecastDay {
 export interface DashboardFavoriteSpot {
   id: string;
   dashboardSelected: boolean;
+  dashboardOrder: number;
   name: string;
   region: string | null;
   country: string | null;
@@ -33,6 +34,7 @@ export interface DashboardFavoriteSpot {
 export interface DashboardFavoriteStation {
   id: string;
   dashboardSelected: boolean;
+  dashboardOrder: number;
   name: string;
   source: WindStation["source"];
   latitude: number;

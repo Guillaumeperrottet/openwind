@@ -130,6 +130,7 @@ describe("favorites API", () => {
         spotId: "spot-1",
         sortOrder: 0,
         dashboardSelected: true,
+        dashboardOrder: 0,
       },
     });
     expect(mocks.stationFavoriteCreate).not.toHaveBeenCalled();
@@ -185,6 +186,7 @@ describe("favorites API", () => {
         altitudeM: 1970,
         sortOrder: 0,
         dashboardSelected: true,
+        dashboardOrder: 0,
       },
     });
   });
@@ -253,11 +255,11 @@ describe("favorites API", () => {
     });
     expect(mocks.favoriteUpdate).toHaveBeenCalledWith({
       where: { userId_spotId: { userId: "user-1", spotId: "spot-1" } },
-      data: { dashboardSelected: true },
+      data: { dashboardSelected: true, dashboardOrder: 0 },
     });
     expect(mocks.stationFavoriteUpdate).toHaveBeenCalledWith({
       where: { userId_stationId: { userId: "user-1", stationId: "VEV" } },
-      data: { dashboardSelected: true },
+      data: { dashboardSelected: true, dashboardOrder: 1 },
     });
   });
 

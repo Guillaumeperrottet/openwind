@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
       }),
     ]);
     const dashboardSelected = selectedSpotCount + selectedStationCount < 3;
+    const dashboardOrder = selectedSpotCount + selectedStationCount;
     await prisma.$transaction([
       prisma.favorite.updateMany({
         where: { userId: user.id },
@@ -163,6 +164,7 @@ export async function POST(request: NextRequest) {
           spotId,
           sortOrder: 0,
           dashboardSelected,
+          dashboardOrder: dashboardSelected ? dashboardOrder : 0,
         },
       }),
     ]);
@@ -198,6 +200,7 @@ export async function POST(request: NextRequest) {
     }),
   ]);
   const dashboardSelected = selectedSpotCount + selectedStationCount < 3;
+  const dashboardOrder = selectedSpotCount + selectedStationCount;
 
   await prisma.$transaction([
     prisma.stationFavorite.updateMany({
@@ -215,6 +218,7 @@ export async function POST(request: NextRequest) {
         altitudeM: station.altitudeM,
         sortOrder: 0,
         dashboardSelected,
+        dashboardOrder: dashboardSelected ? dashboardOrder : 0,
       },
     }),
   ]);
@@ -253,6 +257,12 @@ export async function PATCH(request: NextRequest) {
     parsed.data.dashboardFavorites
       ?.filter((favorite) => favorite.kind === "station")
       .map((favorite) => favorite.id) ?? [];
+  const dashboardOrders = new Map(
+    parsed.data.dashboardFavorites?.map((favorite, index) => [
+      `${favorite.kind}:${favorite.id}`,
+      index,
+    ]) ?? [],
+  );
   const requestedSpotIds = [
     ...new Set([...(parsed.data.spotIds ?? []), ...dashboardSpotIds]),
   ];
@@ -319,7 +329,10 @@ export async function PATCH(request: NextRequest) {
           ...dashboardSpotIds.map((spotId) =>
             prisma.favorite.update({
               where: { userId_spotId: { userId: user.id, spotId } },
-              data: { dashboardSelected: true },
+              data: {
+                dashboardSelected: true,
+                dashboardOrder: dashboardOrders.get(`spot:${spotId}`) ?? 0,
+              },
             }),
           ),
           ...dashboardStationIds.map((stationId) =>
@@ -327,7 +340,11 @@ export async function PATCH(request: NextRequest) {
               where: {
                 userId_stationId: { userId: user.id, stationId },
               },
-              data: { dashboardSelected: true },
+              data: {
+                dashboardSelected: true,
+                dashboardOrder:
+                  dashboardOrders.get(`station:${stationId}`) ?? 0,
+              },
             }),
           ),
         ]

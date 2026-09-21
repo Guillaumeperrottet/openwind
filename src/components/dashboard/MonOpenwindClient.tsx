@@ -63,19 +63,14 @@ type DashboardFavoriteChoice = {
   id: string;
 };
 
+type DashboardFavoriteItem =
+  | { kind: "spot"; item: DashboardFavoriteSpot }
+  | { kind: "station"; item: DashboardFavoriteStation };
+
 const MAX_DASHBOARD_FAVORITES = 3;
 
 function favoriteChoiceKey(choice: DashboardFavoriteChoice) {
   return `${choice.kind}:${choice.id}`;
-}
-
-function reorderByIds<T extends { id: string }>(items: T[], orderedIds: string[]) {
-  const byId = new globalThis.Map(items.map((item) => [item.id, item]));
-  const ordered = orderedIds
-    .map((id) => byId.get(id))
-    .filter((item): item is T => Boolean(item));
-  const orderedSet = new Set(orderedIds);
-  return [...ordered, ...items.filter((item) => !orderedSet.has(item.id))];
 }
 
 function moveArrayItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
@@ -84,14 +79,6 @@ function moveArrayItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
   const next = [...items];
   [next[index], next[target]] = [next[target], next[index]];
   return next;
-}
-
-function mergeSubsetOrder(allIds: string[], orderedSubset: string[]) {
-  const subset = new Set(orderedSubset);
-  let subsetIndex = 0;
-  return allIds.map((id) =>
-    subset.has(id) ? orderedSubset[subsetIndex++] : id,
-  );
 }
 
 const COMPASS_DEGREES: Record<string, number> = {
@@ -181,6 +168,17 @@ export function MonOpenwindClient({ initialData }: Props) {
     () => favoriteStations.filter((station) => station.dashboardSelected),
     [favoriteStations],
   );
+  const dashboardFavorites = useMemo<DashboardFavoriteItem[]>(
+    () =>
+      [
+        ...dashboardSpots.map((item) => ({ kind: "spot" as const, item })),
+        ...dashboardStations.map((item) => ({
+          kind: "station" as const,
+          item,
+        })),
+      ].sort((a, b) => a.item.dashboardOrder - b.item.dashboardOrder),
+    [dashboardSpots, dashboardStations],
+  );
 
   const visibleSpotIds = useMemo(
     () => new Set(dashboardSpots.map((spot) => spot.id)),
@@ -216,42 +214,6 @@ export function MonOpenwindClient({ initialData }: Props) {
   const firstName = initialData.userName?.trim().split(/\s+/)[0] ?? null;
   const bestWindow = windows[0] ?? null;
 
-  const reorderFavorites = async (
-    spotIds: string[],
-    stationIds: string[],
-  ): Promise<boolean> => {
-    const fullSpotOrder = mergeSubsetOrder(
-      favoriteSpots.map((spot) => spot.id),
-      spotIds,
-    );
-    const fullStationOrder = mergeSubsetOrder(
-      favoriteStations.map((station) => station.id),
-      stationIds,
-    );
-    try {
-      const response = await fetch("/api/favorites", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          spotIds: fullSpotOrder,
-          stationIds: fullStationOrder,
-        }),
-      });
-      if (!response.ok) return false;
-      setFavoriteSpots((current) => reorderByIds(current, fullSpotOrder));
-      setFavoriteStations((current) =>
-        reorderByIds(current, fullStationOrder),
-      );
-      trackEvent("favorites_reordered", {
-        favorite_spot_count: spotIds.length,
-        favorite_station_count: stationIds.length,
-      });
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   const selectDashboardFavorites = async (
     choices: DashboardFavoriteChoice[],
   ): Promise<boolean> => {
@@ -263,17 +225,21 @@ export function MonOpenwindClient({ initialData }: Props) {
       });
       if (!response.ok) return false;
 
-      const selected = new Set(choices.map(favoriteChoiceKey));
+      const selected = new globalThis.Map(
+        choices.map((choice, index) => [favoriteChoiceKey(choice), index]),
+      );
       setFavoriteSpots((current) =>
         current.map((spot) => ({
           ...spot,
           dashboardSelected: selected.has(`spot:${spot.id}`),
+          dashboardOrder: selected.get(`spot:${spot.id}`) ?? 0,
         })),
       );
       setFavoriteStations((current) =>
         current.map((station) => ({
           ...station,
           dashboardSelected: selected.has(`station:${station.id}`),
+          dashboardOrder: selected.get(`station:${station.id}`) ?? 0,
         })),
       );
       trackEvent("dashboard_favorites_selected", {
@@ -293,10 +259,8 @@ export function MonOpenwindClient({ initialData }: Props) {
   const moduleContent: Record<DashboardModule, React.ReactNode> = {
     FAVORITES: (
       <FavoritesSection
-        spots={dashboardSpots}
-        stations={dashboardStations}
-        allSpots={favoriteSpots}
-        allStations={favoriteStations}
+        favorites={dashboardFavorites}
+        hasSavedFavorites={favoriteSpots.length + favoriteStations.length > 0}
         useKnots={preferences.useKnots}
         onSpotRemoved={(spotId) =>
           setFavoriteSpots((current) =>
@@ -308,8 +272,6 @@ export function MonOpenwindClient({ initialData }: Props) {
             current.filter((station) => station.id !== stationId),
           )
         }
-        onReorder={reorderFavorites}
-        onSelectionChange={selectDashboardFavorites}
       />
     ),
     FORECAST: (
@@ -352,7 +314,7 @@ export function MonOpenwindClient({ initialData }: Props) {
           <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_minmax(310px,0.72fr)] md:items-stretch lg:gap-10">
             <DashboardHeroIntro
               firstName={firstName}
-              favoriteCount={dashboardSpots.length + dashboardStations.length}
+              favoriteCount={dashboardFavorites.length}
               promisingCount={promisingCount}
             />
             <BestWindowHeroCard
@@ -372,6 +334,9 @@ export function MonOpenwindClient({ initialData }: Props) {
       {settingsOpen && (
         <DashboardSettings
           preferences={preferences}
+          spots={favoriteSpots}
+          stations={favoriteStations}
+          onSelectionChange={selectDashboardFavorites}
           onClose={() => setSettingsOpen(false)}
         />
       )}
@@ -579,119 +544,19 @@ function SectionHeading({
 }
 
 function FavoritesSection({
-  spots,
-  stations,
-  allSpots,
-  allStations,
+  favorites,
+  hasSavedFavorites,
   useKnots,
   onSpotRemoved,
   onStationRemoved,
-  onReorder,
-  onSelectionChange,
 }: {
-  spots: DashboardFavoriteSpot[];
-  stations: DashboardFavoriteStation[];
-  allSpots: DashboardFavoriteSpot[];
-  allStations: DashboardFavoriteStation[];
+  favorites: DashboardFavoriteItem[];
+  hasSavedFavorites: boolean;
   useKnots: boolean;
   onSpotRemoved: (spotId: string) => void;
   onStationRemoved: (stationId: string) => void;
-  onReorder: (spotIds: string[], stationIds: string[]) => Promise<boolean>;
-  onSelectionChange: (choices: DashboardFavoriteChoice[]) => Promise<boolean>;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
-  const [organizing, setOrganizing] = useState(false);
-  const [selecting, setSelecting] = useState(false);
-  const [draftSpots, setDraftSpots] = useState(spots);
-  const [draftStations, setDraftStations] = useState(stations);
-  const [draftSelection, setDraftSelection] = useState<string[]>([]);
-  const [savingOrder, setSavingOrder] = useState(false);
-  const [orderError, setOrderError] = useState(false);
-
-  const startOrganizing = () => {
-    setDraftSpots(spots);
-    setDraftStations(stations);
-    setOrderError(false);
-    setOrganizing(true);
-  };
-
-  const cancelOrganizing = () => {
-    setDraftSpots(spots);
-    setDraftStations(stations);
-    setOrderError(false);
-    setOrganizing(false);
-  };
-
-  const startSelecting = () => {
-    setDraftSelection([
-      ...allSpots
-        .filter((spot) => spot.dashboardSelected)
-        .map((spot) => `spot:${spot.id}`),
-      ...allStations
-        .filter((station) => station.dashboardSelected)
-        .map((station) => `station:${station.id}`),
-    ]);
-    setOrderError(false);
-    setSelecting(true);
-  };
-
-  const cancelSelecting = () => {
-    setOrderError(false);
-    setSelecting(false);
-  };
-
-  const toggleSelection = (key: string) => {
-    setOrderError(false);
-    setDraftSelection((current) => {
-      if (current.includes(key)) return current.filter((item) => item !== key);
-      if (current.length >= MAX_DASHBOARD_FAVORITES) return current;
-      return [...current, key];
-    });
-  };
-
-  const saveSelection = async () => {
-    const choices = draftSelection.map((key): DashboardFavoriteChoice => {
-      const [kind, ...idParts] = key.split(":");
-      return {
-        kind: kind === "station" ? "station" : "spot",
-        id: idParts.join(":"),
-      };
-    });
-    setSavingOrder(true);
-    setOrderError(false);
-    const saved = await onSelectionChange(choices);
-    setSavingOrder(false);
-    if (!saved) {
-      setOrderError(true);
-      return;
-    }
-    setSelecting(false);
-  };
-
-  const saveOrder = async () => {
-    setSavingOrder(true);
-    setOrderError(false);
-    const saved = await onReorder(
-      draftSpots.map((spot) => spot.id),
-      draftStations.map((station) => station.id),
-    );
-    setSavingOrder(false);
-    if (!saved) {
-      setOrderError(true);
-      return;
-    }
-    setOrganizing(false);
-  };
-
-  const moveSpot = (index: number, direction: -1 | 1) => {
-    setDraftSpots((current) => moveArrayItem(current, index, direction));
-  };
-  const moveStation = (index: number, direction: -1 | 1) => {
-    setDraftStations((current) => moveArrayItem(current, index, direction));
-  };
-
-  const displayedSpots = organizing ? draftSpots : spots;
-  const displayedStations = organizing ? draftStations : stations;
 
   return (
     <section aria-labelledby="favorite-spots-heading">
@@ -700,166 +565,34 @@ function FavoritesSection({
         eyebrow={t("eyebrow")}
         title={t("title")}
         description={t("description")}
-        action={
-          <div className="flex flex-wrap items-center gap-3">
-            {organizing || selecting ? (
-              <>
-                <button
-                  type="button"
-                  onClick={organizing ? cancelOrganizing : cancelSelecting}
-                  disabled={savingOrder}
-                  className="text-sm font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-50"
-                >
-                  {t("cancelOrder")}
-                </button>
-                <button
-                  type="button"
-                  onClick={organizing ? saveOrder : saveSelection}
-                  disabled={savingOrder || (selecting && draftSelection.length === 0)}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:cursor-wait disabled:opacity-60"
-                >
-                  <Check className="h-4 w-4" />
-                  {savingOrder
-                    ? t("savingOrder")
-                    : organizing
-                      ? t("saveOrder")
-                      : t("saveSelection")}
-                </button>
-              </>
-            ) : (
-              <>
-                {allSpots.length + allStations.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={startSelecting}
-                    className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white hover:bg-sky-700"
-                  >
-                    <Star className="h-4 w-4" />
-                    {t("chooseDashboard", {
-                      count:
-                        allSpots.filter((spot) => spot.dashboardSelected).length +
-                        allStations.filter(
-                          (station) => station.dashboardSelected,
-                        ).length,
-                    })}
-                  </button>
-                )}
-                {(spots.length > 1 || stations.length > 1) && (
-                  <button
-                    type="button"
-                    onClick={startOrganizing}
-                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-sky-800"
-                  >
-                    <GripVertical className="h-4 w-4" />
-                    {t("organize")}
-                  </button>
-                )}
-                <Link
-                  href="/?view=map"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
-                >
-                  {t("manage")}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </>
-            )}
-          </div>
-        }
       />
 
-      {orderError && (
-        <p className="mb-4 text-sm text-red-600" role="alert">
-          {t("orderError")}
-        </p>
-      )}
-
-      {allSpots.length === 0 && allStations.length === 0 ? (
-        <EmptyFavorites />
-      ) : selecting ? (
-        <DashboardFavoriteSelector
-          spots={allSpots}
-          stations={allStations}
-          selectedKeys={draftSelection}
-          onToggle={toggleSelection}
-        />
-      ) : spots.length === 0 && stations.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center">
-          <Star className="mx-auto h-7 w-7 text-slate-300" />
-          <p className="mt-3 text-sm font-semibold text-slate-700">
+      {favorites.length === 0 ? (
+        hasSavedFavorites ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center text-sm font-medium text-slate-500">
             {t("selectionEmpty")}
-          </p>
-          <button
-            type="button"
-            onClick={startSelecting}
-            className="mt-4 inline-flex min-h-10 items-center rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
-          >
-            {t("chooseFavorites")}
-          </button>
-        </div>
+          </div>
+        ) : (
+          <EmptyFavorites />
+        )
       ) : (
-        <div className="space-y-7">
-          {displayedSpots.length > 0 && (
-            <div>
-              <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-800">
-                <MapPin className="h-4 w-4 text-sky-600" />
-                {t("spotFavorites", { count: displayedSpots.length })}
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {displayedSpots.map((spot, index) => (
-                  <FavoriteSpotCard
-                    key={spot.id}
-                    spot={spot}
-                    useKnots={useKnots}
-                    onRemoved={() => onSpotRemoved(spot.id)}
-                    orderControls={
-                      organizing && displayedSpots.length > 1 ? (
-                        <FavoriteOrderControls
-                          name={spot.name}
-                          position={index + 1}
-                          total={displayedSpots.length}
-                          canMoveUp={index > 0}
-                          canMoveDown={index < displayedSpots.length - 1}
-                          onMoveUp={() => moveSpot(index, -1)}
-                          onMoveDown={() => moveSpot(index, 1)}
-                        />
-                      ) : null
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {displayedStations.length > 0 && (
-            <div>
-              <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-800">
-                <RadioTower className="h-4 w-4 text-sky-600" />
-                {t("stationFavorites", { count: displayedStations.length })}
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {displayedStations.map((station, index) => (
-                  <FavoriteStationCard
-                    key={station.id}
-                    station={station}
-                    useKnots={useKnots}
-                    onRemoved={() => onStationRemoved(station.id)}
-                    orderControls={
-                      organizing && displayedStations.length > 1 ? (
-                        <FavoriteOrderControls
-                          name={station.name}
-                          position={index + 1}
-                          total={displayedStations.length}
-                          canMoveUp={index > 0}
-                          canMoveDown={index < displayedStations.length - 1}
-                          onMoveUp={() => moveStation(index, -1)}
-                          onMoveDown={() => moveStation(index, 1)}
-                        />
-                      ) : null
-                    }
-                  />
-                ))}
-              </div>
-            </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {favorites.map((favorite) =>
+            favorite.kind === "spot" ? (
+              <FavoriteSpotCard
+                key={`spot:${favorite.item.id}`}
+                spot={favorite.item}
+                useKnots={useKnots}
+                onRemoved={() => onSpotRemoved(favorite.item.id)}
+              />
+            ) : (
+              <FavoriteStationCard
+                key={`station:${favorite.item.id}`}
+                station={favorite.item}
+                useKnots={useKnots}
+                onRemoved={() => onStationRemoved(favorite.item.id)}
+              />
+            ),
           )}
         </div>
       )}
@@ -872,28 +605,51 @@ function DashboardFavoriteSelector({
   stations,
   selectedKeys,
   onToggle,
+  onMove,
 }: {
   spots: DashboardFavoriteSpot[];
   stations: DashboardFavoriteStation[];
   selectedKeys: string[];
   onToggle: (key: string) => void;
+  onMove: (index: number, direction: -1 | 1) => void;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   const selected = new Set(selectedKeys);
+  const options = [
+    ...spots.map((spot) => ({
+      key: `spot:${spot.id}`,
+      icon: MapPin,
+      label: spot.name,
+      detail: spot.region ?? spot.country ?? t("locationUnknown"),
+    })),
+    ...stations.map((station) => ({
+      key: `station:${station.id}`,
+      icon: RadioTower,
+      label: station.name,
+      detail: NETWORK_LABELS[station.source] ?? station.source,
+    })),
+  ];
+  const byKey = new globalThis.Map(
+    options.map((option) => [option.key, option]),
+  );
+  const orderedOptions = [
+    ...selectedKeys
+      .map((key) => byKey.get(key))
+      .filter((option): option is (typeof options)[number] => Boolean(option)),
+    ...options.filter((option) => !selected.has(option.key)),
+  ];
 
   return (
-    <div className="rounded-3xl border border-sky-200 bg-sky-50/50 p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-base font-bold text-slate-950">
-            {t("selectorTitle")}
-          </h3>
-          <p id="dashboard-favorite-selector-help" className="mt-1 text-sm text-slate-500">
-            {t("selectorDescription")}
-          </p>
-        </div>
+    <div>
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p
+          id="dashboard-favorite-selector-help"
+          className="text-xs leading-5 text-slate-400"
+        >
+          {t("selectorDescription")}
+        </p>
         <span
-          className="rounded-full bg-white px-3 py-1.5 text-sm font-bold text-sky-700 shadow-sm ring-1 ring-sky-100"
+          className="shrink-0 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-bold text-sky-700"
           aria-live="polite"
         >
           {t("selectionCount", {
@@ -903,35 +659,28 @@ function DashboardFavoriteSelector({
         </span>
       </div>
 
-      <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        {spots.map((spot) => (
+      <div className="space-y-2">
+        {orderedOptions.map((option) => {
+          const selectedIndex = selectedKeys.indexOf(option.key);
+          return (
           <DashboardFavoriteOption
-            key={`spot:${spot.id}`}
-            icon={MapPin}
-            label={spot.name}
-            detail={spot.region ?? spot.country ?? t("locationUnknown")}
-            selected={selected.has(`spot:${spot.id}`)}
+            key={option.key}
+            icon={option.icon}
+            label={option.label}
+            detail={option.detail}
+            selected={selected.has(option.key)}
             disabled={
-              !selected.has(`spot:${spot.id}`) &&
+              !selected.has(option.key) &&
               selectedKeys.length >= MAX_DASHBOARD_FAVORITES
             }
-            onClick={() => onToggle(`spot:${spot.id}`)}
+            position={selectedIndex >= 0 ? selectedIndex : null}
+            selectedTotal={selectedKeys.length}
+            onClick={() => onToggle(option.key)}
+            onMoveUp={() => onMove(selectedIndex, -1)}
+            onMoveDown={() => onMove(selectedIndex, 1)}
           />
-        ))}
-        {stations.map((station) => (
-          <DashboardFavoriteOption
-            key={`station:${station.id}`}
-            icon={RadioTower}
-            label={station.name}
-            detail={NETWORK_LABELS[station.source] ?? station.source}
-            selected={selected.has(`station:${station.id}`)}
-            disabled={
-              !selected.has(`station:${station.id}`) &&
-              selectedKeys.length >= MAX_DASHBOARD_FAVORITES
-            }
-            onClick={() => onToggle(`station:${station.id}`)}
-          />
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -943,45 +692,80 @@ function DashboardFavoriteOption({
   detail,
   selected,
   disabled,
+  position,
+  selectedTotal,
   onClick,
+  onMoveUp,
+  onMoveDown,
 }: {
   icon: typeof MapPin;
   label: string;
   detail: string;
   selected: boolean;
   disabled: boolean;
+  position: number | null;
+  selectedTotal: number;
   onClick: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }) {
+  const t = useTranslations("MonOpenwind.favorites");
   return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      aria-describedby="dashboard-favorite-selector-help"
-      disabled={disabled}
-      onClick={onClick}
+    <div
       className={cn(
-        "flex min-h-16 items-center gap-3 rounded-2xl border p-3 text-left transition-colors",
+        "flex min-h-14 items-center gap-2 rounded-xl border p-2 transition-colors",
         selected
-          ? "border-sky-500 bg-white text-slate-950 shadow-sm"
-          : "border-slate-200 bg-white/70 text-slate-600 hover:border-sky-300",
+          ? "border-sky-300 bg-sky-50/60 text-slate-950"
+          : "border-slate-200 bg-white text-slate-600",
         disabled && "cursor-not-allowed opacity-45",
       )}
     >
-      <span
-        className={cn(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-          selected ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-500",
-        )}
+      <button
+        type="button"
+        aria-pressed={selected}
+        aria-describedby="dashboard-favorite-selector-help"
+        disabled={disabled}
+        onClick={onClick}
+        className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
       >
-        {selected ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
-      </span>
-      <span className="min-w-0 flex-1">
-        <strong className="block truncate text-sm">{label}</strong>
-        <span className="mt-0.5 block truncate text-xs text-slate-400">
-          {detail}
+        <span
+          className={cn(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+            selected ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-500",
+          )}
+        >
+          {selected ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
         </span>
-      </span>
-    </button>
+        <span className="min-w-0 flex-1">
+          <strong className="block truncate text-sm">{label}</strong>
+          <span className="mt-0.5 block truncate text-[11px] text-slate-400">
+            {detail}
+          </span>
+        </span>
+      </button>
+      {selected && position !== null && (
+        <div className="flex shrink-0">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={position === 0}
+            className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
+            aria-label={t("moveFavoriteUp", { name: label })}
+          >
+            <ChevronUp className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={position === selectedTotal - 1}
+            className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
+            aria-label={t("moveFavoriteDown", { name: label })}
+          >
+            <ChevronDown className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -989,12 +773,10 @@ function FavoriteSpotCard({
   spot,
   useKnots,
   onRemoved,
-  orderControls,
 }: {
   spot: DashboardFavoriteSpot;
   useKnots: boolean;
   onRemoved: () => void;
-  orderControls?: React.ReactNode;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   const locale = useLocale();
@@ -1065,7 +847,7 @@ function FavoriteSpotCard({
         <button
           type="button"
           onClick={remove}
-          disabled={removing || Boolean(orderControls)}
+          disabled={removing}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
           aria-label={t("remove")}
           title={t("remove")}
@@ -1075,7 +857,6 @@ function FavoriteSpotCard({
       </div>
 
       <div className="p-4">
-        {orderControls}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <Link
@@ -1169,12 +950,10 @@ function FavoriteStationCard({
   station,
   useKnots,
   onRemoved,
-  orderControls,
 }: {
   station: DashboardFavoriteStation;
   useKnots: boolean;
   onRemoved: () => void;
-  orderControls?: React.ReactNode;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   const locale = useLocale();
@@ -1224,7 +1003,7 @@ function FavoriteStationCard({
         <button
           type="button"
           onClick={remove}
-          disabled={removing || Boolean(orderControls)}
+          disabled={removing}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
           aria-label={t("removeStation")}
           title={t("removeStation")}
@@ -1234,7 +1013,6 @@ function FavoriteStationCard({
       </div>
 
       <div className="p-4">
-        {orderControls}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <Link
@@ -1319,53 +1097,6 @@ function FavoriteStationCard({
         </div>
       </div>
     </article>
-  );
-}
-
-function FavoriteOrderControls({
-  name,
-  position,
-  total,
-  canMoveUp,
-  canMoveDown,
-  onMoveUp,
-  onMoveDown,
-}: {
-  name: string;
-  position: number;
-  total: number;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-}) {
-  const t = useTranslations("MonOpenwind.favorites");
-  return (
-    <div className="mb-3 flex items-center justify-between rounded-xl border border-sky-100 bg-sky-50/60 px-3 py-2">
-      <span className="text-xs font-semibold text-sky-800" aria-live="polite">
-        {t("position", { position, total })}
-      </span>
-      <div className="flex gap-1">
-        <button
-          type="button"
-          onClick={onMoveUp}
-          disabled={!canMoveUp}
-          className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-30"
-          aria-label={t("moveFavoriteUp", { name })}
-        >
-          <ChevronUp className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={onMoveDown}
-          disabled={!canMoveDown}
-          className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-30"
-          aria-label={t("moveFavoriteDown", { name })}
-        >
-          <ChevronDown className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
   );
 }
 
@@ -1710,9 +1441,15 @@ function QuickActions() {
 
 function DashboardSettings({
   preferences,
+  spots,
+  stations,
+  onSelectionChange,
   onClose,
 }: {
   preferences: AccountPreferences;
+  spots: DashboardFavoriteSpot[];
+  stations: DashboardFavoriteStation[];
+  onSelectionChange: (choices: DashboardFavoriteChoice[]) => Promise<boolean>;
   onClose: () => void;
 }) {
   const t = useTranslations("MonOpenwind.settings");
@@ -1726,6 +1463,15 @@ function DashboardSettings({
   );
   const [layout, setLayout] = useState<DashboardModule[]>(
     preferences.dashboardLayout,
+  );
+  const [favoriteSelection, setFavoriteSelection] = useState<string[]>(() =>
+    [
+      ...spots.map((item) => ({ key: `spot:${item.id}`, item })),
+      ...stations.map((item) => ({ key: `station:${item.id}`, item })),
+    ]
+      .filter(({ item }) => item.dashboardSelected)
+      .sort((a, b) => a.item.dashboardOrder - b.item.dashboardOrder)
+      .map(({ key }) => key),
   );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -1795,17 +1541,43 @@ function DashboardSettings({
     });
   };
 
+  const toggleFavoriteSelection = (key: string) => {
+    setSaved(false);
+    setFavoriteSelection((current) => {
+      if (current.includes(key)) return current.filter((item) => item !== key);
+      if (current.length >= MAX_DASHBOARD_FAVORITES) return current;
+      return [...current, key];
+    });
+  };
+
+  const moveFavoriteSelection = (index: number, direction: -1 | 1) => {
+    setSaved(false);
+    setFavoriteSelection((current) => moveArrayItem(current, index, direction));
+  };
+
   const save = async () => {
     setSaveError(false);
     setSaving(true);
-    const result = await updatePreferences({
-      defaultView,
-      useKnots,
-      sportFilter,
-      dashboardLayout: layout,
+    const choices = favoriteSelection.map((key): DashboardFavoriteChoice => {
+      const [kind, ...idParts] = key.split(":");
+      return {
+        kind: kind === "station" ? "station" : "spot",
+        id: idParts.join(":"),
+      };
     });
+    const [result, favoritesSaved] = await Promise.all([
+      updatePreferences({
+        defaultView,
+        useKnots,
+        sportFilter,
+        dashboardLayout: layout,
+      }),
+      spots.length + stations.length > 0
+        ? onSelectionChange(choices)
+        : Promise.resolve(true),
+    ]);
     setSaving(false);
-    if (!result) {
+    if (!result || !favoritesSaved) {
       setSaveError(true);
       return;
     }
@@ -1867,6 +1639,30 @@ function DashboardSettings({
         </div>
 
         <div className="flex-1 space-y-8 overflow-y-auto px-5 py-6 sm:px-6">
+          <SettingsGroup
+            icon={Star}
+            title={t("favoritesTitle")}
+            description={t("favoritesDescription")}
+          >
+            {spots.length + stations.length > 0 ? (
+              <DashboardFavoriteSelector
+                spots={spots}
+                stations={stations}
+                selectedKeys={favoriteSelection}
+                onToggle={toggleFavoriteSelection}
+                onMove={moveFavoriteSelection}
+              />
+            ) : (
+              <Link
+                href="/?view=map"
+                className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-sky-700 hover:bg-slate-50"
+              >
+                <Map className="h-4 w-4" />
+                {t("chooseOnMap")}
+              </Link>
+            )}
+          </SettingsGroup>
+
           <SettingsGroup
             icon={Sparkles}
             title={t("startTitle")}
@@ -2037,7 +1833,11 @@ function DashboardSettings({
           <button
             type="button"
             onClick={save}
-            disabled={saving}
+            disabled={
+              saving ||
+              (spots.length + stations.length > 0 &&
+                favoriteSelection.length === 0)
+            }
             className={cn(
               "inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-colors disabled:cursor-wait disabled:opacity-60",
               saved ? "bg-emerald-600" : "bg-slate-950 hover:bg-sky-700",
