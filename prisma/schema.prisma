@@ -113,37 +113,41 @@ model UserPreference {
 }
 
 model Favorite {
-  id        String   @id @default(cuid())
-  userId    String
-  spotId    String
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  spot      Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  userId            String
+  spotId            String
+  sortOrder         Int      @default(0)
+  dashboardSelected Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  spot              Spot     @relation(fields: [spotId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, spotId])
   @@index([userId])
   @@index([userId, sortOrder])
+  @@index([userId, dashboardSelected, sortOrder])
 }
 
 /// A saved external wind station. Metadata is snapshotted so favorites stay
 /// identifiable while a provider or the shared station cache is unavailable.
 model StationFavorite {
-  id          String   @id @default(cuid())
-  userId      String
-  stationId   String
-  stationName String
-  source      String
-  latitude    Float
-  longitude   Float
-  altitudeM   Float
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  userId            String
+  stationId         String
+  stationName       String
+  source            String
+  latitude          Float
+  longitude         Float
+  altitudeM         Float
+  sortOrder         Int      @default(0)
+  dashboardSelected Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, stationId])
   @@index([userId])
   @@index([userId, sortOrder])
+  @@index([userId, dashboardSelected, sortOrder])
 }
 
 model SpotImage {

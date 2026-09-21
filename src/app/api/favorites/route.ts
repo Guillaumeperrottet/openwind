@@ -10,14 +10,45 @@ const toggleFavoriteSchema = z.union([
   z.object({ stationId: z.string().trim().min(1) }).strict(),
 ]);
 
+const dashboardFavoriteSchema = z.discriminatedUnion("kind", [
+  z
+    .object({ kind: z.literal("spot"), id: z.string().trim().min(1) })
+    .strict(),
+  z
+    .object({ kind: z.literal("station"), id: z.string().trim().min(1) })
+    .strict(),
+]);
+
 const reorderFavoritesSchema = z
   .object({
     spotIds: z.array(z.string().trim().min(1)).max(50).optional(),
     stationIds: z.array(z.string().trim().min(1)).max(50).optional(),
+    dashboardFavorites: z.array(dashboardFavoriteSchema).max(3).optional(),
   })
   .strict()
-  .refine((value) => value.spotIds || value.stationIds, {
-    message: "Un ordre de favoris est requis",
+  .refine(
+    (value) =>
+      value.spotIds !== undefined ||
+      value.stationIds !== undefined ||
+      value.dashboardFavorites !== undefined,
+    {
+      message: "Une modification de favoris est requise",
+    },
+  )
+  .refine(
+    (value) =>
+      !value.dashboardFavorites ||
+      new Set(
+        value.dashboardFavorites.map((favorite) =>
+          `${favorite.kind}:${favorite.id}`,
+        ),
+      ).size === value.dashboardFavorites.length,
+    {
+      message: "Un favori de tableau de bord ne peut apparaître qu’une fois",
+    },
+  )
+  .refine((value) => value.dashboardFavorites?.length !== 0, {
+    message: "Sélectionne au moins un favori pour le tableau de bord",
   })
   .refine(
     (value) =>
@@ -112,13 +143,27 @@ export async function POST(request: NextRequest) {
     }
 
     await ensureDatabaseUser(user);
+    const [selectedSpotCount, selectedStationCount] = await Promise.all([
+      prisma.favorite.count({
+        where: { userId: user.id, dashboardSelected: true },
+      }),
+      prisma.stationFavorite.count({
+        where: { userId: user.id, dashboardSelected: true },
+      }),
+    ]);
+    const dashboardSelected = selectedSpotCount + selectedStationCount < 3;
     await prisma.$transaction([
       prisma.favorite.updateMany({
         where: { userId: user.id },
         data: { sortOrder: { increment: 1 } },
       }),
       prisma.favorite.create({
-        data: { userId: user.id, spotId, sortOrder: 0 },
+        data: {
+          userId: user.id,
+          spotId,
+          sortOrder: 0,
+          dashboardSelected,
+        },
       }),
     ]);
 
@@ -144,6 +189,15 @@ export async function POST(request: NextRequest) {
   }
 
   await ensureDatabaseUser(user);
+  const [selectedSpotCount, selectedStationCount] = await Promise.all([
+    prisma.favorite.count({
+      where: { userId: user.id, dashboardSelected: true },
+    }),
+    prisma.stationFavorite.count({
+      where: { userId: user.id, dashboardSelected: true },
+    }),
+  ]);
+  const dashboardSelected = selectedSpotCount + selectedStationCount < 3;
 
   await prisma.$transaction([
     prisma.stationFavorite.updateMany({
@@ -160,6 +214,7 @@ export async function POST(request: NextRequest) {
         longitude: station.lng,
         altitudeM: station.altitudeM,
         sortOrder: 0,
+        dashboardSelected,
       },
     }),
   ]);
@@ -190,16 +245,34 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
+  const dashboardSpotIds =
+    parsed.data.dashboardFavorites
+      ?.filter((favorite) => favorite.kind === "spot")
+      .map((favorite) => favorite.id) ?? [];
+  const dashboardStationIds =
+    parsed.data.dashboardFavorites
+      ?.filter((favorite) => favorite.kind === "station")
+      .map((favorite) => favorite.id) ?? [];
+  const requestedSpotIds = [
+    ...new Set([...(parsed.data.spotIds ?? []), ...dashboardSpotIds]),
+  ];
+  const requestedStationIds = [
+    ...new Set([...(parsed.data.stationIds ?? []), ...dashboardStationIds]),
+  ];
+
   const [ownedSpots, ownedStations] = await Promise.all([
-    parsed.data.spotIds
+    requestedSpotIds.length > 0
       ? prisma.favorite.findMany({
-          where: { userId: user.id },
+          where: { userId: user.id, spotId: { in: requestedSpotIds } },
           select: { spotId: true },
         })
       : [],
-    parsed.data.stationIds
+    requestedStationIds.length > 0
       ? prisma.stationFavorite.findMany({
-          where: { userId: user.id },
+          where: {
+            userId: user.id,
+            stationId: { in: requestedStationIds },
+          },
           select: { stationId: true },
         })
       : [],
@@ -210,8 +283,8 @@ export async function PATCH(request: NextRequest) {
     ownedStations.map((favorite) => favorite.stationId),
   );
   const ownsEveryFavorite =
-    (parsed.data.spotIds?.every((id) => ownedSpotIds.has(id)) ?? true) &&
-    (parsed.data.stationIds?.every((id) => ownedStationIds.has(id)) ?? true);
+    requestedSpotIds.every((id) => ownedSpotIds.has(id)) &&
+    requestedStationIds.every((id) => ownedStationIds.has(id));
 
   if (!ownsEveryFavorite) {
     return NextResponse.json(
@@ -233,6 +306,32 @@ export async function PATCH(request: NextRequest) {
         data: { sortOrder },
       }),
     ),
+    ...(parsed.data.dashboardFavorites
+      ? [
+          prisma.favorite.updateMany({
+            where: { userId: user.id },
+            data: { dashboardSelected: false },
+          }),
+          prisma.stationFavorite.updateMany({
+            where: { userId: user.id },
+            data: { dashboardSelected: false },
+          }),
+          ...dashboardSpotIds.map((spotId) =>
+            prisma.favorite.update({
+              where: { userId_spotId: { userId: user.id, spotId } },
+              data: { dashboardSelected: true },
+            }),
+          ),
+          ...dashboardStationIds.map((stationId) =>
+            prisma.stationFavorite.update({
+              where: {
+                userId_stationId: { userId: user.id, stationId },
+              },
+              data: { dashboardSelected: true },
+            }),
+          ),
+        ]
+      : []),
   ];
 
   if (updates.length > 0) await prisma.$transaction(updates);

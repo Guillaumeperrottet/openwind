@@ -5,12 +5,14 @@ const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   favoriteFindMany: vi.fn(),
   favoriteFindUnique: vi.fn(),
+  favoriteCount: vi.fn(),
   favoriteDelete: vi.fn(),
   favoriteCreate: vi.fn(),
   favoriteUpdate: vi.fn(),
   favoriteUpdateMany: vi.fn(),
   stationFavoriteFindMany: vi.fn(),
   stationFavoriteFindUnique: vi.fn(),
+  stationFavoriteCount: vi.fn(),
   stationFavoriteDelete: vi.fn(),
   stationFavoriteCreate: vi.fn(),
   stationFavoriteUpdate: vi.fn(),
@@ -31,6 +33,7 @@ vi.mock("@/lib/prisma", () => ({
     favorite: {
       findMany: mocks.favoriteFindMany,
       findUnique: mocks.favoriteFindUnique,
+      count: mocks.favoriteCount,
       delete: mocks.favoriteDelete,
       create: mocks.favoriteCreate,
       update: mocks.favoriteUpdate,
@@ -39,6 +42,7 @@ vi.mock("@/lib/prisma", () => ({
     stationFavorite: {
       findMany: mocks.stationFavoriteFindMany,
       findUnique: mocks.stationFavoriteFindUnique,
+      count: mocks.stationFavoriteCount,
       delete: mocks.stationFavoriteDelete,
       create: mocks.stationFavoriteCreate,
       update: mocks.stationFavoriteUpdate,
@@ -84,6 +88,8 @@ beforeEach(() => {
   mocks.stationFavoriteFindMany.mockResolvedValue([]);
   mocks.favoriteFindUnique.mockResolvedValue(null);
   mocks.stationFavoriteFindUnique.mockResolvedValue(null);
+  mocks.favoriteCount.mockResolvedValue(0);
+  mocks.stationFavoriteCount.mockResolvedValue(0);
   mocks.transaction.mockResolvedValue([]);
 });
 
@@ -119,7 +125,12 @@ describe("favorites API", () => {
       kind: "spot",
     });
     expect(mocks.favoriteCreate).toHaveBeenCalledWith({
-      data: { userId: "user-1", spotId: "spot-1", sortOrder: 0 },
+      data: {
+        userId: "user-1",
+        spotId: "spot-1",
+        sortOrder: 0,
+        dashboardSelected: true,
+      },
     });
     expect(mocks.stationFavoriteCreate).not.toHaveBeenCalled();
   });
@@ -173,6 +184,7 @@ describe("favorites API", () => {
         longitude: 7.017,
         altitudeM: 1970,
         sortOrder: 0,
+        dashboardSelected: true,
       },
     });
   });
@@ -210,6 +222,58 @@ describe("favorites API", () => {
     );
 
     expect(response.status).toBe(403);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("persists up to three dashboard favorites across both kinds", async () => {
+    mocks.favoriteFindMany.mockResolvedValue([
+      { spotId: "spot-1" },
+      { spotId: "spot-2" },
+    ]);
+    mocks.stationFavoriteFindMany.mockResolvedValue([{ stationId: "VEV" }]);
+
+    const response = await PATCH(
+      patchRequest({
+        dashboardFavorites: [
+          { kind: "spot", id: "spot-1" },
+          { kind: "station", id: "VEV" },
+          { kind: "spot", id: "spot-2" },
+        ],
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.favoriteUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      data: { dashboardSelected: false },
+    });
+    expect(mocks.stationFavoriteUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      data: { dashboardSelected: false },
+    });
+    expect(mocks.favoriteUpdate).toHaveBeenCalledWith({
+      where: { userId_spotId: { userId: "user-1", spotId: "spot-1" } },
+      data: { dashboardSelected: true },
+    });
+    expect(mocks.stationFavoriteUpdate).toHaveBeenCalledWith({
+      where: { userId_stationId: { userId: "user-1", stationId: "VEV" } },
+      data: { dashboardSelected: true },
+    });
+  });
+
+  it("rejects more than three dashboard favorites", async () => {
+    const response = await PATCH(
+      patchRequest({
+        dashboardFavorites: [
+          { kind: "spot", id: "spot-1" },
+          { kind: "spot", id: "spot-2" },
+          { kind: "spot", id: "spot-3" },
+          { kind: "station", id: "VEV" },
+        ],
+      }),
+    );
+
+    expect(response.status).toBe(400);
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });

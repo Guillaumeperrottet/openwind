@@ -58,6 +58,17 @@ interface Props {
   initialData: MonOpenwindData;
 }
 
+type DashboardFavoriteChoice = {
+  kind: "spot" | "station";
+  id: string;
+};
+
+const MAX_DASHBOARD_FAVORITES = 3;
+
+function favoriteChoiceKey(choice: DashboardFavoriteChoice) {
+  return `${choice.kind}:${choice.id}`;
+}
+
 function reorderByIds<T extends { id: string }>(items: T[], orderedIds: string[]) {
   const byId = new globalThis.Map(items.map((item) => [item.id, item]));
   const ordered = orderedIds
@@ -162,13 +173,22 @@ export function MonOpenwindClient({ initialData }: Props) {
     [favoriteSpots, preferences.sportFilter],
   );
 
-  const visibleSpotIds = useMemo(
-    () => new Set(visibleSpots.map((spot) => spot.id)),
+  const dashboardSpots = useMemo(
+    () => visibleSpots.filter((spot) => spot.dashboardSelected),
     [visibleSpots],
   );
-  const favoriteStationIds = useMemo(
-    () => new Set(favoriteStations.map((station) => station.id)),
+  const dashboardStations = useMemo(
+    () => favoriteStations.filter((station) => station.dashboardSelected),
     [favoriteStations],
+  );
+
+  const visibleSpotIds = useMemo(
+    () => new Set(dashboardSpots.map((spot) => spot.id)),
+    [dashboardSpots],
+  );
+  const favoriteStationIds = useMemo(
+    () => new Set(dashboardStations.map((station) => station.id)),
+    [dashboardStations],
   );
 
   const articles = initialData.articles.filter(
@@ -182,14 +202,14 @@ export function MonOpenwindClient({ initialData }: Props) {
 
   const windows = useMemo(
     () =>
-      visibleSpots
+      dashboardSpots
         .flatMap((spot) =>
           spot.forecastDays.map((day) => ({ spot, day })),
         )
         .filter(({ day }) => day.score >= 35)
         .sort((a, b) => b.day.score - a.day.score)
         .slice(0, 6),
-    [visibleSpots],
+    [dashboardSpots],
   );
 
   const promisingCount = windows.filter(({ day }) => day.score >= 60).length;
@@ -232,11 +252,51 @@ export function MonOpenwindClient({ initialData }: Props) {
     }
   };
 
+  const selectDashboardFavorites = async (
+    choices: DashboardFavoriteChoice[],
+  ): Promise<boolean> => {
+    try {
+      const response = await fetch("/api/favorites", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dashboardFavorites: choices }),
+      });
+      if (!response.ok) return false;
+
+      const selected = new Set(choices.map(favoriteChoiceKey));
+      setFavoriteSpots((current) =>
+        current.map((spot) => ({
+          ...spot,
+          dashboardSelected: selected.has(`spot:${spot.id}`),
+        })),
+      );
+      setFavoriteStations((current) =>
+        current.map((station) => ({
+          ...station,
+          dashboardSelected: selected.has(`station:${station.id}`),
+        })),
+      );
+      trackEvent("dashboard_favorites_selected", {
+        favorite_count: choices.length,
+        favorite_spot_count: choices.filter((choice) => choice.kind === "spot")
+          .length,
+        favorite_station_count: choices.filter(
+          (choice) => choice.kind === "station",
+        ).length,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const moduleContent: Record<DashboardModule, React.ReactNode> = {
     FAVORITES: (
       <FavoritesSection
-        spots={visibleSpots}
-        stations={favoriteStations}
+        spots={dashboardSpots}
+        stations={dashboardStations}
+        allSpots={favoriteSpots}
+        allStations={favoriteStations}
         useKnots={preferences.useKnots}
         onSpotRemoved={(spotId) =>
           setFavoriteSpots((current) =>
@@ -249,13 +309,14 @@ export function MonOpenwindClient({ initialData }: Props) {
           )
         }
         onReorder={reorderFavorites}
+        onSelectionChange={selectDashboardFavorites}
       />
     ),
     FORECAST: (
       <ForecastSection windows={windows} useKnots={preferences.useKnots} />
     ),
     ARTICLES: <ArticlesSection articles={articles} />,
-    COMMUNITY: <CommunitySection items={community} spots={visibleSpots} />,
+    COMMUNITY: <CommunitySection items={community} spots={dashboardSpots} />,
     QUICK_ACTIONS: <QuickActions />,
   };
 
@@ -291,7 +352,7 @@ export function MonOpenwindClient({ initialData }: Props) {
           <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_minmax(310px,0.72fr)] md:items-stretch lg:gap-10">
             <DashboardHeroIntro
               firstName={firstName}
-              favoriteCount={visibleSpots.length + favoriteStations.length}
+              favoriteCount={dashboardSpots.length + dashboardStations.length}
               promisingCount={promisingCount}
             />
             <BestWindowHeroCard
@@ -520,22 +581,30 @@ function SectionHeading({
 function FavoritesSection({
   spots,
   stations,
+  allSpots,
+  allStations,
   useKnots,
   onSpotRemoved,
   onStationRemoved,
   onReorder,
+  onSelectionChange,
 }: {
   spots: DashboardFavoriteSpot[];
   stations: DashboardFavoriteStation[];
+  allSpots: DashboardFavoriteSpot[];
+  allStations: DashboardFavoriteStation[];
   useKnots: boolean;
   onSpotRemoved: (spotId: string) => void;
   onStationRemoved: (stationId: string) => void;
   onReorder: (spotIds: string[], stationIds: string[]) => Promise<boolean>;
+  onSelectionChange: (choices: DashboardFavoriteChoice[]) => Promise<boolean>;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   const [organizing, setOrganizing] = useState(false);
+  const [selecting, setSelecting] = useState(false);
   const [draftSpots, setDraftSpots] = useState(spots);
   const [draftStations, setDraftStations] = useState(stations);
+  const [draftSelection, setDraftSelection] = useState<string[]>([]);
   const [savingOrder, setSavingOrder] = useState(false);
   const [orderError, setOrderError] = useState(false);
 
@@ -551,6 +620,52 @@ function FavoritesSection({
     setDraftStations(stations);
     setOrderError(false);
     setOrganizing(false);
+  };
+
+  const startSelecting = () => {
+    setDraftSelection([
+      ...allSpots
+        .filter((spot) => spot.dashboardSelected)
+        .map((spot) => `spot:${spot.id}`),
+      ...allStations
+        .filter((station) => station.dashboardSelected)
+        .map((station) => `station:${station.id}`),
+    ]);
+    setOrderError(false);
+    setSelecting(true);
+  };
+
+  const cancelSelecting = () => {
+    setOrderError(false);
+    setSelecting(false);
+  };
+
+  const toggleSelection = (key: string) => {
+    setOrderError(false);
+    setDraftSelection((current) => {
+      if (current.includes(key)) return current.filter((item) => item !== key);
+      if (current.length >= MAX_DASHBOARD_FAVORITES) return current;
+      return [...current, key];
+    });
+  };
+
+  const saveSelection = async () => {
+    const choices = draftSelection.map((key): DashboardFavoriteChoice => {
+      const [kind, ...idParts] = key.split(":");
+      return {
+        kind: kind === "station" ? "station" : "spot",
+        id: idParts.join(":"),
+      };
+    });
+    setSavingOrder(true);
+    setOrderError(false);
+    const saved = await onSelectionChange(choices);
+    setSavingOrder(false);
+    if (!saved) {
+      setOrderError(true);
+      return;
+    }
+    setSelecting(false);
   };
 
   const saveOrder = async () => {
@@ -587,11 +702,11 @@ function FavoritesSection({
         description={t("description")}
         action={
           <div className="flex flex-wrap items-center gap-3">
-            {organizing ? (
+            {organizing || selecting ? (
               <>
                 <button
                   type="button"
-                  onClick={cancelOrganizing}
+                  onClick={organizing ? cancelOrganizing : cancelSelecting}
                   disabled={savingOrder}
                   className="text-sm font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-50"
                 >
@@ -599,16 +714,36 @@ function FavoritesSection({
                 </button>
                 <button
                   type="button"
-                  onClick={saveOrder}
-                  disabled={savingOrder}
+                  onClick={organizing ? saveOrder : saveSelection}
+                  disabled={savingOrder || (selecting && draftSelection.length === 0)}
                   className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:cursor-wait disabled:opacity-60"
                 >
                   <Check className="h-4 w-4" />
-                  {savingOrder ? t("savingOrder") : t("saveOrder")}
+                  {savingOrder
+                    ? t("savingOrder")
+                    : organizing
+                      ? t("saveOrder")
+                      : t("saveSelection")}
                 </button>
               </>
             ) : (
               <>
+                {allSpots.length + allStations.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={startSelecting}
+                    className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-slate-950 px-3.5 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+                  >
+                    <Star className="h-4 w-4" />
+                    {t("chooseDashboard", {
+                      count:
+                        allSpots.filter((spot) => spot.dashboardSelected).length +
+                        allStations.filter(
+                          (station) => station.dashboardSelected,
+                        ).length,
+                    })}
+                  </button>
+                )}
                 {(spots.length > 1 || stations.length > 1) && (
                   <button
                     type="button"
@@ -638,8 +773,29 @@ function FavoritesSection({
         </p>
       )}
 
-      {spots.length === 0 && stations.length === 0 ? (
+      {allSpots.length === 0 && allStations.length === 0 ? (
         <EmptyFavorites />
+      ) : selecting ? (
+        <DashboardFavoriteSelector
+          spots={allSpots}
+          stations={allStations}
+          selectedKeys={draftSelection}
+          onToggle={toggleSelection}
+        />
+      ) : spots.length === 0 && stations.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center">
+          <Star className="mx-auto h-7 w-7 text-slate-300" />
+          <p className="mt-3 text-sm font-semibold text-slate-700">
+            {t("selectionEmpty")}
+          </p>
+          <button
+            type="button"
+            onClick={startSelecting}
+            className="mt-4 inline-flex min-h-10 items-center rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+          >
+            {t("chooseFavorites")}
+          </button>
+        </div>
       ) : (
         <div className="space-y-7">
           {displayedSpots.length > 0 && (
@@ -708,6 +864,124 @@ function FavoritesSection({
         </div>
       )}
     </section>
+  );
+}
+
+function DashboardFavoriteSelector({
+  spots,
+  stations,
+  selectedKeys,
+  onToggle,
+}: {
+  spots: DashboardFavoriteSpot[];
+  stations: DashboardFavoriteStation[];
+  selectedKeys: string[];
+  onToggle: (key: string) => void;
+}) {
+  const t = useTranslations("MonOpenwind.favorites");
+  const selected = new Set(selectedKeys);
+
+  return (
+    <div className="rounded-3xl border border-sky-200 bg-sky-50/50 p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-bold text-slate-950">
+            {t("selectorTitle")}
+          </h3>
+          <p id="dashboard-favorite-selector-help" className="mt-1 text-sm text-slate-500">
+            {t("selectorDescription")}
+          </p>
+        </div>
+        <span
+          className="rounded-full bg-white px-3 py-1.5 text-sm font-bold text-sky-700 shadow-sm ring-1 ring-sky-100"
+          aria-live="polite"
+        >
+          {t("selectionCount", {
+            count: selectedKeys.length,
+            max: MAX_DASHBOARD_FAVORITES,
+          })}
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {spots.map((spot) => (
+          <DashboardFavoriteOption
+            key={`spot:${spot.id}`}
+            icon={MapPin}
+            label={spot.name}
+            detail={spot.region ?? spot.country ?? t("locationUnknown")}
+            selected={selected.has(`spot:${spot.id}`)}
+            disabled={
+              !selected.has(`spot:${spot.id}`) &&
+              selectedKeys.length >= MAX_DASHBOARD_FAVORITES
+            }
+            onClick={() => onToggle(`spot:${spot.id}`)}
+          />
+        ))}
+        {stations.map((station) => (
+          <DashboardFavoriteOption
+            key={`station:${station.id}`}
+            icon={RadioTower}
+            label={station.name}
+            detail={NETWORK_LABELS[station.source] ?? station.source}
+            selected={selected.has(`station:${station.id}`)}
+            disabled={
+              !selected.has(`station:${station.id}`) &&
+              selectedKeys.length >= MAX_DASHBOARD_FAVORITES
+            }
+            onClick={() => onToggle(`station:${station.id}`)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DashboardFavoriteOption({
+  icon: Icon,
+  label,
+  detail,
+  selected,
+  disabled,
+  onClick,
+}: {
+  icon: typeof MapPin;
+  label: string;
+  detail: string;
+  selected: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-describedby="dashboard-favorite-selector-help"
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "flex min-h-16 items-center gap-3 rounded-2xl border p-3 text-left transition-colors",
+        selected
+          ? "border-sky-500 bg-white text-slate-950 shadow-sm"
+          : "border-slate-200 bg-white/70 text-slate-600 hover:border-sky-300",
+        disabled && "cursor-not-allowed opacity-45",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+          selected ? "bg-sky-600 text-white" : "bg-slate-100 text-slate-500",
+        )}
+      >
+        {selected ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <strong className="block truncate text-sm">{label}</strong>
+        <span className="mt-0.5 block truncate text-xs text-slate-400">
+          {detail}
+        </span>
+      </span>
+    </button>
   );
 }
 

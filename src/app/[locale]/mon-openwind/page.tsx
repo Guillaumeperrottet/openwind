@@ -57,7 +57,11 @@ export default async function MonOpenwindPage() {
       prisma.userPreference.findUnique({ where: { userId: user.id } }),
       prisma.favorite.findMany({
         where: { userId: user.id },
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+        orderBy: [
+          { dashboardSelected: "desc" },
+          { sortOrder: "asc" },
+          { createdAt: "desc" },
+        ],
         take: 16,
         include: {
           spot: {
@@ -69,7 +73,11 @@ export default async function MonOpenwindPage() {
       }),
       prisma.stationFavorite.findMany({
         where: { userId: user.id },
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+        orderBy: [
+          { dashboardSelected: "desc" },
+          { sortOrder: "asc" },
+          { createdAt: "desc" },
+        ],
         take: 16,
       }),
       getStationsFromCache(),
@@ -146,6 +154,7 @@ export default async function MonOpenwindPage() {
 
       return {
         id: spot.id,
+        dashboardSelected: favorite.dashboardSelected,
         name: spot.name,
         region: spot.region,
         country: spot.country,
@@ -179,6 +188,7 @@ export default async function MonOpenwindPage() {
       const station = stationsById.get(favorite.stationId);
       return {
         id: favorite.stationId,
+        dashboardSelected: favorite.dashboardSelected,
         name: station?.name ?? favorite.stationName,
         source: (station?.source ?? favorite.source) as WindStation["source"],
         latitude: station?.lat ?? favorite.latitude,
