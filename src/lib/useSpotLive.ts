@@ -22,14 +22,14 @@ const fetcher = async (url: string): Promise<WindLive> => {
 export function useSpotLive(
   spotId: string | null,
   overrideStation?: string | null,
-): { data: WindLive | null; isLoading: boolean } {
+): { data: WindLive | null; isLoading: boolean; error: Error | null } {
   const key = spotId
     ? overrideStation
       ? `/api/spots/${spotId}/live?stationId=${encodeURIComponent(overrideStation)}`
       : `/api/spots/${spotId}/live`
     : null;
 
-  const { data, isLoading } = useSWR<WindLive>(key, fetcher, {
+  const { data, isLoading, error } = useSWR<WindLive, Error>(key, fetcher, {
     refreshInterval: 60 * 1000,
     revalidateOnFocus: true,
     dedupingInterval: 30 * 1000,
@@ -37,5 +37,5 @@ export function useSpotLive(
     keepPreviousData: true,
   });
 
-  return { data: data ?? null, isLoading };
+  return { data: data ?? null, isLoading, error: error ?? null };
 }

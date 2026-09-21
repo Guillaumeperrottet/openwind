@@ -57,7 +57,7 @@ export default async function MonOpenwindPage() {
       prisma.userPreference.findUnique({ where: { userId: user.id } }),
       prisma.favorite.findMany({
         where: { userId: user.id },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
         take: 16,
         include: {
           spot: {
@@ -69,7 +69,7 @@ export default async function MonOpenwindPage() {
       }),
       prisma.stationFavorite.findMany({
         where: { userId: user.id },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
         take: 16,
       }),
       getStationsFromCache(),

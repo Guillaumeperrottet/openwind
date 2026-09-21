@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -52,9 +52,84 @@ import type {
   MonOpenwindData,
 } from "@/components/dashboard/types";
 import { NETWORK_LABELS } from "@/lib/stationConstants";
+import type { WindLive } from "@/types";
 
 interface Props {
   initialData: MonOpenwindData;
+}
+
+function reorderByIds<T extends { id: string }>(items: T[], orderedIds: string[]) {
+  const byId = new globalThis.Map(items.map((item) => [item.id, item]));
+  const ordered = orderedIds
+    .map((id) => byId.get(id))
+    .filter((item): item is T => Boolean(item));
+  const orderedSet = new Set(orderedIds);
+  return [...ordered, ...items.filter((item) => !orderedSet.has(item.id))];
+}
+
+function moveArrayItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
+  const target = index + direction;
+  if (target < 0 || target >= items.length) return items;
+  const next = [...items];
+  [next[index], next[target]] = [next[target], next[index]];
+  return next;
+}
+
+function mergeSubsetOrder(allIds: string[], orderedSubset: string[]) {
+  const subset = new Set(orderedSubset);
+  let subsetIndex = 0;
+  return allIds.map((id) =>
+    subset.has(id) ? orderedSubset[subsetIndex++] : id,
+  );
+}
+
+const COMPASS_DEGREES: Record<string, number> = {
+  N: 0,
+  NNE: 22.5,
+  NE: 45,
+  ENE: 67.5,
+  E: 90,
+  ESE: 112.5,
+  SE: 135,
+  SSE: 157.5,
+  S: 180,
+  SSW: 202.5,
+  SW: 225,
+  WSW: 247.5,
+  W: 270,
+  WNW: 292.5,
+  NW: 315,
+  NNW: 337.5,
+};
+
+function isDirectionCompatible(direction: number, bestDirections: string[]) {
+  if (bestDirections.length === 0) return true;
+  return bestDirections.some((label) => {
+    const expected = COMPASS_DEGREES[label.toUpperCase()];
+    if (expected === undefined) return false;
+    const difference = Math.abs(direction - expected);
+    return Math.min(difference, 360 - difference) <= 45;
+  });
+}
+
+function isLiveWindCompatible(spot: DashboardFavoriteSpot, live: WindLive) {
+  const sourceUsable = live.source === "openmeteo" || live.isFresh;
+  const speedCompatible =
+    spot.sportType === "PARAGLIDE"
+      ? live.windSpeedKmh <= 15
+      : live.windSpeedKmh >= spot.minWindKmh &&
+        live.windSpeedKmh <= spot.maxWindKmh;
+  const gustsCompatible =
+    spot.sportType === "PARAGLIDE"
+      ? live.gustsKmh <= 25
+      : live.gustsKmh / Math.max(live.windSpeedKmh, 1) <= 1.45;
+  const directionCompatible =
+    spot.sportType === "PARAGLIDE" ||
+    isDirectionCompatible(live.windDirection, spot.bestWindDirections);
+
+  return (
+    sourceUsable && speedCompatible && gustsCompatible && directionCompatible
+  );
 }
 
 export function MonOpenwindClient({ initialData }: Props) {
@@ -121,6 +196,42 @@ export function MonOpenwindClient({ initialData }: Props) {
   const firstName = initialData.userName?.trim().split(/\s+/)[0] ?? null;
   const bestWindow = windows[0] ?? null;
 
+  const reorderFavorites = async (
+    spotIds: string[],
+    stationIds: string[],
+  ): Promise<boolean> => {
+    const fullSpotOrder = mergeSubsetOrder(
+      favoriteSpots.map((spot) => spot.id),
+      spotIds,
+    );
+    const fullStationOrder = mergeSubsetOrder(
+      favoriteStations.map((station) => station.id),
+      stationIds,
+    );
+    try {
+      const response = await fetch("/api/favorites", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          spotIds: fullSpotOrder,
+          stationIds: fullStationOrder,
+        }),
+      });
+      if (!response.ok) return false;
+      setFavoriteSpots((current) => reorderByIds(current, fullSpotOrder));
+      setFavoriteStations((current) =>
+        reorderByIds(current, fullStationOrder),
+      );
+      trackEvent("favorites_reordered", {
+        favorite_spot_count: spotIds.length,
+        favorite_station_count: stationIds.length,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const moduleContent: Record<DashboardModule, React.ReactNode> = {
     FAVORITES: (
       <FavoritesSection
@@ -137,6 +248,7 @@ export function MonOpenwindClient({ initialData }: Props) {
             current.filter((station) => station.id !== stationId),
           )
         }
+        onReorder={reorderFavorites}
       />
     ),
     FORECAST: (
@@ -370,23 +482,28 @@ function HeroWeatherValue({ label, value }: { label: string; value: string }) {
 }
 
 function SectionHeading({
+  id,
   eyebrow,
   title,
   description,
   action,
 }: {
+  id: string;
   eyebrow: string;
   title: string;
   description?: string;
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
+    <div className="mb-5 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div>
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-600">
           {eyebrow}
         </p>
-        <h2 className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
+        <h2
+          id={id}
+          className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl"
+        >
           {title}
         </h2>
         {description && (
@@ -406,67 +523,183 @@ function FavoritesSection({
   useKnots,
   onSpotRemoved,
   onStationRemoved,
+  onReorder,
 }: {
   spots: DashboardFavoriteSpot[];
   stations: DashboardFavoriteStation[];
   useKnots: boolean;
   onSpotRemoved: (spotId: string) => void;
   onStationRemoved: (stationId: string) => void;
+  onReorder: (spotIds: string[], stationIds: string[]) => Promise<boolean>;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
+  const [organizing, setOrganizing] = useState(false);
+  const [draftSpots, setDraftSpots] = useState(spots);
+  const [draftStations, setDraftStations] = useState(stations);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState(false);
+
+  const startOrganizing = () => {
+    setDraftSpots(spots);
+    setDraftStations(stations);
+    setOrderError(false);
+    setOrganizing(true);
+  };
+
+  const cancelOrganizing = () => {
+    setDraftSpots(spots);
+    setDraftStations(stations);
+    setOrderError(false);
+    setOrganizing(false);
+  };
+
+  const saveOrder = async () => {
+    setSavingOrder(true);
+    setOrderError(false);
+    const saved = await onReorder(
+      draftSpots.map((spot) => spot.id),
+      draftStations.map((station) => station.id),
+    );
+    setSavingOrder(false);
+    if (!saved) {
+      setOrderError(true);
+      return;
+    }
+    setOrganizing(false);
+  };
+
+  const moveSpot = (index: number, direction: -1 | 1) => {
+    setDraftSpots((current) => moveArrayItem(current, index, direction));
+  };
+  const moveStation = (index: number, direction: -1 | 1) => {
+    setDraftStations((current) => moveArrayItem(current, index, direction));
+  };
+
+  const displayedSpots = organizing ? draftSpots : spots;
+  const displayedStations = organizing ? draftStations : stations;
+
   return (
     <section aria-labelledby="favorite-spots-heading">
       <SectionHeading
+        id="favorite-spots-heading"
         eyebrow={t("eyebrow")}
         title={t("title")}
         description={t("description")}
         action={
-          <Link
-            href="/?view=map"
-            className="hidden items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900 sm:inline-flex"
-          >
-            {t("manage")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            {organizing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={cancelOrganizing}
+                  disabled={savingOrder}
+                  className="text-sm font-semibold text-slate-500 hover:text-slate-800 disabled:opacity-50"
+                >
+                  {t("cancelOrder")}
+                </button>
+                <button
+                  type="button"
+                  onClick={saveOrder}
+                  disabled={savingOrder}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 disabled:cursor-wait disabled:opacity-60"
+                >
+                  <Check className="h-4 w-4" />
+                  {savingOrder ? t("savingOrder") : t("saveOrder")}
+                </button>
+              </>
+            ) : (
+              <>
+                {(spots.length > 1 || stations.length > 1) && (
+                  <button
+                    type="button"
+                    onClick={startOrganizing}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-sky-800"
+                  >
+                    <GripVertical className="h-4 w-4" />
+                    {t("organize")}
+                  </button>
+                )}
+                <Link
+                  href="/?view=map"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
+                >
+                  {t("manage")}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
+          </div>
         }
       />
+
+      {orderError && (
+        <p className="mb-4 text-sm text-red-600" role="alert">
+          {t("orderError")}
+        </p>
+      )}
 
       {spots.length === 0 && stations.length === 0 ? (
         <EmptyFavorites />
       ) : (
         <div className="space-y-7">
-          {spots.length > 0 && (
+          {displayedSpots.length > 0 && (
             <div>
               <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-800">
                 <MapPin className="h-4 w-4 text-sky-600" />
-                {t("spotFavorites", { count: spots.length })}
+                {t("spotFavorites", { count: displayedSpots.length })}
               </h3>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {spots.map((spot) => (
+                {displayedSpots.map((spot, index) => (
                   <FavoriteSpotCard
                     key={spot.id}
                     spot={spot}
                     useKnots={useKnots}
                     onRemoved={() => onSpotRemoved(spot.id)}
+                    orderControls={
+                      organizing && displayedSpots.length > 1 ? (
+                        <FavoriteOrderControls
+                          name={spot.name}
+                          position={index + 1}
+                          total={displayedSpots.length}
+                          canMoveUp={index > 0}
+                          canMoveDown={index < displayedSpots.length - 1}
+                          onMoveUp={() => moveSpot(index, -1)}
+                          onMoveDown={() => moveSpot(index, 1)}
+                        />
+                      ) : null
+                    }
                   />
                 ))}
               </div>
             </div>
           )}
 
-          {stations.length > 0 && (
+          {displayedStations.length > 0 && (
             <div>
               <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-800">
                 <RadioTower className="h-4 w-4 text-sky-600" />
-                {t("stationFavorites", { count: stations.length })}
+                {t("stationFavorites", { count: displayedStations.length })}
               </h3>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {stations.map((station) => (
+                {displayedStations.map((station, index) => (
                   <FavoriteStationCard
                     key={station.id}
                     station={station}
                     useKnots={useKnots}
                     onRemoved={() => onStationRemoved(station.id)}
+                    orderControls={
+                      organizing && displayedStations.length > 1 ? (
+                        <FavoriteOrderControls
+                          name={station.name}
+                          position={index + 1}
+                          total={displayedStations.length}
+                          canMoveUp={index > 0}
+                          canMoveDown={index < displayedStations.length - 1}
+                          onMoveUp={() => moveStation(index, -1)}
+                          onMoveDown={() => moveStation(index, 1)}
+                        />
+                      ) : null
+                    }
                   />
                 ))}
               </div>
@@ -482,14 +715,17 @@ function FavoriteSpotCard({
   spot,
   useKnots,
   onRemoved,
+  orderControls,
 }: {
   spot: DashboardFavoriteSpot;
   useKnots: boolean;
   onRemoved: () => void;
+  orderControls?: React.ReactNode;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
+  const locale = useLocale();
   const { toggleFavorite } = useFavContext();
-  const { data: live, isLoading } = useSpotLive(spot.id);
+  const { data: live, isLoading, error } = useSpotLive(spot.id);
   const [removing, setRemoving] = useState(false);
   const speed = live
     ? useKnots
@@ -502,12 +738,28 @@ function FavoriteSpotCard({
       : Math.round(live.gustsKmh)
     : null;
   const unit = useKnots ? "kts" : "km/h";
-  const suitable = live
-    ? spot.sportType === "PARAGLIDE"
-      ? live.windSpeedKmh <= 15
-      : live.windSpeedKmh >= spot.minWindKmh &&
-        live.windSpeedKmh <= spot.maxWindKmh
-    : false;
+  const windCompatible = live ? isLiveWindCompatible(spot, live) : false;
+  const measuredAt = live
+    ? new Intl.DateTimeFormat(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Europe/Zurich",
+      }).format(new Date(live.updatedAt))
+    : null;
+  const liveSource = live?.network
+    ? NETWORK_LABELS[live.network] ?? live.network
+    : t("stationSource");
+  const status = live
+    ? live.source === "openmeteo"
+      ? t("estimatedAt", { time: measuredAt ?? "—" })
+      : live.isFresh
+        ? t("liveAt", { source: liveSource, time: measuredAt ?? "—" })
+        : t("staleAt", { source: liveSource, time: measuredAt ?? "—" })
+    : error
+      ? t("unavailable")
+      : isLoading
+        ? t("loading")
+        : t("unavailable");
 
   const remove = async () => {
     if (removing) return;
@@ -539,7 +791,7 @@ function FavoriteSpotCard({
         <button
           type="button"
           onClick={remove}
-          disabled={removing}
+          disabled={removing || Boolean(orderControls)}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
           aria-label={t("remove")}
           title={t("remove")}
@@ -549,6 +801,7 @@ function FavoriteSpotCard({
       </div>
 
       <div className="p-4">
+        {orderControls}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <Link
@@ -567,12 +820,16 @@ function FavoriteSpotCard({
             <span
               className={cn(
                 "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
-                suitable
+                windCompatible
                   ? "bg-emerald-50 text-emerald-700"
-                  : "bg-slate-100 text-slate-500",
+                  : "bg-amber-50 text-amber-700",
               )}
+              title={t("windStatusHelp")}
+              aria-label={`${
+                windCompatible ? t("windCompatible") : t("windCaution")
+              }. ${t("windStatusHelp")}`}
             >
-              {suitable ? t("favorable") : t("watch")}
+              {windCompatible ? t("windCompatible") : t("windCaution")}
             </span>
           )}
         </div>
@@ -612,8 +869,14 @@ function FavoriteSpotCard({
         </div>
 
         <div className="mt-3 flex items-center justify-between text-xs">
-          <span className="text-slate-400">
-            {live?.isFresh ? t("live") : t("estimated")}
+          <span
+            className={cn(
+              "truncate text-slate-400",
+              error && !live && "text-red-600",
+            )}
+            aria-live="polite"
+          >
+            {status}
           </span>
           <Link
             href={`/spots/${spot.id}`}
@@ -632,10 +895,12 @@ function FavoriteStationCard({
   station,
   useKnots,
   onRemoved,
+  orderControls,
 }: {
   station: DashboardFavoriteStation;
   useKnots: boolean;
   onRemoved: () => void;
+  orderControls?: React.ReactNode;
 }) {
   const t = useTranslations("MonOpenwind.favorites");
   const locale = useLocale();
@@ -685,7 +950,7 @@ function FavoriteStationCard({
         <button
           type="button"
           onClick={remove}
-          disabled={removing}
+          disabled={removing || Boolean(orderControls)}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
           aria-label={t("removeStation")}
           title={t("removeStation")}
@@ -695,6 +960,7 @@ function FavoriteStationCard({
       </div>
 
       <div className="p-4">
+        {orderControls}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <Link
@@ -714,14 +980,14 @@ function FavoriteStationCard({
           <span
             className={cn(
               "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold",
-              live?.isFresh
+              live?.source === "station" && live.isFresh
                 ? "bg-emerald-50 text-emerald-700"
                 : windSpeedKmh !== null
                   ? "bg-amber-50 text-amber-700"
                   : "bg-slate-100 text-slate-500",
             )}
           >
-            {live?.isFresh
+            {live?.source === "station" && live.isFresh
               ? t("stationLive")
               : windSpeedKmh !== null
                 ? t("stationCached")
@@ -782,6 +1048,53 @@ function FavoriteStationCard({
   );
 }
 
+function FavoriteOrderControls({
+  name,
+  position,
+  total,
+  canMoveUp,
+  canMoveDown,
+  onMoveUp,
+  onMoveDown,
+}: {
+  name: string;
+  position: number;
+  total: number;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}) {
+  const t = useTranslations("MonOpenwind.favorites");
+  return (
+    <div className="mb-3 flex items-center justify-between rounded-xl border border-sky-100 bg-sky-50/60 px-3 py-2">
+      <span className="text-xs font-semibold text-sky-800" aria-live="polite">
+        {t("position", { position, total })}
+      </span>
+      <div className="flex gap-1">
+        <button
+          type="button"
+          onClick={onMoveUp}
+          disabled={!canMoveUp}
+          className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-30"
+          aria-label={t("moveFavoriteUp", { name })}
+        >
+          <ChevronUp className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={onMoveDown}
+          disabled={!canMoveDown}
+          className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm hover:text-sky-700 disabled:cursor-not-allowed disabled:opacity-30"
+          aria-label={t("moveFavoriteDown", { name })}
+        >
+          <ChevronDown className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function EmptyFavorites() {
   const t = useTranslations("MonOpenwind.favorites");
   return (
@@ -815,13 +1128,14 @@ function ForecastSection({
   return (
     <section aria-labelledby="forecast-windows-heading">
       <SectionHeading
+        id="forecast-windows-heading"
         eyebrow={t("eyebrow")}
         title={t("title")}
         description={t("description")}
         action={
           <Link
             href="/plan"
-            className="hidden items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900 sm:inline-flex"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
           >
             {t("openPlanner")}
             <ArrowRight className="h-4 w-4" />
@@ -930,13 +1244,14 @@ function ArticlesSection({ articles }: { articles: DashboardArticle[] }) {
   return (
     <section aria-labelledby="favorite-articles-heading">
       <SectionHeading
+        id="favorite-articles-heading"
         eyebrow={t("eyebrow")}
         title={t("title")}
         description={t("description")}
         action={
           <Link
             href="/carnet"
-            className="hidden items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900 sm:inline-flex"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
           >
             {t("all")}
             <ArrowRight className="h-4 w-4" />
@@ -1005,13 +1320,14 @@ function CommunitySection({
   return (
     <section aria-labelledby="local-community-heading">
       <SectionHeading
+        id="local-community-heading"
         eyebrow={t("eyebrow")}
         title={t("title")}
         description={t("description")}
         action={
           <Link
             href="/forum"
-            className="hidden items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900 sm:inline-flex"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
           >
             {t("forum")}
             <ArrowRight className="h-4 w-4" />
@@ -1090,7 +1406,11 @@ function QuickActions() {
 
   return (
     <section aria-labelledby="quick-actions-heading">
-      <SectionHeading eyebrow={t("eyebrow")} title={t("title")} />
+      <SectionHeading
+        id="quick-actions-heading"
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+      />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {actions.map(({ href, icon: Icon, label, detail }) => (
           <Link
@@ -1136,17 +1456,44 @@ function DashboardSettings({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+
+      const focusable = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
+    const focusFrame = requestAnimationFrame(() => {
+      panelRef.current?.querySelector<HTMLElement>("button")?.focus();
+    });
     return () => {
+      cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus();
     };
   }, [onClose]);
 
@@ -1219,7 +1566,10 @@ function DashboardSettings({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
+      <div
+        ref={panelRef}
+        className="flex h-full w-full max-w-md flex-col bg-white shadow-2xl"
+      >
         <div className="flex items-start justify-between border-b border-slate-100 px-5 py-5 sm:px-6">
           <div>
             <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-600">
@@ -1256,6 +1606,7 @@ function DashboardSettings({
                 <button
                   key={value}
                   type="button"
+                  aria-pressed={defaultView === value}
                   onClick={() => {
                     setSaved(false);
                     setDefaultView(value);
@@ -1299,6 +1650,7 @@ function DashboardSettings({
                     <GripVertical className="h-4 w-4 shrink-0 text-slate-300" />
                     <button
                       type="button"
+                      aria-pressed={active}
                       onClick={() => toggleModule(module)}
                       className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm font-medium"
                     >
@@ -1353,6 +1705,7 @@ function DashboardSettings({
                   <button
                     key={value}
                     type="button"
+                    aria-pressed={sportFilter === value}
                     onClick={() => {
                       setSaved(false);
                       setSportFilter(value);
@@ -1473,6 +1826,7 @@ function UnitButton({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={cn(
         "relative rounded-xl border p-3 text-left",

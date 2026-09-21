@@ -10,6 +10,23 @@ const toggleFavoriteSchema = z.union([
   z.object({ stationId: z.string().trim().min(1) }).strict(),
 ]);
 
+const reorderFavoritesSchema = z
+  .object({
+    spotIds: z.array(z.string().trim().min(1)).max(50).optional(),
+    stationIds: z.array(z.string().trim().min(1)).max(50).optional(),
+  })
+  .strict()
+  .refine((value) => value.spotIds || value.stationIds, {
+    message: "Un ordre de favoris est requis",
+  })
+  .refine(
+    (value) =>
+      (!value.spotIds || new Set(value.spotIds).size === value.spotIds.length) &&
+      (!value.stationIds ||
+        new Set(value.stationIds).size === value.stationIds.length),
+    { message: "Un favori ne peut apparaître qu’une fois" },
+  );
+
 async function ensureDatabaseUser(user: User) {
   await prisma.user.upsert({
     where: { id: user.id },
@@ -41,12 +58,12 @@ export async function GET() {
     prisma.favorite.findMany({
       where: { userId: user.id },
       select: { spotId: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     }),
     prisma.stationFavorite.findMany({
       where: { userId: user.id },
       select: { stationId: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     }),
   ]);
 
@@ -95,9 +112,15 @@ export async function POST(request: NextRequest) {
     }
 
     await ensureDatabaseUser(user);
-    await prisma.favorite.create({
-      data: { userId: user.id, spotId },
-    });
+    await prisma.$transaction([
+      prisma.favorite.updateMany({
+        where: { userId: user.id },
+        data: { sortOrder: { increment: 1 } },
+      }),
+      prisma.favorite.create({
+        data: { userId: user.id, spotId, sortOrder: 0 },
+      }),
+    ]);
 
     return NextResponse.json({ favorited: true, kind: "spot" });
   }
@@ -122,17 +145,97 @@ export async function POST(request: NextRequest) {
 
   await ensureDatabaseUser(user);
 
-  await prisma.stationFavorite.create({
-    data: {
-      userId: user.id,
-      stationId: station.id,
-      stationName: station.name,
-      source: station.source,
-      latitude: station.lat,
-      longitude: station.lng,
-      altitudeM: station.altitudeM,
-    },
-  });
+  await prisma.$transaction([
+    prisma.stationFavorite.updateMany({
+      where: { userId: user.id },
+      data: { sortOrder: { increment: 1 } },
+    }),
+    prisma.stationFavorite.create({
+      data: {
+        userId: user.id,
+        stationId: station.id,
+        stationName: station.name,
+        source: station.source,
+        latitude: station.lat,
+        longitude: station.lng,
+        altitudeM: station.altitudeM,
+        sortOrder: 0,
+      },
+    }),
+  ]);
 
   return NextResponse.json({ favorited: true, kind: "station" });
+}
+
+/**
+ * PATCH /api/favorites — persist the visible order from Mon Openwind.
+ * Every id is checked against the authenticated user's own favorites.
+ */
+export async function PATCH(request: NextRequest) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  const raw = await request.json().catch(() => null);
+  const parsed = reorderFavoritesSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Ordre invalide" },
+      { status: 400 },
+    );
+  }
+
+  const [ownedSpots, ownedStations] = await Promise.all([
+    parsed.data.spotIds
+      ? prisma.favorite.findMany({
+          where: { userId: user.id },
+          select: { spotId: true },
+        })
+      : [],
+    parsed.data.stationIds
+      ? prisma.stationFavorite.findMany({
+          where: { userId: user.id },
+          select: { stationId: true },
+        })
+      : [],
+  ]);
+
+  const ownedSpotIds = new Set(ownedSpots.map((favorite) => favorite.spotId));
+  const ownedStationIds = new Set(
+    ownedStations.map((favorite) => favorite.stationId),
+  );
+  const ownsEveryFavorite =
+    (parsed.data.spotIds?.every((id) => ownedSpotIds.has(id)) ?? true) &&
+    (parsed.data.stationIds?.every((id) => ownedStationIds.has(id)) ?? true);
+
+  if (!ownsEveryFavorite) {
+    return NextResponse.json(
+      { error: "Un favori n’appartient pas à ce compte" },
+      { status: 403 },
+    );
+  }
+
+  const updates = [
+    ...(parsed.data.spotIds ?? []).map((spotId, sortOrder) =>
+      prisma.favorite.update({
+        where: { userId_spotId: { userId: user.id, spotId } },
+        data: { sortOrder },
+      }),
+    ),
+    ...(parsed.data.stationIds ?? []).map((stationId, sortOrder) =>
+      prisma.stationFavorite.update({
+        where: { userId_stationId: { userId: user.id, stationId } },
+        data: { sortOrder },
+      }),
+    ),
+  ];
+
+  if (updates.length > 0) await prisma.$transaction(updates);
+
+  return NextResponse.json({ reordered: true });
 }

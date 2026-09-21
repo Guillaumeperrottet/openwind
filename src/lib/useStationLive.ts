@@ -20,17 +20,18 @@ const fetcher = async (url: string): Promise<WindLive> => {
 export function useStationLive(stationId: string | null): {
   data: WindLive | null;
   isLoading: boolean;
+  error: Error | null;
 } {
   const key = stationId
     ? `/api/stations/${encodeURIComponent(stationId)}/live`
     : null;
 
-  const { data, isLoading } = useSWR<WindLive>(key, fetcher, {
+  const { data, isLoading, error } = useSWR<WindLive, Error>(key, fetcher, {
     refreshInterval: 60 * 1000,
     revalidateOnFocus: true,
     dedupingInterval: 30 * 1000,
     keepPreviousData: true,
   });
 
-  return { data: data ?? null, isLoading };
+  return { data: data ?? null, isLoading, error: error ?? null };
 }

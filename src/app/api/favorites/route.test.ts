@@ -7,12 +7,17 @@ const mocks = vi.hoisted(() => ({
   favoriteFindUnique: vi.fn(),
   favoriteDelete: vi.fn(),
   favoriteCreate: vi.fn(),
+  favoriteUpdate: vi.fn(),
+  favoriteUpdateMany: vi.fn(),
   stationFavoriteFindMany: vi.fn(),
   stationFavoriteFindUnique: vi.fn(),
   stationFavoriteDelete: vi.fn(),
   stationFavoriteCreate: vi.fn(),
+  stationFavoriteUpdate: vi.fn(),
+  stationFavoriteUpdateMany: vi.fn(),
   userUpsert: vi.fn(),
   getStationFromCache: vi.fn(),
+  transaction: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -28,14 +33,19 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: mocks.favoriteFindUnique,
       delete: mocks.favoriteDelete,
       create: mocks.favoriteCreate,
+      update: mocks.favoriteUpdate,
+      updateMany: mocks.favoriteUpdateMany,
     },
     stationFavorite: {
       findMany: mocks.stationFavoriteFindMany,
       findUnique: mocks.stationFavoriteFindUnique,
       delete: mocks.stationFavoriteDelete,
       create: mocks.stationFavoriteCreate,
+      update: mocks.stationFavoriteUpdate,
+      updateMany: mocks.stationFavoriteUpdateMany,
     },
     user: { upsert: mocks.userUpsert },
+    $transaction: mocks.transaction,
   },
 }));
 
@@ -43,7 +53,7 @@ vi.mock("@/lib/stationData", () => ({
   getStationFromCache: mocks.getStationFromCache,
 }));
 
-import { GET, POST } from "./route";
+import { GET, PATCH, POST } from "./route";
 
 const user = {
   id: "user-1",
@@ -59,6 +69,14 @@ function postRequest(body: unknown): NextRequest {
   }) as NextRequest;
 }
 
+function patchRequest(body: unknown): NextRequest {
+  return new Request("http://localhost/api/favorites", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }) as NextRequest;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.getUser.mockResolvedValue({ data: { user } });
@@ -66,6 +84,7 @@ beforeEach(() => {
   mocks.stationFavoriteFindMany.mockResolvedValue([]);
   mocks.favoriteFindUnique.mockResolvedValue(null);
   mocks.stationFavoriteFindUnique.mockResolvedValue(null);
+  mocks.transaction.mockResolvedValue([]);
 });
 
 describe("favorites API", () => {
@@ -100,7 +119,7 @@ describe("favorites API", () => {
       kind: "spot",
     });
     expect(mocks.favoriteCreate).toHaveBeenCalledWith({
-      data: { userId: "user-1", spotId: "spot-1" },
+      data: { userId: "user-1", spotId: "spot-1", sortOrder: 0 },
     });
     expect(mocks.stationFavoriteCreate).not.toHaveBeenCalled();
   });
@@ -153,7 +172,44 @@ describe("favorites API", () => {
         latitude: 46.548,
         longitude: 7.017,
         altitudeM: 1970,
+        sortOrder: 0,
       },
     });
+  });
+
+  it("persists a user-owned favorite order", async () => {
+    mocks.favoriteFindMany.mockResolvedValue([
+      { spotId: "spot-1" },
+      { spotId: "spot-2" },
+    ]);
+    mocks.stationFavoriteFindMany.mockResolvedValue([
+      { stationId: "VEV" },
+    ]);
+
+    const response = await PATCH(
+      patchRequest({ spotIds: ["spot-2", "spot-1"], stationIds: ["VEV"] }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ reordered: true });
+    expect(mocks.favoriteUpdate).toHaveBeenNthCalledWith(1, {
+      where: { userId_spotId: { userId: "user-1", spotId: "spot-2" } },
+      data: { sortOrder: 0 },
+    });
+    expect(mocks.favoriteUpdate).toHaveBeenNthCalledWith(2, {
+      where: { userId_spotId: { userId: "user-1", spotId: "spot-1" } },
+      data: { sortOrder: 1 },
+    });
+  });
+
+  it("rejects a favorite order containing another user's id", async () => {
+    mocks.favoriteFindMany.mockResolvedValue([{ spotId: "spot-1" }]);
+
+    const response = await PATCH(
+      patchRequest({ spotIds: ["spot-1", "spot-other"] }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });
