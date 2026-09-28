@@ -113,7 +113,7 @@ const LAKES: LakeSearchEntry[] = [
     aliases: ["Gruyère"],
     region: "Fribourg",
     status: "restricted",
-    detail: "Autorisé avec zones d’exclusion",
+    detail: "Autorisé hors de deux zones d’exclusion",
     target: "lac-de-la-gruyere-autorise-avec-restrictions",
     center: [7.1, 46.66],
     zoom: 10,
@@ -565,7 +565,8 @@ export function SwissLakesSearch() {
           </p>
         </div>
         <p className="mt-3 text-[10px] leading-4 text-slate-400">
-          Contours cartographiques © contributeurs OpenStreetMap, ODbL.
+          Contours des lacs © contributeurs OpenStreetMap, ODbL. Zones de la
+          Gruyère : Source : État de Fribourg.
         </p>
       </div>
     </section>
