@@ -6,7 +6,9 @@ import {
   AlertTriangle,
   ArrowDown,
   BookOpen,
+  CalendarCheck,
   ExternalLink,
+  Layers3,
   MapPin,
   Search,
   X,
@@ -35,6 +37,7 @@ interface LakeSearchEntry {
   region: string;
   status: LakeStatus;
   detail: string;
+  zoneDetail: string;
   target: string;
   sourceUrl?: string;
   center: [number, number];
@@ -46,9 +49,21 @@ const OFFICIAL_SOURCES = {
     "https://www.vd.ch/actualites/decisions-du-conseil-detat/seance-du-conseil-detat/decision/id/e8e3c0ec-d593-3766-84e0-c75c876d0365",
   fribourg:
     "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+  geneva:
+    "https://www.ge.ch/naviguer-geneve/paddle-windsurf-wingfoil-parawing-kitesurf",
+  neuchatel:
+    "https://rsn.ne.ch/DATA/program/books/rsne/htm/766.393.htm",
+  bern:
+    "https://www.police.be.ch/content/dam/police/dokumente/police-be-ch/d/seepolizei/kite-surfen_de_fr.pdf",
   zurich:
     "https://www.zh.ch/de/sicherheit-justiz/sicher-unterwegs/sicherheit-auf-gewaessern.html",
+  saintGallen:
+    "https://www.sg.ch/verkehr/schifffahrt/bewilligungen---verfuegungen----verkehrsbeschraenkungen/kitesurfen.html",
+  lucerne:
+    "https://strassenverkehrsamt.lu.ch/schifffahrt/Kitesurfen",
 } as const;
+
+const LAST_VERIFIED = "28 septembre 2026";
 
 const LAKES: LakeSearchEntry[] = [
   {
@@ -58,7 +73,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Vaud · Genève",
     status: "restricted",
     detail: "Autorisé avec restrictions selon la rive",
+    zoneDetail:
+      "Ports, débarcadères, réserves et secteur genevois Vengeron–Tour-Carrée.",
     target: "lac-leman-autorise-avec-restrictions",
+    sourceUrl: OFFICIAL_SOURCES.geneva,
     center: [6.5, 46.45],
     zoom: 8.2,
   },
@@ -69,7 +87,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "NE · VD · FR · BE",
     status: "restricted",
     detail: "Autorisé avec zones protégées et règles locales",
+    zoneDetail:
+      "Grande Cariçaie, baies protégées, ports, débarcadères et accès locaux.",
     target: "lac-de-neuchatel-autorise-avec-restrictions",
+    sourceUrl: OFFICIAL_SOURCES.neuchatel,
     center: [6.86, 46.92],
     zoom: 8.5,
   },
@@ -79,7 +100,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Vaud",
     status: "restricted",
     detail: "Autorisé dans les limites fixées par le canton",
+    zoneDetail:
+      "Zones protégées, ports, débarcadères et restrictions communales.",
     target: "lac-de-joux-autorise-avec-restrictions",
+    sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [6.27, 46.64],
     zoom: 10.2,
   },
@@ -90,6 +114,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Vaud",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-du-vernex-rossiniere-interdit",
     sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [7.0713, 46.4638],
@@ -101,6 +126,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Vaud",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
     sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [6.3241, 46.6724],
@@ -112,6 +138,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Vaud",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
     sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [6.7732, 46.5132],
@@ -124,6 +151,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Vaud",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
     sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [7.0504, 46.4222],
@@ -136,6 +164,8 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg",
     status: "restricted",
     detail: "Autorisé hors de deux zones d’exclusion",
+    zoneDetail:
+      "Secteur nord Pont-la-Ville–Rossens et secteur sud Broc–Botterens.",
     target: "lac-de-la-gruyere-autorise-avec-restrictions",
     sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.1, 46.66],
@@ -148,7 +178,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg · Vaud",
     status: "restricted",
     detail: "Autorisé côté fribourgeois, interdit côté vaudois",
+    zoneDetail:
+      "Frontière cantonale, réserves ornithologiques et zones signalées.",
     target: "lac-de-morat-autorise-avec-restrictions",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.08, 46.93],
     zoom: 10,
   },
@@ -159,7 +192,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg",
     status: "restricted",
     detail: "Autorisé sur une partie seulement",
+    zoneDetail:
+      "Seule la portion ouverte dans l’annexe cantonale est navigable.",
     target: "lac-de-schiffenen-autorise-sur-une-partie-seulement",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.16, 46.99],
     zoom: 10.5,
   },
@@ -170,6 +206,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
     sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.2818, 46.6651],
@@ -182,6 +219,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
     sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.1468, 46.6154],
@@ -194,6 +232,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
     sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.0507, 46.4971],
@@ -205,6 +244,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
     sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [6.9, 46.5439],
@@ -217,6 +257,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Fribourg",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
     sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.0403, 46.7959],
@@ -229,7 +270,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Berne",
     status: "restricted",
     detail: "Autorisé hors des zones interdites",
+    zoneDetail:
+      "Baie de Bienne, réserves de l’île Saint-Pierre et delta de Hagneck notamment.",
     target: "lacs-de-bienne-de-thoune-et-de-brienz-autorises-avec-zones-interdites",
+    sourceUrl: OFFICIAL_SOURCES.bern,
     center: [7.17, 47.1],
     zoom: 9.5,
   },
@@ -240,7 +284,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Berne",
     status: "restricted",
     detail: "Autorisé hors des zones interdites",
+    zoneDetail:
+      "Bassins supérieur et inférieur : plusieurs secteurs fermés.",
     target: "lacs-de-bienne-de-thoune-et-de-brienz-autorises-avec-zones-interdites",
+    sourceUrl: OFFICIAL_SOURCES.bern,
     center: [7.72, 46.69],
     zoom: 9.5,
   },
@@ -251,7 +298,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Berne",
     status: "restricted",
     detail: "Autorisé hors des zones interdites",
+    zoneDetail:
+      "Limites ouvertes et fermées indiquées sur la carte cantonale.",
     target: "lacs-de-bienne-de-thoune-et-de-brienz-autorises-avec-zones-interdites",
+    sourceUrl: OFFICIAL_SOURCES.bern,
     center: [7.97, 46.73],
     zoom: 9.6,
   },
@@ -262,7 +312,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "ZH · SG · SZ",
     status: "restricted",
     detail: "Le statut change selon le canton",
+    zoneDetail:
+      "Bassin inférieur, ports et îles côté Zurich ; rive saint-galloise interdite.",
     target: "lac-de-zurich-statut-different-selon-le-canton",
+    sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.65, 47.25],
     zoom: 9,
   },
@@ -273,7 +326,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Saint-Gall · Glaris",
     status: "restricted",
     detail: "Autorisé avec plusieurs zones fermées",
+    zoneDetail:
+      "Baie de Weesen, ports, bains, Gosten Ost et partie de la baie de Walenstadt.",
     target: "walensee-autorise-avec-restrictions",
+    sourceUrl: OFFICIAL_SOURCES.saintGallen,
     center: [9.2, 47.12],
     zoom: 9.5,
   },
@@ -284,7 +340,9 @@ const LAKES: LakeSearchEntry[] = [
     region: "Lucerne",
     status: "restricted",
     detail: "Seul le secteur sud est ouvert",
+    zoneDetail: "Secteur situé au sud de la ligne Nottwil–Eich.",
     target: "lac-de-sempach-secteur-sud-autorise",
+    sourceUrl: OFFICIAL_SOURCES.lucerne,
     center: [8.15, 47.14],
     zoom: 10.2,
   },
@@ -295,7 +353,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Suisse centrale",
     status: "restricted",
     detail: "Autorisation partielle documentée",
+    zoneDetail:
+      "Partie lucernoise hors des baies délimitées de Lucerne et de Horw.",
     target: "lac-des-quatre-cantons-autorisation-partielle-documentee",
+    sourceUrl: OFFICIAL_SOURCES.lucerne,
     center: [8.47, 46.99],
     zoom: 8.8,
   },
@@ -306,7 +367,9 @@ const LAKES: LakeSearchEntry[] = [
     region: "Zoug · Lucerne · Schwytz",
     status: "restricted",
     detail: "Autorisation partielle documentée",
+    zoneDetail: "Partie lucernoise hors de la zone riveraine intérieure.",
     target: "lac-de-zoug-autorisation-partielle-documentee",
+    sourceUrl: OFFICIAL_SOURCES.lucerne,
     center: [8.48, 47.12],
     zoom: 9.7,
   },
@@ -316,6 +379,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Zurich",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
     sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.68, 47.366],
@@ -328,6 +392,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Zurich",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
     sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.781, 47.352],
@@ -339,6 +404,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Zurich",
     status: "forbidden",
     detail: "Kitesurf interdit",
+    zoneDetail: "Tout le plan d’eau.",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
     sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.503, 47.27],
@@ -351,7 +417,10 @@ const LAKES: LakeSearchEntry[] = [
     region: "Saint-Gall et autres rives",
     status: "restricted",
     detail: "Interdit côté saint-gallois, autres rives à vérifier",
+    zoneDetail:
+      "Rive saint-galloise interdite ; réglementation distincte sur les autres rives.",
     target: "lac-de-constance-rive-saint-galloise-interdit",
+    sourceUrl: OFFICIAL_SOURCES.saintGallen,
     center: [9.4, 47.6],
     zoom: 8.4,
   },
@@ -362,6 +431,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Tessin",
     status: "unverified",
     detail: "Pas encore classé dans cette édition",
+    zoneDetail: "Aucune zone officielle intégrée pour le moment.",
     target: "lacs-non-classes-dans-cette-edition-a-verifier",
     center: [8.75, 46.16],
     zoom: 8.6,
@@ -373,6 +443,7 @@ const LAKES: LakeSearchEntry[] = [
     region: "Tessin",
     status: "unverified",
     detail: "Pas encore classé dans cette édition",
+    zoneDetail: "Aucune zone officielle intégrée pour le moment.",
     target: "lacs-non-classes-dans-cette-edition-a-verifier",
     center: [8.97, 45.98],
     zoom: 9.6,
@@ -558,34 +629,68 @@ export function SwissLakesSearch() {
         </div>
 
         {selectedLake && (
-          <div className="mt-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <strong className="text-sm text-slate-950">
-                  {selectedLake.name}
-                </strong>
-                <span
-                  className={cn(
-                    "rounded-full px-2 py-1 text-[10px] font-bold ring-1",
-                    STATUS[selectedLake.status].badge,
-                  )}
-                >
-                  {STATUS[selectedLake.status].label}
-                </span>
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="font-serif text-lg font-semibold text-slate-950">
+                    {selectedLake.name}
+                  </h4>
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-1 text-[10px] font-bold ring-1",
+                      STATUS[selectedLake.status].badge,
+                    )}
+                  >
+                    {STATUS[selectedLake.status].label}
+                  </span>
+                </div>
+                <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-500">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {selectedLake.region}
+                </p>
               </div>
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                {selectedLake.region} · {selectedLake.detail}
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+                <CalendarCheck className="h-3.5 w-3.5" />
+                {selectedLake.status === "unverified"
+                  ? "Vérification à compléter"
+                  : `Vérifié le ${LAST_VERIFIED}`}
               </p>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold">
+
+            <div className="grid gap-5 px-4 py-5 sm:grid-cols-2 sm:px-5">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  Règle essentielle
+                </p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-900">
+                  {selectedLake.detail}
+                </p>
+              </div>
+              <div>
+                <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  <Layers3 className="h-3.5 w-3.5" />
+                  Zones concernées
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {selectedLake.zoneDetail}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-slate-100 bg-slate-50/70 px-4 py-2.5 text-xs font-semibold sm:px-5">
               <a
                 href={`#${selectedLake.target}`}
                 className="inline-flex min-h-9 items-center gap-1.5 text-sky-700 transition hover:text-sky-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700"
               >
                 <BookOpen className="h-3.5 w-3.5" />
-                Voir la règle
+                Lire tous les détails
               </a>
-              {selectedLake.sourceUrl && (
+              {selectedLake.sourceUrl ? (
                 <a
                   href={selectedLake.sourceUrl}
                   target="_blank"
@@ -595,6 +700,10 @@ export function SwissLakesSearch() {
                   Source officielle
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>
+              ) : (
+                <span className="inline-flex min-h-9 items-center text-slate-400">
+                  Source officielle à intégrer
+                </span>
               )}
             </div>
           </div>
