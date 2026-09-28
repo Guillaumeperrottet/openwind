@@ -4,7 +4,13 @@ import forbiddenZones from "@/components/carnet/swiss-lakes-forbidden.geojson.js
 describe("Swiss lakes regulation map data", () => {
   it("contains the documented forbidden lakes and partial zones", () => {
     expect(
-      forbiddenZones.features.map((feature) => feature.properties.lakeId),
+      [
+        ...new Set(
+          forbiddenZones.features.map(
+            (feature) => feature.properties.lakeId,
+          ),
+        ),
+      ],
     ).toEqual([
       "vernex",
       "greifensee",
@@ -19,7 +25,7 @@ describe("Swiss lakes regulation map data", () => {
       "bret",
       "hongrin",
       "gruyere",
-      "gruyere",
+      "zurich",
     ]);
   });
 
@@ -36,6 +42,35 @@ describe("Swiss lakes regulation map data", () => {
     expect(
       gruyereZones.every(
         (feature) => feature.properties.source === "État de Fribourg",
+      ),
+    ).toBe(true);
+  });
+
+  it("contains the official mapped exclusions for the Lac de Zurich", () => {
+    const zurichZones = forbiddenZones.features.filter(
+      (feature) =>
+        "sourceKey" in feature.properties &&
+        feature.properties.sourceKey === "zh-official-2026",
+    );
+
+    expect(
+      zurichZones.filter(
+        (feature) => feature.properties.zoneKind === "official-area",
+      ),
+    ).toHaveLength(1);
+    expect(
+      zurichZones.filter(
+        (feature) => feature.properties.zoneKind === "landing-buffer",
+      ),
+    ).toHaveLength(21);
+    expect(
+      zurichZones.filter(
+        (feature) => feature.properties.zoneKind === "island-buffer",
+      ),
+    ).toHaveLength(40);
+    expect(
+      zurichZones.every(
+        (feature) => feature.properties.source === "Canton de Zurich",
       ),
     ).toBe(true);
   });

@@ -97,6 +97,7 @@ export function SwissLakesRegulationMap({
         id: OUTLINE_LAYER_ID,
         type: "line",
         source: SOURCE_ID,
+        filter: ["!=", ["get", "zoneKind"], "island-buffer"],
         paint: {
           "line-color": "#991b1b",
           "line-width": ["interpolate", ["linear"], ["zoom"], 6, 1.5, 12, 3],

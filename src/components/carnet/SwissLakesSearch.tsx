@@ -313,7 +313,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "restricted",
     detail: "Le statut change selon le canton",
     zoneDetail:
-      "Bassin inférieur, ports et îles côté Zurich ; rive saint-galloise interdite.",
+      "Carte : bassin inférieur, rayons de 150 m autour des débarcadères et de 300 m autour des îles. Les plages et ports restent aussi à vérifier.",
     target: "lac-de-zurich-statut-different-selon-le-canton",
     sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.65, 47.25],
@@ -719,7 +719,8 @@ export function SwissLakesSearch() {
         </div>
         <p className="mt-3 text-[10px] leading-4 text-slate-400">
           Contours des lacs © contributeurs OpenStreetMap, ODbL. Zones de la
-          Gruyère : Source : État de Fribourg.
+          Gruyère : État de Fribourg. Zones du lac de Zurich : Canton de
+          Zurich, avec contours et débarcadères OpenStreetMap.
         </p>
       </div>
     </section>
