@@ -209,7 +209,7 @@ export default async function ArticlePage({ params }: Props) {
         </div>
       </header>
 
-      {article.coverImage && (
+      {article.coverImage && !isSwissLakesGuide && (
         <figure className="mx-auto max-w-6xl px-5 pt-8 sm:px-8 sm:pt-10 lg:px-10">
           <div className="aspect-[16/8] overflow-hidden bg-slate-100">
             {/* Admins can reference any HTTPS image source, so a native image is intentional here. */}
