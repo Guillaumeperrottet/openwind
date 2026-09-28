@@ -2,10 +2,23 @@ import { describe, expect, it } from "vitest";
 import forbiddenZones from "@/components/carnet/swiss-lakes-forbidden.geojson.json";
 
 describe("Swiss lakes regulation map data", () => {
-  it("contains only the four fully forbidden lakes documented in the guide", () => {
+  it("contains only fully forbidden lakes documented in the guide", () => {
     expect(
       forbiddenZones.features.map((feature) => feature.properties.lakeId),
-    ).toEqual(["vernex", "greifensee", "pfaeffikersee", "tuerlersee"]);
+    ).toEqual([
+      "vernex",
+      "greifensee",
+      "pfaeffikersee",
+      "tuerlersee",
+      "lac-noir",
+      "montsalvens",
+      "lessoc",
+      "lussy",
+      "seedorf",
+      "brenet",
+      "bret",
+      "hongrin",
+    ]);
   });
 
   it("uses closed polygon rings with valid Swiss coordinates", () => {

@@ -77,6 +77,37 @@ const LAKES: LakeSearchEntry[] = [
     zoom: 13,
   },
   {
+    id: "brenet",
+    name: "Lac Brenet",
+    region: "Vaud",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
+    center: [6.3241, 46.6724],
+    zoom: 11.8,
+  },
+  {
+    id: "bret",
+    name: "Lac de Bret",
+    region: "Vaud",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
+    center: [6.7732, 46.5132],
+    zoom: 12,
+  },
+  {
+    id: "hongrin",
+    name: "Lac de l’Hongrin",
+    aliases: ["Hongrin"],
+    region: "Vaud",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
+    center: [7.0504, 46.4222],
+    zoom: 10.8,
+  },
+  {
     id: "gruyere",
     name: "Lac de la Gruyère",
     aliases: ["Gruyère"],
@@ -108,6 +139,60 @@ const LAKES: LakeSearchEntry[] = [
     target: "lac-de-schiffenen-autorise-sur-une-partie-seulement",
     center: [7.16, 46.99],
     zoom: 10.5,
+  },
+  {
+    id: "lac-noir",
+    name: "Lac Noir",
+    aliases: ["Schwarzsee"],
+    region: "Fribourg",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    center: [7.2818, 46.6651],
+    zoom: 12,
+  },
+  {
+    id: "montsalvens",
+    name: "Lac de Montsalvens",
+    aliases: ["Montsalvenssee"],
+    region: "Fribourg",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    center: [7.1468, 46.6154],
+    zoom: 11.7,
+  },
+  {
+    id: "lessoc",
+    name: "Lac de Lessoc",
+    aliases: ["lac de Montbovon", "Montbovon"],
+    region: "Fribourg",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    center: [7.0507, 46.4971],
+    zoom: 12,
+  },
+  {
+    id: "lussy",
+    name: "Lac de Lussy",
+    region: "Fribourg",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    center: [6.9, 46.5439],
+    zoom: 14,
+  },
+  {
+    id: "seedorf",
+    name: "Lac de Seedorf",
+    aliases: ["Seedorfsee"],
+    region: "Fribourg",
+    status: "forbidden",
+    detail: "Kitesurf interdit",
+    target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    center: [7.0403, 46.7959],
+    zoom: 13.5,
   },
   {
     id: "bienne",
@@ -298,7 +383,6 @@ export function SwissLakesSearch() {
   const normalizedQuery = normalize(query);
   const selectedLake =
     LAKES.find((lake) => lake.id === selectedLakeId) ?? null;
-  const forbiddenLakes = LAKES.filter((lake) => lake.status === "forbidden");
   const results = useMemo(() => {
     if (!normalizedQuery) return [];
     return LAKES.filter((lake) =>
@@ -440,24 +524,6 @@ export function SwissLakesSearch() {
             selectedLake={selectedLake}
             onSelectLake={setSelectedLakeId}
           />
-        </div>
-
-        <div
-          role="group"
-          aria-label="Lacs interdits représentés sur la carte"
-          className="mt-3 flex flex-wrap gap-2"
-        >
-          {forbiddenLakes.map((lake) => (
-            <button
-              key={lake.id}
-              type="button"
-              onClick={() => selectLake(lake.id)}
-              aria-pressed={selectedLakeId === lake.id}
-              className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:border-red-400 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 aria-pressed:border-red-600 aria-pressed:bg-red-50"
-            >
-              {lake.name}
-            </button>
-          ))}
         </div>
 
         {selectedLake && (
