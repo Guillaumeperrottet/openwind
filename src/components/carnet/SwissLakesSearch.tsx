@@ -1,185 +1,265 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDown, MapPin, Search, X } from "lucide-react";
+import dynamic from "next/dynamic";
+import { AlertTriangle, ArrowDown, MapPin, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const SwissLakesRegulationMap = dynamic(
+  () =>
+    import("./SwissLakesRegulationMap").then(
+      (module) => module.SwissLakesRegulationMap,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[360px] animate-pulse bg-slate-100 sm:h-[460px]" />
+    ),
+  },
+);
 
 type LakeStatus = "restricted" | "forbidden" | "unverified";
 
 interface LakeSearchEntry {
+  id: string;
   name: string;
   aliases?: string[];
   region: string;
   status: LakeStatus;
   detail: string;
   target: string;
+  center: [number, number];
+  zoom: number;
 }
 
 const LAKES: LakeSearchEntry[] = [
   {
+    id: "leman",
     name: "Lac Léman",
     aliases: ["lac de Genève", "Genfersee", "Lake Geneva"],
     region: "Vaud · Genève",
     status: "restricted",
     detail: "Autorisé avec restrictions selon la rive",
     target: "lac-leman-autorise-avec-restrictions",
+    center: [6.5, 46.45],
+    zoom: 8.2,
   },
   {
+    id: "neuchatel",
     name: "Lac de Neuchâtel",
     aliases: ["Neuenburgersee"],
     region: "NE · VD · FR · BE",
     status: "restricted",
     detail: "Autorisé avec zones protégées et règles locales",
     target: "lac-de-neuchatel-autorise-avec-restrictions",
+    center: [6.86, 46.92],
+    zoom: 8.5,
   },
   {
+    id: "joux",
     name: "Lac de Joux",
     region: "Vaud",
     status: "restricted",
     detail: "Autorisé dans les limites fixées par le canton",
     target: "lac-de-joux-autorise-avec-restrictions",
+    center: [6.27, 46.64],
+    zoom: 10.2,
   },
   {
+    id: "vernex",
     name: "Lac du Vernex",
     aliases: ["lac de Rossinière", "Rossinière"],
     region: "Vaud",
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-du-vernex-rossiniere-interdit",
+    center: [7.0713, 46.4638],
+    zoom: 13,
   },
   {
+    id: "gruyere",
     name: "Lac de la Gruyère",
     aliases: ["Gruyère"],
     region: "Fribourg",
     status: "restricted",
     detail: "Autorisé avec zones d’exclusion",
     target: "lac-de-la-gruyere-autorise-avec-restrictions",
+    center: [7.1, 46.66],
+    zoom: 10,
   },
   {
+    id: "morat",
     name: "Lac de Morat",
     aliases: ["Murtensee", "Murten"],
     region: "Fribourg · Vaud",
     status: "restricted",
     detail: "Autorisé côté fribourgeois, interdit côté vaudois",
     target: "lac-de-morat-autorise-avec-restrictions",
+    center: [7.08, 46.93],
+    zoom: 10,
   },
   {
+    id: "schiffenen",
     name: "Lac de Schiffenen",
     aliases: ["Schiffenensee"],
     region: "Fribourg",
     status: "restricted",
     detail: "Autorisé sur une partie seulement",
     target: "lac-de-schiffenen-autorise-sur-une-partie-seulement",
+    center: [7.16, 46.99],
+    zoom: 10.5,
   },
   {
+    id: "bienne",
     name: "Lac de Bienne",
     aliases: ["Bielersee", "Biel"],
     region: "Berne",
     status: "restricted",
     detail: "Autorisé hors des zones interdites",
     target: "lacs-de-bienne-de-thoune-et-de-brienz-autorises-avec-zones-interdites",
+    center: [7.17, 47.1],
+    zoom: 9.5,
   },
   {
+    id: "thoune",
     name: "Lac de Thoune",
     aliases: ["Thunersee", "Thun"],
     region: "Berne",
     status: "restricted",
     detail: "Autorisé hors des zones interdites",
     target: "lacs-de-bienne-de-thoune-et-de-brienz-autorises-avec-zones-interdites",
+    center: [7.72, 46.69],
+    zoom: 9.5,
   },
   {
+    id: "brienz",
     name: "Lac de Brienz",
     aliases: ["Brienzersee"],
     region: "Berne",
     status: "restricted",
     detail: "Autorisé hors des zones interdites",
     target: "lacs-de-bienne-de-thoune-et-de-brienz-autorises-avec-zones-interdites",
+    center: [7.97, 46.73],
+    zoom: 9.6,
   },
   {
+    id: "zurich",
     name: "Lac de Zurich",
     aliases: ["Zürichsee", "Zurichsee"],
     region: "ZH · SG · SZ",
     status: "restricted",
     detail: "Le statut change selon le canton",
     target: "lac-de-zurich-statut-different-selon-le-canton",
+    center: [8.65, 47.25],
+    zoom: 9,
   },
   {
+    id: "walensee",
     name: "Walensee",
     aliases: ["lac de Walenstadt"],
     region: "Saint-Gall · Glaris",
     status: "restricted",
     detail: "Autorisé avec plusieurs zones fermées",
     target: "walensee-autorise-avec-restrictions",
+    center: [9.2, 47.12],
+    zoom: 9.5,
   },
   {
+    id: "sempach",
     name: "Lac de Sempach",
     aliases: ["Sempachersee"],
     region: "Lucerne",
     status: "restricted",
     detail: "Seul le secteur sud est ouvert",
     target: "lac-de-sempach-secteur-sud-autorise",
+    center: [8.15, 47.14],
+    zoom: 10.2,
   },
   {
+    id: "quatre-cantons",
     name: "Lac des Quatre-Cantons",
     aliases: ["Vierwaldstättersee", "lac de Lucerne"],
     region: "Suisse centrale",
     status: "restricted",
     detail: "Autorisation partielle documentée",
     target: "lac-des-quatre-cantons-autorisation-partielle-documentee",
+    center: [8.47, 46.99],
+    zoom: 8.8,
   },
   {
+    id: "zoug",
     name: "Lac de Zoug",
     aliases: ["Zugersee", "Zug"],
     region: "Zoug · Lucerne · Schwytz",
     status: "restricted",
     detail: "Autorisation partielle documentée",
     target: "lac-de-zoug-autorisation-partielle-documentee",
+    center: [8.48, 47.12],
+    zoom: 9.7,
   },
   {
+    id: "greifensee",
     name: "Greifensee",
     region: "Zurich",
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
+    center: [8.68, 47.366],
+    zoom: 11.3,
   },
   {
+    id: "pfaeffikersee",
     name: "Pfäffikersee",
     aliases: ["lac de Pfäffikon"],
     region: "Zurich",
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
+    center: [8.781, 47.352],
+    zoom: 11.4,
   },
   {
+    id: "tuerlersee",
     name: "Türlersee",
     region: "Zurich",
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
+    center: [8.503, 47.27],
+    zoom: 11.5,
   },
   {
+    id: "constance",
     name: "Lac de Constance",
     aliases: ["Bodensee"],
     region: "Saint-Gall et autres rives",
     status: "restricted",
     detail: "Interdit côté saint-gallois, autres rives à vérifier",
     target: "lac-de-constance-rive-saint-galloise-interdit",
+    center: [9.4, 47.6],
+    zoom: 8.4,
   },
   {
+    id: "majeur",
     name: "Lac Majeur",
     aliases: ["Lago Maggiore"],
     region: "Tessin",
     status: "unverified",
     detail: "Pas encore classé dans cette édition",
     target: "lacs-non-classes-dans-cette-edition-a-verifier",
+    center: [8.75, 46.16],
+    zoom: 8.6,
   },
   {
+    id: "lugano",
     name: "Lac de Lugano",
     aliases: ["Lago di Lugano", "Ceresio"],
     region: "Tessin",
     status: "unverified",
     detail: "Pas encore classé dans cette édition",
     target: "lacs-non-classes-dans-cette-edition-a-verifier",
+    center: [8.97, 45.98],
+    zoom: 9.6,
   },
 ];
 
@@ -214,7 +294,11 @@ function normalize(value: string) {
 
 export function SwissLakesSearch() {
   const [query, setQuery] = useState("");
+  const [selectedLakeId, setSelectedLakeId] = useState<string | null>(null);
   const normalizedQuery = normalize(query);
+  const selectedLake =
+    LAKES.find((lake) => lake.id === selectedLakeId) ?? null;
+  const forbiddenLakes = LAKES.filter((lake) => lake.status === "forbidden");
   const results = useMemo(() => {
     if (!normalizedQuery) return [];
     return LAKES.filter((lake) =>
@@ -223,6 +307,18 @@ export function SwissLakesSearch() {
       ),
     ).slice(0, 8);
   }, [normalizedQuery]);
+
+  function selectLake(lakeId: string) {
+    setSelectedLakeId(lakeId);
+    window.requestAnimationFrame(() => {
+      document.getElementById("swiss-lakes-map")?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+        block: "center",
+      });
+    });
+  }
 
   return (
     <section
@@ -284,12 +380,19 @@ export function SwissLakesSearch() {
             {results.map((lake) => {
               const status = STATUS[lake.status];
               return (
-                <li key={lake.name}>
-                  <a
-                    href={`#${lake.target}`}
-                    className="group flex min-h-16 items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 transition hover:border-sky-300 hover:shadow-sm"
+                <li key={lake.id}>
+                  <button
+                    type="button"
+                    onClick={() => selectLake(lake.id)}
+                    aria-pressed={selectedLakeId === lake.id}
+                    className="group flex min-h-16 w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-sky-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 aria-pressed:border-sky-400 aria-pressed:ring-2 aria-pressed:ring-sky-100"
                   >
-                    <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", status.dot)} />
+                    <span
+                      className={cn(
+                        "h-2.5 w-2.5 shrink-0 rounded-full",
+                        status.dot,
+                      )}
+                    />
                     <span className="min-w-0 flex-1">
                       <strong className="block text-sm text-slate-900 group-hover:text-sky-800">
                         {lake.name}
@@ -308,12 +411,96 @@ export function SwissLakesSearch() {
                       {status.label}
                     </span>
                     <ArrowDown className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-sky-600" />
-                  </a>
+                  </button>
                 </li>
               );
             })}
           </ul>
         )}
+      </div>
+
+      <div id="swiss-lakes-map" className="mt-6 scroll-mt-24">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h3 className="font-serif text-lg font-semibold text-slate-950">
+              Carte des interdictions documentées
+            </h3>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Recherche un lac ou sélectionne directement une zone rouge.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 text-xs font-semibold text-red-700">
+            <span className="h-3 w-3 bg-red-600/70 ring-1 ring-red-800" />
+            Kitesurf interdit
+          </span>
+        </div>
+
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <SwissLakesRegulationMap
+            selectedLake={selectedLake}
+            onSelectLake={setSelectedLakeId}
+          />
+        </div>
+
+        <div
+          role="group"
+          aria-label="Lacs interdits représentés sur la carte"
+          className="mt-3 flex flex-wrap gap-2"
+        >
+          {forbiddenLakes.map((lake) => (
+            <button
+              key={lake.id}
+              type="button"
+              onClick={() => selectLake(lake.id)}
+              aria-pressed={selectedLakeId === lake.id}
+              className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:border-red-400 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-700 aria-pressed:border-red-600 aria-pressed:bg-red-50"
+            >
+              {lake.name}
+            </button>
+          ))}
+        </div>
+
+        {selectedLake && (
+          <div className="mt-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <strong className="text-sm text-slate-950">
+                  {selectedLake.name}
+                </strong>
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-1 text-[10px] font-bold ring-1",
+                    STATUS[selectedLake.status].badge,
+                  )}
+                >
+                  {STATUS[selectedLake.status].label}
+                </span>
+              </div>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                {selectedLake.region} · {selectedLake.detail}
+              </p>
+            </div>
+            <a
+              href={`#${selectedLake.target}`}
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-xs font-bold text-white transition hover:bg-sky-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700"
+            >
+              Consulter la règle
+              <ArrowDown className="h-3.5 w-3.5" />
+            </a>
+          </div>
+        )}
+
+        <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-3 text-xs leading-5 text-amber-900 ring-1 ring-amber-200">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>
+            La couverture cartographique est progressive. L’absence de zone
+            rouge ne signifie pas que la navigation ou la mise à l’eau est
+            autorisée. Consulte toujours la règle détaillée et sa source.
+          </p>
+        </div>
+        <p className="mt-3 text-[10px] leading-4 text-slate-400">
+          Contours cartographiques © contributeurs OpenStreetMap, ODbL.
+        </p>
       </div>
     </section>
   );
