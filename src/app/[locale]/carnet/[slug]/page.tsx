@@ -82,6 +82,8 @@ export default async function ArticlePage({ params }: Props) {
 
   const sources = parseArticleSources(article.sources);
   const articleUrl = localizedUrl("fr", `/carnet/${article.slug}`);
+  const isSwissLakesGuide =
+    article.slug === "kitesurf-lacs-suisses-autorise-interdit";
   const publishedAt = article.publishedAt ?? article.createdAt;
   const formattedDate = new Intl.DateTimeFormat("fr-CH", {
     day: "numeric",
@@ -236,11 +238,20 @@ export default async function ArticlePage({ params }: Props) {
         />
       </div>
 
-      <div className="mx-auto grid max-w-5xl gap-12 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1fr)_220px] lg:px-10 lg:py-20">
+      {isSwissLakesGuide && (
+        <div className="mx-auto max-w-7xl px-5 pt-10 sm:px-8 sm:pt-14 lg:px-10">
+          <SwissLakesSearch />
+        </div>
+      )}
+
+      <div
+        className={`mx-auto grid gap-12 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_220px] lg:px-10 ${
+          isSwissLakesGuide
+            ? "max-w-6xl pb-12 sm:pb-16 lg:pb-20"
+            : "max-w-5xl py-12 sm:py-16 lg:py-20"
+        }`}
+      >
         <div className="min-w-0">
-          {article.slug === "kitesurf-lacs-suisses-autorise-interdit" && (
-            <SwissLakesSearch />
-          )}
           <ArticleMarkdown>{article.content}</ArticleMarkdown>
           <ArticleReadTracker
             articleSlug={article.slug}

@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { AlertTriangle, ArrowDown, MapPin, Search, X } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowDown,
+  BookOpen,
+  ExternalLink,
+  MapPin,
+  Search,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SwissLakesRegulationMap = dynamic(
@@ -28,9 +36,19 @@ interface LakeSearchEntry {
   status: LakeStatus;
   detail: string;
   target: string;
+  sourceUrl?: string;
   center: [number, number];
   zoom: number;
 }
+
+const OFFICIAL_SOURCES = {
+  vaud:
+    "https://www.vd.ch/actualites/decisions-du-conseil-detat/seance-du-conseil-detat/decision/id/e8e3c0ec-d593-3766-84e0-c75c876d0365",
+  fribourg:
+    "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+  zurich:
+    "https://www.zh.ch/de/sicherheit-justiz/sicher-unterwegs/sicherheit-auf-gewaessern.html",
+} as const;
 
 const LAKES: LakeSearchEntry[] = [
   {
@@ -73,6 +91,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-du-vernex-rossiniere-interdit",
+    sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [7.0713, 46.4638],
     zoom: 13,
   },
@@ -83,6 +102,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
+    sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [6.3241, 46.6724],
     zoom: 11.8,
   },
@@ -93,6 +113,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
+    sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [6.7732, 46.5132],
     zoom: 12,
   },
@@ -104,6 +125,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-brenet-lac-de-bret-et-lac-de-l-hongrin-interdits",
+    sourceUrl: OFFICIAL_SOURCES.vaud,
     center: [7.0504, 46.4222],
     zoom: 10.8,
   },
@@ -115,6 +137,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "restricted",
     detail: "Autorisé hors de deux zones d’exclusion",
     target: "lac-de-la-gruyere-autorise-avec-restrictions",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.1, 46.66],
     zoom: 10,
   },
@@ -148,6 +171,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.2818, 46.6651],
     zoom: 12,
   },
@@ -159,6 +183,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.1468, 46.6154],
     zoom: 11.7,
   },
@@ -170,6 +195,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.0507, 46.4971],
     zoom: 12,
   },
@@ -180,6 +206,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [6.9, 46.5439],
     zoom: 14,
   },
@@ -191,6 +218,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "lac-noir-montsalvens-lessoc-lussy-et-seedorf-interdits",
+    sourceUrl: OFFICIAL_SOURCES.fribourg,
     center: [7.0403, 46.7959],
     zoom: 13.5,
   },
@@ -289,6 +317,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
+    sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.68, 47.366],
     zoom: 11.3,
   },
@@ -300,6 +329,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
+    sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.781, 47.352],
     zoom: 11.4,
   },
@@ -310,6 +340,7 @@ const LAKES: LakeSearchEntry[] = [
     status: "forbidden",
     detail: "Kitesurf interdit",
     target: "greifensee-pfaffikersee-et-turlersee-interdits",
+    sourceUrl: OFFICIAL_SOURCES.zurich,
     center: [8.503, 47.27],
     zoom: 11.5,
   },
@@ -546,13 +577,26 @@ export function SwissLakesSearch() {
                 {selectedLake.region} · {selectedLake.detail}
               </p>
             </div>
-            <a
-              href={`#${selectedLake.target}`}
-              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-xs font-bold text-white transition hover:bg-sky-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700"
-            >
-              Consulter la règle
-              <ArrowDown className="h-3.5 w-3.5" />
-            </a>
+            <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold">
+              <a
+                href={`#${selectedLake.target}`}
+                className="inline-flex min-h-9 items-center gap-1.5 text-sky-700 transition hover:text-sky-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                Voir la règle
+              </a>
+              {selectedLake.sourceUrl && (
+                <a
+                  href={selectedLake.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-9 items-center gap-1.5 text-slate-500 transition hover:text-sky-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700"
+                >
+                  Source officielle
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
           </div>
         )}
 
