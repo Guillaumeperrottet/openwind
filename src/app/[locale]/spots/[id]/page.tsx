@@ -2,6 +2,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSpotLive } from "@/lib/stationData";
+import { fetchFullForecast } from "@/lib/forecast";
 import {
   buildSpotTitle,
   buildSpotDescription,
@@ -15,7 +16,6 @@ import {
   localizedAlternates,
   localizedUrl,
 } from "@/lib/site";
-import type { WindLive } from "@/types";
 import { SpotPageClient } from "./SpotPageClient";
 
 // Deduplicated Prisma query: shared across generateMetadata() and SpotPage()
@@ -79,24 +79,18 @@ export async function generateMetadata({ params }: Props) {
 export default async function SpotPage({ params }: Props) {
   const { id, locale } = await params;
 
-  let spot;
-  try {
-    spot = await getSpot(id);
-  } catch {
-    notFound();
-  }
-
+  // A DB failure must remain a server error, rather than removing a real URL.
+  const spot = await getSpot(id);
   if (!spot) notFound();
 
   // ── Current wind via unified server entry point ─────────────────────────
   // getSpotLive: station fraîche (seuils par réseau) → vraie obs station.
   // Sinon → Open-Meteo.
-  let live: WindLive | null = null;
-  try {
-    live = await getSpotLive(spot.id);
-  } catch {
-    /* live stays null — page shows "données indisponibles" */
-  }
+  const [liveResult, forecastResult] = await Promise.allSettled([
+    getSpotLive(spot.id),
+    fetchFullForecast(spot.latitude, spot.longitude),
+  ]);
+  const live = liveResult.status === "fulfilled" ? liveResult.value : null;
 
   // No fallback to Open-Meteo grid: getSpotLive already handles that internally.
 
@@ -112,8 +106,6 @@ export default async function SpotPage({ params }: Props) {
               buildBreadcrumbSchema(
                 spot.id,
                 spot.name,
-                spot.sportType,
-                spot.region,
                 locale,
               ),
             ),
@@ -121,8 +113,10 @@ export default async function SpotPage({ params }: Props) {
         }}
       />
       <SpotPageClient
+        key={spot.id}
         spot={JSON.parse(JSON.stringify(spot))}
         live={live}
+        initialForecast={forecastResult.status === "fulfilled" ? forecastResult.value : null}
       />
     </>
   );

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
@@ -127,5 +128,6 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  revalidatePath("/sitemap.xml");
   return NextResponse.json(topic, { status: 201 });
 }

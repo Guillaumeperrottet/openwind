@@ -6,7 +6,6 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowLeft,
-  ArrowRight,
   MapPin,
   Wind,
   Zap,
@@ -34,6 +33,8 @@ import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import { NearbyStationsPanel } from "@/components/spot/NearbyStationsPanel";
 import { useNearbyStations } from "@/components/spot/useNearbyStations";
 import { SpotLightbox } from "@/components/spot/SpotLightbox";
+import { ForecastSummary } from "@/components/spot/ForecastSummary";
+import { LocalGuideLinks } from "@/components/carnet/LocalGuideLinks";
 
 // Lazy-load heavy below-fold components — keeps initial bundle small
 const ForecastWithToggle = dynamic(
@@ -192,6 +193,7 @@ interface SpotData {
 interface Props {
   spot: SpotData;
   live: WindLive | null;
+  initialForecast?: FullForecast | null;
 }
 
 function pickNewestLive(
@@ -210,6 +212,7 @@ function pickNewestLive(
 export function SpotPageClient({
   spot,
   live: initialLive,
+  initialForecast = null,
 }: Props) {
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
@@ -220,7 +223,9 @@ export function SpotPageClient({
   const [userToggled, setUserToggled] = useState(false);
   const [manualShow, setManualShow] = useState(false);
   const showInfo = userToggled ? manualShow : isDesktop;
-  const [forecast, setForecast] = useState<FullForecast | null>(null);
+  const [fetchedForecast, setForecast] = useState<FullForecast | null>(null);
+  const forecast = fetchedForecast && (!initialForecast || Date.parse(fetchedForecast.fetchedAt) >= Date.parse(initialForecast.fetchedAt))
+    ? fetchedForecast : initialForecast;
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     spot.nearestStationId,
@@ -902,38 +907,7 @@ export function SpotPageClient({
           </div>
         </div>
 
-        {locale === "fr" && spot.id === "cmnq613tx00it04kw1d0vraq4" && (
-          <aside className="mb-10 max-w-2xl border-y border-gray-200 py-4">
-            <Link
-              href="/vent-en-direct/lac-de-la-gruyere"
-              className="group flex items-center gap-4 text-left"
-            >
-              {spot.images[0] && (
-                <span className="h-20 w-24 shrink-0 overflow-hidden rounded bg-gray-100 sm:h-24 sm:w-36">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={spot.images[0].url}
-                    alt="Lac de la Gruyère"
-                    className="h-full w-full object-cover grayscale-[15%] transition duration-300 group-hover:grayscale-0"
-                  />
-                </span>
-              )}
-              <span className="min-w-0 flex-1">
-                <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Le carnet Openwind · Guide local
-                </span>
-                <span className="mt-1 block font-serif text-lg font-semibold leading-snug text-gray-900 transition group-hover:text-sky-700 sm:text-xl">
-                  Comprendre le vent au lac de la Gruyère
-                </span>
-                <span className="mt-1.5 hidden text-xs leading-5 text-gray-500 sm:block">
-                  Balises, directions, accès et règles à connaître autour de
-                  Morlon.
-                </span>
-              </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-gray-400 transition group-hover:translate-x-0.5 group-hover:text-sky-600" />
-            </Link>
-          </aside>
-        )}
+        <LocalGuideLinks locale={locale} spotId={spot.id} />
 
         {/* ── Lightbox modal ─────────────────────────────────────── */}
         {lightboxIndex !== null && spot.images.length > 0 && (
@@ -945,6 +919,8 @@ export function SpotPageClient({
             onNavigate={setLightboxIndex}
           />
         )}
+
+        {forecast && <ForecastSummary forecast={forecast} locale={locale} />}
 
         {/* ── Graphique vent · 7 jours ───────────────────────────── */}
         {forecast && (

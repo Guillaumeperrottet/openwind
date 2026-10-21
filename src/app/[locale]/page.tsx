@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { KiteMapLazy } from "@/components/map/KiteMapLazy";
+import { HomeDiscovery } from "@/components/seo/HomeDiscovery";
 import type { Spot } from "@/types";
 import type { WindStation } from "@/lib/stations";
 import { createClient } from "@/lib/supabase/server";
@@ -115,12 +116,11 @@ export default async function HomePage({
   }
 
   return (
-    <div className="bg-white" style={{ height: "calc(100dvh - 56px)" }}>
-      <h1 className="sr-only">
-        Openwind — Balises vent en direct, carte des spots de kitesurf et
-        parapente
-      </h1>
-      <KiteMapLazy spots={spots} initialStations={initialStations} />
-    </div>
+    <>
+      <div className="bg-white" style={{ height: "calc(100dvh - 56px)" }}>
+        <KiteMapLazy spots={spots} initialStations={initialStations} />
+      </div>
+      <HomeDiscovery locale={locale} spots={spots} />
+    </>
   );
 }

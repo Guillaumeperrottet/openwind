@@ -287,7 +287,11 @@
     "promiseHistoryTitle": "Una lettura nel tempo",
     "promiseHistoryDescription": "Ogni rete mostra il proprio storico quando gli archivi sono disponibili.",
     "promiseNetworkTitle": "Tutte le reti, un’unica interfaccia",
-    "promiseNetworkDescription": "La presentazione resta coerente senza inventare i parametri mancanti."
+    "promiseNetworkDescription": "La presentazione resta coerente senza inventare i parametri mancanti.",
+    "pagination": "Pagine delle stazioni",
+    "previousPage": "Precedente",
+    "nextPage": "Successiva",
+    "pageLabel": "Pagina {page}"
   },
   "ForumPage": {
     "title": "Forum",

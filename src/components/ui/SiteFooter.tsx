@@ -4,6 +4,7 @@ import { ArrowUpRight, Mail, MapPin, Wind } from "lucide-react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+import { GUIDE_COPY, isGuideLocale } from "@/lib/local-guides";
 
 const linkClass =
   "group inline-flex w-fit items-center gap-1.5 text-sm text-slate-300 transition hover:text-white";
@@ -146,6 +147,7 @@ export function SiteFooter() {
                   <Link href="/balises" className={linkClass}>
                     {t("stations")}
                   </Link>
+                  {isGuideLocale(locale) && <Link href="/vent-en-direct" className={linkClass}>{GUIDE_COPY[locale].guides}</Link>}
                   <Link href="/plan" className={linkClass}>
                     {t("plan")}
                   </Link>

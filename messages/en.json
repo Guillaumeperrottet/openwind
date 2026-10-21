@@ -287,7 +287,11 @@
     "promiseHistoryTitle": "A view over time",
     "promiseHistoryDescription": "Each network shows its history whenever archives are available.",
     "promiseNetworkTitle": "Every network, one interface",
-    "promiseNetworkDescription": "The presentation stays consistent without inventing missing parameters."
+    "promiseNetworkDescription": "The presentation stays consistent without inventing missing parameters.",
+    "pagination": "Wind station pages",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "pageLabel": "Page {page}"
   },
   "ForumPage": {
     "title": "Forum",

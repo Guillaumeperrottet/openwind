@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
 import { SearchBar } from "./SearchBar";
+import { isGuideLocale } from "@/lib/local-guides";
 
 export function Navbar() {
   const t = useTranslations("Navbar");
@@ -34,6 +35,7 @@ export function Navbar() {
   const links = [
     { href: "/?view=map" as const, label: t("map"), icon: Map },
     { href: "/plan" as const, label: t("plan"), icon: Route },
+    ...(isGuideLocale(currentLocale) ? [{ href: "/vent-en-direct", label: ({ fr: "Guides", de: "Guides", it: "Guide" })[currentLocale], icon: RadioTower, hideOnMobile: true }] : []),
     ...(currentLocale === "fr"
       ? [
           {

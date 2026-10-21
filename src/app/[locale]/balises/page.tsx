@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
-import { getStationsFromCache } from "@/lib/stationData";
-import { isInStationDirectory } from "@/lib/stationDirectory";
+import { notFound } from "next/navigation";
+import { getStationCatalog } from "@/lib/station-catalog";
+import {
+  directoryPagePath,
+  filterDirectoryStations,
+  isInStationDirectory,
+  parseDirectoryQuery,
+  STATION_PAGE_SIZE,
+} from "@/lib/stationDirectory";
 import {
   DEFAULT_OG_IMAGE,
   localizedAlternates,
@@ -11,6 +18,7 @@ import { StationsDirectoryClient } from "./StationsDirectoryClient";
 
 interface Props {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 const COPY = {
@@ -36,28 +44,53 @@ const COPY = {
   },
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
   const { locale } = await params;
+  const query = parseDirectoryQuery(await searchParams);
+  const filtered = Boolean(
+    query.query || query.source !== "all" || query.sort !== "name",
+  );
+  const path = filtered ? "/balises" : directoryPagePath(query, query.page);
   const copy = COPY[toSiteLocale(locale)];
 
   return {
-    title: copy.title,
+    title: query.page > 1 ? `${copy.title} · ${query.page}` : copy.title,
     description: copy.description,
-    alternates: localizedAlternates(locale, "/balises"),
+    alternates: localizedAlternates(locale, path),
+    ...(filtered ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: `${copy.title} — Openwind`,
       description: copy.description,
-      url: localizedUrl(locale, "/balises"),
+      url: localizedUrl(locale, path),
       type: "website",
       images: [DEFAULT_OG_IMAGE],
     },
   };
 }
 
-export default async function StationsDirectoryPage() {
-  const stations = (await getStationsFromCache())
-    .filter(isInStationDirectory)
-    .sort((a, b) => a.name.localeCompare(b.name));
+export default async function StationsDirectoryPage({
+  params,
+  searchParams,
+}: Props) {
+  const [{ locale }, rawQuery, catalog] = await Promise.all([
+    params,
+    searchParams,
+    getStationCatalog(),
+  ]);
+  const query = parseDirectoryQuery(rawQuery);
+  const stations = catalog.filter(isInStationDirectory);
+  const total = filterDirectoryStations(stations, query, locale).length;
+  if (query.page > Math.max(1, Math.ceil(total / STATION_PAGE_SIZE)))
+    notFound();
 
-  return <StationsDirectoryClient initialStations={stations} />;
+  return (
+    <StationsDirectoryClient
+      key={JSON.stringify(query)}
+      initialStations={stations}
+      initialQuery={query}
+    />
+  );
 }

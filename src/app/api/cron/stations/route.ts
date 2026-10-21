@@ -6,6 +6,7 @@ import { fetchNetatmoStations } from "@/lib/netatmo";
 import { fetchMeteoFranceStations } from "@/lib/meteofrance";
 import { fetchWindballStations } from "@/lib/windball";
 import { fetchFribourgEnergieStations } from "@/lib/fribourgenergie";
+import { STATION_CATALOG_KEY, mergeStationSnapshots, parseStationSnapshot } from "@/lib/station-catalog";
 
 /**
  * GET /api/cron/stations
@@ -102,6 +103,23 @@ export async function GET(request: NextRequest) {
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
     const pruned = await prisma.stationMeasurement.deleteMany({
       where: { time: { lt: threeDaysAgo } },
+    });
+
+    // Preserve known identities when one provider is temporarily unavailable.
+    // Bootstrap from the previous live snapshot on the first run after deployment.
+    const [catalog, previous] = await Promise.all([
+      prisma.systemConfig.findUnique({ where: { key: STATION_CATALOG_KEY } }),
+      prisma.systemConfig.findUnique({ where: { key: "stations_cache" } }),
+    ]);
+    const catalogValue = JSON.stringify(mergeStationSnapshots(
+      parseStationSnapshot(catalog?.value),
+      parseStationSnapshot(previous?.value),
+      allStations,
+    ));
+    await prisma.systemConfig.upsert({
+      where: { key: STATION_CATALOG_KEY },
+      update: { value: catalogValue },
+      create: { key: STATION_CATALOG_KEY, value: catalogValue },
     });
 
     // Cache the full station list as JSON so /api/stations can serve it

@@ -90,7 +90,8 @@ export async function POST(request: NextRequest) {
       data: parsed.data,
       include: { images: true },
     });
-    revalidatePath("/");
+    for (const locale of ["fr", "de", "it", "en"]) revalidatePath(`/${locale}`);
+    revalidatePath("/sitemap.xml");
     return NextResponse.json(spot, { status: 201 });
   } catch (err: unknown) {
     const code = (err as { code?: string }).code;

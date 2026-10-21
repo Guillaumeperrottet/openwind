@@ -25,6 +25,8 @@ export async function generateMetadata({ params, searchParams }: Props) {
     title: name ? t("metaTitleNear", { name }) : t("metaTitle"),
     description: name ? t("metaDescNear", { name }) : t("metaDesc"),
     alternates: localizedAlternates(locale, "/webcams"),
+    // Coordinates and return URLs describe an internal search, not a stable guide.
+    robots: { index: false, follow: true },
     openGraph: {
       title: name ? t("metaTitleNear", { name }) : t("metaTitle"),
       description: name ? t("metaDescNear", { name }) : t("metaDesc"),

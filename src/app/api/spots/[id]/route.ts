@@ -82,8 +82,9 @@ export async function PATCH(
     data: parsed.data,
     include: { images: true },
   });
-  revalidatePath("/");
-  revalidatePath(`/spots/${id}`);
+  for (const locale of ["fr", "de", "it", "en"]) revalidatePath(`/${locale}`);
+  revalidatePath("/sitemap.xml");
+  for (const locale of ["fr", "de", "it", "en"]) revalidatePath(`/${locale}/spots/${id}`);
   return NextResponse.json(spot);
 }
 
@@ -98,6 +99,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Spot introuvable" }, { status: 404 });
 
   await prisma.spot.delete({ where: { id } });
-  revalidatePath("/");
+  for (const locale of ["fr", "de", "it", "en"]) revalidatePath(`/${locale}`);
+  revalidatePath("/sitemap.xml");
   return NextResponse.json({ ok: true });
 }

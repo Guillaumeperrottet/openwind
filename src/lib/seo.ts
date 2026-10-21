@@ -192,24 +192,6 @@ export function buildArticleSchema(
     },
   };
 
-  // Add aggregate rating if reviews exist
-  if (spot.reports.length > 0) {
-    const avgRating = (
-      spot.reports.reduce((sum, r) => sum + r.rating, 0) / spot.reports.length
-    ).toFixed(1);
-
-    return {
-      ...article,
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: avgRating,
-        reviewCount: spot.reports.length,
-        bestRating: "5",
-        worstRating: "1",
-      },
-    };
-  }
-
   return article;
 }
 
@@ -251,7 +233,6 @@ export function buildPlaceSchema(
       longitude: spot.longitude,
     },
     image: spot.images[0]?.url,
-    ...(spot.access && { areaServed: spot.access }),
     address: {
       "@type": "PostalAddress",
       ...(spot.region && { addressRegion: spot.region }),
@@ -262,36 +243,16 @@ export function buildPlaceSchema(
 
 /**
  * Build BreadcrumbList schema (JSON-LD)
- * Format: Home > Map > {Sport} > {Region} > {SpotName}
+ * Only link to real navigation levels, rather than non-functional map filters.
  */
 export function buildBreadcrumbSchema(
   spotId: string,
   spotName: string,
-  sport: "KITE" | "PARAGLIDE",
-  region: string | null,
   locale?: string,
 ) {
   const l = toLocale(locale);
-  const sportLabel =
-    sport === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
-  const { home, map } = BREADCRUMB_LABELS[l];
-  const homeUrl = localizedUrl(l);
-
-  const breadcrumbs = [
-    { name: home, url: homeUrl },
-    { name: map, url: homeUrl },
-    {
-      name: sportLabel,
-      url: `${homeUrl}?sport=${sport.toLowerCase()}`,
-    },
-  ];
-
-  if (region) {
-    breadcrumbs.push({
-      name: region,
-      url: `${homeUrl}?region=${encodeURIComponent(region)}`,
-    });
-  }
+  const { home } = BREADCRUMB_LABELS[l];
+  const breadcrumbs = [{ name: home, url: localizedUrl(l) }];
 
   breadcrumbs.push({
     name: spotName,

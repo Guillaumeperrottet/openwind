@@ -13,6 +13,7 @@
  * server-only: this module must never be imported from client components.
  */
 import "server-only";
+import { getStationCatalog } from "@/lib/station-catalog";
 
 import type {
   NetworkId,
@@ -131,23 +132,15 @@ export async function getStationCoordsOrNull(
 }
 
 /**
- * Look up a full WindStation object from the 10-min snapshot.
- * Much faster than re-fetching all 5 networks (single DB query vs ~5 API calls).
- * Returns null if the cache is missing or the station is not found.
+ * Resolve a known station from the current snapshot and the durable catalog.
+ * One DB read avoids re-fetching the provider APIs. Only unknown IDs return null;
+ * DB failures propagate so a temporary outage cannot become a false 404.
  */
 export async function getStationFromCache(
   stationId: string,
 ): Promise<WindStation | null> {
-  try {
-    const cached = await prisma.systemConfig.findUnique({
-      where: { key: "stations_cache" },
-    });
-    if (!cached) return null;
-    const stations = JSON.parse(cached.value) as WindStation[];
-    return stations.find((s) => s.id === stationId) ?? null;
-  } catch {
-    return null;
-  }
+  const stations = await getStationCatalog();
+  return stations.find((station) => station.id === stationId) ?? null;
 }
 
 /**

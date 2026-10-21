@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import { barColors, windDirectionLabel, windConditionKey } from "@/lib/utils";
 import { roundKnots } from "@/lib/forecast";
 import { useStationLive } from "@/lib/useStationLive";
+import { isNetworkFresh } from "@/lib/stationConstants";
 import type { WindStation } from "@/lib/stations";
 import type { FullForecast } from "@/lib/forecast";
 import type { MeteoSwissStationWeather } from "@/lib/meteoswissWeather";
@@ -30,6 +31,7 @@ import type { StationConnections as StationConnectionsData } from "@/lib/station
 import type { HistoryPoint, WindLive } from "@/types";
 import { MeteoSwissDetailsPanel } from "./MeteoSwissDetailsPanel";
 import { StationConnections } from "./StationConnections";
+import { LocalGuideLinks } from "@/components/carnet/LocalGuideLinks";
 import { useFavContext } from "@/lib/FavContext";
 
 interface Props {
@@ -121,6 +123,7 @@ export function StationPageClient({
   meteoswissWeather,
   connections,
 }: Props) {
+  const locale = useLocale();
   const t = useTranslations("StationPage");
   const tWind = useTranslations("WindConditions");
   const [useKnots, setUseKnots] = useState(true);
@@ -173,7 +176,7 @@ export function StationPageClient({
   const curDir = liveIsNewer ? live!.windDirection : station.windDirection;
   const curGustsKmh = liveIsNewer ? live!.gustsKmh : station.gustsKmh;
   const curUpdatedAt = liveIsNewer ? live!.updatedAt : station.updatedAt;
-  const isCurrentStale = liveIsNewer ? !live!.isFresh : false;
+  const isCurrentStale = liveIsNewer ? !live!.isFresh : !isNetworkFresh(station.id, station.updatedAt);
 
   // Derived display values — use the same `barColors` palette as the chart
   // bars and the map flag so the colour is identical everywhere.
@@ -613,6 +616,7 @@ export function StationPageClient({
           </div>
         )}
 
+        <LocalGuideLinks locale={locale} stationId={station.id} />
         <StationConnections connections={connections} />
 
         {/* ── Attributions ─────────────────────────────────────────── */}

@@ -287,7 +287,11 @@
     "promiseHistoryTitle": "Une lecture dans le temps",
     "promiseHistoryDescription": "Chaque réseau affiche son historique lorsque ses archives sont disponibles.",
     "promiseNetworkTitle": "Tous les réseaux, une interface",
-    "promiseNetworkDescription": "La présentation reste cohérente sans inventer les paramètres manquants."
+    "promiseNetworkDescription": "La présentation reste cohérente sans inventer les paramètres manquants.",
+    "pagination": "Pages des balises",
+    "previousPage": "Précédente",
+    "nextPage": "Suivante",
+    "pageLabel": "Page {page}"
   },
   "ForumPage": {
     "title": "Forum",

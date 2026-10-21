@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowRight,
@@ -16,8 +16,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { NETWORK_LABELS, type NetworkId } from "@/lib/stationConstants";
-import { normalizeStationSearch } from "@/lib/stationDirectory";
+import { NETWORK_LABELS, isNetworkFresh, type NetworkId } from "@/lib/stationConstants";
+import { directoryPagePath, filterDirectoryStations, STATION_PAGE_SIZE, type StationDirectoryQuery } from "@/lib/stationDirectory";
 import type { WindStation } from "@/lib/stations";
 import { roundKnots } from "@/lib/forecast";
 import {
@@ -29,12 +29,12 @@ import { useFavContext } from "@/lib/FavContext";
 
 interface Props {
   initialStations: WindStation[];
+  initialQuery: StationDirectoryQuery;
 }
 
 type SourceFilter = NetworkId | "all";
 type SortMode = "wind" | "name" | "latest";
 
-const PAGE_SIZE = 48;
 const NETWORK_ORDER: NetworkId[] = [
   "meteoswiss",
   "pioupiou",
@@ -84,14 +84,14 @@ function sourceLabel(source: NetworkId) {
   return NETWORK_LABELS[source];
 }
 
-export function StationsDirectoryClient({ initialStations }: Props) {
+export function StationsDirectoryClient({ initialStations, initialQuery }: Props) {
   const t = useTranslations("StationsDirectory");
   const locale = useLocale();
-  const [query, setQuery] = useState("");
-  const [source, setSource] = useState<SourceFilter>("all");
-  const [sort, setSort] = useState<SortMode>("wind");
+  const [query, setQuery] = useState(initialQuery.query);
+  const [source, setSource] = useState<SourceFilter>(initialQuery.source);
+  const [sort, setSort] = useState<SortMode>(initialQuery.sort);
   const [useKnots, setUseKnots] = useState(true);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [page, setPage] = useState(initialQuery.page);
 
   const networkCounts = useMemo(() => {
     const counts = new Map<NetworkId, number>();
@@ -106,7 +106,7 @@ export function StationsDirectoryClient({ initialStations }: Props) {
   );
   const strongest = useMemo(
     () =>
-      initialStations.reduce<WindStation | null>(
+      initialStations.filter((station) => isNetworkFresh(station.id, station.updatedAt)).reduce<WindStation | null>(
         (best, station) =>
           !best || station.windSpeedKmh > best.windSpeedKmh ? station : best,
         null,
@@ -114,40 +114,29 @@ export function StationsDirectoryClient({ initialStations }: Props) {
     [initialStations],
   );
 
-  const filteredStations = useMemo(() => {
-    const normalizedQuery = normalizeStationSearch(query);
-    const collator = new Intl.Collator(locale, { sensitivity: "base" });
-    const filtered = initialStations.filter((station) => {
-      if (source !== "all" && station.source !== source) return false;
-      if (!normalizedQuery) return true;
-      const haystack = normalizeStationSearch(
-        `${station.name} ${station.id} ${station.description ?? ""} ${sourceLabel(station.source)}`,
-      );
-      return haystack.includes(normalizedQuery);
-    });
+  const filteredStations = useMemo(() => filterDirectoryStations(initialStations, { page, query, source, sort }, locale), [initialStations, locale, page, query, sort, source]);
+  const pageCount = Math.max(1, Math.ceil(filteredStations.length / STATION_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const visibleStations = filteredStations.slice((currentPage - 1) * STATION_PAGE_SIZE, currentPage * STATION_PAGE_SIZE);
+  const pagePath = (target: number) => directoryPagePath({ page, query, source, sort }, target);
 
-    return [...filtered].sort((a, b) => {
-      if (sort === "name") return collator.compare(a.name, b.name);
-      if (sort === "latest") {
-        return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
-      }
-      return b.windSpeedKmh - a.windSpeedKmh || collator.compare(a.name, b.name);
-    });
-  }, [initialStations, locale, query, sort, source]);
+  // Keep shared/reloaded filters reproducible while retaining instant client search.
+  useEffect(() => {
+    window.history.replaceState(null, "", `/${locale}${directoryPagePath({ page, query, source, sort }, page)}`);
+  }, [locale, page, query, source, sort]);
 
-  const visibleStations = filteredStations.slice(0, visibleCount);
 
   const updateSource = (nextSource: SourceFilter) => {
     setSource(nextSource);
-    setVisibleCount(PAGE_SIZE);
+    setPage(1);
   };
   const updateSort = (nextSort: SortMode) => {
     setSort(nextSort);
-    setVisibleCount(PAGE_SIZE);
+    setPage(1);
   };
   const updateQuery = (nextQuery: string) => {
     setQuery(nextQuery);
-    setVisibleCount(PAGE_SIZE);
+    setPage(1);
   };
 
   return (
@@ -321,21 +310,14 @@ export function StationsDirectoryClient({ initialStations }: Props) {
                 />
               ))}
             </div>
-            {visibleCount < filteredStations.length && (
-              <div className="mt-8 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                  className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-sky-400 hover:text-sky-700"
-                >
-                  {t("showMore", {
-                    count: Math.min(
-                      PAGE_SIZE,
-                      filteredStations.length - visibleCount,
-                    ),
-                  })}
-                </button>
-              </div>
+            {pageCount > 1 && (
+              <nav aria-label={t("pagination")} className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold text-sky-700">
+                {currentPage > 1 && <Link href={pagePath(currentPage - 1)} rel="prev" className="rounded-xl border border-slate-200 px-4 py-3">← {t("previousPage")}</Link>}
+                {[...new Set([1, ...Array.from({ length: 5 }, (_, index) => currentPage - 2 + index), pageCount])].filter((target) => target > 0 && target <= pageCount).sort((a, b) => a - b).map((target) => (
+                  <Link key={target} href={pagePath(target)} aria-current={target === currentPage ? "page" : undefined} aria-label={t("pageLabel", { page: target })} className={`rounded-xl border px-4 py-3 ${target === currentPage ? "border-sky-700 bg-sky-700 text-white" : "border-slate-200"}`}>{target}</Link>
+                ))}
+                {currentPage < pageCount && <Link href={pagePath(currentPage + 1)} rel="next" className="rounded-xl border border-slate-200 px-4 py-3">{t("nextPage")} →</Link>}
+              </nav>
             )}
           </>
         ) : (

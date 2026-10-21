@@ -287,7 +287,11 @@
     "promiseHistoryTitle": "Entwicklung im Zeitverlauf",
     "promiseHistoryDescription": "Jedes Netzwerk zeigt seinen Verlauf, wenn Archive verfügbar sind.",
     "promiseNetworkTitle": "Alle Netzwerke, eine Oberfläche",
-    "promiseNetworkDescription": "Die Darstellung bleibt einheitlich, ohne fehlende Parameter zu erfinden."
+    "promiseNetworkDescription": "Die Darstellung bleibt einheitlich, ohne fehlende Parameter zu erfinden.",
+    "pagination": "Seiten der Windstationen",
+    "previousPage": "Zurück",
+    "nextPage": "Weiter",
+    "pageLabel": "Seite {page}"
   },
   "ForumPage": {
     "title": "Forum",

@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
+import { getLocalGuide, isGuideLocale } from "@/lib/local-guides";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
@@ -12,8 +13,20 @@ const intlMiddleware = createIntlMiddleware(routing);
  */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const guideRoute = pathname.match(/^\/(fr|en|de|it)\/vent-en-direct(?:\/([^/]+))?\/?$/);
+  if (guideRoute) {
+    const [, locale, slug] = guideRoute;
+    const guide = slug ? getLocalGuide(slug) : undefined;
+    // Redirect before rendering starts, so unavailable translations return an
+    // actual HTTP 308 rather than a streamed 200 with a client-side redirect.
+    if ((!slug || guide) && (!isGuideLocale(locale) || (guide && !guide.translations[locale]))) {
+      const destination = request.nextUrl.clone();
+      destination.pathname = `/fr/vent-en-direct${slug ? `/${slug}` : ""}`;
+      return NextResponse.redirect(destination, 308);
+    }
+  }
   const frenchOnlyContent = pathname.match(
-    /^\/(fr|en|de|it)(\/(?:carnet(?:\/[^/]+)?|vent-en-direct\/lac-de-la-gruyere))\/?$/,
+    /^\/(fr|en|de|it)(\/carnet(?:\/[^/]+)?)\/?$/,
   );
   const isFrenchOnlyContent = Boolean(frenchOnlyContent);
 
@@ -72,7 +85,8 @@ export async function proxy(request: NextRequest) {
   // layout can read the locale to set <html lang="...">.
   if (intlResponse) {
     intlResponse.headers.forEach((value, key) => {
-      if (isFrenchOnlyContent && key === "link") return;
+      // These routes declare their actual language availability in metadata.
+      if ((isFrenchOnlyContent || /^\/(fr|en|de|it)\/vent-en-direct(?:\/|$)/.test(pathname)) && key === "link") return;
       supabaseResponse.headers.set(key, value);
     });
   }
