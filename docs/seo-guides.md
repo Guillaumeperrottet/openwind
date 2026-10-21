@@ -160,3 +160,41 @@ synchronise aussi l’attribut `lang` du document avec la route. Le layout racin
 conserve le bon attribut dans le HTML initial ; cette synchronisation couvre
 les navigations côté client, pour lesquelles le layout racine reste monté.
 Contrôler FR → IT → DE dans le navigateur, en plus des requêtes HTTP directes.
+
+## Constance, Zurich, Thoune et Morat (lot 4)
+
+Les fichiers `lac-de-constance.ts`, `lac-de-zurich.ts`, `lac-de-thoune.ts` et
+`lac-de-morat.ts` dans `src/lib/guides/` ajoutent douze pages FR/DE/IT. Le registre
+commun les intègre à l’accueil (onze lacs), à l’index, à la recherche globale,
+aux liens des fiches associées et au sitemap (33 pages de guides).
+
+Les catalogues publics ont été vérifiés le 21 octobre 2026. Morat est relié à
+la fiche nautique Morat – Murtenstrand. Les trois autres guides ne créent pas
+de fiche de spot ; ils fournissent les sources locales pertinentes.
+
+Les points de prévision et les observations restent distincts :
+
+- Constance : point terrestre Güttingen ; stations GUT, ARH et STK. Steckborn
+  est explicitement situé dans le bassin de l’Untersee, distinct de l’Obersee.
+- Zurich : point terrestre Wädenswil ; stations WAE et SMA (Fluntern sur les
+  hauteurs). Les stations municipales Mythenquai et Tiefenbrunnen sont des
+  sources externes, sans prétendre les avoir intégrées aux cartes du guide.
+- Thoune : point Thun / Hafeneinfahrt ; capteur Pioupiou 1723 à l’entrée du port
+  et station terrestre THU. Le marqueur météo ne désigne pas une mise à l’eau.
+- Morat : point de la fiche Murtenstrand ; stations régionales PAY et CRM,
+  hors du lac. CRM est Cressier NE, à distinguer de Cressier FR.
+
+Les couvertures sont conservées dans `public/images/guides/` avec attribution
+sur l’accueil, l’index et les guides : Gerd Eichmann, vue du Bodensee entre
+Münsterlingen et Romanshorn (CC BY-SA 4.0) ; Jakub Hałun, « Lake Zurich at
+Rapperswil, 20250330 0825 7818 » (CC BY 4.0) ; Christian David, « Schloss Spiez
+und Hafen Spiez » (CC BY-SA 4.0) ; Carsten Steger, « Aerial image of Lake Murten
+(view from the northeast) » (CC BY-SA 4.0). Les liens vers les fichiers Commons
+et les licences figurent dans chaque définition.
+
+Les tests de rendu, d’accueil, de sitemap et de redirection parcourent tout le
+registre. Les recherches testent les variantes Bodensee / Lago di Costanza,
+Zürichsee / Zuerichsee / Lago di Zurigo, Thunersee / Lago di Thun et Murtensee /
+Lago di Morat, dans chacune des trois langues. À la livraison, contrôler les
+douze réponses HTTP, les observations datées, les prévisions, les canoniques,
+les langues disponibles, les images optimisées et la navigation sur mobile.

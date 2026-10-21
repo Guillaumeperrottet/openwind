@@ -64,6 +64,18 @@ describe("global search across public content", () => {
     ["Bielersee", "lac-de-bienne"],
     ["Lago di Bienne", "lac-de-bienne"],
     ["Saint-Joux", "lac-de-bienne"],
+    ["Bodensee", "lac-de-constance"],
+    ["Lago di Costanza", "lac-de-constance"],
+    ["Guettingen", "lac-de-constance"],
+    ["Zürichsee", "lac-de-zurich"],
+    ["Zuerichsee", "lac-de-zurich"],
+    ["Lago di Zurigo", "lac-de-zurich"],
+    ["Thunersee", "lac-de-thoune"],
+    ["Lago di Thun", "lac-de-thoune"],
+    ["Hafeneinfahrt Thun", "lac-de-thoune"],
+    ["Murtensee", "lac-de-morat"],
+    ["Lago di Morat", "lac-de-morat"],
+    ["Murtenstrand", "lac-de-morat"],
   ])(
     "finds the new guide from its local name %s in all three languages",
     (query, slug) => {

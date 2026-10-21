@@ -4,6 +4,10 @@ import { SILVAPLANA_GUIDE } from "@/lib/guides/silvaplana";
 import { URNERSEE_GUIDE } from "@/lib/guides/urnersee";
 import { LAC_MAJEUR_GUIDE } from "@/lib/guides/lac-majeur";
 import { LAC_DE_BIENNE_GUIDE } from "@/lib/guides/lac-de-bienne";
+import { LAC_DE_CONSTANCE_GUIDE } from "@/lib/guides/lac-de-constance";
+import { LAC_DE_ZURICH_GUIDE } from "@/lib/guides/lac-de-zurich";
+import { LAC_DE_THOUNE_GUIDE } from "@/lib/guides/lac-de-thoune";
+import { LAC_DE_MORAT_GUIDE } from "@/lib/guides/lac-de-morat";
 
 export const GUIDE_LOCALES = ["fr", "de", "it"] as const;
 export type GuideLocale = (typeof GUIDE_LOCALES)[number];
@@ -312,6 +316,10 @@ Consulta la scheda dello spot per l’accesso e le particolarità della zona di 
   URNERSEE_GUIDE,
   LAC_MAJEUR_GUIDE,
   LAC_DE_BIENNE_GUIDE,
+  LAC_DE_CONSTANCE_GUIDE,
+  LAC_DE_ZURICH_GUIDE,
+  LAC_DE_THOUNE_GUIDE,
+  LAC_DE_MORAT_GUIDE,
 ];
 
 /** Preserve the established featured order, then include every available guide. */
