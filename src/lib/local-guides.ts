@@ -16,6 +16,10 @@ import { LAC_DE_ZOUG_GUIDE } from "@/lib/guides/lac-de-zoug";
 import { LAC_DE_BRIENZ_GUIDE } from "@/lib/guides/lac-de-brienz";
 import { LAC_DE_SEMPACH_GUIDE } from "@/lib/guides/lac-de-sempach";
 import { LAC_DE_SILS_GUIDE } from "@/lib/guides/lac-de-sils";
+import { SIHLSEE_GUIDE } from "@/lib/guides/sihlsee";
+import { LAC_D_AEGERI_GUIDE } from "@/lib/guides/lac-d-aegeri";
+import { LAC_DE_HALLWIL_GUIDE } from "@/lib/guides/lac-de-hallwil";
+import { LAC_DE_SARNEN_GUIDE } from "@/lib/guides/lac-de-sarnen";
 
 export const GUIDE_LOCALES = ["fr", "de", "it"] as const;
 export type GuideLocale = (typeof GUIDE_LOCALES)[number];
@@ -337,6 +341,10 @@ Consulta la scheda dello spot per l’accesso e le particolarità della zona di 
   LAC_DE_BRIENZ_GUIDE,
   LAC_DE_SEMPACH_GUIDE,
   LAC_DE_SILS_GUIDE,
+  SIHLSEE_GUIDE,
+  LAC_D_AEGERI_GUIDE,
+  LAC_DE_HALLWIL_GUIDE,
+  LAC_DE_SARNEN_GUIDE,
 ];
 
 /** Preserve the established featured order, then include every available guide. */

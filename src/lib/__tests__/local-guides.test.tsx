@@ -107,6 +107,10 @@ describe("local guides served without browser interaction", () => {
         "lac-des-quatre-cantons": "urnersee",
         "lac-de-brienz": "lac-de-thoune",
         "lac-de-sils": "lac-de-silvaplana",
+        sihlsee: "lac-de-zurich",
+        "lac-d-aegeri": "lac-de-zoug",
+        "lac-de-hallwil": "lac-de-sempach",
+        "lac-de-sarnen": "lac-des-quatre-cantons",
       };
       if (comparisonGuide[definition.slug]) {
         expect(html).toContain(

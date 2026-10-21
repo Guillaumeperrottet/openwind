@@ -295,3 +295,52 @@ Lej da Segl et Plaun da Lej dans les trois langues. Avant publication, vérifier
 les douze pages, les 57 URLs de guides du sitemap, les liens d’accueil et de
 comparaison, les sources, les images optimisées, les observations horodatées,
 les prévisions et le changement de langue sur mobile.
+
+## Sihlsee, Ägeri, Hallwil et Sarnen (lot 7)
+
+Les définitions `sihlsee.ts`, `lac-d-aegeri.ts`, `lac-de-hallwil.ts` et
+`lac-de-sarnen.ts` ajoutent douze guides FR/DE/IT. Le registre commun les
+intègre à l’accueil (23 lacs), à la recherche globale, à l’index et au sitemap
+(69 URLs de guides). Chaque traduction utilise son propre titre, sa description,
+son contenu, sa FAQ et son texte alternatif. Les canoniques, alternatives
+FR/DE/IT et x-default et données structurées du gabarit restent appliqués.
+
+Les catalogues publics et les sources ont été contrôlés le 21 octobre 2026.
+Aucune fiche nautique correspondant à ces quatre lacs n’a été trouvée ; le
+spot de parapente Stanserhorn n’est pas associé au guide du Sarnersee.
+Chaque guide utilise une seule balise terrestre pertinente, explicitement
+décrite dans les trois langues :
+
+- Sihlsee : EIN à Einsiedeln, à l’ouest du lac ; prévision au même point
+  terrestre. Les consignes du kite distinguent les secteurs du lac et
+  l’exclusion au sud du Steinbachviadukt selon SRSZ 784.331.
+- Ägeri : AEG à Oberägeri, près du nord du lac ; prévision au même point.
+  CHUCKSURF est référencé par Zoug Tourisme. Les accès et zones protégées
+  renvoient aux sources cantonales, dont BGS 753.5.
+- Hallwil : MOA à Mosen, près de l’extrémité sud ; prévision au même point.
+  Le contenu et la FAQ indiquent l’interdiction du kitesurf rapportée par les
+  sources cantonales. Les activités de voile et SUP sont présentées séparément.
+- Sarnen : GIH dans la plaine de Giswil au sud du lac ; prévision au même
+  point, sans la présenter comme une mesure au centre de Sarnen. La FAQ
+  cantonale signale l’interdiction des activités nautiques autour de la prise
+  d’eau de Sachseln. La Surfstation Alpnach est située sur l’Alpnachersee,
+  distinct du Sarnersee, et n’est pas présentée comme une offre sur ce lac.
+
+Des liens éditoriaux localisés permettent de comparer Sihlsee / Zurich,
+Ägeri / Zoug, Hallwil / Sempach et Sarnen / Quatre-Cantons. Les tests de
+rendu vérifient ces liens dans les trois langues. Les tests de recherche
+couvrent les noms FR/DE/IT, Aegerisee et Oberaegeri, ainsi que Willerzell,
+Beinwil am See, Giswil et Sachseln. L’accueil et le sitemap sont testés sur
+tout le registre ; les langues non disponibles ne sont pas annoncées.
+
+Les quatre photos locales sous CC BY-SA 4.0 sont attribuées sur l’accueil,
+l’index et les guides : Jane kurko, « Sihlsee lake of Switzerland » ; Pakeha,
+« Morgarten am Ägerisee 02 » ; Carsten Steger, « Aerial image of Lake Hallwil
+(view from the south) » et « Aerial image of Lake Sarnen (view from the
+southwest) ». Les liens Commons et de licence sont conservés dans les
+définitions et les textes alternatifs décrivent les photos inspectées.
+
+Avant publication, contrôler les douze pages, les liens d’accueil et de
+comparaison, les 69 URLs de guides du sitemap, les recherches par noms locaux,
+les sources, les images optimisées, les observations datées, les prévisions,
+les canoniques, les alternatives et la navigation multilingue sur mobile.
