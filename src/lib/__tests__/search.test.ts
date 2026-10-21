@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { GUIDE_LOCALES } from "../local-guides";
 import {
   guideSearchEntries,
   normalizeSearch,
@@ -52,6 +53,29 @@ describe("global search across public content", () => {
       new Set(searchEntries(data, "Neuchatel").map((entry) => entry.kind)),
     ).toEqual(new Set(["lake", "spot", "station", "webcam", "article"]));
   });
+  it.each([
+    ["Silvaplanersee", "lac-de-silvaplana"],
+    ["Lej da Silvaplauna", "lac-de-silvaplana"],
+    ["Lac d’Uri", "urnersee"],
+    ["Fluelen", "urnersee"],
+    ["Lago Maggiore", "lac-majeur"],
+    ["Langensee", "lac-majeur"],
+    ["Verbano", "lac-majeur"],
+    ["Bielersee", "lac-de-bienne"],
+    ["Lago di Bienne", "lac-de-bienne"],
+    ["Saint-Joux", "lac-de-bienne"],
+  ])(
+    "finds the new guide from its local name %s in all three languages",
+    (query, slug) => {
+      for (const locale of GUIDE_LOCALES) {
+        expect(
+          searchEntries(guideSearchEntries(locale), query).some(
+            (entry) => entry.href === `/${locale}/vent-en-direct/${slug}`,
+          ),
+        ).toBe(true);
+      }
+    },
+  );
   it("understands a webcam query without claiming individual camera availability", () => {
     const results = searchEntries(data, "webcam leman");
     expect(results.length).toBeGreaterThan(0);

@@ -15,6 +15,7 @@ vi.mock("@/components/search/GlobalSearch", () => ({
   GlobalSearch: () => <input aria-label="Global search" />,
 }));
 import { HomeLanding } from "@/components/home/HomeLanding";
+import { LOCAL_GUIDES } from "@/lib/local-guides";
 
 describe("server-rendered discovery home", () => {
   it.each(["fr", "de", "it", "en"])(
@@ -24,8 +25,10 @@ describe("server-rendered discovery home", () => {
         <HomeLanding locale={locale} articles={[]} />,
       );
       expect(html.match(/<h1[ >]/g)).toHaveLength(1);
-      for (const slug of ["lac-de-la-gruyere", "lac-de-neuchatel", "lac-leman"])
-        expect(html).toContain(`/vent-en-direct/${slug}`);
+      for (const guide of LOCAL_GUIDES)
+        expect(html).toContain(
+          `/${locale === "en" ? "fr" : locale}/vent-en-direct/${guide.slug}`,
+        );
       expect(html).toContain("?view=map");
       expect(html).toContain("Global search");
       expect(html).toContain("Giles Laurent");

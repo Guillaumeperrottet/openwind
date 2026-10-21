@@ -62,14 +62,17 @@ describe("local guides served without browser interaction", () => {
         sources: definition.sources,
         publishedAt: definition.publishedAt,
         updatedAt: definition.updatedAt,
-        spots: [{ id: definition.spotIds[0], name: "Morlon Beach" }],
+        spots: definition.spotIds.map((id) => ({
+          id,
+          name: "Associated spot",
+        })),
         stations: [
           {
             ...definition.stations[0],
             initialLive: {
               source: "station",
-              stationId: "windball-wf-35",
-              network: "windball",
+              stationId: definition.stations[0].id,
+              network: definition.stations[0].source,
               staleAt: "2026-10-21T08:30:00Z",
               isFresh: true,
               windSpeedKmh: 18.52,
@@ -90,6 +93,10 @@ describe("local guides served without browser interaction", () => {
       expect(html).toContain('dateTime="2026-10-22"');
       expect(html).toContain(`href="${definition.sources[0].url}"`);
       expect(html.match(/<h1[ >]/g)).toHaveLength(1);
+      if (!definition.spotIds.length) {
+        expect(html).not.toContain("/spots/undefined");
+        expect(html).not.toContain("Associated spot");
+      }
       const schema = JSON.parse(
         html.match(/<script type="application\/ld\+json">(.*?)<\/script>/)![1],
       );

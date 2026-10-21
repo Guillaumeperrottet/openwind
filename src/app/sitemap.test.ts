@@ -17,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/station-catalog", () => ({ getStationCatalog: mocks.catalog }));
 import sitemap from "./sitemap";
+import { LOCAL_GUIDES, guideLanguages } from "@/lib/local-guides";
 
 beforeEach(() => {
   mocks.spots.mockResolvedValue([
@@ -42,14 +43,21 @@ describe("current, canonical sitemap", () => {
         entry.url ===
         "https://www.openwind.ch/de/vent-en-direct/lac-de-la-gruyere",
     )!;
-    for (const slug of ["lac-de-neuchatel", "lac-leman"]) {
-      for (const locale of ["fr", "de", "it"]) {
+    for (const definition of LOCAL_GUIDES) {
+      for (const locale of guideLanguages(definition)) {
         const entry = entries.find(
           (item) =>
             item.url ===
-            `https://www.openwind.ch/${locale}/vent-en-direct/${slug}`,
+            `https://www.openwind.ch/${locale}/vent-en-direct/${definition.slug}`,
         );
         expect(entry).toBeDefined();
+        expect(
+          entries.some(
+            (item) =>
+              item.url ===
+              `https://www.openwind.ch/en/vent-en-direct/${definition.slug}`,
+          ),
+        ).toBe(false);
         expect(Object.keys(entry!.alternates!.languages!)).toEqual([
           "x-default",
           "fr",

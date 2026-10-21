@@ -119,3 +119,38 @@ Neuchâtel sans accent, Genfersee et Lago di Ginevra, navigation clavier,
 affichage étroit, raccourci des favoris, accès direct à la carte et maintien
 de cette vue lors d’un changement de langue. Les six nouvelles pages de
 guide doivent répondre en 200 et apparaître dans le sitemap avec FR/DE/IT.
+
+## Silvaplana, Urnersee, lac Majeur et Bienne (lot 3)
+
+Les quatre définitions de `src/lib/guides/` fournissent douze pages FR/DE/IT.
+Le registre les expose automatiquement dans la recherche, le sitemap, l’index
+et les liens associés des balises et spots. L’accueil utilise `getHomeGuides`
+pour présenter tous les guides disponibles, en conservant les trois lacs
+historiques en tête et trois raccourcis dans le bloc de recherche.
+
+Les identifiants ont été contrôlés dans les catalogues publics du 21 octobre
+2026 : Silvaplana et La Neuveville | St-Joux disposent d’une fiche nautique.
+Aucune fiche nautique n’a été trouvée pour l’Urnersee et le lac Majeur ; ces
+guides ne fabriquent pas de spot et renvoient aux sources locales.
+
+Les observations sont des repères régionaux, explicitement qualifiés dans les
+trois langues : Segl-Maria et Samedan pour Silvaplana ; Altdorf et Gersau
+(bassin voisin) pour l’Urnersee ; Locarno / Monti (hauteurs) et Magadino /
+Cadenazzo (plaine) pour le lac Majeur ; Cressier et Chasseral (sommet) pour
+Bienne. Aucune mesure n’est présentée comme prise sur l’eau. Les points des
+prévisions sont Silvaplana, Altdorf / Reusstal, Locarno / Monti et La Neuveville /
+Saint-Joux. Leurs limites sont expliquées dans le contenu et les FAQ.
+
+Les photographies sont locales et leurs crédits apparaissent sur chaque
+surface : Hansueli Krapf, « 2011-08-01 13-29-34 Switzerland Silvaplana »,
+CC BY-SA 3.0 ; Badener, « Seelisberg Urnersee 5120 », CC BY 3.0 ; Ngbrx,
+« Lago Maggiore from Ascona », CC BY-SA 4.0 ; W. Bulach,
+« 00 0370 St. Peterinsel - Bielersee », CC BY-SA 4.0. Les définitions
+conservent les liens Wikimedia Commons et les licences. La vue de l’île
+Saint-Pierre ne désigne pas un accès autorisé pour les sports nautiques.
+
+À la livraison, contrôler les douze pages, leurs langues et canoniques, les
+21 URLs de guides du sitemap, les liens de l’accueil et les recherches par
+noms locaux (Silvaplanersee, Urnersee, Langensee, Verbano, Bielersee). Vérifier
+les cartes de deux stations sur mobile et les redirections des langues non
+disponibles avant toute publication.

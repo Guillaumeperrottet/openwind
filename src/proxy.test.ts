@@ -16,20 +16,21 @@ vi.mock("@supabase/ssr", () => ({
   }),
 }));
 import { proxy } from "./proxy";
+import { LOCAL_GUIDES } from "@/lib/local-guides";
 
 describe("language redirects before streaming", () => {
-  it.each(["/en/vent-en-direct", "/en/vent-en-direct/lac-de-la-gruyere"])(
-    "returns a real permanent redirect for %s",
-    async (path) => {
-      const response = await proxy(
-        new NextRequest(`https://www.openwind.ch${path}?from=guide`),
-      );
-      expect(response.status).toBe(308);
-      expect(response.headers.get("location")).toBe(
-        `https://www.openwind.ch${path.replace("/en/", "/fr/")}?from=guide`,
-      );
-    },
-  );
+  it.each([
+    "/en/vent-en-direct",
+    ...LOCAL_GUIDES.map((guide) => `/en/vent-en-direct/${guide.slug}`),
+  ])("returns a real permanent redirect for %s", async (path) => {
+    const response = await proxy(
+      new NextRequest(`https://www.openwind.ch${path}?from=guide`),
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      `https://www.openwind.ch${path.replace("/en/", "/fr/")}?from=guide`,
+    );
+  });
 
   it.each(["de", "it"])(
     "keeps the available %s guide and its explicit language metadata",

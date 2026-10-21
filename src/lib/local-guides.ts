@@ -1,5 +1,9 @@
 import { localizedUrl } from "@/lib/site";
 import { SWISS_LAKE_GUIDES } from "@/lib/swiss-lake-guides";
+import { SILVAPLANA_GUIDE } from "@/lib/guides/silvaplana";
+import { URNERSEE_GUIDE } from "@/lib/guides/urnersee";
+import { LAC_MAJEUR_GUIDE } from "@/lib/guides/lac-majeur";
+import { LAC_DE_BIENNE_GUIDE } from "@/lib/guides/lac-de-bienne";
 
 export const GUIDE_LOCALES = ["fr", "de", "it"] as const;
 export type GuideLocale = (typeof GUIDE_LOCALES)[number];
@@ -304,7 +308,22 @@ Consulta la scheda dello spot per l’accesso e le particolarità della zona di 
     },
   },
   ...SWISS_LAKE_GUIDES,
+  SILVAPLANA_GUIDE,
+  URNERSEE_GUIDE,
+  LAC_MAJEUR_GUIDE,
+  LAC_DE_BIENNE_GUIDE,
 ];
+
+/** Preserve the established featured order, then include every available guide. */
+export function getHomeGuides(locale: GuideLocale): LocalGuide[] {
+  const featured = ["lac-de-neuchatel", "lac-leman", "lac-de-la-gruyere"];
+  return [
+    ...featured.flatMap((slug) =>
+      LOCAL_GUIDES.filter((guide) => guide.slug === slug),
+    ),
+    ...LOCAL_GUIDES.filter((guide) => !featured.includes(guide.slug)),
+  ].filter((guide) => Boolean(guide.translations[locale]));
+}
 
 export function getLocalGuide(slug: string): LocalGuide | undefined {
   return LOCAL_GUIDES.find((guide) => guide.slug === slug);

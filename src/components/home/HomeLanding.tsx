@@ -12,7 +12,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { GuideImageCredit } from "@/components/carnet/GuideImageCredit";
-import { LOCAL_GUIDES, isGuideLocale } from "@/lib/local-guides";
+import { getHomeGuides, isGuideLocale } from "@/lib/local-guides";
 import { HOME_COPY } from "@/lib/home-copy";
 import { toSiteLocale } from "@/lib/site";
 
@@ -38,12 +38,7 @@ export function HomeLanding({
   const language = toSiteLocale(locale);
   const guideLocale = isGuideLocale(language) ? language : "fr";
   const copy = HOME_COPY[language];
-  const guides = ["lac-de-neuchatel", "lac-leman", "lac-de-la-gruyere"].flatMap(
-    (slug) => {
-      const guide = LOCAL_GUIDES.find((guide) => guide.slug === slug);
-      return guide ? [guide] : [];
-    },
-  );
+  const guides = getHomeGuides(guideLocale);
   const leman = guides.find((guide) => guide.slug === "lac-leman")!;
   return (
     <div className="bg-[#f8faf9] text-slate-950">
@@ -66,7 +61,7 @@ export function HomeLanding({
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-600">
               <span>{copy.explore}</span>
-              {guides.map((guide) => (
+              {guides.slice(0, 3).map((guide) => (
                 <Link
                   key={guide.slug}
                   locale={guideLocale}
@@ -153,11 +148,14 @@ export function HomeLanding({
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>
           </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {guides.map((guide) => {
+          <div className="mt-8 grid gap-6 md:grid-cols-6">
+            {guides.map((guide, index) => {
               const translation = guide.translations[guideLocale]!;
               return (
-                <article key={guide.slug} className="group min-w-0">
+                <article
+                  key={guide.slug}
+                  className={`group min-w-0 ${index < 3 ? "md:col-span-2" : "md:col-span-3"}`}
+                >
                   <Link
                     href={`/vent-en-direct/${guide.slug}`}
                     locale={guideLocale}
@@ -169,7 +167,11 @@ export function HomeLanding({
                         alt={translation.coverAlt}
                         width={720}
                         height={480}
-                        sizes="(max-width: 767px) 100vw, 33vw"
+                        sizes={
+                          index < 3
+                            ? "(max-width: 767px) 100vw, 33vw"
+                            : "(max-width: 767px) 100vw, 50vw"
+                        }
                         className="aspect-[3/2] w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105"
                       />
                       <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[9px] font-bold tracking-[0.14em] text-slate-800">

@@ -87,7 +87,9 @@ export function GuideLiveStations({
   locale: GuideLocale;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div
+      className={`grid gap-4 ${stations.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}
+    >
       {stations.map((station) => (
         <StationCard key={station.id} station={station} locale={locale} />
       ))}
