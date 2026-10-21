@@ -247,3 +247,51 @@ de guides du sitemap, les alias multilingues dans la recherche, les liens
 de l’accueil, l’accès carte et les images optimisées. Vérifier le changement
 de langue côté client, les cartes à une balise sur mobile et le contexte
 saisonnier affiché à côté du spot de Joux.
+
+## Zoug, Brienz, Sempach et Sils (lot 6)
+
+Les fichiers `lac-de-zoug.ts`, `lac-de-brienz.ts`, `lac-de-sempach.ts` et
+`lac-de-sils.ts` ajoutent douze guides FR/DE/IT. Leur inscription au registre
+commun alimente l’accueil (dix-neuf lacs), la recherche globale, l’index,
+les liens des balises et le sitemap (57 URLs de guides). Les canoniques,
+alternatives FR/DE/IT et x-default, métadonnées sociales et données structurées
+du gabarit s’appliquent à chaque traduction.
+
+Les catalogues publics et les sources ont été contrôlés le 21 octobre 2026.
+Aucune fiche nautique correspondant à ces quatre lacs n’a été trouvée : les
+guides ne réutilisent pas les fiches de parapente de la région de Brienz ni
+la fiche de kite du lac voisin de Silvaplana. Les sources locales indiquent
+les activités et les accès à vérifier.
+
+Les observations et prévisions sont explicitement situées dans chaque langue :
+
+- Zoug : CHZ à Cham, en retrait de la rive nord ; point de prévision aux
+  mêmes coordonnées terrestres, distinct de la ville de Zoug et du sud du lac.
+- Brienz : BRZ à terre vers l’extrémité est, INT dans la plaine d’Interlaken
+  hors du lac ; prévision au point de Brienz. Un lien éditorial localisé
+  renvoie au guide de Thoune pour comparer les deux lacs séparément.
+- Sempach : EGO à Egolzwil, hors du bassin au nord-ouest ; prévision à Nottwil
+  près de la Bahnhofstrasse, à un autre point que la mesure régionale.
+  Les sources distinguent l’offre de windsurf et les secteurs de kitesurf.
+  La webcam du prestataire reste une source externe, sans promesse d’image
+  individuelle déjà intégrée aux fournisseurs de la carte Openwind.
+- Sils : SIA à terre à Sils / Segl-Maria entre les deux lacs, prévision aux
+  mêmes coordonnées. La « Windsurfing Station Sils » de l’office de tourisme
+  est bien située sur le lac de Silvaplana ; le texte et la FAQ le précisent,
+  avec un lien vers ce guide dans chaque langue. Aucun horaire ni force du
+  vent du Maloja n’est garanti.
+
+Les quatre photos locales sont sous CC BY-SA 4.0, attribuées sur l’accueil,
+l’index et les guides : Zikai Liu, « Zugersee-2021-11-07 » ; Carsten Steger,
+« Aerial image of Lake Brienz (view from the southwest) » ; Yves Knupp,
+« Segelndes Boot auf dem Sempachersee » ; Ziegenberg, « Maloja mit Silsersee
+und Maloja Palace ». Les définitions conservent les liens Commons et de
+licence ; les textes alternatifs décrivent les photos inspectées.
+
+Les tests parcourent le registre pour le rendu serveur, l’accueil, le sitemap
+et les redirections. Les tests de recherche couvrent notamment Zugersee,
+Lago di Zugo, Brienzersee, Bönigen / Boenigen, Sempachersee, Nottwil, Silsersee,
+Lej da Segl et Plaun da Lej dans les trois langues. Avant publication, vérifier
+les douze pages, les 57 URLs de guides du sitemap, les liens d’accueil et de
+comparaison, les sources, les images optimisées, les observations horodatées,
+les prévisions et le changement de langue sur mobile.

@@ -12,6 +12,10 @@ import { LAC_DES_QUATRE_CANTONS_GUIDE } from "@/lib/guides/lac-des-quatre-canton
 import { LAC_DE_LUGANO_GUIDE } from "@/lib/guides/lac-de-lugano";
 import { WALENSEE_GUIDE } from "@/lib/guides/walensee";
 import { LAC_DE_JOUX_GUIDE } from "@/lib/guides/lac-de-joux";
+import { LAC_DE_ZOUG_GUIDE } from "@/lib/guides/lac-de-zoug";
+import { LAC_DE_BRIENZ_GUIDE } from "@/lib/guides/lac-de-brienz";
+import { LAC_DE_SEMPACH_GUIDE } from "@/lib/guides/lac-de-sempach";
+import { LAC_DE_SILS_GUIDE } from "@/lib/guides/lac-de-sils";
 
 export const GUIDE_LOCALES = ["fr", "de", "it"] as const;
 export type GuideLocale = (typeof GUIDE_LOCALES)[number];
@@ -329,6 +333,10 @@ Consulta la scheda dello spot per l’accesso e le particolarità della zona di 
   LAC_DE_LUGANO_GUIDE,
   WALENSEE_GUIDE,
   LAC_DE_JOUX_GUIDE,
+  LAC_DE_ZOUG_GUIDE,
+  LAC_DE_BRIENZ_GUIDE,
+  LAC_DE_SEMPACH_GUIDE,
+  LAC_DE_SILS_GUIDE,
 ];
 
 /** Preserve the established featured order, then include every available guide. */

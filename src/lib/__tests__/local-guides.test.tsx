@@ -103,8 +103,15 @@ describe("local guides served without browser interaction", () => {
           html.indexOf(`/spots/${definition.spotIds[0]}`),
         );
       }
-      if (definition.slug === "lac-des-quatre-cantons") {
-        expect(html).toContain(`href="/${locale}/vent-en-direct/urnersee"`);
+      const comparisonGuide: Record<string, string> = {
+        "lac-des-quatre-cantons": "urnersee",
+        "lac-de-brienz": "lac-de-thoune",
+        "lac-de-sils": "lac-de-silvaplana",
+      };
+      if (comparisonGuide[definition.slug]) {
+        expect(html).toContain(
+          `href="/${locale}/vent-en-direct/${comparisonGuide[definition.slug]}"`,
+        );
       }
       const schema = JSON.parse(
         html.match(/<script type="application\/ld\+json">(.*?)<\/script>/)![1],
