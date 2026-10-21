@@ -223,6 +223,11 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
         {data.spots.length > 0 && (
           <section className="mt-14 rounded-3xl border border-slate-200 bg-white p-7">
             <h2 className="text-2xl font-bold">{copy.localSpots}</h2>
+            {translation.spotsIntro && (
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {translation.spotsIntro}
+              </p>
+            )}
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               {data.spots.map((spot) => (
                 <Link

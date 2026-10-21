@@ -198,3 +198,52 @@ Zürichsee / Zuerichsee / Lago di Zurigo, Thunersee / Lago di Thun et Murtensee 
 Lago di Morat, dans chacune des trois langues. À la livraison, contrôler les
 douze réponses HTTP, les observations datées, les prévisions, les canoniques,
 les langues disponibles, les images optimisées et la navigation sur mobile.
+
+## Quatre-Cantons, Lugano, Walensee et Joux (lot 5)
+
+Les définitions `lac-des-quatre-cantons.ts`, `lac-de-lugano.ts`, `walensee.ts`
+et `lac-de-joux.ts` ajoutent douze pages FR/DE/IT. Le registre commun les
+intègre à l’accueil (quinze lacs), à la recherche, à l’index et au sitemap
+(45 URLs de guides). Les canoniques restent propres à chaque langue avec
+alternatives FR/DE/IT et x-default. Aucun guide anglais n’est annoncé.
+
+Les catalogues publics et les sources locales ont été contrôlés le
+21 octobre 2026. Les contextes sont traduits et affichés près des valeurs :
+
+- Quatre-Cantons : stations terrestres LUZ et GES dans des secteurs distincts,
+  prévision au point terrestre de Luzern. L’article donne une vue des bassins
+  et relie explicitement le guide spécialisé Urnersee dans chaque langue.
+- Lugano : station terrestre LUG et prévision aux mêmes coordonnées. Une
+  seule station pertinente, sans ajouter un sommet pour remplir la grille.
+  Le guide distingue les rives suisses et les compétences italiennes.
+- Walensee : QUI près de la rive nord et Pioupiou 2027 près d’un terrain
+  d’atterrissage de parapente à Walenstadt. Ce marqueur météo ne désigne pas
+  un accès nautique. Prévision au point de Quinten, pas pour tous les bassins.
+- Joux : CHB aux Charbonnières, à terre près du Brenet ; point de prévision
+  identique. La fiche existante `cmnpsrv4t0008haf6wb2u0lgc` concerne une
+  pratique hivernale sur lac gelé. Le texte et un paragraphe traduit juste
+  avant le lien précisent qu’il ne s’agit pas d’un accès nautique estival
+  ni d’une confirmation d’ouverture de la glace. La fiche hivernale du
+  Brassus et Saint-Joux au lac de Bienne ne sont pas associées à ce guide.
+
+Les autres guides ne fabriquent pas de spot nautique. Le gabarit adapte la
+grille aux guides à une seule balise et peut afficher `spotsIntro` près des
+liens lorsque leur contexte saisonnier doit être précisé. Le bulletin local
+de l’état du lac est cité pour Joux ; aucune épaisseur de glace n’est déduite
+du vent ou d’une prévision de température.
+
+Les quatre photos locales sont attribuées dans toutes les surfaces, sous
+CC BY-SA 4.0 : Daniel Reust, « Vierwaldstättersee von Brunnen aus » ;
+JoachimKohler-HB, « Morcote, Lago di Lugano & Brusino Asizio (2017) » ;
+Agnes Monkelbaan, « Walensee (Walenmeer) (actm) 02 » ; Giles Laurent,
+« 040 Dent de Vaulion and Lac de Joux at Sunset ». Les textes alternatifs
+décrivent les images réelles, dont la vue hivernale de Joux et le coucher
+de soleil depuis Brunnen. Les liens Commons et les licences sont conservés
+dans les définitions.
+
+Avant publication, contrôler les douze rendus HTML, leurs sources, leurs
+observations datées, les alternatives et données structurées, les 45 URLs
+de guides du sitemap, les alias multilingues dans la recherche, les liens
+de l’accueil, l’accès carte et les images optimisées. Vérifier le changement
+de langue côté client, les cartes à une balise sur mobile et le contexte
+saisonnier affiché à côté du spot de Joux.

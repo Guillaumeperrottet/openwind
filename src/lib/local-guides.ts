@@ -8,6 +8,10 @@ import { LAC_DE_CONSTANCE_GUIDE } from "@/lib/guides/lac-de-constance";
 import { LAC_DE_ZURICH_GUIDE } from "@/lib/guides/lac-de-zurich";
 import { LAC_DE_THOUNE_GUIDE } from "@/lib/guides/lac-de-thoune";
 import { LAC_DE_MORAT_GUIDE } from "@/lib/guides/lac-de-morat";
+import { LAC_DES_QUATRE_CANTONS_GUIDE } from "@/lib/guides/lac-des-quatre-cantons";
+import { LAC_DE_LUGANO_GUIDE } from "@/lib/guides/lac-de-lugano";
+import { WALENSEE_GUIDE } from "@/lib/guides/walensee";
+import { LAC_DE_JOUX_GUIDE } from "@/lib/guides/lac-de-joux";
 
 export const GUIDE_LOCALES = ["fr", "de", "it"] as const;
 export type GuideLocale = (typeof GUIDE_LOCALES)[number];
@@ -18,6 +22,7 @@ export interface GuideTranslation {
   place: string;
   coverAlt: string;
   content: string;
+  spotsIntro?: string;
   faq: { question: string; answer: string }[];
 }
 
@@ -320,6 +325,10 @@ Consulta la scheda dello spot per l’accesso e le particolarità della zona di 
   LAC_DE_ZURICH_GUIDE,
   LAC_DE_THOUNE_GUIDE,
   LAC_DE_MORAT_GUIDE,
+  LAC_DES_QUATRE_CANTONS_GUIDE,
+  LAC_DE_LUGANO_GUIDE,
+  WALENSEE_GUIDE,
+  LAC_DE_JOUX_GUIDE,
 ];
 
 /** Preserve the established featured order, then include every available guide. */
