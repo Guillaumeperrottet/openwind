@@ -154,3 +154,9 @@ Saint-Pierre ne désigne pas un accès autorisé pour les sports nautiques.
 noms locaux (Silvaplanersee, Urnersee, Langensee, Verbano, Bielersee). Vérifier
 les cartes de deux stations sur mobile et les redirections des langues non
 disponibles avant toute publication.
+
+Lors d’un changement de langue sans rechargement complet, `DocumentLanguage`
+synchronise aussi l’attribut `lang` du document avec la route. Le layout racine
+conserve le bon attribut dans le HTML initial ; cette synchronisation couvre
+les navigations côté client, pour lesquelles le layout racine reste monté.
+Contrôler FR → IT → DE dans le navigateur, en plus des requêtes HTTP directes.

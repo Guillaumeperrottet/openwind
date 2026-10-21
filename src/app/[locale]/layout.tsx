@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Navbar } from "@/components/ui/Navbar";
+import { DocumentLanguage } from "@/components/ui/DocumentLanguage";
 import { SiteFooter } from "@/components/ui/SiteFooter";
 import { FavProvider } from "@/lib/FavContext";
 import { routing } from "@/i18n/routing";
@@ -138,6 +139,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <>
+      <DocumentLanguage locale={toSiteLocale(locale)} />
       <Script
         id="gtm-init"
         strategy="afterInteractive"
