@@ -14,15 +14,12 @@ export function SiteFooter() {
   const locale = useLocale();
   const t = useTranslations("Footer");
 
-  // The wind map is a full-screen tool, and the admin has its own shell.
-  if (pathname === "/" || pathname.startsWith("/admin")) return null;
+  // The admin has its own shell. Discovery pages share the public footer.
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <footer className="bg-white" aria-labelledby="site-footer-heading">
-      <div
-        className="relative h-16 overflow-hidden sm:h-20"
-        aria-hidden="true"
-      >
+      <div className="relative h-16 overflow-hidden sm:h-20" aria-hidden="true">
         <svg
           viewBox="0 0 1440 80"
           preserveAspectRatio="none"
@@ -47,10 +44,7 @@ export function SiteFooter() {
           strokeLinejoin="round"
           strokeWidth="1.35"
         >
-          <path
-            d="M5 16C16 1 52 0 67 16c-19-7-43-7-62 0Z"
-            fill="#bae6fd"
-          />
+          <path d="M5 16C16 1 52 0 67 16c-19-7-43-7-62 0Z" fill="#bae6fd" />
           <path d="M18 11c5-2 10-3 17-3m19 3c-5-2-10-3-17-3" opacity=".45" />
           <path d="m7 16 25 22M22 12l11 26m34-22L40 38m10-26L39 38" />
           <path d="M32 38c2 3 6 4 9 1" />
@@ -68,10 +62,7 @@ export function SiteFooter() {
           strokeLinejoin="round"
           strokeWidth="1.35"
         >
-          <path
-            d="M6 16C19 3 50 2 66 17c-18-7-42-7-60-1Z"
-            fill="#e0f2fe"
-          />
+          <path d="M6 16C19 3 50 2 66 17c-18-7-42-7-60-1Z" fill="#e0f2fe" />
           <path d="M20 11c5-2 10-2 16-2m17 3c-5-2-10-3-16-3" opacity=".4" />
           <path d="m8 16 24 21m14-25L39 37m26-20L40 37M23 12l10 25" />
           <path d="M32 37c2 3 6 4 9 1" />
@@ -99,7 +90,11 @@ export function SiteFooter() {
           <circle cx="39" cy="39" r="2.2" fill="#0f172a" stroke="none" />
           <path d="m38 42-2 7m1-5 7-3m-7 7-7 5m7-5 8 4" strokeWidth="1.9" />
           <path d="M27 54c8 2 17 2 25-1" strokeWidth="2.5" />
-          <path d="M20 57c6-2 11-2 17 0m19-1c5-2 10-2 15 0" stroke="#38bdf8" strokeWidth="1.5" />
+          <path
+            d="M20 57c6-2 11-2 17 0m19-1c5-2 10-2 15 0"
+            stroke="#38bdf8"
+            strokeWidth="1.5"
+          />
         </svg>
       </div>
 
@@ -109,6 +104,7 @@ export function SiteFooter() {
             <div>
               <Link
                 href="/?view=map"
+                prefetch={false}
                 className="inline-flex items-center rounded-xl bg-white px-4 py-2.5 shadow-sm transition hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-4 focus-visible:ring-offset-slate-950"
                 aria-label="Openwind — carte du vent"
               >
@@ -141,13 +137,21 @@ export function SiteFooter() {
                   {t("explore")}
                 </h3>
                 <div className="mt-5 flex flex-col gap-3.5">
-                  <Link href="/?view=map" className={linkClass}>
+                  <Link
+                    href="/?view=map"
+                    prefetch={false}
+                    className={linkClass}
+                  >
                     {t("map")}
                   </Link>
                   <Link href="/balises" className={linkClass}>
                     {t("stations")}
                   </Link>
-                  {isGuideLocale(locale) && <Link href="/vent-en-direct" className={linkClass}>{GUIDE_COPY[locale].guides}</Link>}
+                  {isGuideLocale(locale) && (
+                    <Link href="/vent-en-direct" className={linkClass}>
+                      {GUIDE_COPY[locale].guides}
+                    </Link>
+                  )}
                   <Link href="/plan" className={linkClass}>
                     {t("plan")}
                   </Link>

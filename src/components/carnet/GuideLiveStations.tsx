@@ -17,6 +17,7 @@ export interface GuideStation {
   name: string;
   source: keyof typeof NETWORK_LABELS;
   initialLive: GuideObservation | null;
+  context?: Partial<Record<GuideLocale, string>>;
 }
 
 function StationCard({
@@ -44,6 +45,11 @@ function StationCard({
       <p className="mt-1 text-xs text-slate-500">
         {copy.source} : {NETWORK_LABELS[station.source]}
       </p>
+      {station.context?.[locale] && (
+        <p className="mt-2 text-xs leading-5 text-slate-500">
+          {station.context[locale]}
+        </p>
+      )}
       {live && live.source === "station" ? (
         <>
           <p className="mt-5 text-3xl font-bold text-sky-700">

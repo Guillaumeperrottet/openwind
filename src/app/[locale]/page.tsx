@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { KiteMapLazy } from "@/components/map/KiteMapLazy";
+import { HomeLanding } from "@/components/home/HomeLanding";
+import { Link } from "@/i18n/navigation";
+import { HOME_COPY } from "@/lib/home-copy";
+import { resolveHomeView } from "@/lib/home-view";
 import { HomeDiscovery } from "@/components/seo/HomeDiscovery";
 import type { Spot } from "@/types";
 import type { WindStation } from "@/lib/stations";
@@ -61,28 +65,46 @@ export default async function HomePage({
   searchParams: Promise<{ view?: string | string[] }>;
 }) {
   const [{ locale }, query] = await Promise.all([params, searchParams]);
-  const explicitMapView = query.view === "map";
+  let view = resolveHomeView(query.view);
 
   // The root URL is the user's durable launch point. An explicit map link
   // bypasses the preference so switching back to the map always remains easy.
-  if (!explicitMapView) {
+  if (query.view !== "map" && query.view !== "home") {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (user) {
-      const preference = await prisma.userPreference.findUnique({
-        where: { userId: user.id },
-        select: { defaultView: true, onboardingCompleted: true },
-      });
-      if (
-        preference?.onboardingCompleted &&
-        preference.defaultView === "DASHBOARD"
-      ) {
-        redirect(`/${locale}/mon-openwind`);
-      }
+      const preference = await prisma.userPreference
+        .findUnique({
+          where: { userId: user.id },
+          select: { defaultView: true, onboardingCompleted: true },
+        })
+        .catch(() => null);
+      view = resolveHomeView(query.view, preference);
+      if (view === "dashboard") redirect(`/${locale}/mon-openwind`);
     }
+  }
+
+  if (view === "home") {
+    const articles = await prisma.article
+      .findMany({
+        where: { status: "PUBLISHED", kind: "EDITORIAL" },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          excerpt: true,
+          coverImage: true,
+          coverAlt: true,
+          category: true,
+        },
+        orderBy: [{ publishedAt: "desc" }, { id: "asc" }],
+        take: 3,
+      })
+      .catch(() => []);
+    return <HomeLanding locale={locale} articles={articles} />;
   }
 
   // Fetch spots + cached stations in parallel from DB (both instant)
@@ -117,8 +139,17 @@ export default async function HomePage({
 
   return (
     <>
-      <div className="bg-white" style={{ height: "calc(100dvh - 56px)" }}>
+      <div
+        className="relative bg-white"
+        style={{ height: "calc(100dvh - 56px)" }}
+      >
         <KiteMapLazy spots={spots} initialStations={initialStations} />
+        <Link
+          href="/?view=home"
+          className="absolute bottom-7 left-1/2 z-20 -translate-x-1/2 rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-white focus-visible:outline-2 focus-visible:outline-sky-600"
+        >
+          {HOME_COPY[toSiteLocale(locale)].home}
+        </Link>
       </div>
       <HomeDiscovery locale={locale} spots={spots} />
     </>

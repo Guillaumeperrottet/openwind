@@ -1,4 +1,5 @@
 import { localizedUrl } from "@/lib/site";
+import { SWISS_LAKE_GUIDES } from "@/lib/swiss-lake-guides";
 
 export const GUIDE_LOCALES = ["fr", "de", "it"] as const;
 export type GuideLocale = (typeof GUIDE_LOCALES)[number];
@@ -18,12 +19,22 @@ export interface LocalGuide {
   region: string;
   coordinates: { lat: number; lng: number };
   coverImage: string;
+  aliases?: string[];
+  forecastPlace?: string;
+  coverCredit?: {
+    author: string;
+    authorUrl?: string;
+    sourceUrl: string;
+    license: string;
+    licenseUrl: string;
+  };
   publishedAt: string;
   updatedAt: string;
   stations: {
     id: string;
     name: string;
     source: "windball" | "meteoswiss" | "pioupiou";
+    context?: Partial<Record<GuideLocale, string>>;
   }[];
   spotIds: string[];
   sources: { label: string; url: string }[];
@@ -44,6 +55,10 @@ export const GUIDE_COPY = {
     now: "Voir le vent maintenant",
     stations: "Toutes les balises",
     forecast: "Prévisions de vent",
+    forecastPoint: "Point de prévision",
+    forecastScope: "Un point de calcul ne décrit pas toutes les rives du lac.",
+    webcams: "Webcams autour de ce lieu",
+    otherGuides: "Explorer d’autres lacs",
     localSpots: "Spots associés",
     openSpot: "Prévisions et informations du spot",
     sources: "Sources et informations locales",
@@ -73,6 +88,10 @@ export const GUIDE_COPY = {
     now: "Aktuelle Windmessungen",
     stations: "Alle Windstationen",
     forecast: "Windprognose",
+    forecastPoint: "Prognosepunkt",
+    forecastScope: "Ein Berechnungspunkt beschreibt nicht alle Ufer des Sees.",
+    webcams: "Webcams in der Umgebung",
+    otherGuides: "Weitere Seen entdecken",
     localSpots: "Spots in der Umgebung",
     openSpot: "Prognose und Spot-Informationen",
     sources: "Quellen und lokale Informationen",
@@ -102,6 +121,10 @@ export const GUIDE_COPY = {
     now: "Vedi il vento attuale",
     stations: "Tutte le stazioni",
     forecast: "Previsioni del vento",
+    forecastPoint: "Punto di previsione",
+    forecastScope: "Un punto di calcolo non descrive tutte le rive del lago.",
+    webcams: "Webcam intorno a questo luogo",
+    otherGuides: "Esplora altri laghi",
     localSpots: "Spot nei dintorni",
     openSpot: "Previsioni e informazioni sullo spot",
     sources: "Fonti e informazioni locali",
@@ -129,6 +152,7 @@ export function isGuideLocale(locale: string): locale is GuideLocale {
 export const LOCAL_GUIDES: LocalGuide[] = [
   {
     slug: "lac-de-la-gruyere",
+    aliases: ["Gruyère", "Gruyere", "Greyerzersee", "Morlon"],
     region: "Fribourg / Freiburg",
     coordinates: { lat: 46.63, lng: 7.08 },
     coverImage:
@@ -279,6 +303,7 @@ Consulta la scheda dello spot per l’accesso e le particolarità della zona di 
       },
     },
   },
+  ...SWISS_LAKE_GUIDES,
 ];
 
 export function getLocalGuide(slug: string): LocalGuide | undefined {

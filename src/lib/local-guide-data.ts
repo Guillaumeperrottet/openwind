@@ -65,7 +65,16 @@ export async function loadLocalGuide(
             isFresh: isNetworkFresh(id, observation.updatedAt),
           }
         : null;
-    return [{ id, name: station.name, source: station.source, initialLive }];
+    return [
+      {
+        id,
+        name: station.name,
+        source: station.source,
+        initialLive,
+        context: definition.stations.find((candidate) => candidate.id === id)
+          ?.context,
+      },
+    ];
   });
   const connections =
     locale === "fr" && editorial

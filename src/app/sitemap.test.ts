@@ -42,6 +42,22 @@ describe("current, canonical sitemap", () => {
         entry.url ===
         "https://www.openwind.ch/de/vent-en-direct/lac-de-la-gruyere",
     )!;
+    for (const slug of ["lac-de-neuchatel", "lac-leman"]) {
+      for (const locale of ["fr", "de", "it"]) {
+        const entry = entries.find(
+          (item) =>
+            item.url ===
+            `https://www.openwind.ch/${locale}/vent-en-direct/${slug}`,
+        );
+        expect(entry).toBeDefined();
+        expect(Object.keys(entry!.alternates!.languages!)).toEqual([
+          "x-default",
+          "fr",
+          "de",
+          "it",
+        ]);
+      }
+    }
     expect(guide.alternates?.languages).not.toHaveProperty("en");
     expect(guide.lastModified).toEqual(new Date("2026-10-22T10:00:00Z"));
     expect(

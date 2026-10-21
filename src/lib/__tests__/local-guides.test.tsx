@@ -43,10 +43,13 @@ const forecast: FullForecast = {
 };
 
 describe("local guides served without browser interaction", () => {
-  it.each(GUIDE_LOCALES)(
-    "renders the %s title, actual observation, timestamp, forecast and sources in server HTML",
-    (locale) => {
-      const definition = LOCAL_GUIDES[0];
+  it.each(
+    LOCAL_GUIDES.flatMap((definition) =>
+      GUIDE_LOCALES.map((locale) => ({ definition, locale })),
+    ),
+  )(
+    "renders the $definition.slug $locale title, actual observation, timestamp, forecast and sources in server HTML",
+    ({ definition, locale }) => {
       const translation = definition.translations[locale]!;
       const data: LocalGuideData = {
         definition,
@@ -85,9 +88,7 @@ describe("local guides served without browser interaction", () => {
       expect(html).toContain("19 km/h");
       expect(html).toContain("<table");
       expect(html).toContain('dateTime="2026-10-22"');
-      expect(html).toContain(
-        'href="https://bdlf.fr.ch/app/fr/texts_of_law/785.21"',
-      );
+      expect(html).toContain(`href="${definition.sources[0].url}"`);
       expect(html.match(/<h1[ >]/g)).toHaveLength(1);
       const schema = JSON.parse(
         html.match(/<script type="application\/ld\+json">(.*?)<\/script>/)![1],

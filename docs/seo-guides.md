@@ -74,3 +74,48 @@ comme des recherches internes, en attendant d’éventuelles pages locales durab
 - Suivre les clics suisses hors marque ainsi que les inscriptions, favoris et
   usages du planificateur. La présence de code analytique ne garantit pas que
   les événements soient bien configurés comme conversions dans GA4.
+
+## Accueil et recherche globale (lot 2)
+
+L’accueil public présente les guides Gruyère, Neuchâtel et Léman avec des liens
+HTML et une recherche commune à l’accueil et à la navigation. `?view=map` ouvre
+immédiatement la carte, `?view=home` force l’accueil. Les comptes ayant terminé
+l’onboarding conservent leur préférence MAP ou DASHBOARD à la racine. Le
+changement de langue conserve ces paramètres.
+
+Les deux nouveaux guides sont définis dans `src/lib/swiss-lake-guides.ts`, en
+FR/DE/IT, avec leurs vrais identifiants de spots et de stations. Le point de
+prévision est nommé (Neuchâtel ou Pully), et les cartes de stations expliquent
+le rôle des repères régionaux. Le sitemap et les liens des fiches associées
+utilisent automatiquement le registre commun.
+
+`/api/search` renvoie au maximum 15 résultats de métadonnées publiques, groupés
+par type. La recherche reconnaît les variantes linguistiques des lacs, les
+accents et les lieux associés. Seuls les articles EDITORIAL publiés sont
+sélectionnés ; leur corps et les informations de compte ne font pas partie de
+l’index. Les articles restant francophones portent une destination `/fr/`.
+
+Le serveur conserve un index public pendant 60 secondes et regroupe les
+chargements simultanés. Un échec n’est pas mis en cache : les guides versionnés
+restent proposés avec un avertissement de résultats partiels. Les suggestions
+contenant des identifiants de favoris utilisent `private, no-store`. Les
+réponses de recherche portent `X-Robots-Tag: noindex, follow`.
+
+Les résultats « Webcams autour du lieu » ouvrent la recherche géographique
+existante. Ce ne sont pas des caméras individuelles indexées : leur présence
+et leur état dépendent du fournisseur. La recherche n’appelle pas l’API de
+webcams à chaque frappe. Les événements analytiques de sélection contiennent
+le type et l’identifiant du résultat, jamais le texte saisi.
+
+Les couvertures Neuchâtel et Léman sont servies depuis `public/images/guides/`
+et optimisées par Next Image. Les auteurs, sources et licences sont affichés
+sur l’accueil, l’index des guides et les guides concernés. Sources : Thomas
+Woodtli, « Port de Portalban », CC BY-SA 2.0 ; Giles Laurent,
+« 044 Lake Geneva and Swiss Alps », CC BY-SA 4.0. Les liens vers les originaux
+et les licences sont conservés dans les définitions des guides.
+
+Vérifier aussi lors de la livraison : recherche dans chaque catégorie,
+Neuchâtel sans accent, Genfersee et Lago di Ginevra, navigation clavier,
+affichage étroit, raccourci des favoris, accès direct à la carte et maintien
+de cette vue lors d’un changement de langue. Les six nouvelles pages de
+guide doivent répondre en 200 et apparaître dans le sitemap avec FR/DE/IT.

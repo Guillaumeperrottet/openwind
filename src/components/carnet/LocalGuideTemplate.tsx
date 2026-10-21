@@ -1,6 +1,8 @@
 import { Link } from "@/i18n/navigation";
 import { localizedUrl } from "@/lib/site";
-import { GUIDE_COPY, guideLanguages } from "@/lib/local-guides";
+import { GUIDE_COPY, LOCAL_GUIDES, guideLanguages } from "@/lib/local-guides";
+import Image from "next/image";
+import { GuideImageCredit } from "./GuideImageCredit";
 import type { LocalGuideData } from "@/lib/local-guide-data";
 import { ArticleMarkdown } from "./ArticleMarkdown";
 import { ArticleReadTracker } from "./ArticleReadTracker";
@@ -28,7 +30,7 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
         headline: translation.title,
         description: translation.description,
         inLanguage: `${locale}-CH`,
-        image: data.coverImage,
+        image: new URL(data.coverImage, url).href,
         datePublished: data.publishedAt,
         dateModified: data.updatedAt,
         author: { "@type": "Organization", name: data.author },
@@ -90,15 +92,17 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
         }}
       />
       <header className="relative isolate min-h-[500px] overflow-hidden bg-slate-950">
-        {/* Editorial covers may use any administrator-approved HTTPS source. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={data.coverImage}
           alt={data.coverAlt}
           width={1200}
           height={763}
-          loading="eager"
-          fetchPriority="high"
+          sizes="100vw"
+          preload
+          unoptimized={
+            !data.coverImage.includes(".supabase.co/") &&
+            !data.coverImage.startsWith("/")
+          }
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-slate-900/30" />
@@ -138,6 +142,12 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
           </div>
         </div>
       </header>
+      {data.coverImage === definition.coverImage && (
+        <GuideImageCredit
+          credit={definition.coverCredit}
+          className="mx-auto max-w-6xl px-5 pt-3 text-slate-500 sm:px-8"
+        />
+      )}
       <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:px-10">
         <div className="flex flex-wrap justify-between gap-5 text-sm text-slate-500">
           <p>
@@ -179,7 +189,16 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
           <GuideLiveStations stations={data.stations} locale={locale} />
         </section>
         {data.forecast ? (
-          <ForecastSummary forecast={data.forecast} locale={locale} />
+          <>
+            {definition.forecastPlace && (
+              <p className="mt-8 text-sm leading-6 text-slate-600">
+                {copy.forecastPoint} :{" "}
+                <strong>{definition.forecastPlace}</strong>.{" "}
+                {copy.forecastScope}
+              </p>
+            )}
+            <ForecastSummary forecast={data.forecast} locale={locale} />
+          </>
         ) : (
           <section className="my-8 rounded-2xl border border-slate-200 bg-white p-6">
             <h2 className="text-xl font-semibold">{copy.forecast}</h2>
@@ -237,8 +256,18 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
             <Link href="/plan" className="underline underline-offset-4">
               {copy.plan} →
             </Link>
-            <Link href="/?view=map" className="underline underline-offset-4">
+            <Link
+              href="/?view=map"
+              prefetch={false}
+              className="underline underline-offset-4"
+            >
               {copy.map} →
+            </Link>
+            <Link
+              href={`/webcams?${new URLSearchParams({ lat: String(definition.coordinates.lat), lng: String(definition.coordinates.lng), name: translation.place, back: url })}`}
+              className="underline underline-offset-4"
+            >
+              {copy.webcams} →
             </Link>
           </div>
         </section>
@@ -247,6 +276,24 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
             <RelatedArticles articles={data.relatedArticles} />
           </div>
         )}
+        <aside className="mt-14 border-t border-slate-200 pt-8">
+          <h2 className="text-lg font-semibold">{copy.otherGuides}</h2>
+          <ul className="mt-4 flex flex-wrap gap-5 text-sm font-semibold text-sky-800">
+            {LOCAL_GUIDES.filter(
+              (guide) =>
+                guide.slug !== definition.slug && guide.translations[locale],
+            ).map((guide) => (
+              <li key={guide.slug}>
+                <Link
+                  href={`/vent-en-direct/${guide.slug}`}
+                  className="underline underline-offset-4"
+                >
+                  {guide.translations[locale]!.place} →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </aside>
         <footer className="mt-14 border-t border-slate-200 pt-8">
           <h2 className="text-lg font-semibold">{copy.sources}</h2>
           <ul className="mt-4 space-y-3 text-sm">

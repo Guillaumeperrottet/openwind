@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, Suspense } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -35,7 +35,16 @@ export function Navbar() {
   const links = [
     { href: "/?view=map" as const, label: t("map"), icon: Map },
     { href: "/plan" as const, label: t("plan"), icon: Route },
-    ...(isGuideLocale(currentLocale) ? [{ href: "/vent-en-direct", label: ({ fr: "Guides", de: "Guides", it: "Guide" })[currentLocale], icon: RadioTower, hideOnMobile: true }] : []),
+    ...(isGuideLocale(currentLocale)
+      ? [
+          {
+            href: "/vent-en-direct",
+            label: { fr: "Guides", de: "Guides", it: "Guide" }[currentLocale],
+            icon: RadioTower,
+            hideOnMobile: true,
+          },
+        ]
+      : []),
     ...(currentLocale === "fr"
       ? [
           {
@@ -48,6 +57,7 @@ export function Navbar() {
       : []),
   ];
   const pathname = usePathname();
+  const query = useSearchParams();
   const {
     user,
     favoriteSpotIds,
@@ -105,7 +115,7 @@ export function Navbar() {
           href={
             user && preferences?.defaultView === "DASHBOARD"
               ? "/mon-openwind"
-              : "/"
+              : "/?view=home"
           }
           className="flex items-center shrink-0"
         >
@@ -144,11 +154,20 @@ export function Navbar() {
             <Link
               key={href}
               href={href}
+              prefetch={href === "/?view=map" ? false : undefined}
               aria-label={label}
               className={cn(
                 "items-center justify-center gap-1.5 rounded-lg px-2 py-2 sm:px-3 sm:py-1.5 text-sm transition-colors min-w-10 min-h-10 sm:min-w-0 sm:min-h-0",
                 hideOnMobile ? "hidden sm:flex" : "flex",
-                (href.startsWith("/?") ? pathname === "/" : pathname === href)
+                (
+                  href.startsWith("/?")
+                    ? pathname === "/" &&
+                      (query.get("view") === "map" ||
+                        (!query.has("view") &&
+                          preferences?.onboardingCompleted &&
+                          preferences.defaultView === "MAP"))
+                    : pathname === href
+                )
                   ? "bg-sky-50 text-sky-600"
                   : "text-gray-500 hover:text-gray-900 hover:bg-gray-50",
               )}

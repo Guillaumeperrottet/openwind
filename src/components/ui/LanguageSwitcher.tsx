@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { useSearchParams } from "next/navigation";
 
 const LOCALE_LABELS: Record<string, string> = {
   fr: "FR",
@@ -18,6 +19,7 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
   const pathname = usePathname();
+  const query = useSearchParams();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -51,7 +53,10 @@ export function LanguageSwitcher({ currentLocale }: LanguageSwitcherProps) {
             <button
               key={locale}
               onClick={() => {
-                router.replace(pathname, { locale });
+                router.replace(
+                  `${pathname}${query.size ? `?${query.toString()}` : ""}`,
+                  { locale },
+                );
                 setOpen(false);
               }}
               className={`w-full text-left px-3 py-2 text-sm transition-colors ${

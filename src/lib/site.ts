@@ -16,15 +16,15 @@ export const HOME_SEO: Record<
   }
 > = {
   fr: {
-    title: "Openwind — Balises vent en direct, spots kitesurf et parapente",
+    title: "Vent en Suisse : balises, spots et guides des lacs — Openwind",
     description:
-      "Balises vent en direct, carte interactive des spots de kitesurf et parapente. Prévisions 7 jours, archives historiques et planificateur de voyages.",
+      "Explorez les lacs suisses, les spots de kitesurf et de parapente. Balises de vent, prévisions, webcams autour des lieux et guides locaux pour préparer vos sorties.",
     socialDescription:
       "Vent en direct, prévisions 7 jours et archives pour le kitesurf et le parapente.",
     openGraphLocale: "fr_CH",
   },
   en: {
-    title: "Openwind — Live wind stations, kitesurf and paragliding spots",
+    title: "Wind in Switzerland: stations, spots and lake guides — Openwind",
     description:
       "Live wind stations and an interactive map of kitesurfing and paragliding spots, with 7-day forecasts, historical archives and a trip planner.",
     socialDescription:
@@ -32,7 +32,7 @@ export const HOME_SEO: Record<
     openGraphLocale: "en_US",
   },
   de: {
-    title: "Openwind — Live-Wind, Kitesurf- und Gleitschirm-Spots",
+    title: "Wind Schweiz: Messstationen, Spots und Seen — Openwind",
     description:
       "Live-Windstationen und interaktive Karte für Kitesurf- und Gleitschirm-Spots mit 7-Tage-Prognosen, Archiven und Reiseplaner.",
     socialDescription:
@@ -40,7 +40,7 @@ export const HOME_SEO: Record<
     openGraphLocale: "de_CH",
   },
   it: {
-    title: "Openwind — Vento in diretta, spot kitesurf e parapendio",
+    title: "Vento in Svizzera: stazioni, spot e laghi — Openwind",
     description:
       "Stazioni vento in diretta e mappa interattiva degli spot di kitesurf e parapendio, con previsioni a 7 giorni, archivi e pianificatore.",
     socialDescription:

@@ -1,3 +1,5 @@
+import { GuideImageCredit } from "@/components/carnet/GuideImageCredit";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -94,14 +96,13 @@ export default async function GuidesPage({ params }: Props) {
               className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
             >
               <Link href={`/vent-en-direct/${guide.slug}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={guide.coverImage}
                   alt={translation.coverAlt}
                   width={1200}
                   height={763}
                   className="aspect-[16/9] w-full object-cover"
-                  loading="lazy"
+                  sizes="(max-width: 767px) 100vw, 50vw"
                 />
                 <div className="p-6">
                   <p className="text-xs uppercase tracking-widest text-slate-500">
@@ -118,6 +119,10 @@ export default async function GuidesPage({ params }: Props) {
                   </span>
                 </div>
               </Link>
+              <GuideImageCredit
+                credit={guide.coverCredit}
+                className="px-6 pb-4 text-slate-500"
+              />
             </article>
           );
         })}
