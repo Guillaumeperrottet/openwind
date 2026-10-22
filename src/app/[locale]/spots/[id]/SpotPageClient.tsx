@@ -597,6 +597,11 @@ export function SpotPageClient({
             </button>
 
             {/* Keep the details in the initial HTML; only their visibility changes. */}
+            {localizedDescription && (
+              <p className="text-sm text-gray-600 mt-3 leading-relaxed max-w-2xl">
+                {localizedDescription}
+              </p>
+            )}
             <div id="spot-info-details" hidden={!showInfo}>
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge className={DIFFICULTY_COLORS[spot.difficulty]}>
@@ -616,12 +621,6 @@ export function SpotPageClient({
                 </Badge>
               </div>
 
-              {/* Description + meta compact */}
-              {localizedDescription && (
-                <p className="text-sm text-gray-500 mt-3 leading-relaxed max-w-2xl">
-                  {localizedDescription}
-                </p>
-              )}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-400">
                 {bestMonthLabels.length > 0 && (
                   <span className="flex items-center gap-1">

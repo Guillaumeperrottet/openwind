@@ -32,9 +32,11 @@ const focusClass =
 export function HomeLanding({
   locale,
   articles,
+  featuredSpots = [],
 }: {
   locale: string;
   articles: HomeArticle[];
+  featuredSpots?: { id: string; name: string }[];
 }) {
   const language = toSiteLocale(locale);
   const guideLocale = isGuideLocale(language) ? language : "fr";
@@ -121,6 +123,31 @@ export function HomeLanding({
           </figure>
         </div>
       </section>
+      {featuredSpots.length > 0 && (
+        <section
+          aria-labelledby="home-spots-title"
+          className="mx-auto max-w-7xl px-5 pb-12 sm:px-8"
+        >
+          <h2 id="home-spots-title" className="text-lg font-semibold">
+            {copy.spotsTitle}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {copy.spotsIntro}
+          </p>
+          <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-sky-800">
+            {featuredSpots.map((spot) => (
+              <li key={spot.id}>
+                <Link
+                  href={`/spots/${spot.id}`}
+                  className={`underline underline-offset-4 ${focusClass}`}
+                >
+                  {spot.name} →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section
         aria-labelledby="home-lakes-title"
         className="border-y border-slate-200/70 bg-white py-14 sm:py-20"

@@ -45,14 +45,17 @@ const props = (view?: string) => ({
 describe("home data loading and saved launch views", () => {
   it("does not load map datasets on the public home", async () => {
     expect((await HomePage(props())).type).toBe(HomeLanding);
-    expect(mocks.spots).not.toHaveBeenCalled();
+    expect(mocks.spots).toHaveBeenCalledWith(
+      expect.objectContaining({ select: { id: true, name: true } }),
+    );
+    expect(mocks.spots.mock.calls[0][0]).not.toHaveProperty("include");
     expect(mocks.cache).not.toHaveBeenCalled();
   });
   it("opens explicit map and home links without applying an account redirect", async () => {
     expect((await HomePage(props("home"))).type).toBe(HomeLanding);
     await HomePage(props("map"));
     expect(mocks.auth).not.toHaveBeenCalled();
-    expect(mocks.spots).toHaveBeenCalledTimes(1);
+    expect(mocks.spots).toHaveBeenCalledTimes(2);
   });
   it("retains the map as the root view for an onboarded account that chose MAP", async () => {
     mocks.auth.mockResolvedValue({ data: { user: { id: "user" } } });

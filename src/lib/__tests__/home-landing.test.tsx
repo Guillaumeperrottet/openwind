@@ -16,6 +16,8 @@ vi.mock("@/components/search/GlobalSearch", () => ({
 }));
 import { HomeLanding } from "@/components/home/HomeLanding";
 import { getHomeGuides } from "@/lib/local-guides";
+import { HOME_COPY } from "@/lib/home-copy";
+import { HOME_SEO, toSiteLocale } from "@/lib/site";
 import { HOME_GUIDE_COUNT } from "@/lib/collections";
 
 describe("server-rendered discovery home", () => {
@@ -26,6 +28,10 @@ describe("server-rendered discovery home", () => {
         <HomeLanding locale={locale} articles={[]} />,
       );
       expect(html.match(/<h1[ >]/g)).toHaveLength(1);
+      expect(html).toContain(HOME_COPY[toSiteLocale(locale)].title);
+      expect(HOME_SEO[toSiteLocale(locale)].title).toMatch(
+        /[Cc]arte|map|karte|[Mm]appa/,
+      );
       const guides = getHomeGuides(
         locale === "de" || locale === "it" ? locale : "fr",
       );
@@ -48,4 +54,16 @@ describe("server-rendered discovery home", () => {
       expect(html).not.toContain("maplibregl");
     },
   );
+  it("links to real editable spot names without adding another card collection", () => {
+    const html = renderToStaticMarkup(
+      <HomeLanding
+        locale="fr"
+        articles={[]}
+        featuredSpots={[{ id: "morlon", name: "Morlon — Les Laviaux" }]}
+      />,
+    );
+    expect(html).toContain('href="/fr/spots/morlon"');
+    expect(html).toContain("Morlon — Les Laviaux");
+    expect(html.match(/<article /g)).toHaveLength(HOME_GUIDE_COUNT);
+  });
 });

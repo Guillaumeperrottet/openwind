@@ -16,33 +16,33 @@ export const HOME_SEO: Record<
   }
 > = {
   fr: {
-    title: "Vent en Suisse : balises, spots et guides des lacs — Openwind",
+    title: "Carte du vent en Suisse : balises et prévisions — Openwind",
     description:
-      "Explorez les lacs suisses, les spots de kitesurf et de parapente. Balises de vent, prévisions, webcams autour des lieux et guides locaux pour préparer vos sorties.",
+      "Consultez la carte du vent en Suisse : balises, rafales et prévisions à 7 jours. Explorez les spots de kitesurf, de parapente et les guides des lacs.",
     socialDescription:
       "Vent en direct, prévisions 7 jours et archives pour le kitesurf et le parapente.",
     openGraphLocale: "fr_CH",
   },
   en: {
-    title: "Wind in Switzerland: stations, spots and lake guides — Openwind",
+    title: "Switzerland wind map: live stations and forecasts — Openwind",
     description:
-      "Live wind stations and an interactive map of kitesurfing and paragliding spots, with 7-day forecasts, historical archives and a trip planner.",
+      "Explore the Switzerland wind map: live stations, gusts and 7-day forecasts. Find kitesurfing and paragliding spots, webcams and local lake guides.",
     socialDescription:
       "Live wind, 7-day forecasts and archives for kitesurfing and paragliding.",
     openGraphLocale: "en_US",
   },
   de: {
-    title: "Wind Schweiz: Messstationen, Spots und Seen — Openwind",
+    title: "Windkarte Schweiz: Messstationen und Prognosen — Openwind",
     description:
-      "Live-Windstationen und interaktive Karte für Kitesurf- und Gleitschirm-Spots mit 7-Tage-Prognosen, Archiven und Reiseplaner.",
+      "Windkarte der Schweiz mit Messstationen, Böen und 7-Tage-Prognosen. Entdecke Kitesurf- und Gleitschirm-Spots, Webcams und lokale See-Guides.",
     socialDescription:
       "Live-Wind, 7-Tage-Prognosen und Archive für Kitesurfen und Gleitschirmfliegen.",
     openGraphLocale: "de_CH",
   },
   it: {
-    title: "Vento in Svizzera: stazioni, spot e laghi — Openwind",
+    title: "Mappa del vento in Svizzera: stazioni e previsioni — Openwind",
     description:
-      "Stazioni vento in diretta e mappa interattiva degli spot di kitesurf e parapendio, con previsioni a 7 giorni, archivi e pianificatore.",
+      "Consulta la mappa del vento in Svizzera: stazioni, raffiche e previsioni a 7 giorni. Esplora spot di kitesurf e parapendio, webcam e guide dei laghi.",
     socialDescription:
       "Vento in diretta, previsioni a 7 giorni e archivi per kitesurf e parapendio.",
     openGraphLocale: "it_CH",

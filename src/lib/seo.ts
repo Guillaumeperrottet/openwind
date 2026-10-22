@@ -28,7 +28,8 @@ const SPOT_COPY: Record<
 > = {
   fr: {
     title: (sport, place) => `${sport} à ${place} : vent en direct`,
-    introduction: (sport, place) => `${place} : spot de ${sport.toLowerCase()}.`,
+    introduction: (sport, place) =>
+      `${place} : spot de ${sport.toLowerCase()}.`,
     fallbackDescription:
       "Consultez le vent, les prévisions et les informations du spot pour préparer votre sortie.",
     spotDe: (s) => `Spot de ${s}`,
@@ -71,7 +72,10 @@ function toLocale(locale?: string): Locale {
 
 type SpotIdentity = Pick<Spot, "name" | "sportType" | "region" | "country">;
 type SpotDescriptions = Partial<
-  Pick<Spot, "description" | "descriptionEn" | "descriptionDe" | "descriptionIt">
+  Pick<
+    Spot,
+    "description" | "descriptionEn" | "descriptionDe" | "descriptionIt"
+  >
 >;
 
 function normalizeText(text: string | null | undefined): string {
@@ -82,7 +86,8 @@ function spotLocation(spot: SpotIdentity, compact = false): string {
   const parts = [spot.region, spot.country].map(normalizeText).filter(Boolean);
   const unique = parts.filter(
     (part, index) =>
-      parts.findIndex((other) => other.toLowerCase() === part.toLowerCase()) === index,
+      parts.findIndex((other) => other.toLowerCase() === part.toLowerCase()) ===
+      index,
   );
   return (compact ? unique.slice(0, 1) : unique).join(", ");
 }
@@ -95,7 +100,10 @@ function spotPlace(spot: SpotIdentity, compact = false): string {
     : name;
 }
 
-function localizedSpotDescription(spot: SpotDescriptions, locale: Locale): string {
+function localizedSpotDescription(
+  spot: SpotDescriptions,
+  locale: Locale,
+): string {
   const translated =
     locale === "en"
       ? spot.descriptionEn
@@ -124,8 +132,11 @@ export function buildSpotDescription(
   const sport =
     spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
   const copy = SPOT_COPY[l];
-  const detail = localizedSpotDescription(spot, l) || copy.fallbackDescription;
-  const description = `${copy.introduction(sport, spotPlace(spot))} ${detail}`;
+  const detail = localizedSpotDescription(spot, l);
+  // Keep local editorial facts ahead of repeated sport / region wording.
+  const description = detail
+    ? `${normalizeText(spot.name)} : ${detail}`
+    : `${copy.introduction(sport, spotPlace(spot))} ${copy.fallbackDescription}`;
 
   // An editorial length budget, not a guarantee of Google's snippet length.
   // Prefer word boundaries rather than cutting ordinary words in half.
@@ -170,6 +181,10 @@ export function buildArticleSchema(
   const article = {
     "@context": "https://schema.org",
     "@type": "Article",
+    "@id": `${localizedUrl(l, `/spots/${spot.id}`)}#article`,
+    url: localizedUrl(l, `/spots/${spot.id}`),
+    mainEntityOfPage: localizedUrl(l, `/spots/${spot.id}`),
+    inLanguage: l,
     headline,
     name: spot.name,
     description:
@@ -226,7 +241,8 @@ export function buildPlaceSchema(
     "@type": "Place",
     name: spot.name,
     description:
-      localizedSpotDescription(spot, l).slice(0, 500) || SPOT_COPY[l].spotDe(sport),
+      localizedSpotDescription(spot, l).slice(0, 500) ||
+      SPOT_COPY[l].spotDe(sport),
     geo: {
       "@type": "GeoCoordinates",
       latitude: spot.latitude,

@@ -26,7 +26,7 @@ export const SWISS_LAKE_GUIDES: LocalGuide[] = [
       licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
     },
     publishedAt: "2026-10-21T11:07:43Z",
-    updatedAt: "2026-10-21T11:07:43Z",
+    updatedAt: "2026-10-22T00:00:00Z",
     stations: [
       {
         id: "NEU",
@@ -60,6 +60,7 @@ export const SWISS_LAKE_GUIDES: LocalGuide[] = [
       },
     ],
     spotIds: [
+      "cmnr46jjd0000i5f6q521m974",
       "cmnr31n570007ijf6q33aez75",
       "cmnr312220004ijf6l2oobbhb",
       "cmnr30vtl0003ijf6ylndlqlf",

@@ -12,8 +12,8 @@ import {
   DEFAULT_OG_IMAGE,
   localizedAlternates,
   localizedUrl,
-  toSiteLocale,
 } from "@/lib/site";
+import { stationSeo, stationSchema } from "@/lib/station-seo";
 import { StationPageClient } from "./StationPageClient";
 
 // No force-dynamic — params already makes this route dynamic.
@@ -29,32 +29,20 @@ export async function generateMetadata({ params }: Props) {
   const { id, locale } = await params;
   const stationId = decodeURIComponent(id);
   const station = await getStation(stationId);
-  const name = station?.name ?? stationId;
-  const localizedCopy = {
-    fr: {
-      title: `Vent à ${name} en direct`,
-      description: `Balise vent à ${name} (${stationId}) : mesure en direct, rafales, historique 48 h et prévisions à 7 jours.`,
-    },
-    en: {
-      title: `Live wind at ${name}`,
-      description: `Wind station at ${name} (${stationId}): live measurements, gusts, 48-hour history and 7-day forecasts.`,
-    },
-    de: {
-      title: `Live-Wind in ${name}`,
-      description: `Windstation in ${name} (${stationId}): Live-Messwerte, Böen, 48-Stunden-Verlauf und 7-Tage-Prognosen.`,
-    },
-    it: {
-      title: `Vento in diretta a ${name}`,
-      description: `Stazione vento a ${name} (${stationId}): misure in diretta, raffiche, storico di 48 ore e previsioni a 7 giorni.`,
-    },
-  };
-  const copy = localizedCopy[toSiteLocale(locale)];
+  if (!station) notFound();
+  const copy = stationSeo(station, locale);
   const encodedId = encodeURIComponent(stationId);
 
   return {
     title: copy.title,
     description: copy.description,
     alternates: localizedAlternates(locale, `/stations/${encodedId}`),
+    twitter: {
+      card: "summary_large_image" as const,
+      title: `${copy.title} — Openwind`,
+      description: copy.description,
+      images: [DEFAULT_OG_IMAGE],
+    },
     openGraph: {
       title: `${copy.title} — Openwind`,
       description: copy.description,
@@ -66,7 +54,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function StationPage({ params }: Props) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const stationId = decodeURIComponent(id);
 
   // Look up station metadata from the 10-min cron snapshot — single DB query,
@@ -83,20 +71,19 @@ export default async function StationPage({ params }: Props) {
     forecastResult,
     swissWeatherResult,
     connectionsResult,
-  ] =
-    await Promise.allSettled([
-      getStationLive(stationId, {
-        lat: station.lat,
-        lng: station.lng,
-        allowOpenMeteoFallback: false,
-      }),
-      getStationHistory(stationId, { lat: station.lat, lng: station.lng }),
-      fetchFullForecast(station.lat, station.lng),
-      station.source === "meteoswiss"
-        ? getMeteoSwissStationWeather(stationId)
-        : Promise.resolve(null),
-      resolveStationConnections(stationId),
-    ]);
+  ] = await Promise.allSettled([
+    getStationLive(stationId, {
+      lat: station.lat,
+      lng: station.lng,
+      allowOpenMeteoFallback: false,
+    }),
+    getStationHistory(stationId, { lat: station.lat, lng: station.lng }),
+    fetchFullForecast(station.lat, station.lng),
+    station.source === "meteoswiss"
+      ? getMeteoSwissStationWeather(stationId)
+      : Promise.resolve(null),
+    resolveStationConnections(stationId),
+  ]);
 
   // StationPageClient still consumes a flat HistoryPoint[] — keep that contract
   // while Phase 4 hasn't migrated it to WindHistoryBundle.
@@ -107,23 +94,34 @@ export default async function StationPage({ params }: Props) {
   const live = liveResult.status === "fulfilled" ? liveResult.value : null;
 
   return (
-    <StationPageClient
-      station={station}
-      live={live}
-      forecast={
-        forecastResult.status === "fulfilled" ? forecastResult.value : null
-      }
-      history={history}
-      meteoswissWeather={
-        swissWeatherResult.status === "fulfilled"
-          ? swissWeatherResult.value
-          : null
-      }
-      connections={
-        connectionsResult.status === "fulfilled"
-          ? connectionsResult.value
-          : { spots: [], articles: [] }
-      }
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(stationSchema(station, locale)).replace(
+            /</g,
+            "\\u003c",
+          ),
+        }}
+      />
+      <StationPageClient
+        station={station}
+        live={live}
+        forecast={
+          forecastResult.status === "fulfilled" ? forecastResult.value : null
+        }
+        history={history}
+        meteoswissWeather={
+          swissWeatherResult.status === "fulfilled"
+            ? swissWeatherResult.value
+            : null
+        }
+        connections={
+          connectionsResult.status === "fulfilled"
+            ? connectionsResult.value
+            : { spots: [], articles: [] }
+        }
+      />
+    </>
   );
 }

@@ -32,48 +32,84 @@ describe("spot metadata", () => {
     ["en", "Kitesurfing at Morlon beach (Fribourg): live wind"],
     ["de", "Kitesurfen in Morlon beach (Fribourg): Live-Wind"],
     ["it", "Kitesurf a Morlon beach (Fribourg): vento in diretta"],
-  ])("builds a localized, unbranded %s title from actual spot fields", (locale, title) => {
-    expect(buildSpotTitle(spot, locale)).toBe(title);
-  });
+  ])(
+    "builds a localized, unbranded %s title from actual spot fields",
+    (locale, title) => {
+      expect(buildSpotTitle(spot, locale)).toBe(title);
+    },
+  );
 
   it.each([
-    ["fr", "Parapente"], ["en", "Paragliding"],
-    ["de", "Gleitschirmfliegen"], ["it", "Parapendio"],
+    ["fr", "Parapente"],
+    ["en", "Paragliding"],
+    ["de", "Gleitschirmfliegen"],
+    ["it", "Parapendio"],
   ])("uses the correct sport for paragliding in %s", (locale, sportLabel) => {
     const paraglide = { ...spot, sportType: "PARAGLIDE" as const };
     expect(buildSpotTitle(paraglide, locale)).toContain(sportLabel);
-    expect(buildSpotDescription(paraglide, locale).toLowerCase()).toContain(sportLabel.toLowerCase());
+    expect(
+      buildSpotDescription(
+        {
+          ...paraglide,
+          description: null,
+          descriptionEn: null,
+          descriptionDe: null,
+          descriptionIt: null,
+        },
+        locale,
+      ).toLowerCase(),
+    ).toContain(sportLabel.toLowerCase());
   });
 
   it.each([
-    ["fr", spot.description], ["en", spot.descriptionEn],
-    ["de", spot.descriptionDe], ["it", spot.descriptionIt],
-  ])("reuses the editable %s description in metadata and structured data", (locale, detail) => {
-    const description = buildSpotDescription(spot, locale);
-    expect(description).toContain("Morlon beach (Fribourg, Suisse)");
-    expect(description).toContain(detail);
-    expect(buildArticleSchema(spot, locale).description).toBe(detail);
-    expect(buildPlaceSchema(spot, locale).description).toBe(detail);
-  });
+    ["fr", spot.description],
+    ["en", spot.descriptionEn],
+    ["de", spot.descriptionDe],
+    ["it", spot.descriptionIt],
+  ])(
+    "reuses the editable %s description in metadata and structured data",
+    (locale, detail) => {
+      const description = buildSpotDescription(spot, locale);
+      expect(description).toMatch(/^Morlon beach : /);
+      expect(description).toContain(detail);
+      expect(buildArticleSchema(spot, locale).description).toBe(detail);
+      expect(buildArticleSchema(spot, locale).mainEntityOfPage).toBe(
+        `https://www.openwind.ch/${locale}/spots/morlon`,
+      );
+      expect(buildArticleSchema(spot, locale).inLanguage).toBe(locale);
+      expect(buildPlaceSchema(spot, locale).description).toBe(detail);
+    },
+  );
 
   it("uses the country when the region is absent and does not invent a location", () => {
     expect(buildSpotTitle({ ...spot, region: null })).toContain("(Suisse)");
     const noLocation = { ...spot, region: null, country: null };
-    expect(buildSpotTitle(noLocation)).toBe("Kitesurf à Morlon beach : vent en direct");
+    expect(buildSpotTitle(noLocation)).toBe(
+      "Kitesurf à Morlon beach : vent en direct",
+    );
     expect(buildSpotDescription(noLocation)).not.toContain("()");
     expect(buildSpotTitle(spot)).not.toContain("Gruyère");
   });
 
   it("normalizes whitespace and repeated location fields", () => {
-    const messy = { ...spot, name: "  Morlon\n beach ", region: " Suisse ", country: "suisse" };
-    expect(buildSpotDescription(messy)).toContain("Morlon beach (Suisse)");
+    const messy = {
+      ...spot,
+      name: "  Morlon\n beach ",
+      region: " Suisse ",
+      country: "suisse",
+    };
+    expect(buildSpotDescription(messy)).toMatch(/^Morlon beach : /);
     expect(buildSpotDescription(messy)).not.toContain("Suisse, suisse");
-    expect(buildSpotTitle({ ...messy, name: "Suisse" })).not.toContain("(Suisse)");
+    expect(buildSpotTitle({ ...messy, name: "Suisse" })).not.toContain(
+      "(Suisse)",
+    );
   });
 
   it("falls back to the original description for missing or blank translations", () => {
     for (const descriptionEn of [undefined, null, "", " \n "]) {
-      expect(buildSpotDescription({ ...spot, descriptionEn }, "en")).toContain(spot.description);
+      expect(buildSpotDescription({ ...spot, descriptionEn }, "en")).toContain(
+        spot.description,
+      );
     }
     expect(buildSpotTitle(spot, "unknown")).toBe(buildSpotTitle(spot, "fr"));
   });
@@ -84,18 +120,39 @@ describe("spot metadata", () => {
     expect(description).toContain(spot.name);
     expect(description).toContain("prévisions");
     expect(description).not.toMatch(/spot spot|undefined|null/);
-    expect(buildSpotDescription({ ...incomplete, name: "Autre plage" })).not.toBe(description);
+    expect(
+      buildSpotDescription({ ...incomplete, name: "Autre plage" }),
+    ).not.toBe(description);
   });
 
   it("updates metadata when an editor changes the spot fields", () => {
-    const edited = { ...spot, name: "Morlon", description: "Nouvel accès décrit par un membre." };
+    const edited = {
+      ...spot,
+      name: "Morlon",
+      description: "Nouvel accès décrit par un membre.",
+    };
     expect(buildSpotTitle(edited)).toContain("à Morlon (");
     expect(buildSpotDescription(edited)).toContain(edited.description);
     expect(buildSpotDescription(edited)).not.toBe(buildSpotDescription(spot));
   });
 
+  it("retains the qualified profile’s local wind sector in the snippet budget", () => {
+    const meta = buildSpotDescription({
+      ...spot,
+      name: "Morlon — Les Laviaux",
+      description:
+        "Spot de Bise aux Laviaux, sur le lac de la Gruyère. Le profil retient les vents de nord à nord-est et s’adresse à des pratiquants expérimentés.",
+    });
+    expect(meta).toContain("lac de la Gruyère");
+    expect(meta).toContain("nord à nord-est");
+    expect(meta.length).toBeLessThanOrEqual(160);
+  });
+
   it("shortens long descriptions at a word boundary", () => {
-    const long = buildSpotDescription({ ...spot, description: "Informations locales détaillées. ".repeat(20) });
+    const long = buildSpotDescription({
+      ...spot,
+      description: "Informations locales détaillées. ".repeat(20),
+    });
     expect(long.length).toBeLessThanOrEqual(160);
     expect(long).toMatch(/…$/);
     expect(long).toMatch(/(?:Informations|locales|détaillées\.)…$/);

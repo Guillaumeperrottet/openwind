@@ -88,23 +88,48 @@ export default async function HomePage({
   }
 
   if (view === "home") {
-    const articles = await prisma.article
-      .findMany({
-        where: { status: "PUBLISHED", kind: "EDITORIAL" },
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          excerpt: true,
-          coverImage: true,
-          coverAlt: true,
-          category: true,
-        },
-        orderBy: [{ publishedAt: "desc" }, { id: "asc" }],
-        take: 3,
-      })
-      .catch(() => []);
-    return <HomeLanding locale={locale} articles={articles} />;
+    const [articles, featuredSpots] = await Promise.all([
+      prisma.article
+        .findMany({
+          where: { status: "PUBLISHED", kind: "EDITORIAL" },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            excerpt: true,
+            coverImage: true,
+            coverAlt: true,
+            category: true,
+          },
+          orderBy: [{ publishedAt: "desc" }, { id: "asc" }],
+          take: 3,
+        })
+        .catch(() => []),
+      // Four text links, not the full map dataset. Names follow editorial edits.
+      prisma.spot
+        .findMany({
+          where: {
+            id: {
+              in: [
+                "cmnr31n570007ijf6q33aez75",
+                "cmnq613tx00it04kw1d0vraq4",
+                "cmnr46jjd0000i5f6q521m974",
+                "swiss-kite-isleten",
+              ],
+            },
+          },
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        })
+        .catch(() => []),
+    ]);
+    return (
+      <HomeLanding
+        locale={locale}
+        articles={articles}
+        featuredSpots={featuredSpots}
+      />
+    );
   }
 
   // Fetch spots + cached stations in parallel from DB (both instant)

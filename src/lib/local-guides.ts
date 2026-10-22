@@ -31,6 +31,11 @@ export interface GuideTranslation {
   coverAlt: string;
   content: string;
   spotsIntro?: string;
+  quickStart?: {
+    title: string;
+    text: string;
+    links: { href: string; label: string; external?: boolean }[];
+  }[];
   faq: { question: string; answer: string }[];
 }
 
@@ -66,6 +71,10 @@ export interface LocalGuide {
 
 export const GUIDE_COPY = {
   fr: {
+    navigation: "Dans ce guide",
+    quickStart: "Les repères essentiels",
+    forecastLink: "Prévisions à 7 jours",
+    localContext: "Repères locaux",
     title: "Vent en direct en Suisse : balises et guides locaux",
     description:
       "Retrouvez les balises de vent, les prévisions et les guides locaux Openwind pour préparer vos sorties en Suisse.",
@@ -99,6 +108,10 @@ export const GUIDE_COPY = {
     context: "Comprendre les conditions locales",
   },
   de: {
+    navigation: "In diesem Guide",
+    quickStart: "Die wichtigsten Anhaltspunkte",
+    forecastLink: "7-Tage-Prognose",
+    localContext: "Lokale Hinweise",
     title: "Wind in der Schweiz: Live-Messstationen und lokale Guides",
     description:
       "Windmessstationen, Prognosen und lokale Openwind-Guides für die Vorbereitung von Ausflügen in der Schweiz.",
@@ -132,6 +145,10 @@ export const GUIDE_COPY = {
     context: "Lokale Bedingungen verstehen",
   },
   it: {
+    navigation: "In questa guida",
+    quickStart: "I riferimenti essenziali",
+    forecastLink: "Previsioni a 7 giorni",
+    localContext: "Informazioni locali",
     title: "Vento in Svizzera: stazioni in diretta e guide locali",
     description:
       "Stazioni del vento, previsioni e guide locali Openwind per preparare le tue uscite in Svizzera.",
@@ -179,7 +196,7 @@ export const LOCAL_GUIDES: LocalGuide[] = [
     coverImage:
       "https://fnndeoqzqfxpznhcundq.supabase.co/storage/v1/object/public/spot-images/cmnq613tx00it04kw1d0vraq4/1776010538678.jpeg",
     publishedAt: "2026-08-26T10:30:00Z",
-    updatedAt: "2026-10-21T00:00:00Z",
+    updatedAt: "2026-10-22T00:00:00Z",
     stations: [
       { id: "windball-wf-35", name: "Morlon Beach", source: "windball" },
       { id: "MAS", name: "Marsens", source: "meteoswiss" },
@@ -207,6 +224,52 @@ export const LOCAL_GUIDES: LocalGuide[] = [
           "Comparez le vent à Morlon Beach, Marsens et au Camping du Lac : mesures, rafales, prévisions et repères locaux pour le lac de la Gruyère.",
         place: "Lac de la Gruyère",
         coverAlt: "Le lac de la Gruyère et les Préalpes fribourgeoises",
+        quickStart: [
+          {
+            title: "Quelle balise regarder au lac de la Gruyère ?",
+            text: "Comparez Morlon Beach et le Camping du Lac au bord du lac avec Marsens pour le contexte régional. Vérifiez l’heure de chaque relevé : des observations décalées ne décrivent pas le même instant.",
+            links: [
+              {
+                href: "/stations/windball-wf-35",
+                label: "Vent à Morlon Beach",
+              },
+              {
+                href: "/stations/MAS",
+                label: "Vent à Marsens",
+              },
+              {
+                href: "/stations/piou-2153",
+                label: "Vent au Camping du Lac",
+              },
+            ],
+          },
+          {
+            title: "Quel vent pour le kitesurf à Morlon ?",
+            text: "Les Laviaux est un spot de Bise, avec un secteur nord à nord-est documenté pour des pratiquants expérimentés. La fiche détaille le départ, ses obstacles et les conditions d’accès ; une direction favorable ne suffit pas à valider une session.",
+            links: [
+              {
+                href: "/spots/cmnq613tx00it04kw1d0vraq4",
+                label: "Kitesurf à Morlon — Les Laviaux",
+              },
+              {
+                href: "https://letskite.ch/fr/spots/158/morlon",
+                label: "Source locale : Let’s Kite",
+                external: true,
+              },
+            ],
+          },
+          {
+            title: "Où vérifier les zones de navigation ?",
+            text: "L’arrêté cantonal 785.21 et ses annexes cartographiques précisent les zones exclues du kitesurf. Consultez ces cartes et les avis locaux avant de choisir une mise à l’eau ; la présence d’une balise ne vaut pas autorisation de naviguer.",
+            links: [
+              {
+                href: "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+                label: "État de Fribourg : arrêté et cartes officielles",
+                external: true,
+              },
+            ],
+          },
+        ],
         content: `## Lire le relief avant de lire le chiffre
 Le lac de la Gruyère s’étire entre des rives découpées, des collines et les premiers reliefs des Préalpes fribourgeoises. Une mesure au bord du lac et une mesure régionale ne décrivent pas exactement les mêmes conditions.
 
@@ -248,6 +311,52 @@ Consultez la fiche du spot pour les informations d’accès et les particularit�
           "Vergleiche Wind und Böen in Morlon Beach, Marsens und am Camping du Lac: Messstationen, Prognose und lokale Informationen zum Greyerzersee.",
         place: "Greyerzersee / Lac de la Gruyère",
         coverAlt: "Der Greyerzersee und die Freiburger Voralpen",
+        quickStart: [
+          {
+            title: "Welche Windstation am Greyerzersee vergleichen?",
+            text: "Vergleiche Morlon Beach und Camping du Lac am See mit Marsens als regionalem Bezugspunkt. Prüfe die Messzeiten: Zeitversetzte Beobachtungen beschreiben nicht denselben Moment.",
+            links: [
+              {
+                href: "/stations/windball-wf-35",
+                label: "Wind in Morlon Beach",
+              },
+              {
+                href: "/stations/MAS",
+                label: "Wind in Marsens",
+              },
+              {
+                href: "/stations/piou-2153",
+                label: "Wind am Camping du Lac",
+              },
+            ],
+          },
+          {
+            title: "Welcher Wind zum Kitesurfen in Morlon?",
+            text: "Les Laviaux ist ein Bisenrevier mit dokumentiertem Nord- bis Nordostsektor für erfahrene Kiter. Die Spot-Seite beschreibt Einstieg, Hindernisse und Zugangsbedingungen. Eine passende Windrichtung allein bestätigt keine geeignete Session.",
+            links: [
+              {
+                href: "/spots/cmnq613tx00it04kw1d0vraq4",
+                label: "Kitesurfen in Morlon — Les Laviaux",
+              },
+              {
+                href: "https://letskite.ch/fr/spots/158/morlon",
+                label: "Lokale Quelle: Let’s Kite · FR",
+                external: true,
+              },
+            ],
+          },
+          {
+            title: "Wo sind die erlaubten Wasserflächen ersichtlich?",
+            text: "Der kantonale Beschluss 785.21 und seine Kartenanhänge zeigen die vom Kitesurfen ausgeschlossenen Zonen. Prüfe diese Karten und örtliche Hinweise vor dem Einstieg. Eine Windstation bedeutet keine Freigabe zum Kitesurfen.",
+            links: [
+              {
+                href: "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+                label: "Kanton Freiburg: Beschluss und offizielle Karten · FR",
+                external: true,
+              },
+            ],
+          },
+        ],
         content: `## Erst das Gelände, dann die Zahl
 Der Greyerzersee liegt zwischen gegliederten Ufern, Hügeln und den Freiburger Voralpen. Eine Messung am Seeufer und eine regionale Messung beschreiben nicht genau dieselben Bedingungen.
 
@@ -288,6 +397,52 @@ Die Spot-Seite enthält Informationen zum Zugang und zu den Besonderheiten des S
           "Confronta vento e raffiche a Morlon Beach, Marsens e al Camping du Lac: stazioni, previsioni e informazioni locali sul lago della Gruyère.",
         place: "Lago della Gruyère",
         coverAlt: "Il lago della Gruyère e le Prealpi friburghesi",
+        quickStart: [
+          {
+            title: "Quali stazioni confrontare al lago della Gruyère?",
+            text: "Confronta Morlon Beach e Camping du Lac sulla riva con Marsens come riferimento regionale. Controlla gli orari: osservazioni rilevate in momenti diversi non descrivono lo stesso istante.",
+            links: [
+              {
+                href: "/stations/windball-wf-35",
+                label: "Vento a Morlon Beach",
+              },
+              {
+                href: "/stations/MAS",
+                label: "Vento a Marsens",
+              },
+              {
+                href: "/stations/piou-2153",
+                label: "Vento al Camping du Lac",
+              },
+            ],
+          },
+          {
+            title: "Quale vento per il kitesurf a Morlon?",
+            text: "Les Laviaux è uno spot di Bise con settore da nord a nord-est documentato per praticanti esperti. La scheda descrive partenza, ostacoli e condizioni di accesso. Una direzione favorevole da sola non basta a confermare una sessione.",
+            links: [
+              {
+                href: "/spots/cmnq613tx00it04kw1d0vraq4",
+                label: "Kitesurf a Morlon — Les Laviaux",
+              },
+              {
+                href: "https://letskite.ch/fr/spots/158/morlon",
+                label: "Fonte locale: Let’s Kite · FR",
+                external: true,
+              },
+            ],
+          },
+          {
+            title: "Dove verificare le zone di navigazione?",
+            text: "Il decreto cantonale 785.21 e le carte allegate indicano le zone escluse dal kitesurf. Consulta carte e avvisi locali prima di scegliere l’accesso all’acqua. Una stazione del vento non costituisce un’autorizzazione a navigare.",
+            links: [
+              {
+                href: "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+                label: "Cantone di Friburgo: decreto e carte ufficiali · FR",
+                external: true,
+              },
+            ],
+          },
+        ],
         content: `## Leggere il rilievo prima del numero
 Il lago della Gruyère si estende tra rive articolate, colline e i primi rilievi delle Prealpi friburghesi. Una misura sulla riva e una misura regionale non descrivono esattamente le stesse condizioni.
 

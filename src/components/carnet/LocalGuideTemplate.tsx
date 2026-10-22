@@ -181,6 +181,68 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
             />
           </div>
         )}
+        <nav
+          aria-label={copy.navigation}
+          className="mt-8 flex flex-wrap gap-3 text-sm font-semibold text-sky-800"
+        >
+          {[
+            ["vent-direct", copy.now],
+            ["previsions", copy.forecastLink],
+            ["reperes-locaux", copy.localContext],
+            ...(data.spots.length ? [["spots", copy.localSpots]] : []),
+            ["questions", copy.faq],
+          ].map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 hover:border-sky-500 focus-visible:outline-2 focus-visible:outline-sky-600"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        {translation.quickStart && (
+          <section
+            aria-labelledby="guide-essentials"
+            className="mt-9 rounded-3xl border border-sky-100 bg-white p-5 sm:p-7"
+          >
+            <h2 id="guide-essentials" className="text-2xl font-bold">
+              {copy.quickStart}
+            </h2>
+            <div className="mt-5 space-y-6">
+              {translation.quickStart.map((item) => (
+                <div key={item.title}>
+                  <h3 className="font-semibold">{item.title}</h3>
+                  <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
+                    {item.text}
+                  </p>
+                  <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-3 text-sm font-semibold text-sky-800">
+                    {item.links.map((link) => (
+                      <li key={link.href}>
+                        {link.external ? (
+                          <a
+                            href={link.href}
+                            className="underline underline-offset-4"
+                          >
+                            {link.label} ↗
+                          </a>
+                        ) : (
+                          <Link
+                            href={link.href}
+                            locale={locale}
+                            className="underline underline-offset-4"
+                          >
+                            {link.label} →
+                          </Link>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
         <section id="vent-direct" className="mt-12 scroll-mt-24">
           <h2 className="text-3xl font-bold text-slate-950">{copy.live}</h2>
           <p className="mb-6 mt-3 max-w-3xl leading-7 text-slate-600">
@@ -188,24 +250,29 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
           </p>
           <GuideLiveStations stations={data.stations} locale={locale} />
         </section>
-        {data.forecast ? (
-          <>
-            {definition.forecastPlace && (
-              <p className="mt-8 text-sm leading-6 text-slate-600">
-                {copy.forecastPoint} :{" "}
-                <strong>{definition.forecastPlace}</strong>.{" "}
-                {copy.forecastScope}
-              </p>
-            )}
-            <ForecastSummary forecast={data.forecast} locale={locale} />
-          </>
-        ) : (
-          <section className="my-8 rounded-2xl border border-slate-200 bg-white p-6">
-            <h2 className="text-xl font-semibold">{copy.forecast}</h2>
-            <p className="mt-2 text-sm text-slate-500">{copy.unavailable}</p>
-          </section>
-        )}
-        <section className="mt-14 grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
+        <div id="previsions" className="scroll-mt-24">
+          {data.forecast ? (
+            <>
+              {definition.forecastPlace && (
+                <p className="mt-8 text-sm leading-6 text-slate-600">
+                  {copy.forecastPoint} :{" "}
+                  <strong>{definition.forecastPlace}</strong>.{" "}
+                  {copy.forecastScope}
+                </p>
+              )}
+              <ForecastSummary forecast={data.forecast} locale={locale} />
+            </>
+          ) : (
+            <section className="my-8 rounded-2xl border border-slate-200 bg-white p-6">
+              <h2 className="text-xl font-semibold">{copy.forecast}</h2>
+              <p className="mt-2 text-sm text-slate-500">{copy.unavailable}</p>
+            </section>
+          )}
+        </div>
+        <section
+          id="reperes-locaux"
+          className="scroll-mt-24 mt-14 grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]"
+        >
           <div className="min-w-0">
             <ArticleMarkdown>{data.content}</ArticleMarkdown>
             <ArticleReadTracker
@@ -221,7 +288,10 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
           </aside>
         </section>
         {data.spots.length > 0 && (
-          <section className="mt-14 rounded-3xl border border-slate-200 bg-white p-7">
+          <section
+            id="spots"
+            className="scroll-mt-24 mt-14 rounded-3xl border border-slate-200 bg-white p-7"
+          >
             <h2 className="text-2xl font-bold">{copy.localSpots}</h2>
             {translation.spotsIntro && (
               <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -242,7 +312,10 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
             </div>
           </section>
         )}
-        <section className="mt-14 rounded-3xl border border-slate-200 bg-white p-7">
+        <section
+          id="questions"
+          className="scroll-mt-24 mt-14 rounded-3xl border border-slate-200 bg-white p-7"
+        >
           <h2 className="text-2xl font-bold">{copy.faq}</h2>
           <div className="mt-5 divide-y divide-slate-200">
             {translation.faq.map((item) => (

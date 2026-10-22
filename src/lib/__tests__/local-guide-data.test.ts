@@ -90,4 +90,31 @@ describe("guide availability and observation provenance", () => {
       LOCAL_GUIDES[0].translations.de!.content,
     );
   });
+  it("adds versioned spot links to existing French articles without losing admin links or duplicating spots", async () => {
+    mocks.editorial.mockResolvedValue({
+      content: "Texte administré",
+      sources: [],
+      linkedStationIds: [],
+      authorName: "Équipe locale",
+      updatedAt: new Date("2026-10-20"),
+    });
+    mocks.spots.mockResolvedValue([
+      { id: "cudrefin", name: "Cudrefin" },
+      { id: "shared", name: "Current name" },
+    ]);
+    mocks.connections.mockResolvedValue({
+      spots: [
+        { id: "shared", name: "Current name" },
+        { id: "admin", name: "Admin selection" },
+      ],
+      relatedArticles: [],
+    });
+    const result = await loadLocalGuide(LOCAL_GUIDES[0], "fr");
+    expect(result.content).toBe("Texte administré");
+    expect(result.spots.map((spot) => spot.id)).toEqual([
+      "cudrefin",
+      "shared",
+      "admin",
+    ]);
+  });
 });

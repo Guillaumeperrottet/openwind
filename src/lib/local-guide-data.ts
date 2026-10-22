@@ -80,14 +80,22 @@ export async function loadLocalGuide(
     locale === "fr" && editorial
       ? await resolveArticleConnections(editorial).catch(() => null)
       : null;
-  const spots =
-    connections?.spots ??
-    (await prisma.spot
-      .findMany({
-        where: { id: { in: definition.spotIds } },
-        select: { id: true, name: true },
-      })
-      .catch(() => []));
+  // Versioned links complement admin links, including on an existing FR article.
+  // Fetch names from the DB so deleted spots disappear and editorial renames win.
+  const definedSpots = await prisma.spot
+    .findMany({
+      where: { id: { in: definition.spotIds } },
+      select: { id: true, name: true },
+    })
+    .catch(() => []);
+  const spots = [
+    ...new Map(
+      [...definedSpots, ...(connections?.spots ?? [])].map((spot) => [
+        spot.id,
+        spot,
+      ]),
+    ).values(),
+  ];
   const translation = definition.translations[locale]!;
   const editorialSources = parseArticleSources(editorial?.sources);
   return {

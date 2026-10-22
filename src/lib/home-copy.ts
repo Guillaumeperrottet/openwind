@@ -1,10 +1,13 @@
 export const HOME_COPY = {
   fr: {
+    spotsTitle: "Préparer une sortie sur un spot suisse",
+    spotsIntro:
+      "Accès, particularités du départ et vent : consultez les fiches avant de choisir votre sortie.",
     eyebrow: "LE VENT. LE TERRAIN. VOTRE PROCHAINE SORTIE.",
-    title: "Prenez le vent.",
-    accent: "Trouvez votre terrain.",
+    title: "Le vent en Suisse.",
+    accent: "Votre prochain spot.",
     intro:
-      "Lacs, spots de kite et de parapente, balises et prévisions : tous vos repères au même endroit, en Suisse et au-delà.",
+      "Comparez le vent mesuré, les rafales et les prévisions à 7 jours. Trouvez un spot de kitesurf ou de parapente, une balise, une webcam ou un guide des lacs suisses.",
     map: "Ouvrir la carte",
     mapNote: "Déjà vos habitudes ? Accédez directement à la carte.",
     explore: "À explorer",
@@ -49,11 +52,14 @@ export const HOME_COPY = {
     heroLink: "Découvrir le Léman",
   },
   de: {
+    spotsTitle: "Einen Ausflug an einen Schweizer Spot vorbereiten",
+    spotsIntro:
+      "Zugang, Besonderheiten des Einstiegs und Wind: Informiere dich vor der Planung auf den Spot-Seiten.",
     eyebrow: "DER WIND. DAS GELÄNDE. DEIN NÄCHSTER AUSFLUG.",
-    title: "Spüre den Wind.",
-    accent: "Finde deinen Spot.",
+    title: "Wind in der Schweiz.",
+    accent: "Dein nächster Spot.",
     intro:
-      "Seen, Kite- und Gleitschirm-Spots, Windstationen und Prognosen: deine Orientierung an einem Ort, in der Schweiz und darüber hinaus.",
+      "Vergleiche Windmessungen, Böen und 7-Tage-Prognosen. Finde Kitesurf- und Gleitschirm-Spots, Windstationen, Webcams und Guides zu Schweizer Seen.",
     map: "Karte öffnen",
     mapNote: "Schon vertraut mit Openwind? Direkt zur Karte.",
     explore: "Entdecken",
@@ -99,11 +105,14 @@ export const HOME_COPY = {
     heroLink: "Den Genfersee entdecken",
   },
   it: {
+    spotsTitle: "Preparare un’uscita in uno spot svizzero",
+    spotsIntro:
+      "Accesso, particolarità della partenza e vento: consulta le schede prima di scegliere la tua uscita.",
     eyebrow: "IL VENTO. IL TERRITORIO. LA TUA PROSSIMA USCITA.",
-    title: "Segui il vento.",
-    accent: "Trova il tuo spot.",
+    title: "Il vento in Svizzera.",
+    accent: "Il tuo prossimo spot.",
     intro:
-      "Laghi, spot di kite e parapendio, stazioni e previsioni: tutti i tuoi riferimenti in un solo luogo, in Svizzera e oltre.",
+      "Confronta vento misurato, raffiche e previsioni a 7 giorni. Trova spot di kitesurf e parapendio, stazioni, webcam e guide dei laghi svizzeri.",
     map: "Apri la mappa",
     mapNote: "Conosci già Openwind? Vai direttamente alla mappa.",
     explore: "Da esplorare",
@@ -149,11 +158,14 @@ export const HOME_COPY = {
     heroLink: "Scopri il Lemano",
   },
   en: {
+    spotsTitle: "Prepare a trip to a Swiss spot",
+    spotsIntro:
+      "Access, launch details and wind: check the spot pages before choosing your next session.",
     eyebrow: "THE WIND. THE TERRAIN. YOUR NEXT DAY OUT.",
-    title: "Follow the wind.",
-    accent: "Find your next spot.",
+    title: "Wind in Switzerland.",
+    accent: "Your next spot.",
     intro:
-      "Lakes, kite and paragliding spots, wind stations and forecasts: your bearings in one place, in Switzerland and beyond.",
+      "Compare wind measurements, gusts and 7-day forecasts. Find kitesurfing and paragliding spots, wind stations, webcams and Swiss lake guides.",
     map: "Open the map",
     mapNote: "Know your way around? Go straight to the map.",
     explore: "Explore",

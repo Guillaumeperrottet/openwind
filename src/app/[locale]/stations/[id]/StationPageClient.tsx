@@ -31,6 +31,7 @@ import type { StationConnections as StationConnectionsData } from "@/lib/station
 import type { HistoryPoint, WindLive } from "@/types";
 import { MeteoSwissDetailsPanel } from "./MeteoSwissDetailsPanel";
 import { StationConnections } from "./StationConnections";
+import { stationSeo } from "@/lib/station-seo";
 import { LocalGuideLinks } from "@/components/carnet/LocalGuideLinks";
 import { useFavContext } from "@/lib/FavContext";
 
@@ -176,13 +177,21 @@ export function StationPageClient({
   const curDir = liveIsNewer ? live!.windDirection : station.windDirection;
   const curGustsKmh = liveIsNewer ? live!.gustsKmh : station.gustsKmh;
   const curUpdatedAt = liveIsNewer ? live!.updatedAt : station.updatedAt;
-  const isCurrentStale = liveIsNewer ? !live!.isFresh : !isNetworkFresh(station.id, station.updatedAt);
+  const isCurrentStale = liveIsNewer
+    ? !live!.isFresh
+    : !isNetworkFresh(station.id, station.updatedAt);
 
   // Derived display values — use the same `barColors` palette as the chart
   // bars and the map flag so the colour is identical everywhere.
   const color = barColors(curWindKmh)[0];
   type WindCondKey =
-    "calm" | "light" | "gentle" | "good" | "strong" | "veryStrong" | "danger";
+    | "calm"
+    | "light"
+    | "gentle"
+    | "good"
+    | "strong"
+    | "veryStrong"
+    | "danger";
   const condLabel = tWind(
     windConditionKey(curWindKmh).split(".")[1] as WindCondKey,
   );
@@ -313,6 +322,9 @@ export function StationPageClient({
                   </span>
                 )}
               </div>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">
+                {stationSeo(station, locale).lead}
+              </p>
               {station.description && (
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">
                   {station.description}
@@ -323,9 +335,7 @@ export function StationPageClient({
               <button
                 type="button"
                 onClick={() => toggleStationFavorite(station.id)}
-                aria-label={
-                  isFavorite ? t("removeFavorite") : t("addFavorite")
-                }
+                aria-label={isFavorite ? t("removeFavorite") : t("addFavorite")}
                 aria-pressed={isFavorite}
                 title={isFavorite ? t("removeFavorite") : t("addFavorite")}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-400 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-500"

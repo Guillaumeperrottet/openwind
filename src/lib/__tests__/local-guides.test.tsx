@@ -93,6 +93,27 @@ describe("local guides served without browser interaction", () => {
       expect(html).toContain('dateTime="2026-10-22"');
       expect(html).toContain(`href="${definition.sources[0].url}"`);
       expect(html.match(/<h1[ >]/g)).toHaveLength(1);
+      for (const anchor of [
+        "vent-direct",
+        "previsions",
+        "reperes-locaux",
+        "questions",
+      ]) {
+        expect(html).toContain(`href="#${anchor}"`);
+        expect(html).toContain(`id="${anchor}"`);
+      }
+      for (const item of translation.quickStart ?? []) {
+        expect(html).toContain(item.title);
+        expect(html.indexOf(item.text)).toBeLessThan(
+          html.indexOf('id="vent-direct"'),
+        );
+        for (const link of item.links) {
+          expect(html).toContain(
+            `href="${link.external ? link.href : `/${locale}${link.href}`}"`,
+          );
+        }
+      }
+
       if (!definition.spotIds.length) {
         expect(html).not.toContain("/spots/undefined");
         expect(html).not.toContain("Associated spot");
