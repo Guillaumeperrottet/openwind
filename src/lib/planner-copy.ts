@@ -3,7 +3,6 @@ const fr = {
   title: "Votre prochaine sortie commence ici.",
   intro:
     "Choisissez vos dates. Comparez trois pistes expliquées, puis vérifiez les conditions sur place.",
-  free: "Résultats gratuits · sans inscription",
   mapLink: "Ouvrir la carte en direct",
   sport: "Votre activité",
   kite: "Kitesurf",
@@ -103,7 +102,6 @@ const fr = {
   copied: "Lien copié",
   copyError: "Copiez l’adresse depuis votre navigateur.",
   timeZone: "Fuseau du spot",
-  allFree: "Explorez les résultats librement. Aucun compte nécessaire.",
   index: "Indice de classement",
   attribution: "Recherche de villes : GeoNames via Open-Meteo",
 };
@@ -117,7 +115,6 @@ const de: Copy = {
   title: "Dein nächster Ausflug beginnt hier.",
   intro:
     "Wähle deine Daten. Vergleiche drei begründete Vorschläge und prüfe die Bedingungen vor Ort.",
-  free: "Kostenlose Ergebnisse · ohne Anmeldung",
   mapLink: "Live-Karte öffnen",
   sport: "Deine Aktivität",
   kite: "Kitesurfen",
@@ -216,7 +213,6 @@ const de: Copy = {
   copied: "Link kopiert",
   copyError: "Kopiere die Adresse im Browser.",
   timeZone: "Zeitzone am Spot",
-  allFree: "Alle Ergebnisse frei zugänglich. Kein Konto erforderlich.",
   index: "Ranglistenindex",
   attribution: "Stadtsuche: GeoNames über Open-Meteo",
 };
@@ -225,7 +221,6 @@ const it: Copy = {
   title: "La tua prossima uscita inizia qui.",
   intro:
     "Scegli le date. Confronta tre proposte motivate, poi verifica le condizioni sul posto.",
-  free: "Risultati gratuiti · senza registrazione",
   mapLink: "Apri la mappa in diretta",
   sport: "La tua attività",
   kite: "Kitesurf",
@@ -323,7 +318,6 @@ const it: Copy = {
   copied: "Link copiato",
   copyError: "Copia l’indirizzo dal browser.",
   timeZone: "Fuso dello spot",
-  allFree: "Esplora liberamente i risultati. Non serve un account.",
   index: "Indice di classifica",
   attribution: "Ricerca città: GeoNames tramite Open-Meteo",
 };
@@ -332,7 +326,6 @@ const en: Copy = {
   title: "Your next session starts here.",
   intro:
     "Pick your dates. Compare three explained suggestions, then check conditions on site.",
-  free: "Free results · no sign-up",
   mapLink: "Open the live map",
   sport: "Your activity",
   kite: "Kitesurfing",
@@ -428,7 +421,6 @@ const en: Copy = {
   copied: "Link copied",
   copyError: "Copy the address from your browser.",
   timeZone: "Spot time zone",
-  allFree: "Explore all results freely. No account required.",
   index: "Ranking index",
   attribution: "City search: GeoNames via Open-Meteo",
 };

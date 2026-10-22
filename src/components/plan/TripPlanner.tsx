@@ -361,10 +361,6 @@ export function TripPlanner({
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:mt-4 sm:text-lg">
               {c.intro}
             </p>
-            <p className="mt-4 flex items-center gap-2 text-xs font-medium text-teal-800">
-              <Check size={15} aria-hidden />
-              {c.free}
-            </p>
           </div>
           <div
             aria-hidden
@@ -651,10 +647,7 @@ export function TripPlanner({
           {longRange && (
             <p className="mt-3 text-sm text-amber-800">{c.seasonalHint}</p>
           )}
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="hidden text-xs text-slate-500 sm:block">
-              {c.allFree}
-            </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
             <button
               type="submit"
               disabled={loading && !dirty}
