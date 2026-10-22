@@ -11,14 +11,17 @@ import {
   ShieldCheck,
   Wind,
 } from "lucide-react";
-import {
-  CarnetArticleIndex,
-  type CarnetIndexArticle,
-} from "@/components/carnet/CarnetArticleIndex";
+import { CarnetArticleIndex } from "@/components/carnet/CarnetArticleIndex";
 import { Link } from "@/i18n/navigation";
-import { articlePublicPath } from "@/lib/articles";
-import { prisma } from "@/lib/prisma";
 import { localizedUrl } from "@/lib/site";
+import {
+  CARNET_PAGE_SIZE,
+  collectionQuery,
+  collectionPath,
+  type CollectionParams,
+} from "@/lib/collections";
+import { carnetPage } from "@/lib/publication-index";
+import { getCarnetPublications } from "@/lib/carnet-data";
 
 const PAGE_PATH = "/carnet";
 const PAGE_URL = localizedUrl("fr", PAGE_PATH);
@@ -27,27 +30,37 @@ const HERO_IMAGE =
 
 interface Props {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<CollectionParams>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Props): Promise<Metadata> {
   const { locale } = await params;
 
   if (locale !== "fr") {
     return { robots: { index: false, follow: false } };
   }
 
-  const title = "Le Carnet — Journal du kite en Suisse romande";
+  const query = collectionQuery(await searchParams);
+  if (!carnetPage(await getCarnetPublications(), query).valid) notFound();
+  const pageUrl = localizedUrl("fr", collectionPath(PAGE_PATH, query));
+  const title =
+    "Le Carnet — Guides des lacs et journal du vent en Suisse" +
+    (query.page > 1 ? ` · Page ${query.page}` : "");
   const description =
-    "Le journal de terrain Openwind : guides de spots, vents locaux, balises en direct, accès et règles pour le kite en Suisse romande.";
+    "Explorez les guides des lacs suisses et les articles Openwind : vents locaux, balises, prévisions, accès et règles pour préparer vos sorties.";
 
   return {
     title,
     description,
-    alternates: { canonical: PAGE_URL },
+    alternates: { canonical: pageUrl },
+    robots: { index: !query.q && query.kind === "all", follow: true },
     openGraph: {
       title: `${title} — Openwind`,
       description,
-      url: PAGE_URL,
+      url: pageUrl,
       type: "website",
       locale: "fr_CH",
       images: [
@@ -89,58 +102,21 @@ const editorialPillars = [
   },
 ];
 
-export default async function CarnetPage({ params }: Props) {
+export default async function CarnetPage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (locale !== "fr") notFound();
+  const query = collectionQuery(await searchParams);
 
   // Include publications added through the admin or migrations after deployment.
   await connection();
-  const publishedArticles = await prisma.article.findMany({
-    where: { status: "PUBLISHED" },
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }, { id: "asc" }],
-    select: {
-      id: true,
-      kind: true,
-      slug: true,
-      title: true,
-      excerpt: true,
-      coverImage: true,
-      coverAlt: true,
-      category: true,
-      location: true,
-      readTime: true,
-      publishedAt: true,
-      createdAt: true,
-    },
-  });
-  const publicationDate = new Intl.DateTimeFormat("fr-CH", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "Europe/Zurich",
-  });
+  const carnetIndexArticles = await getCarnetPublications();
+  const result = carnetPage(carnetIndexArticles, query);
+  if (!result.valid) notFound();
+  const pageUrl = localizedUrl("fr", collectionPath(PAGE_PATH, query));
 
-  const carnetIndexArticles: CarnetIndexArticle[] = publishedArticles.map(
-    (article) => ({
-      id: article.id,
-      kind: article.kind,
-      href: articlePublicPath(article),
-      title: article.title,
-      excerpt: article.excerpt,
-      coverImage: article.coverImage,
-      coverAlt: article.coverAlt,
-      category: article.category,
-      location: article.location,
-      readTime: article.readTime,
-      publishedLabel: publicationDate.format(
-        article.publishedAt ?? article.createdAt,
-      ),
-    }),
-  );
-
-  const itemListElement = carnetIndexArticles.map((article, index) => ({
+  const itemListElement = result.items.map((article, index) => ({
     "@type": "ListItem",
-    position: index + 1,
+    position: (query.page - 1) * CARNET_PAGE_SIZE + index + 1,
     name: article.title,
     url: localizedUrl("fr", article.href),
   }));
@@ -151,10 +127,10 @@ export default async function CarnetPage({ params }: Props) {
       {
         "@type": "CollectionPage",
         name: "Le Carnet Openwind",
-        headline: "Le journal de terrain du vent et des spots de kite",
+        headline: "Le journal de terrain du vent et des lacs suisses",
         description:
-          "Guides de spots, vents locaux, balises en direct, accès et règles pour le kite en Suisse romande.",
-        url: PAGE_URL,
+          "Guides des lacs suisses, vents locaux, balises en direct, prévisions, accès et règles pour préparer vos sorties.",
+        url: pageUrl,
         inLanguage: "fr-CH",
         image: HERO_IMAGE,
         publisher: { "@type": "Organization", name: "Openwind" },
@@ -197,7 +173,7 @@ export default async function CarnetPage({ params }: Props) {
         <div className="mx-auto w-full max-w-[1480px] px-5 pb-12 pt-10 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10 xl:px-12">
           <div className="flex items-center justify-between border-y border-slate-900 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 sm:text-xs">
             <span>Journal de terrain</span>
-            <span className="hidden sm:inline">Suisse romande</span>
+            <span className="hidden sm:inline">Les lacs suisses</span>
             <span>Édition 2026</span>
           </div>
 
@@ -214,9 +190,8 @@ export default async function CarnetPage({ params }: Props) {
                 <span className="block italic text-sky-700">Openwind</span>
               </h1>
               <p className="mt-7 max-w-xl text-lg leading-8 text-slate-700 sm:text-xl">
-                Le journal du vent et des spots de kite en Suisse romande,
-                écrit pour préparer une session sans perdre le contact avec le
-                terrain.
+                Des lacs suisses aux vents locaux : guides de terrain,
+                décryptages et conseils pour préparer vos sorties.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-medium text-slate-600">
                 <span className="inline-flex items-center gap-2">
@@ -231,6 +206,32 @@ export default async function CarnetPage({ params }: Props) {
                   <ShieldCheck className="h-4 w-4 text-sky-700" />
                   Sources vérifiées
                 </span>
+              </div>
+              <div
+                className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-sky-800"
+                aria-label="Catalogue des guides par langue"
+              >
+                <Link
+                  href="/vent-en-direct"
+                  locale="fr"
+                  className="underline underline-offset-4"
+                >
+                  Guides · FR
+                </Link>
+                <Link
+                  href="/vent-en-direct"
+                  locale="de"
+                  className="underline underline-offset-4"
+                >
+                  Guides · DE
+                </Link>
+                <Link
+                  href="/vent-en-direct"
+                  locale="it"
+                  className="underline underline-offset-4"
+                >
+                  Guide · IT
+                </Link>
               </div>
             </div>
 
@@ -263,15 +264,15 @@ export default async function CarnetPage({ params }: Props) {
           <div className="mb-8 border-b border-slate-900 pb-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
-                Toutes les publications
+                Articles & guides des lacs
               </p>
               <h2 className="mt-1 font-serif text-3xl font-semibold sm:text-4xl">
-                Les Carnets à lire
+                À lire, à explorer
               </h2>
             </div>
           </div>
 
-          <CarnetArticleIndex articles={carnetIndexArticles} />
+          <CarnetArticleIndex articles={carnetIndexArticles} query={query} />
         </section>
 
         <section className="border-y border-slate-200 bg-slate-50">
@@ -285,8 +286,9 @@ export default async function CarnetPage({ params }: Props) {
               </h2>
               <p className="mt-5 text-base leading-7 text-slate-600">
                 Le Carnet ne promet pas le vent. Il donne les bons repères pour
-                le comprendre et rappelle ce qu&apos;aucune application ne remplace
-                : l&apos;observation sur place et l&apos;expérience locale.
+                le comprendre et rappelle ce qu&apos;aucune application ne
+                remplace : l&apos;observation sur place et l&apos;expérience
+                locale.
               </p>
             </div>
 
@@ -305,7 +307,9 @@ export default async function CarnetPage({ params }: Props) {
                   <h3 className="mt-6 font-serif text-2xl font-semibold">
                     {title}
                   </h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{text}</p>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {text}
+                  </p>
                 </article>
               ))}
             </div>
@@ -319,9 +323,9 @@ export default async function CarnetPage({ params }: Props) {
               Ton spot a une histoire.
             </h2>
             <p className="mt-4 text-sm leading-6 text-slate-600">
-              Une mise à l&apos;eau a changé, une règle mérite d&apos;être précisée ou
-              une balise raconte mal la réalité ? La communauté peut aider le
-              Carnet à rester juste.
+              Une mise à l&apos;eau a changé, une règle mérite d&apos;être
+              précisée ou une balise raconte mal la réalité ? La communauté peut
+              aider le Carnet à rester juste.
             </p>
             <Link
               href="/forum"
@@ -332,7 +336,6 @@ export default async function CarnetPage({ params }: Props) {
             </Link>
           </aside>
         </section>
-
       </div>
     </div>
   );

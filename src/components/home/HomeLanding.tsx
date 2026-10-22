@@ -15,6 +15,7 @@ import { GuideImageCredit } from "@/components/carnet/GuideImageCredit";
 import { getHomeGuides, isGuideLocale } from "@/lib/local-guides";
 import { HOME_COPY } from "@/lib/home-copy";
 import { toSiteLocale } from "@/lib/site";
+import { HOME_GUIDE_COUNT } from "@/lib/collections";
 
 export interface HomeArticle {
   id: string;
@@ -38,7 +39,8 @@ export function HomeLanding({
   const language = toSiteLocale(locale);
   const guideLocale = isGuideLocale(language) ? language : "fr";
   const copy = HOME_COPY[language];
-  const guides = getHomeGuides(guideLocale);
+  const allGuides = getHomeGuides(guideLocale);
+  const guides = allGuides.slice(0, HOME_GUIDE_COUNT);
   const leman = guides.find((guide) => guide.slug === "lac-leman")!;
   return (
     <div className="bg-[#f8faf9] text-slate-950">
@@ -148,14 +150,11 @@ export function HomeLanding({
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>
           </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-6">
-            {guides.map((guide, index) => {
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {guides.map((guide) => {
               const translation = guide.translations[guideLocale]!;
               return (
-                <article
-                  key={guide.slug}
-                  className={`group min-w-0 ${index < 3 ? "md:col-span-2" : "md:col-span-3"}`}
-                >
+                <article key={guide.slug} className="group min-w-0">
                   <Link
                     href={`/vent-en-direct/${guide.slug}`}
                     locale={guideLocale}
@@ -167,11 +166,7 @@ export function HomeLanding({
                         alt={translation.coverAlt}
                         width={720}
                         height={480}
-                        sizes={
-                          index < 3
-                            ? "(max-width: 767px) 100vw, 33vw"
-                            : "(max-width: 767px) 100vw, 50vw"
-                        }
+                        sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
                         className="aspect-[3/2] w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105"
                       />
                       <span className="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-[9px] font-bold tracking-[0.14em] text-slate-800">
@@ -199,6 +194,21 @@ export function HomeLanding({
                 </article>
               );
             })}
+          </div>
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-slate-50 px-6 py-5">
+            <p className="text-sm text-slate-600">
+              {copy.guideSelection
+                .replace("{shown}", String(guides.length))
+                .replace("{total}", String(allGuides.length))}
+            </p>
+            <Link
+              href="/vent-en-direct"
+              locale={guideLocale}
+              className={`inline-flex min-h-11 items-center gap-2 rounded-xl bg-sky-800 px-5 text-sm font-semibold text-white hover:bg-sky-900 ${focusClass}`}
+            >
+              {copy.allGuides}{" "}
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>

@@ -12,6 +12,7 @@ export const HOME_COPY = {
     lakesIntro:
       "Choisissez votre rive. Comparez les mesures, explorez les spots et préparez votre prochaine sortie.",
     allGuides: "Tous les guides",
+    guideSelection: "{shown} idées pour commencer · {total} lacs à explorer",
     guide: "Explorer le lac",
     lakeLabel: "GUIDE LOCAL",
     toolsEyebrow: "À CHAQUE ENVIE, SON POINT DE DÉPART",
@@ -60,6 +61,7 @@ export const HOME_COPY = {
     lakesIntro:
       "Wähle dein Ufer. Vergleiche Messungen, entdecke Spots und bereite deinen nächsten Ausflug vor.",
     allGuides: "Alle Guides",
+    guideSelection: "{shown} Ideen zum Einstieg · {total} Seen entdecken",
     guide: "Den See entdecken",
     lakeLabel: "LOKALER GUIDE",
     toolsEyebrow: "FÜR JEDEN PLAN EIN AUSGANGSPUNKT",
@@ -109,6 +111,7 @@ export const HOME_COPY = {
     lakesIntro:
       "Scegli la tua riva. Confronta le misure, esplora gli spot e prepara la tua prossima uscita.",
     allGuides: "Tutte le guide",
+    guideSelection: "{shown} idee per iniziare · {total} laghi da esplorare",
     guide: "Esplora il lago",
     lakeLabel: "GUIDA LOCALE",
     toolsEyebrow: "UN PUNTO DI PARTENZA PER OGNI IDEA",
@@ -158,6 +161,7 @@ export const HOME_COPY = {
     lakesIntro:
       "Choose your shore. Compare observations, explore spots and prepare your next trip. These local guides are available in French, German and Italian.",
     allGuides: "All guides · FR",
+    guideSelection: "{shown} ideas to start · {total} lakes to explore",
     guide: "Explore the lake · FR",
     lakeLabel: "LOCAL GUIDE · FR",
     toolsEyebrow: "A STARTING POINT FOR EVERY PLAN",

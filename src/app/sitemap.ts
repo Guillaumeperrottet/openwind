@@ -7,6 +7,12 @@ import {
   guideLanguages,
 } from "@/lib/local-guides";
 import { SITE_LOCALES, localizedUrl } from "@/lib/site";
+import {
+  CARNET_PAGE_SIZE,
+  GUIDE_PAGE_SIZE,
+  collectionPath,
+} from "@/lib/collections";
+import { articlePublicPath } from "@/lib/articles";
 
 // A DB outage must fail instead of silently dropping known URLs from the sitemap.
 export const dynamic = "force-dynamic";
@@ -46,12 +52,45 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     }),
   ]);
+  const guidePages = (locale: string) =>
+    Math.ceil(
+      LOCAL_GUIDES.filter(
+        (guide) => guide.translations[locale as (typeof GUIDE_LOCALES)[number]],
+      ).length / GUIDE_PAGE_SIZE,
+    );
+  const carnetPages = Math.ceil(
+    new Set([
+      ...articles.map(articlePublicPath),
+      ...LOCAL_GUIDES.map((guide) => `/vent-en-direct/${guide.slug}`),
+    ]).size / CARNET_PAGE_SIZE,
+  );
   return [
     ...["", "/about", "/plan", "/balises", "/forum"].flatMap((path) =>
       multilingual(path),
     ),
-    ...multilingual("/vent-en-direct", GUIDE_LOCALES),
-    { url: localizedUrl("fr", "/carnet") },
+    ...GUIDE_LOCALES.flatMap((locale) =>
+      Array.from({ length: guidePages(locale) }, (_, index) => {
+        const page = index + 1;
+        const path = collectionPath("/vent-en-direct", {
+          page,
+          q: "",
+          kind: "all",
+        });
+        const languages = Object.fromEntries([
+          ["x-default", localizedUrl("fr", path)],
+          ...GUIDE_LOCALES.filter(
+            (language) => guidePages(language) >= page,
+          ).map((language) => [language, localizedUrl(language, path)]),
+        ]);
+        return { url: localizedUrl(locale, path), alternates: { languages } };
+      }),
+    ),
+    ...Array.from({ length: Math.max(1, carnetPages) }, (_, index) => ({
+      url: localizedUrl(
+        "fr",
+        collectionPath("/carnet", { page: index + 1, q: "", kind: "all" }),
+      ),
+    })),
     ...LOCAL_GUIDES.flatMap((guide) => {
       const editorial = articles.find(
         (article) =>

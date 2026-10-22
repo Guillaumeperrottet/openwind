@@ -344,3 +344,37 @@ Avant publication, contrôler les douze pages, les liens d’accueil et de
 comparaison, les 69 URLs de guides du sitemap, les recherches par noms locaux,
 les sources, les images optimisées, les observations datées, les prévisions,
 les canoniques, les alternatives et la navigation multilingue sur mobile.
+
+## Navigation du catalogue et du Carnet (22 octobre 2026)
+
+L’accueil présente six guides et un lien visible vers le catalogue complet avec
+le nombre de lacs. La recherche globale conserve tout le registre et le lien
+direct vers la carte reste disponible. Le catalogue FR/DE/IT affiche six guides
+par page, avec recherche par nom, alias, rive ou région. Les liens numérotés,
+précédent et suivant sont rendus côté serveur : aucune interaction JavaScript
+n’est nécessaire pour accéder aux pages suivantes.
+
+Le Carnet français rassemble les articles publiés et les guides du registre,
+sans doublon d’URL. Une édition française publiée dans l’administration reste
+prioritaire sur la fiche du registre. Le dernier article éditorial ouvre la
+collection ; les autres publications suivent leur date et leur URL pour un
+ordre stable. Le Carnet affiche neuf publications par page et propose les
+filtres Tout / Articles / Guides des lacs. La recherche et les filtres utilisent
+un formulaire GET et des liens partageables, conservés lors du changement de
+page. Une nouvelle recherche ou un changement de type repart de la première
+page. Les photos Commons gardent leurs crédits sur les nouvelles cartes.
+
+Les pages numérotées ont des URLs `?page=n` et un canonical propre (la première
+page utilise l’URL sans `page`). Le JSON-LD ne liste que les cartes visibles,
+avec leur position dans la collection. Les variantes de recherche et de filtre
+reçoivent `noindex, follow` ; elles ne sont pas ajoutées au sitemap. Celui-ci
+conserve toutes les URLs individuelles des guides et ajoute les pages non
+filtrées du catalogue et du Carnet. Les redirections des langues du Carnet vers
+le français conservent les paramètres de navigation.
+
+Référence : [pagination et chargement incrémental, Google Search Central](https://developers.google.com/search/docs/specialty/ecommerce/pagination-and-incremental-page-loading).
+
+Vérifier avant publication : parcours de toutes les pages sans doublon ni
+omission, recherche d’un guide absent de la première page, filtres et retour
+arrière, recherche vide, état sans résultat, pages hors limites, canonicals,
+alternatives FR/DE/IT sur les pages non filtrées, sitemap et rendu mobile.

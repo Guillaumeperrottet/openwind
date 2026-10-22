@@ -13,13 +13,18 @@ const intlMiddleware = createIntlMiddleware(routing);
  */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const guideRoute = pathname.match(/^\/(fr|en|de|it)\/vent-en-direct(?:\/([^/]+))?\/?$/);
+  const guideRoute = pathname.match(
+    /^\/(fr|en|de|it)\/vent-en-direct(?:\/([^/]+))?\/?$/,
+  );
   if (guideRoute) {
     const [, locale, slug] = guideRoute;
     const guide = slug ? getLocalGuide(slug) : undefined;
     // Redirect before rendering starts, so unavailable translations return an
     // actual HTTP 308 rather than a streamed 200 with a client-side redirect.
-    if ((!slug || guide) && (!isGuideLocale(locale) || (guide && !guide.translations[locale]))) {
+    if (
+      (!slug || guide) &&
+      (!isGuideLocale(locale) || (guide && !guide.translations[locale]))
+    ) {
       const destination = request.nextUrl.clone();
       destination.pathname = `/fr/vent-en-direct${slug ? `/${slug}` : ""}`;
       return NextResponse.redirect(destination, 308);
@@ -31,10 +36,9 @@ export async function proxy(request: NextRequest) {
   const isFrenchOnlyContent = Boolean(frenchOnlyContent);
 
   if (frenchOnlyContent && frenchOnlyContent[1] !== "fr") {
-    return NextResponse.redirect(
-      new URL(`/fr${frenchOnlyContent[2]}`, request.url),
-      308,
-    );
+    const destination = request.nextUrl.clone();
+    destination.pathname = `/fr${frenchOnlyContent[2]}`;
+    return NextResponse.redirect(destination, 308);
   }
 
   // Skip intl for API routes, auth callbacks, and static assets
@@ -86,7 +90,12 @@ export async function proxy(request: NextRequest) {
   if (intlResponse) {
     intlResponse.headers.forEach((value, key) => {
       // These routes declare their actual language availability in metadata.
-      if ((isFrenchOnlyContent || /^\/(fr|en|de|it)\/vent-en-direct(?:\/|$)/.test(pathname)) && key === "link") return;
+      if (
+        (isFrenchOnlyContent ||
+          /^\/(fr|en|de|it)\/vent-en-direct(?:\/|$)/.test(pathname)) &&
+        key === "link"
+      )
+        return;
       supabaseResponse.headers.set(key, value);
     });
   }

@@ -1,150 +1,104 @@
-"use client";
-
-import { useMemo, useState } from "react";
-import {
-  ArrowRight,
-  CalendarDays,
-  Clock3,
-  MapPin,
-  Search,
-  X,
-} from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, CalendarDays, Clock3, MapPin, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { GuideImageCredit } from "@/components/carnet/GuideImageCredit";
+import {
+  CollectionSearch,
+  CollectionPagination,
+} from "@/components/collections/CollectionNavigation";
+import { collectionPath, type CollectionQuery } from "@/lib/collections";
+import { carnetPage, type CarnetIndexArticle } from "@/lib/publication-index";
+export type { CarnetIndexArticle } from "@/lib/publication-index";
 
-export interface CarnetIndexArticle {
-  id: string;
-  kind: "EDITORIAL" | "LOCAL_GUIDE";
-  href: string;
-  title: string;
-  excerpt: string;
-  coverImage: string | null;
-  coverAlt: string | null;
-  category: string;
-  location: string | null;
-  readTime: number;
-  publishedLabel: string | null;
-}
-
-interface Props {
+export function CarnetArticleIndex({
+  articles,
+  query = { q: "", kind: "all", page: 1 },
+}: {
   articles: CarnetIndexArticle[];
-}
-
-function normalizeSearch(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("fr")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-export function CarnetArticleIndex({ articles }: Props) {
-  const [query, setQuery] = useState("");
-  const normalizedQuery = normalizeSearch(query);
-
-  const filteredArticles = useMemo(() => {
-    const normalizedTerms = normalizedQuery.split(" ").filter(Boolean);
-    if (normalizedTerms.length === 0) return articles;
-
-    return articles.filter((article) => {
-      const searchableText = normalizeSearch(
-        [article.title, article.excerpt, article.category, article.location]
-          .filter(Boolean)
-          .join(" "),
-      );
-
-      return normalizedTerms.every((term) => searchableText.includes(term));
-    });
-  }, [articles, normalizedQuery]);
-
-  const hasQuery = normalizedQuery.length > 0;
-  const featuredArticle = hasQuery ? undefined : filteredArticles[0];
-  const gridArticles = featuredArticle
-    ? filteredArticles.slice(1)
-    : filteredArticles;
-
+  query?: CollectionQuery;
+}) {
+  const result = carnetPage(articles, query);
+  const featuredArticle =
+    !query.q && query.kind === "all" && query.page === 1
+      ? result.items[0]
+      : undefined;
+  const gridArticles = featuredArticle ? result.items.slice(1) : result.items;
+  const filters = [
+    ["all", "Tout"],
+    ["articles", "Articles"],
+    ["guides", "Guides des lacs"],
+  ] as const;
   return (
-    <div>
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="group relative block w-full max-w-2xl">
-          <label htmlFor="carnet-search" className="sr-only">
-            Rechercher dans les Carnets
-          </label>
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-sky-700"
-          />
-          <input
-            id="carnet-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Rechercher un vent, un spot, une région…"
-            autoComplete="off"
-            aria-controls="carnet-results"
-            className="h-12 w-full rounded-none border border-slate-300 bg-white pl-11 pr-12 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 hover:border-slate-400 focus:border-sky-700 focus:ring-1 focus:ring-sky-700"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              aria-label="Effacer la recherche"
-              className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-sky-700"
+    <div id="collection-results" className="scroll-mt-24">
+      <CollectionSearch
+        path="/carnet"
+        locale="fr"
+        query={query}
+        label="Rechercher dans le Carnet"
+      />
+      <nav
+        aria-label="Types de publications"
+        className="mt-5 flex flex-wrap gap-2"
+      >
+        {filters.map(([kind, label]) => (
+          <Link
+            key={kind}
+            href={
+              collectionPath("/carnet", { ...query, kind, page: 1 }) +
+              "#collection-results"
+            }
+            aria-current={query.kind === kind ? "true" : undefined}
+            className={`inline-flex min-h-11 items-center rounded-full border px-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 ${query.kind === kind ? "border-sky-800 bg-sky-800 text-white" : "border-slate-200 text-slate-600 hover:border-sky-600 hover:text-sky-800"}`}
+          >
+            {label}
+          </Link>
+        ))}
+      </nav>
+      <p role="status" className="my-6 text-sm text-slate-500">
+        {result.total ? `${result.start}–${result.end} sur ` : ""}
+        {result.total} publication{result.total > 1 ? "s" : ""}
+      </p>
+      {result.total === 0 ? (
+        <div className="flex min-h-64 flex-col items-center justify-center border border-slate-200 bg-slate-50 p-8 text-center">
+          <Search aria-hidden="true" className="h-7 w-7 text-sky-700" />
+          <h3 className="mt-5 font-serif text-3xl font-semibold">
+            {query.q || query.kind !== "all"
+              ? "Aucune publication trouvée"
+              : "Les prochains Carnets arrivent"}
+          </h3>
+          <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
+            Essayez un nom de lac, une région ou un thème comme « vent » ou «
+            accès ».
+          </p>
+          {(query.q || query.kind !== "all") && (
+            <Link
+              href="/carnet#collection-results"
+              className="mt-6 min-h-11 text-sm font-semibold text-sky-800 underline underline-offset-4"
             >
-              <X className="h-4 w-4" />
-            </button>
+              Afficher tout le Carnet
+            </Link>
           )}
         </div>
-
-        <p
-          aria-live="polite"
-          aria-atomic="true"
-          className="shrink-0 text-xs font-medium text-slate-500"
-        >
-          {hasQuery
-            ? `${filteredArticles.length} résultat${filteredArticles.length > 1 ? "s" : ""}`
-            : `${articles.length} publication${articles.length > 1 ? "s" : ""}`}
-        </p>
-      </div>
-
-      <div id="carnet-results">
-        {filteredArticles.length === 0 ? (
-          <div className="flex min-h-72 flex-col items-center justify-center border border-slate-200 bg-slate-50 px-6 py-12 text-center">
-            <Search className="h-7 w-7 text-sky-700" aria-hidden="true" />
-            <h3 className="mt-5 font-serif text-3xl font-semibold text-slate-950">
-              {hasQuery ? "Aucun Carnet trouvé" : "Les prochains Carnets arrivent"}
-            </h3>
-            <p className="mt-3 max-w-md text-sm leading-6 text-slate-600">
-              {hasQuery
-                ? "Essaie un autre mot-clé, une région ou une catégorie comme « vent », « Gruyère » ou « mode d’emploi »."
-                : "Retrouve bientôt nos guides locaux, décryptages météo et conseils pour préparer tes sorties."}
-            </p>
-            {hasQuery && (
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="mt-6 border-b border-slate-900 pb-1 text-sm font-semibold text-slate-950 transition hover:border-sky-700 hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-sky-700"
-              >
-                Afficher tous les Carnets
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-10">
-            {featuredArticle && (
-              <ArticleCard article={featuredArticle} featured />
-            )}
-
-            {gridArticles.length > 0 && (
-              <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {gridArticles.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      ) : (
+        <div id="carnet-results" className="space-y-8">
+          {featuredArticle && (
+            <ArticleCard article={featuredArticle} featured />
+          )}
+          {gridArticles.length > 0 && (
+            <div className="grid items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {gridArticles.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      <CollectionPagination
+        path="/carnet"
+        locale="fr"
+        query={query}
+        pages={result.pages}
+      />
     </div>
   );
 }
@@ -175,12 +129,20 @@ function ArticleCard({
         }`}
       >
         {article.coverImage ? (
-          // Article covers may come from any admin-approved HTTPS source.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={article.coverImage}
             alt={article.coverAlt || article.title}
+            fill
             loading="lazy"
+            sizes={
+              featured
+                ? "(max-width: 1023px) 100vw, 50vw"
+                : "(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
+            }
+            unoptimized={
+              !article.coverImage.startsWith("/") &&
+              !article.coverImage.includes(".supabase.co/")
+            }
             className="absolute inset-0 h-full w-full object-cover transition duration-700 motion-safe:group-hover:scale-[1.025]"
           />
         ) : (
@@ -191,9 +153,16 @@ function ArticleCard({
         </span>
       </Link>
 
+      <GuideImageCredit
+        credit={article.coverCredit}
+        className={`px-6 pt-3 text-slate-500 ${featured ? "lg:col-start-1 lg:row-start-2" : ""}`}
+      />
+
       <div
         className={`flex min-w-0 flex-1 flex-col p-6 ${
-          featured ? "sm:p-8 lg:p-10 xl:p-12" : "sm:p-7"
+          featured
+            ? "sm:p-8 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:p-10 xl:p-12"
+            : "sm:p-7"
         }`}
       >
         {featured && (
@@ -204,7 +173,10 @@ function ArticleCard({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
           {article.publishedLabel && (
             <span className="inline-flex items-center gap-1.5">
-              <CalendarDays className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <CalendarDays
+                className="h-3.5 w-3.5 shrink-0"
+                aria-hidden="true"
+              />
               {article.publishedLabel}
             </span>
           )}
