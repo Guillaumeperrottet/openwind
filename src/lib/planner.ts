@@ -1,5 +1,7 @@
 import { haversineKm } from "@/lib/utils";
 import type { SportType } from "@/types";
+import type { PlannerQualification } from "@/lib/planner-review";
+import { inSector } from "@/lib/planner-sectors";
 
 export interface PlannerCriteria {
   startDate: string;
@@ -23,6 +25,7 @@ export interface PlannerSpot {
   access: string | null;
   hazards: string | null;
   distanceKm: number | null;
+  qualification?: PlannerQualification;
 }
 export interface PlannerHour {
   time: number; // UTC milliseconds; never parse a naive local time.
@@ -75,6 +78,8 @@ export interface PlannerResponse {
     available: number;
     recommended: number;
     failed: number;
+    qualified?: number;
+    needsReview?: number;
   };
 }
 export function localDate(now: Date, timezone = "Europe/Zurich"): string {
@@ -178,28 +183,6 @@ export function candidatesInRadius<
       (spot) => spot.distanceKm === null || spot.distanceKm <= criteria.radius,
     );
 }
-const COMPASS = [
-  "N",
-  "NNE",
-  "NE",
-  "ENE",
-  "E",
-  "ESE",
-  "SE",
-  "SSE",
-  "S",
-  "SSW",
-  "SW",
-  "WSW",
-  "W",
-  "WNW",
-  "NW",
-  "NNW",
-];
-function angularDistance(a: number, b: number) {
-  return Math.abs(((a - b + 540) % 360) - 180);
-}
-
 /** Comparison heuristic, not a local launch safety assessment. All hourly filters
  * must pass; gaps and local days split windows. Unknown data never means calm. */
 export function evaluateSpot(
@@ -217,10 +200,7 @@ export function evaluateSpot(
   if (!forecast) return result;
   result.timezone = forecast.timezone;
   result.retrievedAt = forecast.retrievedAt;
-  const directions = spot.bestWindDirections
-    .map((d) => COMPASS.indexOf(d.trim().toUpperCase()))
-    .filter((i) => i >= 0)
-    .map((i) => i * 22.5);
+  if (!spot.qualification?.eligible) return result;
   const min = spot.sportType === "KITE" ? Math.max(22, spot.minWindKmh) : 0;
   const max = Math.min(spot.sportType === "KITE" ? 45 : 15, spot.maxWindKmh);
   const accepted: {
@@ -249,11 +229,11 @@ export function evaluateSpot(
       hour.wind === null ||
       hour.gust === null ||
       hour.direction === null ||
-      !directions.length ||
+      !spot.qualification.sectors.length ||
       (spot.sportType === "PARAGLIDE" && hour.rain === null)
     )
       reason = "missing";
-    else if (!directions.some((d) => angularDistance(d, hour.direction!) <= 45))
+    else if (!inSector(hour.direction!, spot.qualification.sectors))
       reason = "orientation";
     else if (hour.wind < min || hour.wind > max) reason = "wind";
     else if (
@@ -333,7 +313,7 @@ export function selectRecommendations(
 ): PlannerResult[] {
   const selected: PlannerResult[] = [];
   for (const spot of results) {
-    if (!spot.windows.length) continue;
+    if (!spot.windows.length || !spot.qualification?.eligible) continue;
     if (
       selected.every(
         (other) =>

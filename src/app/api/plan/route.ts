@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { qualificationsFor } from "@/lib/planner-review-store";
+import { toSiteLocale } from "@/lib/site";
 import {
   fetchPlannerForecasts,
   fetchPlannerSeasonal,
@@ -32,6 +34,10 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        description: true,
+        difficulty: true,
+        waterType: true,
+        bestMonths: true,
         latitude: true,
         longitude: true,
         region: true,
@@ -50,7 +56,15 @@ export async function GET(request: NextRequest) {
         hazardsEn: true,
       },
     });
-    const candidates = candidatesInRadius(records, criteria).map((s) => ({
+    const scoped = candidatesInRadius(records, criteria);
+    const qualifications = await qualificationsFor(
+      scoped,
+      criteria.startDate,
+      criteria.endDate,
+      today,
+      toSiteLocale(locale || "fr"),
+    );
+    const candidates = scoped.map((s) => ({
       id: s.id,
       name: s.name,
       latitude: s.latitude,
@@ -62,6 +76,7 @@ export async function GET(request: NextRequest) {
       maxWindKmh: s.maxWindKmh,
       bestWindDirections: s.bestWindDirections,
       distanceKm: s.distanceKm,
+      qualification: qualifications.get(s.id)!,
       access:
         (locale === "de"
           ? s.accessDe
@@ -125,6 +140,8 @@ export async function GET(request: NextRequest) {
         available: spots.length - failed,
         failed,
         recommended: spots.filter((s) => s.windows.length).length,
+        qualified: spots.filter((s) => s.qualification?.eligible).length,
+        needsReview: spots.filter((s) => !s.qualification?.eligible).length,
       },
     };
     return NextResponse.json(body, {

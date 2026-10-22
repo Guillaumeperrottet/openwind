@@ -13,9 +13,12 @@ import {
 } from "@/lib/seo";
 import {
   SITE_URL,
+  toSiteLocale,
   localizedAlternates,
   localizedUrl,
 } from "@/lib/site";
+import { qualificationsFor } from "@/lib/planner-review-store";
+import { localDate } from "@/lib/planner";
 import { SpotPageClient } from "./SpotPageClient";
 
 // Deduplicated Prisma query: shared across generateMetadata() and SpotPage()
@@ -86,10 +89,13 @@ export default async function SpotPage({ params }: Props) {
   // ── Current wind via unified server entry point ─────────────────────────
   // getSpotLive: station fraîche (seuils par réseau) → vraie obs station.
   // Sinon → Open-Meteo.
-  const [liveResult, forecastResult] = await Promise.allSettled([
-    getSpotLive(spot.id),
-    fetchFullForecast(spot.latitude, spot.longitude),
-  ]);
+  const today = localDate(new Date());
+  const [liveResult, forecastResult, qualificationResult] =
+    await Promise.allSettled([
+      getSpotLive(spot.id),
+      fetchFullForecast(spot.latitude, spot.longitude),
+      qualificationsFor([spot], today, today, today, toSiteLocale(locale)),
+    ]);
   const live = liveResult.status === "fulfilled" ? liveResult.value : null;
 
   // No fallback to Open-Meteo grid: getSpotLive already handles that internally.
@@ -103,11 +109,7 @@ export default async function SpotPage({ params }: Props) {
             combineSchemas(
               buildArticleSchema(spot, locale),
               buildPlaceSchema(spot, locale),
-              buildBreadcrumbSchema(
-                spot.id,
-                spot.name,
-                locale,
-              ),
+              buildBreadcrumbSchema(spot.id, spot.name, locale),
             ),
           ).replace(/</g, "\\u003c"),
         }}
@@ -116,7 +118,14 @@ export default async function SpotPage({ params }: Props) {
         key={spot.id}
         spot={JSON.parse(JSON.stringify(spot))}
         live={live}
-        initialForecast={forecastResult.status === "fulfilled" ? forecastResult.value : null}
+        qualification={
+          qualificationResult.status === "fulfilled"
+            ? qualificationResult.value.get(spot.id)
+            : undefined
+        }
+        initialForecast={
+          forecastResult.status === "fulfilled" ? forecastResult.value : null
+        }
       />
     </>
   );

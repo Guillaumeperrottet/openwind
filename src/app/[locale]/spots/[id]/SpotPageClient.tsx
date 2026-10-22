@@ -1,5 +1,9 @@
 "use client";
 
+import { QualificationPanel } from "@/components/plan/QualificationPanel";
+import type { PlannerQualification } from "@/lib/planner-review";
+import { plannerUiCopy } from "@/lib/planner-ui-copy";
+import { toSiteLocale } from "@/lib/site";
 import { useState, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -194,6 +198,7 @@ interface Props {
   spot: SpotData;
   live: WindLive | null;
   initialForecast?: FullForecast | null;
+  qualification?: PlannerQualification;
 }
 
 function pickNewestLive(
@@ -213,6 +218,7 @@ export function SpotPageClient({
   spot,
   live: initialLive,
   initialForecast = null,
+  qualification,
 }: Props) {
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
@@ -224,8 +230,13 @@ export function SpotPageClient({
   const [manualShow, setManualShow] = useState(false);
   const showInfo = userToggled ? manualShow : isDesktop;
   const [fetchedForecast, setForecast] = useState<FullForecast | null>(null);
-  const forecast = fetchedForecast && (!initialForecast || Date.parse(fetchedForecast.fetchedAt) >= Date.parse(initialForecast.fetchedAt))
-    ? fetchedForecast : initialForecast;
+  const forecast =
+    fetchedForecast &&
+    (!initialForecast ||
+      Date.parse(fetchedForecast.fetchedAt) >=
+        Date.parse(initialForecast.fetchedAt))
+      ? fetchedForecast
+      : initialForecast;
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     spot.nearestStationId,
@@ -253,7 +264,8 @@ export function SpotPageClient({
         ? spot.descriptionDe
         : locale === "it"
           ? spot.descriptionIt
-          : null)?.trim() || spot.description;
+          : null
+    )?.trim() || spot.description;
   const localizedHazards =
     (locale === "en"
       ? spot.hazardsEn
@@ -261,7 +273,8 @@ export function SpotPageClient({
         ? spot.hazardsDe
         : locale === "it"
           ? spot.hazardsIt
-          : null)?.trim() || spot.hazards;
+          : null
+    )?.trim() || spot.hazards;
   const localizedAccess =
     (locale === "en"
       ? spot.accessEn
@@ -269,7 +282,8 @@ export function SpotPageClient({
         ? spot.accessDe
         : locale === "it"
           ? spot.accessIt
-          : null)?.trim() || spot.access;
+          : null
+    )?.trim() || spot.access;
 
   const { nearbyStations, loadingStations } = useNearbyStations(
     spot.latitude,
@@ -549,6 +563,22 @@ export function SpotPageClient({
               </a>
             </div>
 
+            <details className="mt-4 max-w-2xl rounded-xl border border-slate-200 bg-slate-50 px-3">
+              <summary className="flex min-h-11 cursor-pointer items-center text-xs font-semibold text-slate-700">
+                {
+                  plannerUiCopy[toSiteLocale(locale)].status[
+                    qualification?.status ?? "MISSING"
+                  ]
+                }{" "}
+                · {plannerUiCopy[toSiteLocale(locale)].details}
+              </summary>
+              <div className="pb-3">
+                <QualificationPanel
+                  qualification={qualification}
+                  locale={toSiteLocale(locale)}
+                />
+              </div>
+            </details>
             {/* Toggle infos détaillées */}
             <button
               type="button"

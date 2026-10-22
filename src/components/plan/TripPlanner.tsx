@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   ArrowRight,
-  CalendarDays,
-  Check,
   ChevronDown,
   Compass,
   Copy,
@@ -15,7 +13,6 @@ import {
   Map,
   MapPin,
   Search,
-  Wind,
   X,
 } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -26,11 +23,12 @@ import {
   selectRecommendations,
   type PlannerCriteria,
   type PlannerResponse,
-  type PlannerResult,
-  type PlannerWindow,
 } from "@/lib/planner";
 import type { PlannerCopy } from "@/lib/planner-copy";
 import type { SiteLocale } from "@/lib/site";
+import { ResultCard } from "./ResultCard";
+import { plannerUiCopy } from "@/lib/planner-ui-copy";
+import { plannerMapScope } from "@/lib/planner-map-state";
 import { trackEvent } from "@/lib/analytics";
 
 const PlannerMap = dynamic(() => import("./PlannerMap"), { ssr: false });
@@ -52,6 +50,13 @@ export function TripPlanner({
   today: string;
 }) {
   const router = useRouter();
+  const ui = plannerUiCopy[locale];
+  const formRef = useRef<HTMLFormElement>(null);
+  const [applied, setApplied] = useState<{
+    criteria: PlannerCriteria;
+    name: string;
+    query: string;
+  } | null>(null);
   const initialParams = new URLSearchParams(
     Object.entries(searchParams).filter(
       (entry): entry is [string, string] => entry[1] !== undefined,
@@ -105,12 +110,10 @@ export function TripPlanner({
       request.current = controller;
       setLoading(true);
       setError("");
-      setResponse(null);
       setDirty(false);
       setVisible(9);
       setCopyStatus("");
       setSelected(null);
-      setView("list");
       scrollAfterSearch.current = updateUrl;
       const params = new URLSearchParams({
         startDate: criteria.startDate,
@@ -136,6 +139,9 @@ export function TripPlanner({
         if (controller.signal.aborted) return;
         if (Array.isArray(data.spots)) {
           setResponse(data);
+          const completedParams = new URLSearchParams(params);
+          completedParams.delete("locale");
+          setApplied({ criteria, name, query: completedParams.toString() });
           if (updateUrl)
             trackEvent("plan_search", {
               search_mode: criteria.lat === undefined ? "catalogue" : "near_me",
@@ -204,7 +210,9 @@ export function TripPlanner({
     if (response && scrollAfterSearch.current) {
       scrollAfterSearch.current = false;
       resultsRef.current?.scrollIntoView({
-        behavior: "smooth",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
         block: "start",
       });
     }
@@ -325,23 +333,16 @@ export function TripPlanner({
     [response, recommendations],
   );
   const mapSpots = useMemo(
-    () =>
-      response?.mode === "seasonal"
-        ? response.spots.filter((s) => !s.unavailable)
-        : [
-            ...recommendations,
-            ...(response?.spots.filter(
-              (s) =>
-                s.windows.length && !recommendations.some((r) => r.id === s.id),
-            ) ?? []),
-          ],
-    [response, recommendations],
+    () => [...recommendations, ...others],
+    [recommendations, others],
   );
   const selectedSpot = mapSpots.find((s) => s.id === selected) ?? mapSpots[0];
   const selectSpot = useCallback((id: string) => {
     setSelected(id);
     selectionRef.current?.scrollIntoView({
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
       block: "nearest",
     });
   }, []);
@@ -384,9 +385,10 @@ export function TripPlanner({
           </div>
         </div>
         <form
+          ref={formRef}
           onSubmit={submit}
           onChange={() => setDirty(true)}
-          className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_12px_45px_-30px_#0f172a50] sm:p-7"
+          className="scroll-mt-20 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_12px_45px_-30px_#0f172a50] sm:p-7"
         >
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4 sm:gap-4 sm:pb-5">
             <fieldset>
@@ -687,29 +689,64 @@ export function TripPlanner({
             aria-busy={loading}
             className="mt-6 scroll-mt-20"
           >
-            {dirty && (
+            {(dirty || loading) && (
               <p
                 role="status"
                 className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900"
               >
-                {c.changed}
+                {loading ? c.loading : c.changed}
               </p>
             )}
-            <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-              <div className="max-w-2xl">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-sky-700">
-                  {response.mode === "seasonal" ? c.seasonal : c.shortlist}
-                </p>
-                <h2 className="text-2xl font-semibold tracking-tight">
-                  {response.mode === "seasonal" ? c.seasonal : c.results}
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                  {response.mode === "seasonal"
-                    ? c.seasonalText
-                    : c.resultIntro}
-                </p>
+            <div
+              data-planner-criteria
+              className="sticky top-14 z-30 -mx-4 mb-5 border-y border-slate-200 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-sm sm:mx-0 sm:rounded-2xl sm:border sm:px-4"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <div className="min-w-0 flex-1 text-xs leading-relaxed text-slate-700">
+                  <p className="font-semibold text-slate-950">
+                    {applied?.name || c.anywhere} ·{" "}
+                    {applied?.criteria.sport === "PARAGLIDE" ? c.para : c.kite}
+                    {applied?.criteria.lat !== undefined
+                      ? ` · ${applied.criteria.radius} km`
+                      : ""}
+                  </p>
+                  <p>
+                    {applied &&
+                      new Intl.DateTimeFormat(locale, {
+                        day: "numeric",
+                        month: "short",
+                        timeZone: "UTC",
+                      }).format(new Date(applied.criteria.startDate))}{" "}
+                    –{" "}
+                    {applied &&
+                      new Intl.DateTimeFormat(locale, {
+                        day: "numeric",
+                        month: "short",
+                        timeZone: "UTC",
+                      }).format(new Date(applied.criteria.endDate))}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    formRef.current?.scrollIntoView({
+                      behavior: window.matchMedia(
+                        "(prefers-reduced-motion: reduce)",
+                      ).matches
+                        ? "auto"
+                        : "smooth",
+                      block: "start",
+                    });
+                    document
+                      .getElementById("planner-city")
+                      ?.focus({ preventScroll: true });
+                  }}
+                  className={`${buttonClass} px-3 text-sky-800`}
+                >
+                  {ui.edit}
+                </button>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
                 <div
                   className="flex rounded-xl border border-slate-200 bg-white p-1"
                   role="group"
@@ -739,7 +776,10 @@ export function TripPlanner({
                   aria-label={c.share}
                   onClick={async () => {
                     try {
-                      await navigator.clipboard.writeText(window.location.href);
+                      const url = new URL(window.location.href);
+                      if (applied) url.search = applied.query;
+                      url.hash = "";
+                      await navigator.clipboard.writeText(url.toString());
                       trackEvent("share", {
                         method: "clipboard",
                         content_type: "trip_plan",
@@ -754,6 +794,22 @@ export function TripPlanner({
                 </button>
               </div>
             </div>
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold">
+                {response.mode === "seasonal" ? c.seasonal : c.results}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {response.mode === "seasonal" ? c.seasonalText : c.resultIntro}
+              </p>
+              <p className="mt-2 text-xs text-slate-500">
+                {response.meta.qualified ?? 0} {ui.qualified}
+              </p>
+              {loading && (
+                <p role="status" className="mt-2 text-sm text-sky-800">
+                  {c.loading}
+                </p>
+              )}
+            </div>
             {copyStatus && (
               <p role="status" className="mb-3 text-sm text-sky-800">
                 {copyStatus}
@@ -764,23 +820,40 @@ export function TripPlanner({
             ) : response.mode === "forecast" &&
               !recommendations.length &&
               response.meta.available > 0 ? (
-              <Empty title={c.noMatch} text={c.noMatchText} />
+              view === "list" ? (
+                <Empty
+                  title={response.meta.qualified ? c.noMatch : ui.pending}
+                  text={response.meta.qualified ? c.noMatchText : ui.missing}
+                />
+              ) : (
+                <p className="mb-3 text-xs text-slate-600">
+                  {response.meta.qualified ? c.noMatch : ui.missing}
+                </p>
+              )
             ) : null}
             {view === "map" && mapSpots.length > 0 ? (
               <div className="space-y-4">
                 <PlannerMap
                   spots={mapSpots}
                   onSelect={selectSpot}
-                  label={c.select}
+                  label={c.open}
                   errorText={c.mapError}
+                  scope={plannerMapScope(applied?.criteria)}
+                  selectedId={selectedSpot?.id}
+                  locale={locale}
                 />
                 <div ref={selectionRef}>
                   {selectedSpot && (
                     <ResultCard
                       spot={selectedSpot}
-                      rank={mapSpots.indexOf(selectedSpot) + 1}
+                      rank={
+                        recommendations.findIndex(
+                          (s) => s.id === selectedSpot.id,
+                        ) + 1 || undefined
+                      }
                       c={c}
                       locale={locale}
+                      comparison={response.spots}
                     />
                   )}
                 </div>
@@ -795,6 +868,7 @@ export function TripPlanner({
                       rank={i + 1}
                       c={c}
                       locale={locale}
+                      comparison={response.spots}
                     />
                   ))}
                 </div>
@@ -818,6 +892,7 @@ export function TripPlanner({
                           spot={spot}
                           c={c}
                           locale={locale}
+                          comparison={response.spots}
                         />
                       ))}
                     </div>
@@ -881,250 +956,5 @@ function Empty({ title, text }: { title: string; text: string }) {
       <h3 className="font-semibold">{title}</h3>
       <p className="mx-auto mt-2 max-w-lg text-sm text-slate-500">{text}</p>
     </div>
-  );
-}
-function windowLabel(
-  window: PlannerWindow,
-  timezone: string,
-  locale: SiteLocale,
-) {
-  const day = new Intl.DateTimeFormat(locale, {
-    timeZone: timezone,
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  }).format(window.start);
-  const time = (value: number) =>
-    new Intl.DateTimeFormat(locale, {
-      timeZone: timezone,
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    }).format(value);
-  return `${day} · ${time(window.start)}–${time(window.end)}`;
-}
-function ResultCard({
-  spot,
-  rank,
-  c,
-  locale,
-}: {
-  spot: PlannerResult;
-  rank?: number;
-  c: PlannerCopy;
-  locale: SiteLocale;
-}) {
-  const w = spot.windows[0];
-  const divisor = spot.sportType === "KITE" ? 1.852 : 1,
-    unit = spot.sportType === "KITE" ? "kts" : "km/h";
-  const speed = (value: number) => Math.round(value / divisor);
-  const number = (value: number) =>
-    new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value);
-  const direction = w
-    ? [
-        ...new Set(
-          w.directions.map(
-            (d) =>
-              ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][
-                Math.round(d / 45) % 8
-              ],
-          ),
-        ),
-      ].join(" / ")
-    : "";
-  return (
-    <article
-      className={`min-w-0 overflow-hidden rounded-3xl border bg-white ${rank ? "border-sky-200 shadow-sm" : "border-slate-200"}`}
-    >
-      <div className="p-5">
-        <div className="flex items-start gap-3">
-          {rank && (
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 font-semibold text-sky-800">
-              {String(rank).padStart(2, "0")}
-            </span>
-          )}
-          <div className="min-w-0">
-            <h3 className="text-lg font-semibold leading-snug">
-              <Link
-                href={`/spots/${spot.id}`}
-                onClick={() =>
-                  trackEvent("plan_result_open", {
-                    spot_id: spot.id,
-                    sport: spot.sportType.toLowerCase(),
-                    score: w?.score,
-                    interaction: "navigate",
-                  })
-                }
-                className="hover:text-sky-800 hover:underline"
-              >
-                {spot.name}
-              </Link>
-            </h3>
-            <p className="mt-1 text-xs text-slate-500">
-              {[spot.region, spot.country].filter(Boolean).join(" · ")}
-              {spot.distanceKm !== null
-                ? ` · ${Math.round(spot.distanceKm)} km`
-                : ""}
-            </p>
-          </div>
-        </div>
-        {w && (
-          <>
-            <div className="mt-5 rounded-2xl bg-sky-50 p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold text-sky-950">
-                <CalendarDays size={16} className="shrink-0" aria-hidden />
-                {windowLabel(w, spot.timezone!, locale)}
-              </p>
-              <p className="mt-2 text-xs text-sky-800">
-                {c.localTime} · {spot.timezone}
-              </p>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-sky-800">{c.wind}</p>
-                  <p className="mt-1 text-xl font-semibold tracking-tight text-sky-950">
-                    {speed(w.windMin)}–{speed(w.windMax)}{" "}
-                    <span className="text-xs font-normal">{unit}</span>
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-sky-800">{c.gust}</p>
-                  <p className="mt-1 text-xl font-semibold text-sky-950">
-                    {speed(w.gustMax)}{" "}
-                    <span className="text-xs font-normal">{unit}</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <p className="mb-3 mt-5 text-xs font-bold uppercase tracking-wide text-slate-500">
-              {c.why}
-            </p>
-            <ul className="space-y-3 text-sm text-slate-700">
-              <li className="flex gap-2">
-                <Check
-                  size={15}
-                  className="mt-0.5 shrink-0 text-teal-700"
-                  aria-hidden
-                />
-                <span>
-                  {number(w.hours)} h {c.continuous}
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <Compass
-                  size={15}
-                  className="mt-0.5 shrink-0 text-teal-700"
-                  aria-hidden
-                />
-                <span>
-                  {c.direction} : {direction}
-                  <span className="mt-1 block text-xs text-slate-500">
-                    {c.preferred} : {spot.bestWindDirections.join(", ")}
-                  </span>
-                </span>
-              </li>
-              <li className="flex gap-2">
-                <Wind
-                  size={15}
-                  className="mt-0.5 shrink-0 text-teal-700"
-                  aria-hidden
-                />
-                <span>{c.gustMatch}</span>
-              </li>
-            </ul>
-            {spot.windows.length > 1 && (
-              <details className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-600">
-                <summary className="min-h-8 cursor-pointer">
-                  {c.otherWindows} ({spot.windows.length - 1})
-                </summary>
-                <ul className="space-y-2">
-                  {spot.windows.slice(1).map((slot) => (
-                    <li key={slot.start}>
-                      {windowLabel(slot, spot.timezone!, locale)} ·{" "}
-                      {number(slot.hours)} h
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-            <p className="mt-4 text-[11px] leading-relaxed text-slate-400">
-              {c.index} {w.score}/100 · {c.source}{" "}
-              {new Intl.DateTimeFormat(locale, {
-                timeZone: spot.timezone,
-                day: "numeric",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              }).format(new Date(spot.retrievedAt!))}
-            </p>
-          </>
-        )}
-        {!w && !spot.seasonal && (
-          <div className="mt-4 text-sm text-slate-600">
-            <p className="font-medium">
-              {spot.unavailable ? c.unavailable : c.noWindow}
-            </p>
-            <ul className="mt-2 space-y-1 text-xs text-slate-500">
-              {Object.entries(spot.reasons)
-                .filter(([reason]) => reason !== "daylight")
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 2)
-                .map(([reason]) => (
-                  <li key={reason}>
-                    {c.reasons[reason as keyof typeof c.reasons]}
-                  </li>
-                ))}
-            </ul>
-          </div>
-        )}
-        {spot.seasonal && (
-          <div className="mt-4 space-y-2 text-sm text-slate-600">
-            <p>
-              {c.historicalWind} :{" "}
-              <strong>
-                {speed(spot.seasonal.wind)} {unit}
-              </strong>
-            </p>
-            <p>
-              {c.historicalGust} : {speed(spot.seasonal.gust)} {unit}
-            </p>
-            <p className="text-xs text-slate-400">
-              {spot.seasonal.years.join("–")} · {spot.seasonal.days}{" "}
-              {c.observations}
-            </p>
-          </div>
-        )}
-        {(spot.access || spot.hazards) && (
-          <details className="mt-4 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-600">
-            <summary className="min-h-8 cursor-pointer font-medium">
-              {c.access}
-            </summary>
-            {spot.access && (
-              <p className="whitespace-pre-line">{spot.access}</p>
-            )}
-            {spot.hazards && (
-              <p className="mt-2 whitespace-pre-line">
-                <strong>{c.hazards} : </strong>
-                {spot.hazards}
-              </p>
-            )}
-          </details>
-        )}
-      </div>
-      <Link
-        href={`/spots/${spot.id}`}
-        onClick={() =>
-          trackEvent("plan_result_open", {
-            spot_id: spot.id,
-            sport: spot.sportType.toLowerCase(),
-            score: w?.score,
-            interaction: "navigate",
-          })
-        }
-        className="flex min-h-12 items-center justify-between gap-2 border-t border-slate-100 px-5 py-3 text-sm font-medium text-sky-800 hover:bg-sky-50"
-      >
-        {c.open}
-        <ArrowRight size={16} className="shrink-0" aria-hidden />
-      </Link>
-    </article>
   );
 }

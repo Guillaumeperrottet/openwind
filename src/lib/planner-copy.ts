@@ -2,7 +2,7 @@ const fr = {
   eyebrow: "LE BON SPOT, AU BON MOMENT",
   title: "Votre prochaine sortie commence ici.",
   intro:
-    "Choisissez vos dates. Comparez trois pistes expliquées, puis vérifiez les conditions sur place.",
+    "Choisissez vos dates. Comparez jusqu’à trois pistes expliquées, puis vérifiez les conditions sur place.",
   mapLink: "Ouvrir la carte en direct",
   sport: "Votre activité",
   kite: "Kitesurf",
@@ -63,7 +63,7 @@ const fr = {
   open: "Voir le spot et les balises",
   otherWindows: "Autres créneaux",
   more: "Afficher plus de spots",
-  otherSpots: "Autres spots évalués",
+  otherSpots: "Autres spots du catalogue",
   noWindow: "Aucun créneau retenu",
   unavailable: "Données météo indisponibles",
   reasons: {
@@ -79,7 +79,7 @@ const fr = {
   note: "L’accès, les interdictions et les dangers locaux ne sont pas validés automatiquement. Consultez le spot, les balises et les règles en vigueur avant de partir.",
   method: "Comment sont choisies les recommandations ?",
   methodText:
-    "Tous les spots du catalogue dans le périmètre sont comparés. Un créneau dure au moins 1 h sans interruption, après l’heure actuelle et entre le lever et le coucher du soleil sur le spot. Chaque heure doit respecter la plage de vent et une orientation à ±45° des orientations renseignées. Les données manquantes excluent le créneau.",
+    "Tous les spots du périmètre restent consultables. Seuls les profils documentés, à jour et correspondant à la discipline et à la saison demandées participent aux recommandations. Chaque heure doit respecter les secteurs précisément sourcés et les seuils météo. Un créneau dure au moins 1 h continue, après l’heure actuelle, entre le lever et le coucher du soleil. Les données manquantes excluent le créneau.",
   methodKite:
     "Kite : vent entre 22 et 45 km/h, resserré selon la fiche du spot. Rafales ≤ 1,5× le vent et sous le plafond du spot. Parapente : vent ≤ 15 km/h (ou moins selon la fiche), rafales ≤ 20 km/h, pluie ≤ 0,1 mm/h. Ces filtres ne suffisent pas à juger les conditions de vol.",
   ranking:
@@ -114,7 +114,7 @@ const de: Copy = {
   eyebrow: "DER PASSENDE SPOT ZUR PASSENDEN ZEIT",
   title: "Dein nächster Ausflug beginnt hier.",
   intro:
-    "Wähle deine Daten. Vergleiche drei begründete Vorschläge und prüfe die Bedingungen vor Ort.",
+    "Wähle deine Daten. Vergleiche bis zu drei begründete Vorschläge und prüfe die Bedingungen vor Ort.",
   mapLink: "Live-Karte öffnen",
   sport: "Deine Aktivität",
   kite: "Kitesurfen",
@@ -174,7 +174,7 @@ const de: Copy = {
   open: "Spot und Messstationen ansehen",
   otherWindows: "Weitere Zeitfenster",
   more: "Weitere Spots anzeigen",
-  otherSpots: "Weitere geprüfte Spots",
+  otherSpots: "Weitere Spots im Katalog",
   noWindow: "Kein passendes Zeitfenster",
   unavailable: "Wetterdaten nicht verfügbar",
   reasons: {
@@ -190,7 +190,7 @@ const de: Copy = {
   note: "Zugang, Verbote und lokale Gefahren werden nicht automatisch geprüft. Prüfe Spot, Messstationen und geltende Regeln vor der Abfahrt.",
   method: "Wie werden die Empfehlungen gewählt?",
   methodText:
-    "Alle katalogisierten Spots im Umkreis werden verglichen. Ein Zeitfenster umfasst mindestens 1 h ohne Unterbrechung, nach der aktuellen Zeit und zwischen Sonnenauf- und Sonnenuntergang am Spot. Jede Stunde muss den Windbereich und eine Richtung innerhalb von ±45° einer erfassten Richtung erfüllen. Fehlende Daten schliessen das Zeitfenster aus.",
+    "Alle Spots im Umkreis bleiben zugänglich. Nur aktuelle, dokumentierte Profile für die gewählte Disziplin und Saison werden empfohlen. Jede Stunde muss die genau belegten Windsektoren und Wettergrenzen erfüllen. Ein Zeitfenster dauert mindestens 1 h ohne Unterbrechung, nach der aktuellen Zeit, zwischen Sonnenauf- und Sonnenuntergang. Fehlende Daten schliessen das Zeitfenster aus.",
   methodKite:
     "Kite: 22–45 km/h, durch die Spot-Angaben weiter begrenzt. Böen ≤ 1,5× Wind und unter der Spot-Obergrenze. Gleitschirm: Wind ≤ 15 km/h (oder weniger laut Spot), Böen ≤ 20 km/h, Regen ≤ 0,1 mm/h. Diese Filter reichen nicht zur Beurteilung der Flugbedingungen aus.",
   ranking:
@@ -220,7 +220,7 @@ const it: Copy = {
   eyebrow: "LO SPOT GIUSTO AL MOMENTO GIUSTO",
   title: "La tua prossima uscita inizia qui.",
   intro:
-    "Scegli le date. Confronta tre proposte motivate, poi verifica le condizioni sul posto.",
+    "Scegli le date. Confronta fino a tre proposte motivate, poi verifica le condizioni sul posto.",
   mapLink: "Apri la mappa in diretta",
   sport: "La tua attività",
   kite: "Kitesurf",
@@ -280,7 +280,7 @@ const it: Copy = {
   open: "Vedi spot e stazioni",
   otherWindows: "Altre finestre",
   more: "Mostra altri spot",
-  otherSpots: "Altri spot valutati",
+  otherSpots: "Altri spot del catalogo",
   noWindow: "Nessuna finestra selezionata",
   unavailable: "Dati meteo non disponibili",
   reasons: {
@@ -296,7 +296,7 @@ const it: Copy = {
   note: "Accessi, divieti e pericoli locali non vengono verificati automaticamente. Consulta lo spot, le stazioni e le regole in vigore prima di partire.",
   method: "Come vengono scelte le raccomandazioni?",
   methodText:
-    "Si confrontano tutti gli spot del catalogo nel raggio. Una finestra dura almeno 1 h continua, dopo l’ora attuale e tra alba e tramonto sullo spot. Ogni ora deve rispettare l’intervallo del vento e una direzione entro ±45° da quelle registrate. Dati mancanti escludono la finestra.",
+    "Tutti gli spot nel raggio restano accessibili. Solo i profili documentati e aggiornati, compatibili con disciplina e stagione richieste, entrano nei consigli. Ogni ora deve rispettare i settori precisamente documentati e le soglie meteo. Una finestra dura almeno 1 h continua, dopo l’ora attuale, tra alba e tramonto. I dati mancanti escludono la finestra.",
   methodKite:
     "Kite: 22–45 km/h, ulteriormente limitati dalla scheda dello spot. Raffiche ≤ 1,5× il vento e sotto il limite dello spot. Parapendio: vento ≤ 15 km/h (o meno secondo la scheda), raffiche ≤ 20 km/h, pioggia ≤ 0,1 mm/h. Questi filtri non bastano a valutare le condizioni di volo.",
   ranking:
@@ -325,7 +325,7 @@ const en: Copy = {
   eyebrow: "THE RIGHT SPOT AT THE RIGHT TIME",
   title: "Your next session starts here.",
   intro:
-    "Pick your dates. Compare three explained suggestions, then check conditions on site.",
+    "Pick your dates. Compare up to three explained suggestions, then check conditions on site.",
   mapLink: "Open the live map",
   sport: "Your activity",
   kite: "Kitesurfing",
@@ -383,7 +383,7 @@ const en: Copy = {
   open: "View spot and stations",
   otherWindows: "Other windows",
   more: "Show more spots",
-  otherSpots: "Other evaluated spots",
+  otherSpots: "Other catalogue spots",
   noWindow: "No matching window",
   unavailable: "Weather data unavailable",
   reasons: {
@@ -399,7 +399,7 @@ const en: Copy = {
   note: "Access, restrictions and local hazards are not automatically validated. Check the spot, stations and current rules before leaving.",
   method: "How are recommendations selected?",
   methodText:
-    "All catalogue spots in the area are compared. A window lasts at least 1 uninterrupted hour, after the current time and between sunrise and sunset at the spot. Each hour must meet the wind range and be within ±45° of a recorded direction. Missing data excludes the window.",
+    "All spots in the area remain accessible. Only current, documented profiles matching the requested discipline and season enter recommendations. Every hour must meet precisely sourced wind sectors and weather thresholds. A window lasts at least 1 uninterrupted hour after the current time, between sunrise and sunset. Missing data excludes the window.",
   methodKite:
     "Kite: 22–45 km/h, narrowed by the spot profile. Gusts ≤ 1.5× wind and below the spot ceiling. Paragliding: wind ≤ 15 km/h (or lower per profile), gusts ≤ 20 km/h, rain ≤ 0.1 mm/h. These filters cannot assess flight conditions on their own.",
   ranking:

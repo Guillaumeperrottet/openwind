@@ -33,6 +33,14 @@ const spot: PlannerSpot = {
   access: null,
   hazards: null,
   distanceKm: null,
+  qualification: {
+    status: "DOCUMENTED",
+    eligible: true,
+    discipline: "WATER_KITE",
+    sources: [],
+    note: "Test fixture",
+    sectors: [{ from: 315, to: 45 }],
+  },
 };
 const ms = (time: string) => Date.parse(`2026-10-25T${time}:00Z`);
 function forecast(hours = [8, 9, 10, 11]): PlannerForecast {
@@ -179,7 +187,10 @@ describe("continuous model windows", () => {
   });
   it("does not replace missing directions or gusts with favourable values", () => {
     expect(
-      analyze(forecast(), { ...spot, bestWindDirections: [] }).windows,
+      analyze(forecast(), {
+        ...spot,
+        qualification: { ...spot.qualification!, sectors: [] },
+      }).windows,
     ).toEqual([]);
     const data = forecast();
     data.hours.forEach((h) => (h.gust = null));
@@ -189,8 +200,16 @@ describe("continuous model windows", () => {
     const data = forecast();
     data.hours.forEach((h, i) => (h.direction = i % 2 ? 180 : 0));
     expect(
-      analyze(data, { ...spot, bestWindDirections: ["N", "S"] }).windows[0]
-        .directions,
+      analyze(data, {
+        ...spot,
+        qualification: {
+          ...spot.qualification!,
+          sectors: [
+            { from: 315, to: 45 },
+            { from: 135, to: 225 },
+          ],
+        },
+      }).windows[0].directions,
     ).toEqual([0, 180]);
   });
   it("rejects excessive gust ratios even with otherwise ideal wind", () => {

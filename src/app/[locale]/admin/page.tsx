@@ -33,6 +33,16 @@ export default function AdminPage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Link
+            href="/admin/planner"
+            className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:border-sky-300"
+          >
+            <h2 className="font-semibold">Profils du planificateur</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Documenter la discipline, les secteurs, la saison et l’accès avec
+              des sources datées.
+            </p>
+          </Link>
+          <Link
             href="/admin/articles"
             className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-sky-300"
           >

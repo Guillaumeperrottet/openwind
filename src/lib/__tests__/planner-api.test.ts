@@ -2,16 +2,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 const mocks = vi.hoisted(() => ({
   findMany: vi.fn(),
+  reviews: vi.fn(),
   forecasts: vi.fn(),
   seasonal: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { spot: { findMany: mocks.findMany } },
+  prisma: {
+    spot: { findMany: mocks.findMany },
+    systemConfig: { findMany: mocks.reviews },
+  },
 }));
 vi.mock("@/lib/planner-forecast", () => ({
   fetchPlannerForecasts: mocks.forecasts,
   fetchPlannerSeasonal: mocks.seasonal,
 }));
+import { spotFingerprint } from "@/lib/planner-review-store";
+import { REVIEW_PREFIX } from "@/lib/planner-review";
 import { GET } from "@/app/api/plan/route";
 const record = {
   id: "test",
@@ -21,6 +27,10 @@ const record = {
   region: null,
   country: "CH",
   sportType: "KITE",
+  description: "Test spot",
+  difficulty: "INTERMEDIATE",
+  waterType: "CHOP",
+  bestMonths: [],
   minWindKmh: 22,
   maxWindKmh: 40,
   bestWindDirections: ["N"],
@@ -62,6 +72,43 @@ beforeEach(() => {
   vi.setSystemTime(new Date("2026-10-22T12:00:00Z"));
   vi.clearAllMocks();
   mocks.findMany.mockResolvedValue([record]);
+  mocks.reviews.mockImplementation(async ({ where }) =>
+    where.key.in.map((key: string) => {
+      const id = key.slice(REVIEW_PREFIX.length),
+        i = Number(id.slice(5));
+      const s = id.startsWith("spot-")
+        ? { ...record, id, latitude: 46.7 + i * 0.0001 }
+        : record;
+      return {
+        key,
+        value: JSON.stringify({
+          version: 1,
+          status: "DOCUMENTED",
+          discipline: "WATER_KITE",
+          fingerprint: spotFingerprint(s),
+          reviewedAt: "2026-10-22",
+          expiresAt: "2027-01-20",
+          sectors: [{ from: 315, to: 45 }],
+          season: "CONDITIONAL",
+          months: [],
+          access: "CONDITIONAL",
+          notes: {
+            fr: "Conditions locales FR",
+            de: "Lokale Bedingungen DE",
+            it: "Condizioni locali IT",
+            en: "Local conditions EN",
+          },
+          sources: [
+            {
+              title: "Local source",
+              url: "https://example.org/local",
+              covers: ["discipline", "directions", "season", "access"],
+            },
+          ],
+        }),
+      };
+    }),
+  );
   mocks.forecasts.mockResolvedValue([forecast]);
 });
 afterEach(() => vi.useRealTimers());
@@ -80,10 +127,26 @@ describe("public planner API", () => {
       available: 1,
       recommended: 1,
       failed: 0,
+      qualified: 1,
+      needsReview: 0,
     });
     expect(body.spots[0].access).toBe("Zugang DE");
     expect(body.spots[0].windows[0].hours).toBe(3);
     expect(res.headers.get("cache-control")).toBe("no-store");
+  });
+  it("keeps unreviewed spots public without presenting weather recommendations", async () => {
+    mocks.reviews.mockResolvedValue([]);
+    const res = await get("locale=it"),
+      body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.spots).toHaveLength(1);
+    expect(body.spots[0].windows).toEqual([]);
+    expect(body.spots[0].qualification.status).toBe("MISSING");
+    expect(body.meta).toMatchObject({
+      recommended: 0,
+      qualified: 0,
+      needsReview: 1,
+    });
   });
   it("evaluates beyond both previous arbitrary catalogue limits", async () => {
     mocks.findMany.mockResolvedValue(
