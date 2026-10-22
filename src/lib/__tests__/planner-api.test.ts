@@ -142,11 +142,49 @@ describe("public planner API", () => {
     expect(body.spots).toHaveLength(1);
     expect(body.spots[0].windows).toEqual([]);
     expect(body.spots[0].qualification.status).toBe("MISSING");
+    expect(body.spots[0].weather).toMatchObject({
+      windMax: 30,
+      gustMax: 35,
+      samples: 3,
+    });
     expect(body.meta).toMatchObject({
       recommended: 0,
       qualified: 0,
       needsReview: 1,
     });
+  });
+  it("returns an unreviewed windy Saint-Blaise within 150 km without fabricating a session", async () => {
+    mocks.reviews.mockResolvedValue([]);
+    mocks.findMany.mockResolvedValue([
+      {
+        ...record,
+        name: "Saint-Blaise",
+        latitude: 47.010611,
+        longitude: 6.98829,
+        bestWindDirections: ["SW"],
+      },
+    ]);
+    mocks.forecasts.mockResolvedValue([
+      {
+        ...forecast,
+        hours: forecast.hours.map((h) => ({
+          ...h,
+          wind: 41.7,
+          gust: 79.6,
+          direction: 225,
+        })),
+      },
+    ]);
+    const res = await get("lat=47.01&lng=6.99&radius=150"),
+      body = await res.json();
+    expect(res.status).toBe(200);
+    expect(body.meta.candidates).toBe(1);
+    expect(body.spots[0]).toMatchObject({
+      name: "Saint-Blaise",
+      windows: [],
+      weather: { windMax: 41.7, gustMax: 79.6, gustsAboveThreshold: true },
+    });
+    expect(body.spots[0].distanceKm).toBeLessThan(1);
   });
   it("evaluates beyond both previous arbitrary catalogue limits", async () => {
     mocks.findMany.mockResolvedValue(

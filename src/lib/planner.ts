@@ -63,12 +63,94 @@ export interface PlannerResult extends PlannerSpot {
   windows: PlannerWindow[];
   reasons: Partial<Record<PlannerReason, number>>;
   unavailable: boolean;
+  // A factual model summary, independent of documentary review and session fit.
+  weather?: {
+    windMin: number;
+    windMax: number;
+    gustMax: number | null;
+    windPeakAt: number;
+    gustPeakAt: number | null;
+    samples: number;
+    gustsAboveThreshold: boolean;
+    windAboveThreshold: boolean;
+  };
   seasonal?: {
     wind: number;
     gust: number;
     days: number;
     years: [number, number];
   };
+}
+
+/** Review status must never erase usable weather. Summaries include only the
+ * requested local days, daylight and hourly intervals that have not elapsed. */
+export function summarizePlannerWeather(
+  spot: PlannerSpot,
+  forecast: PlannerForecast,
+  criteria: PlannerCriteria,
+  now: number,
+): PlannerResult["weather"] {
+  const hours = forecast.hours
+    .filter((h) => {
+      if (
+        !Number.isFinite(h.time) ||
+        h.time + 3600000 <= now ||
+        h.wind === null ||
+        !Number.isFinite(h.wind) ||
+        h.wind < 0
+      )
+        return false;
+      const date = localDate(new Date(h.time), forecast.timezone);
+      const day = forecast.daylight.find((d) => d.date === date);
+      return (
+        date >= criteria.startDate &&
+        date <= criteria.endDate &&
+        !!day &&
+        h.time < day.sunset &&
+        h.time + 3600000 > day.sunrise
+      );
+    })
+    .sort((a, b) => a.time - b.time);
+  if (!hours.length) return;
+  const peak = hours.reduce((a, b) => (b.wind! > a.wind! ? b : a));
+  const gusts = hours.filter(
+    (h) => h.gust !== null && Number.isFinite(h.gust) && h.gust >= 0,
+  );
+  const gustPeak = gusts.length
+    ? gusts.reduce((a, b) => (b.gust! > a.gust! ? b : a))
+    : null;
+  const min = spot.sportType === "KITE" ? Math.max(22, spot.minWindKmh) : 0;
+  const max = Math.min(spot.sportType === "KITE" ? 45 : 15, spot.maxWindKmh);
+  return {
+    windMin: Math.min(...hours.map((h) => h.wind!)),
+    windMax: peak.wind!,
+    gustMax: gustPeak?.gust ?? null,
+    windPeakAt: peak.time,
+    gustPeakAt: gustPeak?.time ?? null,
+    samples: hours.length,
+    windAboveThreshold: peak.wind! > max,
+    gustsAboveThreshold: gusts.some((h) =>
+      spot.sportType === "KITE"
+        ? h.gust! > max || (h.wind! >= min && h.gust! > h.wind! * 1.5)
+        : h.gust! > 20,
+    ),
+  };
+}
+
+export function plannerSpotMatches(
+  spot: Pick<PlannerSpot, "name" | "region" | "country">,
+  query: string,
+): boolean {
+  const normalize = (v: string) =>
+    v
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .toLowerCase()
+      .replace(/\b(?:saint|sainte|st|ste)\b/g, "st")
+      .replace(/[^\p{L}\p{N}]/gu, "");
+  return normalize(
+    [spot.name, spot.region, spot.country].filter(Boolean).join(" "),
+  ).includes(normalize(query));
 }
 export interface PlannerResponse {
   mode: "forecast" | "seasonal";
@@ -200,6 +282,7 @@ export function evaluateSpot(
   if (!forecast) return result;
   result.timezone = forecast.timezone;
   result.retrievedAt = forecast.retrievedAt;
+  result.weather = summarizePlannerWeather(spot, forecast, criteria, now);
   if (!spot.qualification?.eligible) return result;
   const min = spot.sportType === "KITE" ? Math.max(22, spot.minWindKmh) : 0;
   const max = Math.min(spot.sportType === "KITE" ? 45 : 15, spot.maxWindKmh);

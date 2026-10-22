@@ -47,6 +47,15 @@ export function ResultCard({
   const speed = (v: number) => Math.round(v / divisor);
   const number = (v: number) =>
     new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(v);
+  const at = (v: number) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: spot.timezone,
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(v);
   const open = () =>
     trackEvent("plan_result_open", {
       spot_id: spot.id,
@@ -107,6 +116,29 @@ export function ResultCard({
               {c.gust} {speed(w.gustMax)} {unit}
             </p>
           </div>
+        ) : spot.weather ? (
+          <div className="mt-2 rounded-xl bg-slate-50 px-3 py-2.5">
+            <p className="text-[11px] font-medium text-slate-600">
+              {ui.weatherMaxima}
+            </p>
+            <p className="mt-1 text-sm text-slate-900">
+              <strong>
+                {ui.windMax} {speed(spot.weather.windMax)} {unit}
+              </strong>
+              <span className="mx-2 text-slate-300">/</span>
+              {ui.gustMax}{" "}
+              {spot.weather.gustMax === null
+                ? "—"
+                : `${speed(spot.weather.gustMax)} ${unit}`}
+            </p>
+            {(spot.weather.gustsAboveThreshold ||
+              spot.weather.windAboveThreshold) && (
+              <p className="mt-1 text-xs font-medium text-amber-900">
+                {spot.weather.gustsAboveThreshold ? ui.highGusts : ui.highWind}
+              </p>
+            )}
+            <p className="mt-1 text-[11px] text-slate-500">{ui.preview}</p>
+          </div>
         ) : spot.seasonal ? (
           <p className="mt-3 text-sm text-slate-700">
             {c.historicalWind} :{" "}
@@ -137,6 +169,25 @@ export function ResultCard({
           </span>
         </summary>
         <div className="space-y-3 border-t border-slate-100 py-3">
+          {!w && spot.weather && (
+            <>
+              <p>
+                {ui.windPeak} : {at(spot.weather.windPeakAt)} ·{" "}
+                {speed(spot.weather.windMax)} {unit}
+              </p>
+              {spot.weather.gustPeakAt !== null &&
+                spot.weather.gustMax !== null && (
+                  <p>
+                    {ui.gustPeak} : {at(spot.weather.gustPeakAt)} ·{" "}
+                    {speed(spot.weather.gustMax)} {unit}
+                  </p>
+                )}
+              <p>
+                {c.localTime} ({spot.timezone}) · {c.source}{" "}
+                {spot.retrievedAt ? at(Date.parse(spot.retrievedAt)) : "—"}
+              </p>
+            </>
+          )}
           {w && (
             <>
               <p>

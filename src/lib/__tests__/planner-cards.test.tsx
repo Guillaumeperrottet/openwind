@@ -103,6 +103,40 @@ describe("compact, evidence-based cards", () => {
     expect(html).not.toContain(">01<");
     expect(html).toContain('href="/spots/s"');
   });
+  it.each(["fr", "de", "it"] as const)(
+    "shows unreviewed weather with explicit excessive-gust information in %s",
+    (locale) => {
+      const html = renderToStaticMarkup(
+        <ResultCard
+          spot={{
+            ...spot,
+            name: "Saint-Blaise",
+            qualification: undefined,
+            windows: [],
+            weather: {
+              windMin: 3.3,
+              windMax: 41.7,
+              gustMax: 79.6,
+              windPeakAt: Date.parse("2026-10-23T14:00:00Z"),
+              gustPeakAt: Date.parse("2026-10-23T15:00:00Z"),
+              samples: 11,
+              gustsAboveThreshold: true,
+              windAboveThreshold: false,
+            },
+          }}
+          c={plannerCopy[locale]}
+          locale={locale}
+        />,
+      );
+      expect(html).toContain("Saint-Blaise");
+      expect(html).toContain("23 kts");
+      expect(html).toContain("43 kts");
+      expect(html).toContain(plannerUiCopy[locale].highGusts);
+      expect(html).toContain(plannerUiCopy[locale].weatherMaxima);
+      expect(html).not.toContain(plannerCopy[locale].direction);
+      expect(html).toContain(plannerUiCopy[locale].status.MISSING);
+    },
+  );
   it("makes comparative reasons true against the whole documented matching pool", () => {
     const longer = {
       ...spot,

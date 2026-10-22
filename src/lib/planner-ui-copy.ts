@@ -1,6 +1,23 @@
 import type { SiteLocale } from "./site";
 import type { ReviewStatus } from "./planner-review";
 type UI = {
+  weatherResults: string;
+  weatherIntro: string;
+  forecastList: string;
+  withForecast: string;
+  noReviewedWindow: string;
+  noDaylightForecast: string;
+  weatherMaxima: string;
+  windMax: string;
+  gustMax: string;
+  highGusts: string;
+  highWind: string;
+  preview: string;
+  filterSpots: string;
+  noFilterMatches: string;
+  windPeak: string;
+  gustPeak: string;
+
   edit: string;
   details: string;
   documented: string;
@@ -24,6 +41,26 @@ type UI = {
 };
 export const plannerUiCopy: Record<SiteLocale, UI> = {
   fr: {
+    weatherResults: "Le vent autour de vous",
+    weatherIntro:
+      "Vent et rafales prévus sur tous les spots du périmètre, avec le statut documentaire de chaque fiche.",
+    forecastList: "Spots et prévisions",
+    withForecast: "avec prévisions en journée",
+    noReviewedWindow:
+      "Aucun créneau ne passe tous les filtres sur les profils documentés. Les prévisions des autres spots sont affichées ci-dessous.",
+    noDaylightForecast:
+      "Aucune donnée de vent exploitable en journée pour ces dates. Les fiches restent consultables.",
+    weatherMaxima: "Maxima prévus en journée",
+    windMax: "Vent max.",
+    gustMax: "Rafales max.",
+    highGusts: "Rafales pouvant dépasser les seuils du planificateur",
+    highWind: "Vent pouvant dépasser les seuils du planificateur",
+    preview: "Prévisions météo · aucun créneau retenu",
+    filterSpots: "Rechercher un spot dans cette liste",
+    noFilterMatches: "Aucun spot ne correspond à ce nom dans le périmètre.",
+    windPeak: "Pic de vent prévu",
+    gustPeak: "Pic de rafales prévu",
+
     edit: "Modifier",
     details: "Détails et sources",
     documented: "Profil documenté",
@@ -59,6 +96,26 @@ export const plannerUiCopy: Record<SiteLocale, UI> = {
     },
   },
   de: {
+    weatherResults: "Wind in deiner Nähe",
+    weatherIntro:
+      "Wind- und Böenprognosen für alle Spots im Umkreis, mit Dokumentationsstatus jedes Profils.",
+    forecastList: "Spots und Prognosen",
+    withForecast: "mit Tageslichtprognosen",
+    noReviewedWindow:
+      "Kein Zeitfenster der dokumentierten Profile erfüllt alle Filter. Die Prognosen der übrigen Spots findest du unten.",
+    noDaylightForecast:
+      "Keine nutzbaren Winddaten bei Tageslicht für diese Daten. Die Spots bleiben zugänglich.",
+    weatherMaxima: "Prognostizierte Tageslichtmaxima",
+    windMax: "Wind max.",
+    gustMax: "Böen max.",
+    highGusts: "Böen können die Grenzwerte des Planers überschreiten",
+    highWind: "Wind kann die Grenzwerte des Planers überschreiten",
+    preview: "Wetterprognose · kein Zeitfenster ausgewählt",
+    filterSpots: "Spot in dieser Liste suchen",
+    noFilterMatches: "Kein Spot mit diesem Namen im Umkreis.",
+    windPeak: "Prognostiziertes Windmaximum",
+    gustPeak: "Prognostiziertes Böenmaximum",
+
     edit: "Ändern",
     details: "Details und Quellen",
     documented: "Profil dokumentiert",
@@ -92,6 +149,26 @@ export const plannerUiCopy: Record<SiteLocale, UI> = {
     },
   },
   it: {
+    weatherResults: "Il vento vicino a te",
+    weatherIntro:
+      "Vento e raffiche previsti per tutti gli spot nel raggio, con lo stato documentale di ogni scheda.",
+    forecastList: "Spot e previsioni",
+    withForecast: "con previsioni diurne",
+    noReviewedWindow:
+      "Nessuna finestra dei profili documentati supera tutti i filtri. Le previsioni degli altri spot sono disponibili qui sotto.",
+    noDaylightForecast:
+      "Nessun dato di vento diurno utilizzabile per queste date. Le schede restano consultabili.",
+    weatherMaxima: "Massimi previsti di giorno",
+    windMax: "Vento max.",
+    gustMax: "Raffiche max.",
+    highGusts: "Le raffiche possono superare le soglie del pianificatore",
+    highWind: "Il vento può superare le soglie del pianificatore",
+    preview: "Previsioni meteo · nessuna finestra selezionata",
+    filterSpots: "Cerca uno spot in questa lista",
+    noFilterMatches: "Nessuno spot con questo nome nel raggio.",
+    windPeak: "Picco di vento previsto",
+    gustPeak: "Picco di raffiche previsto",
+
     edit: "Modifica",
     details: "Dettagli e fonti",
     documented: "Profilo documentato",
@@ -127,6 +204,26 @@ export const plannerUiCopy: Record<SiteLocale, UI> = {
     },
   },
   en: {
+    weatherResults: "Wind near you",
+    weatherIntro:
+      "Wind and gust forecasts for every spot in the area, with each profile’s documentary status.",
+    forecastList: "Spots and forecasts",
+    withForecast: "with daylight forecasts",
+    noReviewedWindow:
+      "No window on the documented profiles meets every filter. Forecasts for the other spots are shown below.",
+    noDaylightForecast:
+      "No usable daylight wind data for these dates. Spot pages remain accessible.",
+    weatherMaxima: "Forecast daylight maxima",
+    windMax: "Max. wind",
+    gustMax: "Max. gusts",
+    highGusts: "Gusts may exceed the planner thresholds",
+    highWind: "Wind may exceed the planner thresholds",
+    preview: "Weather forecast · no selected window",
+    filterSpots: "Find a spot in this list",
+    noFilterMatches: "No spot with this name in the area.",
+    windPeak: "Forecast wind peak",
+    gustPeak: "Forecast gust peak",
+
     edit: "Edit",
     details: "Details and sources",
     documented: "Documented profile",

@@ -19,6 +19,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import {
   addDays,
   parsePlannerCriteria,
+  plannerSpotMatches,
   quickDates,
   selectRecommendations,
   type PlannerCriteria,
@@ -92,6 +93,7 @@ export function TripPlanner({
   const [dirty, setDirty] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
   const [visible, setVisible] = useState(9);
+  const [spotFilter, setSpotFilter] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState("");
   const request = useRef<AbortController | null>(null);
@@ -112,6 +114,7 @@ export function TripPlanner({
       setError("");
       setDirty(false);
       setVisible(9);
+      setSpotFilter("");
       setCopyStatus("");
       setSelected(null);
       scrollAfterSearch.current = updateUrl;
@@ -327,15 +330,27 @@ export function TripPlanner({
   );
   const others = useMemo(
     () =>
-      response?.spots.filter(
-        (s) => !recommendations.some((r) => r.id === s.id),
-      ) ?? [],
+      response?.spots
+        .filter((s) => !recommendations.some((r) => r.id === s.id))
+        .sort(
+          (a, b) =>
+            Number(!!b.weather) - Number(!!a.weather) ||
+            (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity) ||
+            a.name.localeCompare(b.name),
+        ) ?? [],
     [response, recommendations],
   );
   const mapSpots = useMemo(
     () => [...recommendations, ...others],
     [recommendations, others],
   );
+  const filteredRecommendations = recommendations.filter((s) =>
+    plannerSpotMatches(s, spotFilter),
+  );
+  const filteredOthers = others.filter((s) =>
+    plannerSpotMatches(s, spotFilter),
+  );
+  const weatherCount = response?.spots.filter((s) => s.weather).length ?? 0;
   const selectedSpot = mapSpots.find((s) => s.id === selected) ?? mapSpots[0];
   const selectSpot = useCallback((id: string) => {
     setSelected(id);
@@ -680,7 +695,7 @@ export function TripPlanner({
           {loading
             ? c.loading
             : response
-              ? `${response.meta.candidates} ${c.evaluated} · ${response.meta.recommended} ${c.matches}${response.meta.failed ? ` · ${response.meta.failed} ${c.failed}` : ""}`
+              ? `${response.meta.candidates} ${c.evaluated}${response.mode === "forecast" ? ` · ${weatherCount} ${ui.withForecast}` : ""}${response.meta.failed ? ` · ${response.meta.failed} ${c.failed}` : ""}`
               : ""}
         </div>
         {response && (
@@ -796,13 +811,22 @@ export function TripPlanner({
             </div>
             <div className="mb-4">
               <h2 className="text-xl font-semibold">
-                {response.mode === "seasonal" ? c.seasonal : c.results}
+                {response.mode === "seasonal"
+                  ? c.seasonal
+                  : recommendations.length
+                    ? c.results
+                    : ui.weatherResults}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                {response.mode === "seasonal" ? c.seasonalText : c.resultIntro}
+                {response.mode === "seasonal"
+                  ? c.seasonalText
+                  : recommendations.length
+                    ? c.resultIntro
+                    : ui.weatherIntro}
               </p>
               <p className="mt-2 text-xs text-slate-500">
-                {response.meta.qualified ?? 0} {ui.qualified}
+                {response.meta.qualified ?? 0}/{response.meta.candidates}{" "}
+                {ui.qualified}
               </p>
               {loading && (
                 <p role="status" className="mt-2 text-sm text-sky-800">
@@ -817,19 +841,13 @@ export function TripPlanner({
             )}
             {response.meta.candidates === 0 ? (
               <Empty title={c.noSpots} text={c.emptyText} />
-            ) : response.mode === "forecast" &&
-              !recommendations.length &&
-              response.meta.available > 0 ? (
-              view === "list" ? (
-                <Empty
-                  title={response.meta.qualified ? c.noMatch : ui.pending}
-                  text={response.meta.qualified ? c.noMatchText : ui.missing}
-                />
-              ) : (
-                <p className="mb-3 text-xs text-slate-600">
-                  {response.meta.qualified ? c.noMatch : ui.missing}
-                </p>
-              )
+            ) : response.mode === "forecast" && !recommendations.length ? (
+              <p
+                className="mb-4 rounded-xl bg-slate-100 p-3 text-xs leading-relaxed text-slate-600"
+                role="status"
+              >
+                {weatherCount ? ui.noReviewedWindow : ui.noDaylightForecast}
+              </p>
             ) : null}
             {view === "map" && mapSpots.length > 0 ? (
               <div className="space-y-4">
@@ -860,33 +878,62 @@ export function TripPlanner({
               </div>
             ) : (
               <>
+                {response.spots.length > 0 && (
+                  <div className="mb-4">
+                    <label
+                      htmlFor="planner-spot-filter"
+                      className="mb-2 block text-sm font-medium"
+                    >
+                      {ui.filterSpots}
+                    </label>
+                    <input
+                      id="planner-spot-filter"
+                      type="search"
+                      className={fieldClass}
+                      value={spotFilter}
+                      onChange={(e) => {
+                        setSpotFilter(e.target.value);
+                        setVisible(9);
+                      }}
+                    />
+                    {!!spotFilter.trim() && (
+                      <p role="status" className="mt-2 text-xs text-slate-500">
+                        {filteredRecommendations.length + filteredOthers.length
+                          ? `${filteredRecommendations.length + filteredOthers.length} / ${response.spots.length}`
+                          : ui.noFilterMatches}
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div className="grid items-start gap-4 lg:grid-cols-3">
-                  {recommendations.map((spot, i) => (
+                  {filteredRecommendations.map((spot) => (
                     <ResultCard
                       key={spot.id}
                       spot={spot}
-                      rank={i + 1}
+                      rank={recommendations.indexOf(spot) + 1}
                       c={c}
                       locale={locale}
                       comparison={response.spots}
                     />
                   ))}
                 </div>
-                {others.length > 0 && (
+                {filteredOthers.length > 0 && (
                   <details
                     className="mt-6 rounded-2xl border border-slate-200 bg-white p-4"
                     open={
-                      response.mode === "seasonal" || !recommendations.length
+                      response.mode === "seasonal" ||
+                      !recommendations.length ||
+                      !!spotFilter.trim()
                     }
                   >
                     <summary className="cursor-pointer text-sm font-semibold">
-                      {c.otherSpots}{" "}
+                      {recommendations.length ? c.otherSpots : ui.forecastList}{" "}
                       <span className="font-normal text-slate-400">
-                        ({others.length})
+                        ({filteredOthers.length})
                       </span>
                     </summary>
                     <div className="mt-4 grid items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {others.slice(0, visible).map((spot) => (
+                      {filteredOthers.slice(0, visible).map((spot) => (
                         <ResultCard
                           key={spot.id}
                           spot={spot}
@@ -896,7 +943,7 @@ export function TripPlanner({
                         />
                       ))}
                     </div>
-                    {others.length > visible && (
+                    {filteredOthers.length > visible && (
                       <button
                         type="button"
                         onClick={() => setVisible((v) => v + 9)}
