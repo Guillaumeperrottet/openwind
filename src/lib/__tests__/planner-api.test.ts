@@ -18,6 +18,7 @@ vi.mock("@/lib/planner-forecast", () => ({
 }));
 import { spotFingerprint } from "@/lib/planner-review-store";
 import { REVIEW_PREFIX } from "@/lib/planner-review";
+import { checkedSwissProfiles } from "@/lib/swiss-planner-profile-import";
 import { GET } from "@/app/api/plan/route";
 const record = {
   id: "test",
@@ -113,6 +114,80 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 describe("public planner API", () => {
+  it.each(["fr", "de", "it"] as const)(
+    "uses the eight sourced profiles anonymously in %s",
+    async (locale) => {
+      const profiles = checkedSwissProfiles();
+      mocks.findMany.mockResolvedValue(profiles.map((p) => p.spot));
+      mocks.reviews.mockResolvedValue([]);
+      mocks.forecasts.mockImplementation(async (spots) =>
+        spots.map(
+          (s: {
+            qualification: { sectors: { from: number; to: number }[] };
+          }) => {
+            const sector = s.qualification.sectors[0];
+            const direction =
+              sector.from > sector.to ? 0 : (sector.from + sector.to) / 2;
+            return {
+              ...forecast,
+              hours: forecast.hours.map((h) => ({
+                ...h,
+                wind: 27,
+                gust: 30,
+                direction,
+              })),
+            };
+          },
+        ),
+      );
+      const res = await get(`locale=${locale}&radius=500`),
+        body = await res.json();
+      expect(res.status).toBe(200);
+      expect(body.meta).toMatchObject({
+        candidates: 8,
+        qualified: 8,
+        recommended: 8,
+        failed: 0,
+      });
+      for (const p of profiles) {
+        const s = body.spots.find((s: { id: string }) => s.id === p.spot.id);
+        expect(s.qualification.note).toBe(p.review.notes[locale]);
+        expect(s.access).toBe(
+          locale === "fr"
+            ? p.spot.access
+            : locale === "de"
+              ? p.spot.accessDe
+              : p.spot.accessIt,
+        );
+        expect(s.windows).toHaveLength(1);
+        expect(s.qualification.sources.length).toBeGreaterThan(0);
+      }
+    },
+  );
+  it("applies a dated administrative closure while keeping the forecast public", async () => {
+    const p = checkedSwissProfiles()[0];
+    const review = {
+      ...p.review,
+      closures: [
+        {
+          kind: "DATED",
+          start: "2026-10-25",
+          end: "2026-10-25",
+          reason: p.review.notes,
+          sourceUrl: p.review.sources[0].url,
+        },
+      ],
+    };
+    mocks.findMany.mockResolvedValue([p.spot]);
+    mocks.reviews.mockResolvedValue([
+      { key: REVIEW_PREFIX + p.spot.id, value: JSON.stringify(review) },
+    ]);
+    const body = await (await get()).json();
+    expect(body.spots[0].qualification.status).toBe("CLOSED");
+    expect(body.spots[0].weather).toBeDefined();
+    expect(body.spots[0].windows).toEqual([]);
+    expect(body.meta.recommended).toBe(0);
+  });
   it("validates before touching the catalogue or weather service", async () => {
     expect((await get("lat=Infinity&lng=6")).status).toBe(400);
     expect(mocks.findMany).not.toHaveBeenCalled();

@@ -53,7 +53,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Revue invalide : notes FR/DE/IT/EN, secteurs précis et sources couvrant les quatre sujets requis pour documenter un profil.",
+          "Revue invalide : notes FR/DE/IT/EN, secteurs précis, dates valides et sources couvrant les quatre sujets, les fermetures et les horaires requis pour documenter un profil.",
         details: parsed.success ? undefined : parsed.error.flatten(),
       },
       { status: 400 },

@@ -26,7 +26,7 @@ export const URNERSEE_GUIDE: LocalGuide = {
     licenseUrl: "https://creativecommons.org/licenses/by/3.0/",
   },
   publishedAt: "2026-10-21T12:27:40Z",
-  updatedAt: "2026-10-21T12:27:40Z",
+  updatedAt: "2026-10-22T12:00:00Z",
   stations: [
     {
       id: "ALT",
@@ -49,8 +49,12 @@ export const URNERSEE_GUIDE: LocalGuide = {
       },
     },
   ],
-  spotIds: [],
+  spotIds: ["swiss-kite-isleten"],
   sources: [
+    {
+      label: "Kanton Uri — périodes de navigation",
+      url: "https://www.ur.ch/newsarchiv/77921",
+    },
     {
       label: "Kanton Uri — Kitesurfen auf dem Urnersee",
       url: "https://www.ur.ch/publikationen/7719",
@@ -82,6 +86,9 @@ Altdorf mesure à l’intérieur de la vallée de la Reuss, pas sur une plage de
 
 ## Une prévision régionale, pas une mesure à Isleten
 Le tableau est calculé au point d’Altdorf, dans la vallée. Il aide à suivre la tendance régionale et ne représente ni toutes les rives ni une observation à Isleten. Pour compléter ce point, la page [météo et webcams de Windsurfing Urnersee](https://windsurfing-urnersee.ch/ueber-uns/wetter-und-webcam) fournit des repères locaux. Contrôlez la date des images.
+
+## Le départ d’Isleten et ses fermetures
+Le [profil documenté d’Isleten](https://www.openwind.ch/fr/spots/swiss-kite-isleten) concerne le départ de rive au nord du delta de l’Isenthalerbach. Ce départ est fermé du 15 juin au 31 août inclus. Le planificateur exclut aussi décembre et janvier pour la navigation kite ; une sortie accompagnée depuis un bateau relève d’un autre accès.
 
 ## Accès et zones de pratique
 Avant de choisir votre mise à l’eau, consultez les informations du canton d’Uri et le plan auquel elles renvoient. Vérifiez les indications pour votre activité et la signalisation du jour. Les sources ci-dessous complètent la carte ; un lien vers un lieu ne vaut pas autorisation d’y naviguer.`,
@@ -125,6 +132,9 @@ Altdorf misst im Reusstal im Landesinneren und nicht an einem Strand in Flüelen
 
 ## Regionale Prognose statt Messung in Isleten
 Die Tabelle wird für Altdorf im Tal berechnet. Sie zeigt einen regionalen Trend, aber weder alle Ufer noch eine Beobachtung in Isleten. Die Seite [Wetter und Webcam von Windsurfing Urnersee](https://windsurfing-urnersee.ch/ueber-uns/wetter-und-webcam) ergänzt diesen Punkt durch örtliche Hinweise. Beachte das Aufnahmedatum der Bilder.
+
+## Einstieg Isleten und Sperrzeiten
+Das [dokumentierte Profil Isleten](https://www.openwind.ch/de/spots/swiss-kite-isleten) gilt für den Uferstart nördlich im Isenthalerbach-Delta. Dieser Start ist vom 15. Juni bis 31. August einschliesslich gesperrt. Der Planer schliesst auch Dezember und Januar für die Kitesurfnavigation aus; begleitete Bootssessions haben einen anderen Zugang.
 
 ## Zugänge und Nutzungszonen prüfen
 Konsultiere vor der Wahl des Einstiegs die Informationen des Kantons Uri und den dort verlinkten Plan. Prüfe die Angaben für deine Sportart und die aktuelle Beschilderung. Die Quellen unten ergänzen die Karte; ein Verweis auf einen Ort ist keine Erlaubnis zur Nutzung.`,
@@ -170,6 +180,9 @@ Altdorf misura nell’entroterra della valle della Reuss, non su una spiaggia di
 
 ## Previsioni regionali, non misure a Isleten
 La tabella è calcolata per Altdorf, nella valle. Aiuta a seguire la tendenza regionale ma non rappresenta tutte le rive né un’osservazione a Isleten. La pagina [meteo e webcam di Windsurfing Urnersee](https://windsurfing-urnersee.ch/ueber-uns/wetter-und-webcam) offre ulteriori riferimenti locali. Controlla la data delle immagini.
+
+## Accesso Isleten e chiusure
+Il [profilo documentato Isleten](https://www.openwind.ch/it/spots/swiss-kite-isleten) riguarda la partenza da riva a nord del delta Isenthalerbach, chiusa dal 15 giugno al 31 agosto inclusi. Il pianificatore esclude anche dicembre e gennaio per la navigazione kite; le sessioni assistite da barca prevedono un accesso diverso.
 
 ## Verificare accessi e zone di pratica
 Prima di scegliere l’ingresso in acqua, consulta le informazioni del Canton Uri e il piano collegato. Verifica le indicazioni per la tua attività e la segnaletica aggiornata. Le fonti sotto completano la mappa; un collegamento a un luogo non costituisce un’autorizzazione a utilizzarlo.`,

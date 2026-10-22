@@ -2,6 +2,7 @@ import { haversineKm } from "@/lib/utils";
 import type { SportType } from "@/types";
 import type { PlannerQualification } from "@/lib/planner-review";
 import { inSector } from "@/lib/planner-sectors";
+import { accessInterval, dateRestriction } from "@/lib/planner-restrictions";
 
 export interface PlannerCriteria {
   startDate: string;
@@ -56,6 +57,7 @@ export type PlannerReason =
   | "wind"
   | "gusts"
   | "rain"
+  | "restriction"
   | "daylight";
 export interface PlannerResult extends PlannerSpot {
   timezone?: string;
@@ -301,8 +303,15 @@ export function evaluateSpot(
     )
       continue;
     const daylight = forecast.daylight.find((d) => d.date === day);
+    const access = accessInterval(
+      hour.time,
+      forecast.timezone,
+      spot.qualification.dailyHours,
+    );
     let reason: PlannerReason | undefined;
-    if (!daylight) reason = "missing";
+    if (dateRestriction(spot.qualification, day) || access.end <= access.start)
+      reason = "restriction";
+    else if (!daylight) reason = "missing";
     else if (
       hour.time >= daylight.sunset ||
       hour.time + 3600000 <= daylight.sunrise
@@ -331,9 +340,15 @@ export function evaluateSpot(
       result.reasons[reason] = (result.reasons[reason] || 0) + 1;
       continue;
     }
+    const start = Math.max(hour.time, access.start, daylight!.sunrise, now);
+    const end = Math.min(hour.time + 3600000, access.end, daylight!.sunset);
+    if (end <= start) {
+      result.reasons.restriction = (result.reasons.restriction || 0) + 1;
+      continue;
+    }
     accepted.push({
-      start: Math.max(hour.time, daylight!.sunrise, now),
-      end: Math.min(hour.time + 3600000, daylight!.sunset),
+      start,
+      end,
       day,
       hour,
     });

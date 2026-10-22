@@ -20,6 +20,8 @@ type Row = {
 };
 const field =
   "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm";
+const clock = (minutes: number) =>
+  `${String(Math.floor(minutes / 60) % 24).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 const topics = ["discipline", "directions", "season", "access"] as const;
 const topicLabels = {
   discipline: "Discipline",
@@ -351,6 +353,234 @@ export function PlannerReviewEditor() {
               >
                 + Ajouter un secteur
               </button>
+            </fieldset>
+            <fieldset className="space-y-3 rounded-xl border border-slate-200 p-3">
+              <legend className="text-sm font-semibold">
+                Fermetures appliquées au classement
+              </legend>
+              <p className="text-sm text-slate-600">
+                Dates incluses, dans le fuseau du spot. Une période annuelle
+                peut traverser le Nouvel An. Un séjour partiellement fermé
+                conserve uniquement ses jours autorisés.
+              </p>
+              {(review.closures ?? []).map((closure, i) => (
+                <div key={i} className="space-y-2 rounded-lg bg-slate-50 p-3">
+                  <label className="block text-sm">
+                    Type de fermeture {i + 1}
+                    <select
+                      className={field}
+                      value={closure.kind}
+                      onChange={(e) =>
+                        patch({
+                          closures: review.closures!.map((v, j) =>
+                            j === i
+                              ? {
+                                  ...v,
+                                  kind: e.target.value as "ANNUAL" | "DATED",
+                                  start: "",
+                                  end: "",
+                                }
+                              : v,
+                          ),
+                        })
+                      }
+                    >
+                      <option value="ANNUAL">Chaque année</option>
+                      <option value="DATED">
+                        Dates précises, sans récurrence
+                      </option>
+                    </select>
+                  </label>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {(["start", "end"] as const).map((key) => (
+                      <label key={key} className="text-sm">
+                        {key === "start" ? "Du (inclus)" : "Au (inclus)"}
+                        <input
+                          required
+                          className={field}
+                          type={closure.kind === "DATED" ? "date" : "text"}
+                          placeholder={
+                            closure.kind === "ANNUAL"
+                              ? "MM-JJ, ex. 06-15"
+                              : undefined
+                          }
+                          pattern={
+                            closure.kind === "ANNUAL"
+                              ? "[0-9]{2}-[0-9]{2}"
+                              : undefined
+                          }
+                          value={closure[key]}
+                          onChange={(e) =>
+                            patch({
+                              closures: review.closures!.map((v, j) =>
+                                j === i ? { ...v, [key]: e.target.value } : v,
+                              ),
+                            })
+                          }
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  {(["fr", "de", "it", "en"] as const).map((locale) => (
+                    <label key={locale} className="block text-sm">
+                      Motif {locale.toUpperCase()}
+                      <input
+                        required
+                        minLength={12}
+                        maxLength={2000}
+                        className={field}
+                        value={closure.reason[locale]}
+                        onChange={(e) =>
+                          patch({
+                            closures: review.closures!.map((v, j) =>
+                              j === i
+                                ? {
+                                    ...v,
+                                    reason: {
+                                      ...v.reason,
+                                      [locale]: e.target.value,
+                                    },
+                                  }
+                                : v,
+                            ),
+                          })
+                        }
+                      />
+                    </label>
+                  ))}
+                  <label className="block text-sm">
+                    Source de la fermeture
+                    <select
+                      required
+                      className={field}
+                      value={closure.sourceUrl}
+                      onChange={(e) =>
+                        patch({
+                          closures: review.closures!.map((v, j) =>
+                            j === i ? { ...v, sourceUrl: e.target.value } : v,
+                          ),
+                        })
+                      }
+                    >
+                      <option value="">
+                        Choisir une source d’accès ou de saison ci-dessous
+                      </option>
+                      {review.sources
+                        .filter(
+                          (s) =>
+                            s.covers.includes("season") ||
+                            s.covers.includes("access"),
+                        )
+                        .map((s, j) => (
+                          <option key={j} value={s.url}>
+                            {s.title}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    className="min-h-11 text-sm"
+                    onClick={() =>
+                      patch({
+                        closures: review.closures!.filter((_, j) => j !== i),
+                      })
+                    }
+                  >
+                    Retirer cette fermeture
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                className="min-h-11 text-sm text-sky-800"
+                disabled={(review.closures?.length ?? 0) >= 24}
+                onClick={() =>
+                  patch({
+                    closures: [
+                      ...(review.closures ?? []),
+                      {
+                        kind: "ANNUAL",
+                        start: "",
+                        end: "",
+                        reason: { fr: "", de: "", it: "", en: "" },
+                        sourceUrl: "",
+                      },
+                    ],
+                  })
+                }
+              >
+                + Ajouter une fermeture
+              </button>
+              <label className="flex min-h-11 items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!!review.dailyHours}
+                  onChange={(e) =>
+                    patch({
+                      dailyHours: e.target.checked
+                        ? { from: 480, to: 1260, sourceUrl: "" }
+                        : undefined,
+                    })
+                  }
+                />
+                Limiter les horaires locaux d’accès
+              </label>
+              {review.dailyHours && (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(["from", "to"] as const).map((key) => (
+                    <label key={key} className="text-sm">
+                      {key === "from"
+                        ? "Ouverture locale"
+                        : "Fermeture locale (00:00 = minuit suivant)"}
+                      <input
+                        required
+                        type="time"
+                        className={field}
+                        value={clock(review.dailyHours![key])}
+                        onChange={(e) =>
+                          patch({
+                            dailyHours: {
+                              ...review.dailyHours!,
+                              [key]:
+                                e.target.value === "00:00" && key === "to"
+                                  ? 1440
+                                  : e.target.value
+                                      .split(":")
+                                      .reduce((h, v) => h * 60 + Number(v), 0),
+                            },
+                          })
+                        }
+                      />
+                    </label>
+                  ))}
+                  <label className="text-sm sm:col-span-2">
+                    Source des horaires
+                    <select
+                      required
+                      className={field}
+                      value={review.dailyHours.sourceUrl}
+                      onChange={(e) =>
+                        patch({
+                          dailyHours: {
+                            ...review.dailyHours!,
+                            sourceUrl: e.target.value,
+                          },
+                        })
+                      }
+                    >
+                      <option value="">Choisir une source d’accès</option>
+                      {review.sources
+                        .filter((s) => s.covers.includes("access"))
+                        .map((s, j) => (
+                          <option key={j} value={s.url}>
+                            {s.title}
+                          </option>
+                        ))}
+                    </select>
+                  </label>
+                </div>
+              )}
             </fieldset>
             {(["fr", "de", "it", "en"] as const).map((locale) => (
               <label key={locale} className="block text-sm">

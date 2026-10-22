@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import {
   REVIEW_PREFIX,
@@ -9,43 +8,15 @@ import {
 import { starterReviews } from "@/lib/planner-review-seeds";
 import type { SiteLocale } from "@/lib/site";
 
-export interface ReviewableSpot {
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-  sportType: string;
-  description: string | null;
-  difficulty: string;
-  waterType: string;
-  minWindKmh: number;
-  maxWindKmh: number;
-  bestMonths: string[];
-  bestWindDirections: string[];
-  access: string | null;
-  hazards: string | null;
-}
-/** Relevant catalogue edits invalidate the documentary review. Translations do
- * not affect qualification, and no access rule is inferred from prose. */
-export function spotFingerprint(s: ReviewableSpot): string {
-  const fields = [
-    s.id,
-    s.name,
-    s.latitude,
-    s.longitude,
-    s.sportType,
-    s.description,
-    s.difficulty,
-    s.waterType,
-    s.minWindKmh,
-    s.maxWindKmh,
-    [...s.bestMonths].sort(),
-    [...s.bestWindDirections].sort(),
-    s.access || null,
-    s.hazards || null,
-  ];
-  return createHash("sha256").update(JSON.stringify(fields)).digest("hex");
-}
+export {
+  spotFingerprint,
+  type ReviewableSpot,
+} from "./planner-spot-fingerprint";
+import {
+  spotFingerprint,
+  type ReviewableSpot,
+} from "./planner-spot-fingerprint";
+
 export async function loadReviews(
   ids: string[],
 ): Promise<Map<string, PlannerReview>> {

@@ -26,6 +26,10 @@ type UI = {
   until: string;
   sources: string;
   scope: string;
+  restrictions: string;
+  annual: string;
+  dated: string;
+  accessHours: string;
   missing: string;
   qualified: string;
   longest: string;
@@ -41,6 +45,11 @@ type UI = {
 };
 export const plannerUiCopy: Record<SiteLocale, UI> = {
   fr: {
+    restrictions: "Fermetures prises en compte",
+    annual: "Chaque année",
+    dated: "Fermeture exceptionnelle",
+    accessHours: "Horaires locaux pris en compte",
+
     weatherResults: "Le vent autour de vous",
     weatherIntro:
       "Vent et rafales prévus sur tous les spots du périmètre, avec le statut documentaire de chaque fiche.",
@@ -96,6 +105,11 @@ export const plannerUiCopy: Record<SiteLocale, UI> = {
     },
   },
   de: {
+    restrictions: "Berücksichtigte Sperrzeiten",
+    annual: "Jährlich",
+    dated: "Einmalige Sperrung",
+    accessHours: "Berücksichtigte lokale Zugangszeiten",
+
     weatherResults: "Wind in deiner Nähe",
     weatherIntro:
       "Wind- und Böenprognosen für alle Spots im Umkreis, mit Dokumentationsstatus jedes Profils.",
@@ -149,6 +163,11 @@ export const plannerUiCopy: Record<SiteLocale, UI> = {
     },
   },
   it: {
+    restrictions: "Chiusure considerate",
+    annual: "Ogni anno",
+    dated: "Chiusura straordinaria",
+    accessHours: "Orari locali considerati",
+
     weatherResults: "Il vento vicino a te",
     weatherIntro:
       "Vento e raffiche previsti per tutti gli spot nel raggio, con lo stato documentale di ogni scheda.",
@@ -204,6 +223,11 @@ export const plannerUiCopy: Record<SiteLocale, UI> = {
     },
   },
   en: {
+    restrictions: "Closures applied",
+    annual: "Every year",
+    dated: "One-off closure",
+    accessHours: "Local access hours applied",
+
     weatherResults: "Wind near you",
     weatherIntro:
       "Wind and gust forecasts for every spot in the area, with each profile’s documentary status.",

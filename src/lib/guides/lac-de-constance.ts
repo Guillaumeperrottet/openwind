@@ -11,6 +11,8 @@ export const LAC_DE_CONSTANCE_GUIDE: LocalGuide = {
     "Lake Constance",
     "Obersee Bodensee",
     "Untersee",
+    "Berlingen",
+    "Eschlibach",
     "Güttingen",
     "Guettingen",
     "Altenrhein",
@@ -31,7 +33,7 @@ export const LAC_DE_CONSTANCE_GUIDE: LocalGuide = {
     licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
   },
   publishedAt: "2026-10-21T12:57:29Z",
-  updatedAt: "2026-10-21T12:57:29Z",
+  updatedAt: "2026-10-22T12:00:00Z",
   stations: [
     {
       id: "GUT",
@@ -64,8 +66,12 @@ export const LAC_DE_CONSTANCE_GUIDE: LocalGuide = {
       },
     },
   ],
-  spotIds: [],
+  spotIds: ["swiss-kite-berlingen-eschlibach"],
   sources: [
+    {
+      label: "Kantonspolizei Thurgau — décision et carte de kitesurf",
+      url: "https://kapo.tg.ch/public/upload/assets/95580/Merkblatt%20Kitesurfen%202020.pdf",
+    },
     {
       label: "Bodensee Tourismus — rive suisse et sports nautiques",
       url: "https://www.bodensee.eu/presse/ibt/bmt2022/thurgau/mm_wasseroase-bodensee_medientage_2022.pdf",
@@ -100,7 +106,7 @@ Le tableau est calculé aux coordonnées de Güttingen, à terre. Il ne constitu
 Cherchez une image proche de votre lieu de départ et vérifiez sa date ainsi que son orientation. Une vue générale de la rive opposée ne suffit pas à décrire votre zone de navigation. Comparez les images aux observations prises à une heure proche ; des captures d’heures différentes peuvent donner une impression trompeuse d’évolution du vent.
 
 ## Vérifier les règles du pays et du secteur
-Le Bodensee est partagé entre plusieurs pays et autorités. Les informations du Landratsamt Bodenseekreis distinguent les situations nationales ; ne transposez pas une autorisation allemande à un départ suisse. Vérifiez les zones, les périodes et les accès applicables auprès des autorités et acteurs locaux. Ce guide ne désigne pas de mise à l’eau autorisée pour le kitesurf.`,
+Le Bodensee est partagé entre plusieurs pays et autorités. Les informations du Landratsamt Bodenseekreis distinguent les situations nationales ; ne transposez pas une autorisation allemande à un départ suisse. Vérifiez les zones, les périodes et les accès applicables auprès des autorités et acteurs locaux. Le [profil Berlingen–Eschlibach](https://www.openwind.ch/fr/spots/swiss-kite-berlingen-eschlibach) décrit un départ précis de l’Untersee. La décision thurgovienne publiée ouvre les zones désignées du 15 mars au 15 novembre inclus ; la baie à l’ouest de Mannenbach reste exclue. Le planificateur applique la fermeture hivernale du 16 novembre au 14 mars.`,
       faq: [
         {
           question:
@@ -146,7 +152,7 @@ Die Tabelle wird für die Koordinaten von Güttingen an Land berechnet. Sie ist 
 Suche ein Bild nahe deinem Ausgangspunkt und prüfe Aufnahmezeit und Blickrichtung. Ein Überblick über das gegenüberliegende Ufer beschreibt deinen Fahrbereich nicht vollständig. Vergleiche Bilder mit zeitnahen Stationswerten; Aufnahmen zu unterschiedlichen Zeiten können einen irreführenden Eindruck der Windentwicklung vermitteln.
 
 ## Regeln nach Land und Abschnitt prüfen
-Am Bodensee sind mehrere Länder und Behörden zuständig. Die Informationen des Landratsamts Bodenseekreis unterscheiden die nationalen Situationen; eine deutsche Bewilligung lässt sich nicht auf einen Schweizer Einstieg übertragen. Prüfe Zonen, Zeiträume und Zugänge bei den zuständigen Behörden und örtlichen Anbietern. Dieser Guide weist keinen erlaubten Kitesurf-Einstieg aus.`,
+Am Bodensee sind mehrere Länder und Behörden zuständig. Die Informationen des Landratsamts Bodenseekreis unterscheiden die nationalen Situationen; eine deutsche Bewilligung lässt sich nicht auf einen Schweizer Einstieg übertragen. Prüfe Zonen, Zeiträume und Zugänge bei den zuständigen Behörden und örtlichen Anbietern. Das [Profil Berlingen–Eschlibach](https://www.openwind.ch/de/spots/swiss-kite-berlingen-eschlibach) beschreibt einen konkreten Untersee-Einstieg. Der veröffentlichte Thurgauer Entscheid öffnet die bezeichneten Zonen vom 15. März bis 15. November einschliesslich; die Bucht westlich von Mannenbach bleibt ausgeschlossen. Der Planer berücksichtigt die Wintersperre vom 16. November bis 14. März.`,
       faq: [
         {
           question: "Welche Stationen helfen am Schweizer Bodenseeufer?",
@@ -191,7 +197,7 @@ La tabella è calcolata alle coordinate di Güttingen, a terra. Non è una misur
 Cerca un’immagine vicina al punto di partenza e controllane data e orientamento. Una panoramica della riva opposta non basta a descrivere la tua zona sull’acqua. Confronta immagini e misure rilevate in orari vicini: riprese di momenti diversi possono dare un’impressione ingannevole dell’evoluzione del vento.
 
 ## Verificare regole del paese e del settore
-Il Bodensee è condiviso tra più paesi e autorità. Le informazioni del Landratsamt Bodenseekreis distinguono le situazioni nazionali; non trasferire un’autorizzazione tedesca a una partenza svizzera. Verifica zone, periodi e accessi applicabili presso autorità e operatori locali. Questa guida non identifica un ingresso autorizzato per il kitesurf.`,
+Il Bodensee è condiviso tra più paesi e autorità. Le informazioni del Landratsamt Bodenseekreis distinguono le situazioni nazionali; non trasferire un’autorizzazione tedesca a una partenza svizzera. Verifica zone, periodi e accessi applicabili presso autorità e operatori locali. Il [profilo Berlingen–Eschlibach](https://www.openwind.ch/it/spots/swiss-kite-berlingen-eschlibach) descrive un accesso preciso all’Untersee. La decisione turgoviese pubblicata apre le zone designate dal 15 marzo al 15 novembre inclusi; resta esclusa la baia a ovest di Mannenbach. Il pianificatore applica la chiusura invernale dal 16 novembre al 14 marzo.`,
       faq: [
         {
           question: "Quali stazioni consultare sul lago di Costanza svizzero?",

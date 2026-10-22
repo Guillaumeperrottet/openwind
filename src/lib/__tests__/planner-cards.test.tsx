@@ -18,6 +18,8 @@ import { comparisonReason, roundedWindRange } from "@/lib/planner-comparison";
 import { plannerCopy } from "@/lib/planner-copy";
 import { plannerUiCopy } from "@/lib/planner-ui-copy";
 import type { PlannerResult } from "@/lib/planner";
+import { checkedSwissProfiles } from "@/lib/swiss-planner-profile-import";
+import { qualifyReview } from "@/lib/planner-review";
 const spot: PlannerResult = {
   id: "s",
   name: "Spot <test>",
@@ -66,6 +68,69 @@ const spot: PlannerResult = {
   reasons: {},
 };
 describe("compact, evidence-based cards", () => {
+  it.each(["fr", "de", "it"] as const)(
+    "shows sourced annual and exceptional closures in %s without a signup gate",
+    (locale) => {
+      const p = checkedSwissProfiles().find(
+        (p) => p.spot.id === "swiss-kite-berlingen-eschlibach",
+      )!;
+      const review = {
+        ...p.review,
+        closures: [
+          ...p.review.closures!,
+          {
+            ...p.review.closures![0],
+            kind: "DATED" as const,
+            start: "2026-10-25",
+            end: "2026-10-25",
+          },
+        ],
+      };
+      const qualification = qualifyReview(
+        review,
+        review.fingerprint,
+        "KITE",
+        "2026-11-16",
+        "2026-11-16",
+        "2026-10-22",
+        locale,
+      );
+      const html = renderToStaticMarkup(
+        <ResultCard
+          spot={{
+            ...spot,
+            ...p.spot,
+            qualification,
+            windows: [],
+            weather: {
+              windMin: 25,
+              windMax: 27,
+              gustMax: 30,
+              windPeakAt: 1792922400000,
+              gustPeakAt: 1792922400000,
+              samples: 3,
+              gustsAboveThreshold: false,
+              windAboveThreshold: false,
+            },
+          }}
+          locale={locale}
+          c={plannerCopy[locale]}
+          rank={1}
+        />,
+      );
+      expect(html).toContain(plannerUiCopy[locale].status.CLOSED);
+      expect(html).toContain(plannerUiCopy[locale].restrictions);
+      expect(html).toContain(plannerUiCopy[locale].annual);
+      expect(html).toContain(plannerUiCopy[locale].dated);
+      expect(html).toContain("2026");
+      expect(html).toContain("08:00–21:00");
+      expect(html).toContain(review.closures[0].reason[locale]);
+      expect(html).toContain(`href="${review.closures[0].sourceUrl}"`);
+      expect(html).toContain(plannerUiCopy[locale].weatherMaxima);
+      expect(html).not.toContain('href="/login');
+      expect(html).not.toContain("01</span>");
+    },
+  );
   it.each(["fr", "de", "it"] as const)(
     "keeps details and source evidence collapsed and localized in %s",
     (locale) => {

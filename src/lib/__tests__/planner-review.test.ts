@@ -57,7 +57,8 @@ describe("documentary profile qualification", () => {
       "OTHER_DISCIPLINE",
     );
     const r = { ...seed, season: "MONTHS" as const, months: [10] };
-    expect(qualify(r, "2026-10-31", "2026-11-01").status).toBe("OUT_OF_SEASON");
+    expect(qualify(r, "2026-10-31", "2026-11-01").eligible).toBe(true);
+    expect(qualify(r, "2026-11-01").status).toBe("OUT_OF_SEASON");
     expect(qualify(r).eligible).toBe(true);
   });
   it("requires precise sectors and sources covering each documentary topic", () => {

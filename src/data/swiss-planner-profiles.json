@@ -1,0 +1,818 @@
+[
+  {
+    "previousFingerprint": "1d46121ed037fa452da03afb1f8df3eec8706ea99ff6e5bae7c775b8ae48f5a9",
+    "spot": {
+      "id": "cmnr31n570007ijf6q33aez75",
+      "name": "Saint-Blaise",
+      "latitude": 47.010611,
+      "longitude": 6.98829,
+      "sportType": "KITE",
+      "description": "Départ de kitesurf au port de Saint-Blaise, à l’extrémité nord-est du lac de Neuchâtel. Le profil retient le sud-ouest ; la mise à l’eau demande une bonne maîtrise de la remontée au vent.",
+      "difficulty": "ADVANCED",
+      "waterType": "CHOP",
+      "minWindKmh": 18,
+      "maxWindKmh": 45,
+      "bestMonths": [
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre"
+      ],
+      "bestWindDirections": [
+        "SW"
+      ],
+      "access": "Chemin des Pêcheurs : utiliser le départ local indiqué, sans gêner le port ni les promeneurs. Vérifier la signalisation et le périmètre de réserve avant de partir.",
+      "hazards": "Départ étroit, turbulences près du port, rochers et axes de transport à proximité. Le vent d’ouest est déconseillé par le club suisse. Respecter les réserves et la navigation.",
+      "country": "Suisse",
+      "region": "Neuchâtel",
+      "descriptionDe": "Kitesurf-Einstieg am Hafen von Saint-Blaise im Nordosten des Neuenburgersees. Das Profil berücksichtigt Südwestwind und setzt sicheres Höhelaufen voraus.",
+      "descriptionIt": "Accesso kitesurf presso il porto di Saint-Blaise, a nord-est del lago di Neuchâtel. Il profilo considera il sud-ovest e richiede una buona capacità di risalire il vento.",
+      "descriptionEn": "Kitesurf launch by Saint-Blaise harbour at the northeastern end of Lake Neuchâtel. The profile considers southwest wind and requires reliable upwind riding.",
+      "accessDe": "Chemin des Pêcheurs: markierten lokalen Einstieg benutzen; Hafen und Fussweg freihalten. Beschilderung und Reservatsgrenzen vor dem Start prüfen.",
+      "accessIt": "Chemin des Pêcheurs: usare il punto locale indicato, lasciando liberi porto e passaggio pedonale. Controllare segnaletica e confini della riserva.",
+      "accessEn": "Use the signed local launch at Chemin des Pêcheurs; keep the harbour and pedestrian access clear. Check signs and reserve boundaries before launching.",
+      "hazardsDe": "Enger Start, Turbulenzen am Hafen, Felsen und nahe Verkehrswege. Der Schweizer Club rät von Westwind ab. Schutzgebiete und Schifffahrt beachten.",
+      "hazardsIt": "Partenza stretta, turbolenze al porto, rocce e vie di trasporto vicine. Il club svizzero sconsiglia il vento da ovest. Rispettare riserve e navigazione.",
+      "hazardsEn": "Narrow launch, harbour turbulence, rocks and nearby transport routes. The Swiss club advises against west wind. Respect reserves and shipping."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "e495dc679df3389ba8c98b2ab482d04780bd6e4201770d0ff84f170b8149e2b6",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 236.25,
+          "from": 213.75
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Revue du départ de Saint-Blaise : secteur SW uniquement, sans élargissement au Joran ni à la Bise. Accès sous réserve de la signalisation locale et des zones protégées. Pas de fermeture annuelle précise établie par les sources consultées ; cela ne garantit pas l’accès le jour du départ.",
+        "de": "Prüfung des Einstiegs Saint-Blaise: nur SW, ohne Erweiterung auf Joran oder Bise. Lokale Beschilderung und Schutzgebiete bleiben massgebend. In den konsultierten Quellen ist keine feste jährliche Sperrzeit belegt; der Zugang am Ausflugstag ist damit nicht garantiert.",
+        "it": "Revisione del punto Saint-Blaise: solo SW, senza estensione a Joran o Bise. Restano vincolanti segnaletica e aree protette. Le fonti consultate non stabiliscono una chiusura annuale precisa; l’accesso del giorno va comunque verificato.",
+        "en": "Reviewed Saint-Blaise launch: SW only, without extending to Joran or Bise. Local signs and protected zones apply. The consulted sources establish no fixed annual closure; access must still be checked on the day."
+      },
+      "sources": [
+        {
+          "title": "Kitesurf Club Schweiz — St. Blaise : départ, SW et restrictions",
+          "url": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  },
+  {
+    "previousFingerprint": "875d21b8730b4a5057926a1e92692a731c8c46b862697fb4c38f363d50106f5e",
+    "spot": {
+      "id": "cmnq613tx00it04kw1d0vraq4",
+      "name": "Morlon — Les Laviaux",
+      "latitude": 46.627717,
+      "longitude": 7.099845,
+      "sportType": "KITE",
+      "description": "Spot de Bise aux Laviaux, sur le lac de la Gruyère. Le profil retient les vents de nord à nord-est et s’adresse à des pratiquants expérimentés.",
+      "difficulty": "EXPERT",
+      "waterType": "CHOP",
+      "minWindKmh": 19,
+      "maxWindKmh": 56,
+      "bestMonths": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "8",
+        "9",
+        "10",
+        "11",
+        "1",
+        "12"
+      ],
+      "bestWindDirections": [
+        "N",
+        "NNE",
+        "NE"
+      ],
+      "access": "Rejoindre Les Laviaux depuis Morlon et suivre les indications locales de stationnement et de mise à l’eau. Consulter la carte officielle des zones exclues au nord et au sud du lac.",
+      "hazards": "Arbres près de la zone de départ et vent irrégulier : vérifier le dégagement sur place. La réserve du secteur Broc–Botterens et les autres zones rouges de la carte cantonale sont exclues.",
+      "country": "Suisse",
+      "region": "Fribourg",
+      "descriptionDe": "Bisenrevier bei Les Laviaux am Greyerzersee. Das Profil berücksichtigt Nord bis Nordost und richtet sich an erfahrene Kiter.",
+      "descriptionIt": "Spot di Bise a Les Laviaux sul lago della Gruyère. Il profilo considera venti da nord a nord-est ed è destinato a praticanti esperti.",
+      "descriptionEn": "Bise spot at Les Laviaux on Lake Gruyère. The profile considers north to northeast wind for experienced riders.",
+      "accessDe": "Über Morlon nach Les Laviaux; örtliche Park- und Einstiegsregeln beachten. Offizielle Karte der gesperrten Zonen im Norden und Süden des Sees prüfen.",
+      "accessIt": "Raggiungere Les Laviaux da Morlon e seguire le indicazioni locali per parcheggio e accesso. Consultare la carta ufficiale delle zone vietate a nord e sud.",
+      "accessEn": "Reach Les Laviaux via Morlon and follow local parking and launch signs. Consult the official exclusion map for the northern and southern lake sectors.",
+      "hazardsDe": "Bäume nahe dem Start und unregelmässiger Wind: freien Raum vor Ort prüfen. Das Reservat Broc–Botterens und die weiteren roten Kantonszonen sind ausgeschlossen.",
+      "hazardsIt": "Alberi vicino alla partenza e vento irregolare: verificare lo spazio sul posto. Sono escluse la riserva Broc–Botterens e le altre zone rosse cantonali.",
+      "hazardsEn": "Trees near the launch and irregular wind require an on-site clearance check. The Broc–Botterens reserve and other red zones on the cantonal map are excluded."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "f2c2c8b90fd095307a4268351d26290ca5af56ab69f490c527640b74a8eb0e9f",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 45,
+          "from": 0
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Secteur N–NE documenté pour Morlon. La fiche locale annonce une pratique annuelle ; l’accès reste conditionné au niveau du lac, au départ utilisable et aux zones autorisées. Le profil ne transforme pas le lac entier en zone de navigation.",
+        "de": "Für Morlon ist N–NE dokumentiert. Die lokale Übersicht nennt ganzjährige Nutzung; Wasserstand, nutzbarer Einstieg und erlaubte Zonen bleiben Voraussetzung. Das Profil gibt nicht den gesamten See frei.",
+        "it": "Settore N–NE documentato per Morlon. La scheda locale indica pratica annuale; restano necessari livello del lago adeguato, accesso utilizzabile e rispetto delle zone autorizzate. Il profilo non autorizza l’intero lago.",
+        "en": "N–NE is documented for Morlon. The local guide lists year-round use, conditional on lake level, a usable launch and permitted zones. The profile does not open the entire lake."
+      },
+      "sources": [
+        {
+          "title": "Let’s Kite — Morlon : Bise, niveau et saison",
+          "url": "https://letskite.ch/fr/spots/158/morlon",
+          "covers": [
+            "discipline",
+            "directions",
+            "season"
+          ]
+        },
+        {
+          "title": "État de Fribourg — arrêté 785.21 et cartes des zones exclues",
+          "url": "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+          "covers": [
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  },
+  {
+    "previousFingerprint": "1563a59705969ade3843252c811e43076f9d5e3730597655b3a2af3a22ba8868",
+    "spot": {
+      "id": "cmnr307uv0000ijf6j8zqjyis",
+      "name": "Estavayer-le-Lac",
+      "latitude": 46.856721,
+      "longitude": 6.847503,
+      "sportType": "KITE",
+      "description": "Départ de kitesurf d’Estavayer-le-Lac sur la rive sud du lac de Neuchâtel. Le profil considère la Bise et le sud-ouest pour des pratiquants autonomes.",
+      "difficulty": "ADVANCED",
+      "waterType": "CHOP",
+      "minWindKmh": 18,
+      "maxWindKmh": 45,
+      "bestMonths": [
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre",
+        "Octobre"
+      ],
+      "bestWindDirections": [
+        "NE",
+        "SW"
+      ],
+      "access": "Utiliser le départ local près du secteur portuaire indiqué par le club suisse. Les plages et réserves voisines ne constituent pas des départs libres : consulter l’annexe officielle d’Estavayer et la signalisation.",
+      "hazards": "Réserves interdites au sud-ouest et au nord-est du secteur urbain, zones de baignade et trafic nautique. Garder au moins 200 m des bateaux concessionnaires et de leurs débarcadères.",
+      "country": "Suisse",
+      "region": "Fribourg",
+      "descriptionDe": "Kitesurf-Einstieg Estavayer-le-Lac am Südufer des Neuenburgersees. Das Profil berücksichtigt Bise und Südwest für selbstständige Kiter.",
+      "descriptionIt": "Accesso kitesurf di Estavayer-le-Lac sulla riva sud del lago di Neuchâtel. Il profilo considera Bise e sud-ovest per praticanti autonomi.",
+      "descriptionEn": "Estavayer-le-Lac kitesurf launch on the southern shore of Lake Neuchâtel. The profile considers Bise and southwest wind for independent riders.",
+      "accessDe": "Lokalen Einstieg beim vom Schweizer Club angegebenen Hafenbereich benutzen. Nachbarstrände und Reservate sind keine frei nutzbaren Starts: offizielle Estavayer-Karte und Schilder prüfen.",
+      "accessIt": "Usare il punto locale presso la zona portuale indicata dal club svizzero. Spiagge e riserve vicine non sono partenze libere: verificare carta ufficiale e segnaletica.",
+      "accessEn": "Use the local launch by the harbour sector identified by the Swiss club. Nearby beaches and reserves are not unrestricted launches: check the official Estavayer map and signs.",
+      "hazardsDe": "Gesperrte Reservate südwestlich und nordöstlich des Stadtbereichs, Badezonen und Schiffsverkehr. Mindestens 200 m Abstand zu Kursschiffen und ihren Anlegestellen halten.",
+      "hazardsIt": "Riserve vietate a sud-ovest e nord-est del settore urbano, balneazione e navigazione. Mantenere almeno 200 m da battelli di linea e relativi approdi.",
+      "hazardsEn": "Closed reserves southwest and northeast of the urban sector, swimming zones and shipping. Keep at least 200 m from scheduled passenger boats and their landing stages."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "858ff5b8ca8205c4b8ee459039ac0cd28206a44b76423fa4da75ecd85af1a4c2",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 56.25,
+          "from": 33.75
+        },
+        {
+          "to": 236.25,
+          "from": 213.75
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Secteurs NE et SW retenus selon le club suisse. Le repère est recentré sur son départ documenté, pas sur une plage générique. Aucune fermeture annuelle précise trouvée ; les zones de l’annexe cantonale et les restrictions affichées localement restent applicables.",
+        "de": "NE und SW gemäss Schweizer Club. Der Marker liegt beim dokumentierten Einstieg, nicht an einem beliebigen Strand. Keine feste jährliche Sperrzeit gefunden; kantonale Sperrzonen und lokale Beschilderung gelten weiterhin.",
+        "it": "Settori NE e SW secondo il club svizzero. Il punto è allineato all’accesso documentato, non a una spiaggia generica. Nessuna chiusura annuale precisa trovata; restano valide zone cantonali e restrizioni locali.",
+        "en": "NE and SW according to the Swiss club. The marker is aligned with its documented launch rather than a generic beach. No fixed annual closure found; cantonal exclusion zones and local restrictions still apply."
+      },
+      "sources": [
+        {
+          "title": "Kitesurf Club Schweiz — Estavayer-le-Lac : secteurs et départ",
+          "url": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "État de Fribourg — annexe 1, carte Estavayer-le-Lac",
+          "url": "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+          "covers": [
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  },
+  {
+    "previousFingerprint": "45ebc2e75bb98de1d54b14bec85705ab71f929b8954b571b34ddd922456b9d60",
+    "spot": {
+      "id": "cmnvz0jc7025v04jvurt8d2ip",
+      "name": "La Neuveville — Saint-Joux",
+      "latitude": 47.067789,
+      "longitude": 7.109966,
+      "sportType": "KITE",
+      "description": "Départ de Saint-Joux à La Neuveville sur le lac de Bienne. Le profil retient la Bise de nord-est et demande de savoir remonter au vent.",
+      "difficulty": "ADVANCED",
+      "waterType": "CHOP",
+      "minWindKmh": 15,
+      "maxWindKmh": 35,
+      "bestMonths": [],
+      "bestWindDirections": [
+        "NE"
+      ],
+      "access": "Chemin de Saint-Joux : rester dans le départ indiqué et hors de la zone de baignade balisée. Vérifier la carte de la police de la navigation pour les réserves du lac.",
+      "hazards": "Voie ferrée et route derrière le départ, obstacles dans l’eau au sud, sorties de secours limitées. Le club suisse déconseille le sud-ouest très rafaleux.",
+      "country": "Suisse",
+      "region": "Berne",
+      "descriptionDe": "Einstieg Saint-Joux in La Neuveville am Bielersee. Das Profil berücksichtigt Nordostbise und setzt sicheres Höhelaufen voraus.",
+      "descriptionIt": "Accesso Saint-Joux a La Neuveville sul lago di Bienne. Il profilo considera la Bise da nord-est e richiede capacità di risalire il vento.",
+      "descriptionEn": "Saint-Joux launch at La Neuveville on Lake Biel. The profile considers northeast Bise and requires reliable upwind riding.",
+      "accessDe": "Chemin de Saint-Joux: bezeichneten Einstieg nutzen und markierte Badezone meiden. Reservatskarte der Seepolizei für den See prüfen.",
+      "accessIt": "Chemin de Saint-Joux: usare il punto indicato ed evitare la zona balneare delimitata. Controllare la carta delle riserve della polizia lacuale.",
+      "accessEn": "Use the designated Chemin de Saint-Joux launch and avoid the buoyed swimming zone. Check the lake police reserve map.",
+      "hazardsDe": "Bahnlinie und Strasse hinter dem Start, Hindernisse im Wasser südlich davon, begrenzte Notausstiege. Der Schweizer Club rät vom stark böigen Südwest ab.",
+      "hazardsIt": "Ferrovia e strada dietro la partenza, ostacoli in acqua a sud, uscite di emergenza limitate. Il club svizzero sconsiglia il sud-ovest molto rafficato.",
+      "hazardsEn": "Railway and road behind the launch, underwater obstacles to the south and limited emergency exits. The Swiss club advises against very gusty southwest wind."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "49d3c5e01c0dbdb112c66051c859c4771d852219b62f06751679d853817feefa",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 56.25,
+          "from": 33.75
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Profil du départ Saint-Joux : NE seulement. Aucune fermeture annuelle précise identifiée dans les sources consultées. Respecter les zones de baignade et les réserves de l’île Saint-Pierre et du delta de Hagneck ; vérifier le départ sur place.",
+        "de": "Profil Saint-Joux: nur NE. In den konsultierten Quellen wurde keine feste jährliche Sperrzeit festgestellt. Badezonen sowie Reservate bei St. Petersinsel und Hagneckdelta beachten; Einstieg vor Ort prüfen.",
+        "it": "Profilo Saint-Joux: solo NE. Le fonti consultate non indicano una chiusura annuale precisa. Rispettare balneazione e riserve dell’isola di San Pietro e del delta di Hagneck; verificare l’accesso sul posto.",
+        "en": "Saint-Joux profile: NE only. No fixed annual closure identified in the consulted sources. Respect swimming zones and reserves around St Peter’s Island and the Hagneck delta; check the launch on site."
+      },
+      "sources": [
+        {
+          "title": "Kitesurf Club Schweiz — La Neuveville : NE, accès et dangers",
+          "url": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Police cantonale bernoise — zones de kitesurf du lac de Bienne",
+          "url": "https://www.police.be.ch/content/dam/police/dokumente/police-be-ch/d/seepolizei/kite-surfen_de_fr.pdf",
+          "covers": [
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  },
+  {
+    "previousFingerprint": "0f562fafb7016cbddbbb0b1e7a675d89c81a2fff6f6e712e1dc18bdae4811391",
+    "spot": {
+      "id": "cmnr32jo00009ijf6k6kjqgsp",
+      "name": "Morat — Pantschau",
+      "latitude": 46.933035,
+      "longitude": 7.119027,
+      "sportType": "KITE",
+      "description": "Départ de la Pantschau à Morat, réservé aux kitesurfeurs très expérimentés. Le profil considère le nord-est et le sud-ouest ; l’accès est exclu pendant la fermeture estivale.",
+      "difficulty": "EXPERT",
+      "waterType": "CHOP",
+      "minWindKmh": 18,
+      "maxWindKmh": 40,
+      "bestMonths": [
+        "Mars",
+        "Avril",
+        "Mai",
+        "Juin",
+        "Juillet",
+        "Août",
+        "Septembre"
+      ],
+      "bestWindDirections": [
+        "NE",
+        "SW"
+      ],
+      "access": "Utiliser uniquement la zone kite de la Pantschau et son passage prévu dans les enrochements. Parcourir les 30 premiers et derniers mètres en nage tractée. Vérifier les règles et panneaux du jour.",
+      "hazards": "Enrochements, vent turbulent près de la rive et promenade fréquentée. Aucun autre départ de rive n’est couvert par ce profil. Ne pas entrer dans les réserves et zones balisées.",
+      "country": "Suisse",
+      "region": "Fribourg",
+      "descriptionDe": "Pantschau-Einstieg in Murten für sehr erfahrene Kiter. Das Profil berücksichtigt Nordost und Südwest; während der Sommersperre wird der Zugang ausgeschlossen.",
+      "descriptionIt": "Accesso Pantschau a Morat per kitesurfer molto esperti. Il profilo considera nord-est e sud-ovest ed esclude l’accesso durante la chiusura estiva.",
+      "descriptionEn": "Pantschau launch in Murten for highly experienced kiters. The profile considers northeast and southwest wind and excludes access during the summer closure.",
+      "accessDe": "Nur die Kitezone Pantschau und den vorgesehenen Einstieg durch den Blockwurf nutzen. Die ersten und letzten 30 m im Bodydrag zurücklegen. Aktuelle Regeln und Schilder prüfen.",
+      "accessIt": "Usare solo la zona kite Pantschau e il passaggio previsto tra i massi. Percorrere i primi e ultimi 30 m in bodydrag. Controllare regole e cartelli aggiornati.",
+      "accessEn": "Use only the Pantschau kite zone and designated route over the rock embankment. Bodydrag the first and last 30 m. Check current rules and signs.",
+      "hazardsDe": "Blockwurf, turbulenter Uferwind und stark genutzter Fussweg. Dieses Profil deckt keinen anderen Uferstart ab. Reservate und gesperrte Bojenfelder meiden.",
+      "hazardsIt": "Massi, vento turbolento vicino alla riva e passeggiata frequentata. Il profilo non copre altre partenze da riva. Evitare riserve e zone delimitate.",
+      "hazardsEn": "Rock embankment, turbulent shoreline wind and a busy promenade. This profile covers no other shore launch. Avoid reserves and closed buoyed areas."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "09c19ad8785559b18b2726ddca5d0e6eada7c917889cb0ddf12fa960ee101f2f",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 56.25,
+          "from": 33.75
+        },
+        {
+          "to": 236.25,
+          "from": 213.75
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Les sources divergent : le club suisse et l’office du tourisme indiquent une fermeture dès le 1er mai ; Bise Noire indique le 1er juin. Le planificateur exclut par prudence le 1er mai–15 septembre inclus, jusqu’à clarification locale. Secteurs NE et SW communs aux sources.",
+        "de": "Quellenkonflikt: Schweizer Club und Tourismus nennen den 1. Mai, Bise Noire den 1. Juni als Sperrbeginn. Der Planer schliesst vorsorglich den 1. Mai–15. September einschliesslich aus, bis die lokale Regel geklärt ist. NE und SW sind gemeinsam belegt.",
+        "it": "Fonti discordanti: club svizzero e turismo indicano inizio chiusura il 1° maggio, Bise Noire il 1° giugno. Il pianificatore esclude prudenzialmente 1° maggio–15 settembre inclusi, in attesa di chiarimento locale. NE e SW sono comuni alle fonti.",
+        "en": "Sources conflict: Swiss club and tourism list closure from May 1; Bise Noire lists June 1. The planner conservatively excludes May 1–September 15 inclusive pending local clarification. NE and SW are common to the sources."
+      },
+      "sources": [
+        {
+          "title": "Kitesurf Club Schweiz — Pantschau : fermeture dès le 1er mai",
+          "url": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Bise Noire — règles locales : fermeture dès le 1er juin",
+          "url": "https://www.bisenoire.ch/kitespot/",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Jura & Trois-Lacs — accès Pantschau du 16 septembre au 30 avril",
+          "url": "https://www.j3l.ch/fr/P6094/a-faire/sport-loisirs/sports-divers/surfcenter-la-bise-noire",
+          "covers": [
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [
+        {
+          "kind": "ANNUAL",
+          "start": "05-01",
+          "end": "09-15",
+          "reason": {
+            "fr": "Départ exclu : divergence mai/juin ; période la plus restrictive retenue.",
+            "de": "Start ausgeschlossen: Widerspruch Mai/Juni; strengere Sperrzeit angewendet.",
+            "it": "Partenza esclusa: divergenza maggio/giugno; applicato il periodo più restrittivo.",
+            "en": "Launch excluded: conflicting May/June dates; stricter period applied."
+          },
+          "sourceUrl": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder"
+        }
+      ],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  },
+  {
+    "previousFingerprint": "97d5cbd0985d149569eb56577f5628cf20b761b17f11a6e6d5f5da88cfc122c0",
+    "spot": {
+      "id": "cmnpsrv1j0004haf6wrq773k8",
+      "name": "Silvaplana — Mulets",
+      "latitude": 46.455983,
+      "longitude": 9.796583,
+      "sportType": "KITE",
+      "description": "Kitesurf nautique au départ officiel de Mulets, sur le lac de Silvaplana. Le profil retient le Maloja de sud-ouest et sépare cette pratique du snowkite hivernal.",
+      "difficulty": "ADVANCED",
+      "waterType": "FLAT",
+      "minWindKmh": 15,
+      "maxWindKmh": 60,
+      "bestMonths": [
+        "June",
+        "July",
+        "August",
+        "September"
+      ],
+      "bestWindDirections": [
+        "SW"
+      ],
+      "access": "Départ et sortie officiels uniquement. Adhésion ou carte journalière Swiss Kitesurf, niveau VDWS/IKO et assurance requis ; suivre les consignes du beach marshal et le plan des zones.",
+      "hazards": "Eau froide, rochers près des rives et chemin fréquenté. Le nord est exclu de ce profil ; sud, ouest et Julier peuvent être rafaleux. Ne pas utiliser les zones réservées aux autres pratiques ou interdites.",
+      "country": "Switzerland",
+      "region": "Graubünden",
+      "descriptionDe": "Wasserkitesurfen am offiziellen Einstieg Mulets am Silvaplanersee. Das Profil berücksichtigt den Südwest-Maloja und trennt Wassersport vom winterlichen Snowkiten.",
+      "descriptionIt": "Kitesurf in acqua dal punto ufficiale Mulets sul lago di Silvaplana. Il profilo considera il Maloja da sud-ovest e distingue la pratica dallo snowkite invernale.",
+      "descriptionEn": "Water kitesurfing from the official Mulets launch on Lake Silvaplana. The profile considers southwest Maloja wind and separates water riding from winter snowkiting.",
+      "accessDe": "Nur offizielle Ein- und Ausstiege. Swiss-Kitesurf-Mitgliedschaft oder Tageskarte, VDWS/IKO-Nachweis und Versicherung erforderlich; Beach-Marshal und Zonenplan beachten.",
+      "accessIt": "Solo accessi e uscite ufficiali. Richiesti adesione o pass giornaliero Swiss Kitesurf, livello VDWS/IKO e assicurazione; seguire beach marshal e piano delle zone.",
+      "accessEn": "Official entry and exit points only. Swiss Kitesurf membership or day pass, VDWS/IKO level and insurance required; follow the beach marshal and zoning plan.",
+      "hazardsDe": "Kaltes Wasser, Uferfelsen und belebter Weg. Nord ist ausgeschlossen; Süd, West und Julier können böig sein. Reservierte und gesperrte Zonen nicht nutzen.",
+      "hazardsIt": "Acqua fredda, rocce sulle rive e percorso frequentato. Nord escluso; sud, ovest e Julier possono essere rafficati. Non usare zone riservate ad altre attività o vietate.",
+      "hazardsEn": "Cold water, shoreline rocks and a busy path. North is excluded; south, west and Julier may be gusty. Avoid zones reserved for other activities or closed to riding."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "cebcf48571eb8e585f7ea11010389271d2f1a11e31b352673bef267de99a4c8a",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 236.25,
+          "from": 213.75
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Secteur SW retenu. La période habituelle de Maloja ne constitue pas une autorisation saisonnière. Pratique nautique uniquement sur eau libre et après vérification locale de l’accès ; les dates de service de sauvetage ne sont pas des dates d’ouverture du lac.",
+        "de": "Nur SW berücksichtigt. Die typische Maloja-Saison ist keine saisonale Bewilligung. Wasserkiten nur bei eisfreiem See und lokal geprüftem Zugang; Rettungsdienstzeiten sind keine Öffnungszeiten des Sees.",
+        "it": "Considerato solo SW. La normale stagione del Maloja non è un’autorizzazione stagionale. Pratica in acqua solo con lago libero dal ghiaccio e accesso verificato localmente; le date del soccorso non sono date di apertura del lago.",
+        "en": "SW only. The usual Maloja season is not a seasonal permit. Water riding requires ice-free water and locally verified access; rescue-service dates are not lake opening dates."
+      },
+      "sources": [
+        {
+          "title": "Silvaplana Tourismus — sports nautiques, vent et zonage",
+          "url": "https://silvaplana.ch/en/wassersport",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Swiss Kitesurf — conditions d’accès et plan de Mulets",
+          "url": "https://www.kitesailing.ch/en/spot/spotinfo-kitesurfing",
+          "covers": [
+            "discipline",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  },
+  {
+    "previousFingerprint": null,
+    "spot": {
+      "id": "swiss-kite-isleten",
+      "name": "Isleten — Isenthalerbach",
+      "latitude": 46.918936,
+      "longitude": 8.596845,
+      "region": "Uri",
+      "description": "Départ de kitesurf sur la moitié nord du delta de l’Isenthalerbach, à Isleten sur l’Urnersee. Profil réservé aux experts, limité au secteur de vent de nord.",
+      "access": "Utiliser le seul départ de rive officiel, au nord du delta. Départ fermé du 15 juin au 31 août ; navigation exclue en décembre et janvier. Vérifier les panneaux et la carte cantonale.",
+      "hazards": "Départ exigeant, trafic de bateaux de ligne et peu de sorties de rive. Le foehn de sud n’est pas retenu. Respecter les zones exclues et les distances indiquées par le canton.",
+      "bestMonths": [],
+      "waterType": "CHOP",
+      "minWindKmh": 22,
+      "maxWindKmh": 45,
+      "sportType": "KITE",
+      "country": "Suisse",
+      "difficulty": "EXPERT",
+      "bestWindDirections": [
+        "N"
+      ],
+      "descriptionDe": "Kitesurfstart auf der Nordhälfte des Isenthalerbach-Deltas in Isleten am Urnersee. Expertenprofil, auf den nördlichen Windsektor beschränkt.",
+      "descriptionIt": "Partenza kitesurf nella metà nord del delta Isenthalerbach a Isleten sull’Urnersee. Profilo per esperti, limitato al settore da nord.",
+      "descriptionEn": "Kitesurf launch on the northern half of the Isenthalerbach delta at Isleten on the Urnersee. Expert profile restricted to the northern wind sector.",
+      "accessDe": "Einzigen offiziellen Uferstart nördlich im Delta benutzen. Start vom 15. Juni bis 31. August gesperrt; keine Navigation im Dezember und Januar. Schilder und Kantonskarte prüfen.",
+      "accessIt": "Usare l’unica partenza ufficiale da riva, a nord del delta. Chiusura 15 giugno–31 agosto; navigazione esclusa in dicembre e gennaio. Verificare cartelli e carta cantonale.",
+      "accessEn": "Use the sole official shore launch on the northern delta. Closed June 15–August 31; navigation excluded in December and January. Check signs and the cantonal map.",
+      "hazardsDe": "Anspruchsvoller Start, Kursschiffe und wenige Uferausstiege. Südföhn wird nicht berücksichtigt. Kantonal gesperrte Zonen und vorgeschriebene Abstände beachten.",
+      "hazardsIt": "Partenza impegnativa, battelli di linea e poche uscite da riva. Foehn da sud escluso. Rispettare zone vietate e distanze indicate dal cantone.",
+      "hazardsEn": "Demanding launch, scheduled boats and few shore exits. Southerly foehn is excluded. Respect cantonal exclusion zones and required distances."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "563f95473bcfce1081531dd4ef193e4e404b089888cff5edc3d974cc31b6a102",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 11.25,
+          "from": 348.75
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Ce profil concerne un départ depuis la rive, pas une session accompagnée depuis un bateau. Les fermetures du départ et de navigation s’appliquent automatiquement. Le secteur nord est retenu pour ne pas proposer le foehn de sud.",
+        "de": "Dieses Profil gilt für Uferstarts, nicht für begleitete Bootssessions. Start- und Navigationssperren werden automatisch berücksichtigt. Nur der Nordsektor wird verwendet, damit Südföhn nicht vorgeschlagen wird.",
+        "it": "Il profilo riguarda partenze da riva, non sessioni assistite da barca. Le chiusure di partenza e navigazione sono applicate automaticamente. È considerato il settore nord per escludere il foehn da sud.",
+        "en": "This profile covers shore launches, not assisted boat sessions. Launch and navigation closures are applied automatically. The north sector is used to avoid suggesting southerly foehn."
+      },
+      "sources": [
+        {
+          "title": "Canton d’Uri — départ officiel et fermeture estivale",
+          "url": "https://www.ur.ch/publikationen/7719",
+          "covers": [
+            "discipline",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Canton d’Uri — consignes de navigation, février à novembre",
+          "url": "https://www.ur.ch/newsarchiv/77921",
+          "covers": [
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Canton d’Uri — panneau Isleten, vents et dangers",
+          "url": "https://www.ur.ch/_docn/327242/Infotafel_Isleten_Kitesurfen.pdf",
+          "covers": [
+            "directions",
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [
+        {
+          "kind": "ANNUAL",
+          "start": "06-15",
+          "end": "08-31",
+          "reason": {
+            "fr": "Départ et retour de rive fermés pour la saison estivale.",
+            "de": "Uferstart und -landung während der Sommersperre geschlossen.",
+            "it": "Partenza e rientro da riva chiusi durante il periodo estivo.",
+            "en": "Shore launch and landing closed for the summer period."
+          },
+          "sourceUrl": "https://www.ur.ch/publikationen/7719"
+        },
+        {
+          "kind": "ANNUAL",
+          "start": "12-01",
+          "end": "01-31",
+          "reason": {
+            "fr": "Navigation kite exclue en décembre et janvier.",
+            "de": "Kitesurfnavigation im Dezember und Januar ausgeschlossen.",
+            "it": "Navigazione kite esclusa in dicembre e gennaio.",
+            "en": "Kitesurf navigation excluded in December and January."
+          },
+          "sourceUrl": "https://www.ur.ch/newsarchiv/77921"
+        }
+      ],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  },
+  {
+    "previousFingerprint": null,
+    "spot": {
+      "id": "swiss-kite-berlingen-eschlibach",
+      "name": "Berlingen — Eschlibach",
+      "latitude": 47.675,
+      "longitude": 9.0369,
+      "region": "Thurgau",
+      "description": "Départ de kitesurf d’Eschlibach, à Berlingen sur l’Untersee. Le profil retient les secteurs de sud-ouest à nord-est par l’ouest et le nord.",
+      "access": "Départ d’Eschlibach dans la zone définie par la police thurgovienne. Navigation du 15 mars au 15 novembre inclus ; baie à l’ouest de Mannenbach exclue. Consulter le plan officiel.",
+      "hazards": "Départ étroit, arbres, route et voie ferrée proches ; ne pas traverser les rails. Sud-ouest rafaleux et navigation à surveiller. Les zones de baignade balisées restent exclues.",
+      "bestMonths": [],
+      "waterType": "CHOP",
+      "minWindKmh": 22,
+      "maxWindKmh": 45,
+      "sportType": "KITE",
+      "country": "Suisse",
+      "difficulty": "ADVANCED",
+      "bestWindDirections": [
+        "SW",
+        "W",
+        "NW",
+        "N",
+        "NE"
+      ],
+      "descriptionDe": "Kitesurf-Einstieg Eschlibach bei Berlingen am Untersee. Das Profil berücksichtigt Südwest bis Nordost über West und Nord.",
+      "descriptionIt": "Accesso kitesurf Eschlibach a Berlingen sull’Untersee. Il profilo considera il settore da sud-ovest a nord-est passando per ovest e nord.",
+      "descriptionEn": "Eschlibach kitesurf launch at Berlingen on the Untersee. The profile considers southwest through west and north to northeast wind.",
+      "accessDe": "Einstieg Eschlibach innerhalb der von der Thurgauer Polizei bezeichneten Zone. Navigation vom 15. März bis 15. November einschliesslich; Bucht westlich von Mannenbach ausgeschlossen. Offiziellen Plan prüfen.",
+      "accessIt": "Accesso Eschlibach nella zona definita dalla polizia turgoviese. Navigazione dal 15 marzo al 15 novembre inclusi; esclusa la baia a ovest di Mannenbach. Consultare il piano ufficiale.",
+      "accessEn": "Eschlibach entry within the zone defined by Thurgau police. Navigation March 15–November 15 inclusive; the bay west of Mannenbach is excluded. Consult the official map.",
+      "hazardsDe": "Enger Einstieg, Bäume, nahe Strasse und Bahn; Gleise nicht überqueren. Böiger Südwest und Schiffsverkehr beachten. Markierte Badezonen bleiben ausgeschlossen.",
+      "hazardsIt": "Accesso stretto, alberi, strada e ferrovia vicine; non attraversare i binari. Attenzione a sud-ovest rafficato e navigazione. Escluse le zone balneari delimitate.",
+      "hazardsEn": "Narrow launch, trees, nearby road and railway; never cross the tracks. Watch gusty southwest wind and shipping. Buoyed swimming zones remain excluded."
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "e9a0c34ae62358b1216c993493e3f8f1ccb8d8deb1eae157b81b41e4f1526228",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "to": 45,
+          "from": 225
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "La décision officielle thurgovienne de 2020 prime sur les anciennes mentions d’autorisation jusqu’en 2018. Fermeture automatique du 16 novembre au 14 mars inclus. Le repère représente Eschlibach, pas un départ libre sur toute la rive de Berlingen.",
+        "de": "Der offizielle Thurgauer Entscheid von 2020 hat Vorrang vor alten Angaben einer Bewilligung bis 2018. Automatische Sperre vom 16. November bis 14. März einschliesslich. Der Marker bezeichnet Eschlibach, keine freie Startwahl am Berlinger Ufer.",
+        "it": "La decisione ufficiale turgoviese del 2020 prevale sui vecchi riferimenti a permessi fino al 2018. Chiusura automatica 16 novembre–14 marzo inclusi. Il punto indica Eschlibach, non una partenza libera lungo tutta la riva.",
+        "en": "The official 2020 Thurgau decision takes precedence over old references to permits ending in 2018. Automatic closure November 16–March 14 inclusive. The marker represents Eschlibach, not unrestricted launches along the shore."
+      },
+      "sources": [
+        {
+          "title": "Police cantonale thurgovienne — décision et carte des zones de kite",
+          "url": "https://kapo.tg.ch/public/upload/assets/95580/Merkblatt%20Kitesurfen%202020.pdf",
+          "covers": [
+            "discipline",
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — Berlingen : secteurs de vent et dangers",
+          "url": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+          "covers": [
+            "directions",
+            "access"
+          ]
+        },
+        {
+          "title": "Kitesurf Club Schweiz — horaires de navigation et règles générales",
+          "url": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ],
+      "closures": [
+        {
+          "kind": "ANNUAL",
+          "start": "11-16",
+          "end": "03-14",
+          "reason": {
+            "fr": "Hors de la période autorisée du 15 mars au 15 novembre.",
+            "de": "Ausserhalb des erlaubten Zeitraums 15. März bis 15. November.",
+            "it": "Fuori dal periodo autorizzato dal 15 marzo al 15 novembre.",
+            "en": "Outside the permitted March 15–November 15 period."
+          },
+          "sourceUrl": "https://kapo.tg.ch/public/upload/assets/95580/Merkblatt%20Kitesurfen%202020.pdf"
+        }
+      ],
+      "dailyHours": {
+        "to": 1260,
+        "sourceUrl": "https://www.kitesurfclub.ch/images/spotfinder/Factsheet%20Rechslage%20Kitesurfen%20Schweiz%202025%2012%2018.pdf",
+        "from": 480
+      }
+    }
+  }
+]

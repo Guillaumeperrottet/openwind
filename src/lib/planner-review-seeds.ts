@@ -1,8 +1,12 @@
 import type { PlannerReview } from "@/lib/planner-review";
+import swissProfiles from "@/data/swiss-planner-profiles.json";
 
 /** Dated documentary snapshots of planner profiles, not on-site approval.
  * Stored administrative reviews override these; catalogue edits invalidate them. */
 export const starterReviews: Record<string, PlannerReview> = {
+  ...Object.fromEntries(
+    swissProfiles.map((p) => [p.spot.id, p.review as PlannerReview]),
+  ),
   cmnr312220004ijf6l2oobbhb: {
     version: 1,
     status: "DOCUMENTED",
@@ -20,6 +24,20 @@ export const starterReviews: Record<string, PlannerReview> = {
     season: "CONDITIONAL",
     months: [],
     access: "CONDITIONAL",
+    closures: [
+      {
+        kind: "ANNUAL",
+        start: "06-15",
+        end: "08-15",
+        reason: {
+          fr: "Départ fermé en été ; une ouverture exceptionnelle exige une confirmation locale.",
+          de: "Start im Sommer geschlossen; Sonderöffnungen müssen lokal bestätigt werden.",
+          it: "Partenza chiusa in estate; eventuali aperture straordinarie vanno confermate localmente.",
+          en: "Launch closed in summer; exceptional openings require local confirmation.",
+        },
+        sourceUrl: "https://www.kitesurf.ch/yvonand",
+      },
+    ],
     notes: {
       fr: "Profil documentaire : Bise N–NE. Les zones autorisées changent en été : vérifier le plan local, les baigneurs et la réserve naturelle avant la mise à l’eau. Ce profil ne valide pas la difficulté ni le stationnement de la fiche.",
       de: "Dokumentiertes Profil: Bise N–NE. Im Sommer gelten andere Zonen: lokalen Plan, Badebereiche und Naturschutzgebiet vor dem Start prüfen. Schwierigkeitsgrad und Parkangaben des Katalogs sind nicht bestätigt.",
@@ -28,8 +46,8 @@ export const starterReviews: Record<string, PlannerReview> = {
     },
     sources: [
       {
-        title: "Kitesurf.ch — Yvonand, zones et Bise",
-        url: "https://www.kitesurf.ch/spot-yvonand",
+        title: "Association Romande de Kitesurf — Yvonand, fermeture estivale",
+        url: "https://www.kitesurf.ch/yvonand",
         covers: ["discipline", "directions", "season", "access"],
       },
     ],

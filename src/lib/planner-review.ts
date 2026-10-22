@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { coversCompass } from "./planner-sectors";
+import { dateRestriction } from "./planner-restrictions";
 import type { SiteLocale } from "@/lib/site";
 
 export const REVIEW_PREFIX = "planner-review:v1:";
@@ -10,6 +11,37 @@ const note = z.object({
   en: z.string().trim().min(12).max(2000),
 });
 const date = z.iso.date();
+const sourceUrl = z
+  .url()
+  .refine((url) => url.startsWith("https://"), "HTTPS required");
+const monthDay = z
+  .string()
+  .regex(/^\d{2}-\d{2}$/)
+  .refine((v) => {
+    const d = new Date(`2000-${v}T00:00:00Z`);
+    return Number.isFinite(d.getTime()) && d.toISOString().slice(5, 10) === v;
+  }, "Invalid calendar day");
+const closureSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("ANNUAL"),
+      start: monthDay,
+      end: monthDay,
+      reason: note,
+      sourceUrl,
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("DATED"),
+      start: date,
+      end: date,
+      reason: note,
+      sourceUrl,
+    })
+    .strict()
+    .refine((r) => r.start <= r.end, "Closure end precedes start"),
+]);
 export const reviewSchema = z
   .object({
     version: z.literal(1),
@@ -29,6 +61,16 @@ export const reviewSchema = z
     season: z.enum(["MONTHS", "CONDITIONAL", "UNKNOWN"]),
     months: z.array(z.number().int().min(1).max(12)).max(12),
     access: z.enum(["CONDITIONAL", "CLOSED", "UNKNOWN"]),
+    closures: z.array(closureSchema).max(24).optional(),
+    dailyHours: z
+      .object({
+        from: z.number().int().min(0).max(1439),
+        to: z.number().int().min(1).max(1440),
+        sourceUrl,
+      })
+      .strict()
+      .refine((h) => h.from < h.to, "Opening hours must increase")
+      .optional(),
     notes: note,
     sources: z
       .array(
@@ -46,6 +88,31 @@ export const reviewSchema = z
   })
   .strict()
   .superRefine((r, ctx) => {
+    for (const [i, closure] of (r.closures ?? []).entries()) {
+      if (
+        !r.sources.some(
+          (s) =>
+            s.url === closure.sourceUrl &&
+            (s.covers.includes("season") || s.covers.includes("access")),
+        )
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "Closure requires an access or season source",
+          path: ["closures", i, "sourceUrl"],
+        });
+    }
+    if (
+      r.dailyHours &&
+      !r.sources.some(
+        (s) => s.url === r.dailyHours!.sourceUrl && s.covers.includes("access"),
+      )
+    )
+      ctx.addIssue({
+        code: "custom",
+        message: "Opening hours require an access source",
+        path: ["dailyHours", "sourceUrl"],
+      });
     if (
       r.expiresAt < r.reviewedAt ||
       Date.parse(r.expiresAt) - Date.parse(r.reviewedAt) > 180 * 86400000
@@ -108,6 +175,9 @@ export interface PlannerQualification {
   sources: PlannerReview["sources"];
   note: string;
   sectors: PlannerReview["sectors"];
+  closures?: PlannerReview["closures"];
+  months?: number[];
+  dailyHours?: PlannerReview["dailyHours"];
 }
 export function qualifyReview(
   review: PlannerReview | null,
@@ -135,18 +205,20 @@ export function qualifyReview(
       status = "OTHER_DISCIPLINE";
     else {
       status = "DOCUMENTED";
-      if (review.season === "MONTHS") {
-        for (
-          let date = Date.parse(start);
-          date <= Date.parse(end);
-          date += 86400000
-        ) {
-          if (!review.months.includes(new Date(date).getUTCMonth() + 1)) {
-            status = "OUT_OF_SEASON";
-            break;
-          }
-        }
-      }
+      const restrictions = [];
+      for (let day = Date.parse(start); day <= Date.parse(end); day += 86400000)
+        restrictions.push(
+          dateRestriction(
+            {
+              closures: review.closures,
+              months: review.season === "MONTHS" ? review.months : [],
+            },
+            new Date(day).toISOString().slice(0, 10),
+          ),
+        );
+      // A mixed stay keeps the open days; hourly evaluation excludes the rest.
+      if (restrictions.length && restrictions.every(Boolean))
+        status = restrictions.includes("closure") ? "CLOSED" : "OUT_OF_SEASON";
     }
   }
   return {
@@ -158,5 +230,8 @@ export function qualifyReview(
     sources: review?.sources ?? [],
     note: review?.notes[locale] ?? "",
     sectors: review?.sectors ?? [],
+    ...(review?.closures?.length ? { closures: review.closures } : {}),
+    ...(review?.season === "MONTHS" ? { months: review.months } : {}),
+    ...(review?.dailyHours ? { dailyHours: review.dailyHours } : {}),
   };
 }

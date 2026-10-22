@@ -14,7 +14,8 @@
     "wind:tiles:icon-eu": "python3 scripts/build-icon-eu-wind-tiles.py",
     "wind:tiles:publish": "python3 scripts/publish_wind_tiles.py",
     "wind:tiles:test": "python3 -m unittest scripts.test_publish_wind_tiles -v",
-    "images:import:commons": "node scripts/import-commons-spot-images.mjs"
+    "images:import:commons": "node scripts/import-commons-spot-images.mjs",
+    "planner:import:swiss": "tsx scripts/import-swiss-planner-profiles.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.1",
