@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import { TripPlanner } from "@/components/plan/TripPlanner";
+import { localDate } from "@/lib/planner";
+import { plannerCopy } from "@/lib/planner-copy";
 import {
   DEFAULT_OG_IMAGE,
   localizedAlternates,
@@ -56,15 +57,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PlanPage({ params, searchParams }: Props) {
   const [{ locale }, sp] = await Promise.all([params, searchParams]);
-  const t = await getTranslations({ locale, namespace: "PlanPage" });
-
   return (
-    <div
-      className="bg-white text-gray-900"
-      style={{ height: "calc(100dvh - 56px)" }}
-    >
-      <h1 className="sr-only">{t("title")}</h1>
-      <TripPlanner searchParams={sp} />
-    </div>
+    <TripPlanner
+      searchParams={sp}
+      locale={toSiteLocale(locale)}
+      copy={plannerCopy[toSiteLocale(locale)]}
+      today={localDate(new Date())}
+    />
   );
 }
