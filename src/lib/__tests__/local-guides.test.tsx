@@ -121,7 +121,10 @@ describe("local guides served without browser interaction", () => {
       if (translation.spotsIntro) {
         expect(html).toContain(translation.spotsIntro);
         expect(html.indexOf(translation.spotsIntro)).toBeLessThan(
-          html.indexOf(`/spots/${definition.spotIds[0]}`),
+          html.indexOf(
+            `/spots/${definition.spotIds[0]}`,
+            html.indexOf('id="spots"'),
+          ),
         );
       }
       const comparisonGuide: Record<string, string> = {

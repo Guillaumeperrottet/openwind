@@ -1,0 +1,21 @@
+[
+  {
+    "id": "cmnr46jjd0000i5f6q521m974",
+    "expectedName": "Cudrefin",
+    "expected": {
+      "description": "Spot de kite sur la rive sud du lac de Neuchâtel, à la frontière Vaud/Berne. Zone naturelle protégée (Grande Cariçaie) avec un plan d’eau exposé à la Bise. Attention aux zones de réserve ornithologique à respecter.",
+      "descriptionDe": "Drachenplatz am Südufer des Neuchâtelsees, an der Grenze zwischen Waadt und Bern. Geschütztes Naturgebiet (Grande Cariçaie) mit einem See, der zur Bise ausgerichtet ist. Seien Sie vorsichtig mit den ornithologischen Reservatsgebieten, die zu respektieren sind.",
+      "descriptionIt": "Sito di aquiloni sulla riva meridionale del Lago di Neuchâtel, al confine tra Vaud e Berna. Area naturale protetta (Grande Cariçaie) con un lago esposto al Bise. Fai attenzione alle aree di riserva ornitologica da rispettare.",
+      "difficulty": "INTERMEDIATE",
+      "bestWindDirections": ["NE", "N", "SW"]
+    },
+    "changes": {
+      "description": "Cudrefin est un spot de kitesurf près du port, sur le lac de Neuchâtel. La zone de départ très réduite demande de l’expérience et une vérification des accès sur place.",
+      "descriptionDe": "Cudrefin ist ein Kitesurf-Spot beim Hafen am Neuenburgersee. Der sehr begrenzte Startbereich erfordert Erfahrung und eine Prüfung der örtlichen Zugangsregeln.",
+      "descriptionIt": "Cudrefin è uno spot di kitesurf presso il porto sul lago di Neuchâtel. L’area di partenza molto limitata richiede esperienza e una verifica delle regole locali di accesso.",
+      "difficulty": "EXPERT",
+      "bestWindDirections": ["SW", "NE"]
+    },
+    "expectedFingerprint": "3191b1a3a7564d64781cfc79eb9ffdbf52348dc0933bd85932c258508f1bd5cb"
+  }
+]

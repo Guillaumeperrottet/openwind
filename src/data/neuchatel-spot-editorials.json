@@ -1,0 +1,218 @@
+[
+  {
+    "id": "cmnr31n570007ijf6q33aez75",
+    "name": "Saint-Blaise",
+    "sources": [
+      {
+        "label": "Neuchâtel Tourisme · Saint-Blaise",
+        "url": "https://www.j3l.ch/fr/P88696/a-faire/sport-loisirs/activites-aquatiques/windsurf"
+      },
+      {
+        "label": "Kitesurf Club Schweiz · St. Blaise",
+        "url": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder"
+      },
+      {
+        "label": "Canton de Neuchâtel · RSN 766.393",
+        "url": "https://rsn.ne.ch/DATA/program/books/rsne/htm/766.393.htm"
+      }
+    ],
+    "translations": {
+      "fr": {
+        "intro": "À Saint-Blaise, préparez votre sortie depuis le départ du port, sur la rive nord du lac de Neuchâtel. Le vent sur le lac et les conditions au départ se lisent séparément.",
+        "sections": [
+          {
+            "title": "Quel vent regarder à Saint-Blaise ?",
+            "text": "Le sud-ouest est le secteur documenté pour ce départ. Comparez la prévision du spot avec les mesures régionales : ni la Bise ni le Joran ne sont ajoutés aux secteurs retenus par le planificateur."
+          },
+          {
+            "title": "Un départ près du port, pas une plage dégagée",
+            "text": "Le club suisse décrit un départ exigu et turbulent près du port. Vérifiez le dégagement et le passage des bateaux sur place. La page de Neuchâtel Tourisme apporte les repères pour rejoindre le secteur, sans remplacer les consignes de mise à l’eau."
+          },
+          {
+            "title": "Quelles mesures comparer ?",
+            "text": "La balise de Neuchâtel donne un repère régional sur la rive nord. Son heure, sa direction et ses rafales complètent la prévision calculée à Saint-Blaise ; elles ne mesurent pas le vent dans le départ du port."
+          }
+        ]
+      },
+      "de": {
+        "intro": "Plane deinen Ausflug nach Saint-Blaise vom Einstieg am Hafen am Nordufer des Neuenburgersees aus. Wind auf dem See und Bedingungen am Einstieg sind getrennt zu beurteilen.",
+        "sections": [
+          {
+            "title": "Welcher Wind ist für Saint-Blaise dokumentiert?",
+            "text": "Für diesen Einstieg ist Südwest dokumentiert. Vergleiche die Spot-Prognose mit regionalen Messungen. Bise und Joran werden nicht zusätzlich als geeignete Sektoren in den Planer übernommen."
+          },
+          {
+            "title": "Hafeneinstieg statt freier Strand",
+            "text": "Der Schweizer Club beschreibt einen engen, turbulenten Start beim Hafen. Prüfe freien Raum und Schiffsverkehr vor Ort. Neuchâtel Tourisme hilft bei der Anreise in den Bereich, ersetzt aber keine Einstiegsregeln."
+          },
+          {
+            "title": "Welche Messwerte vergleichen?",
+            "text": "Die Station Neuenburg liefert regionalen Kontext am Nordufer. Messzeit, Richtung und Böen ergänzen die Prognose für Saint-Blaise; sie messen nicht den Wind im Hafeneinstieg."
+          }
+        ]
+      },
+      "it": {
+        "intro": "Prepara l’uscita a Saint-Blaise dal punto presso il porto, sulla riva nord del lago di Neuchâtel. Il vento sul lago e le condizioni alla partenza vanno valutati separatamente.",
+        "sections": [
+          {
+            "title": "Quale vento è documentato a Saint-Blaise?",
+            "text": "Per questa partenza è documentato il sud-ovest. Confronta la previsione dello spot con le misure regionali. Bise e Joran non vengono aggiunti ai settori considerati dal pianificatore."
+          },
+          {
+            "title": "Un accesso portuale, non una spiaggia libera",
+            "text": "Il club svizzero descrive una partenza stretta e turbolenta presso il porto. Verifica spazio e passaggio dei battelli sul posto. Neuchâtel Tourisme aiuta a raggiungere la zona, senza sostituire le regole di accesso all’acqua."
+          },
+          {
+            "title": "Quali misure confrontare?",
+            "text": "La stazione di Neuchâtel offre un riferimento regionale sulla riva nord. Ora, direzione e raffiche completano la previsione per Saint-Blaise; non misurano il vento nel punto di partenza del porto."
+          }
+        ]
+      }
+    },
+    "reviewedAt": "2026-10-26"
+  },
+  {
+    "id": "cmnr46jjd0000i5f6q521m974",
+    "name": "Cudrefin",
+    "sources": [
+      {
+        "label": "Let’s Kite · Cudrefin · EN",
+        "url": "https://letskite.ch/en/spots/82/kitesurf/cudrefin"
+      },
+      {
+        "label": "Grande Cariçaie · cartes des secteurs réglementés · FR",
+        "url": "https://grande-caricaie.ch/fr/visiter/navigateurs-et-baigneurs/"
+      },
+      {
+        "label": "Fribourg Région · plage de Cudrefin · FR",
+        "url": "https://fribourg.ch/fr/estavayer-payerne/plages/plage-de-cudrefin/"
+      }
+    ],
+    "translations": {
+      "fr": {
+        "intro": "Cudrefin est un spot de kitesurf près du port, sur le lac de Neuchâtel. La zone de départ très réduite demande de l’expérience et une vérification des accès sur place.",
+        "sections": [
+          {
+            "title": "La plage publique est-elle un départ de kite ?",
+            "text": "La fiche locale distingue la plage de baignade du départ près du port. Vérifiez le panneau et le couloir utilisé avant de préparer les lignes. Un accès public à la rive ne vaut pas autorisation de décoller."
+          },
+          {
+            "title": "Quelle place donner aux prévisions ?",
+            "text": "Consultez la prévision calculée aux coordonnées de la fiche, puis comparez le contexte régional. Le repère cartographique n’est pas un plan précis du couloir de départ. Une prévision affichée ne confirme ni l’ouverture du départ ni des conditions praticables."
+          },
+          {
+            "title": "Où vérifier les réserves ?",
+            "text": "Ouvrez la carte de la Grande Cariçaie pour le secteur visé et contrôlez le balisage sur place. La page touristique de la plage sert à préparer l’arrivée ; elle ne remplace pas les règles de kitesurf."
+          }
+        ]
+      },
+      "de": {
+        "intro": "Cudrefin ist ein Kitesurf-Spot beim Hafen am Neuenburgersee. Der sehr begrenzte Startbereich erfordert Erfahrung und eine Prüfung der örtlichen Zugangsregeln.",
+        "sections": [
+          {
+            "title": "Ist der öffentliche Badestrand ein Kite-Einstieg?",
+            "text": "Die lokale Spot-Beschreibung unterscheidet den Badestrand vom Einstieg beim Hafen. Prüfe Tafel und Korridor, bevor du die Leinen auslegst. Ein öffentlicher Seezugang bedeutet keine Erlaubnis zum Starten."
+          },
+          {
+            "title": "Wie sind die Prognosen einzuordnen?",
+            "text": "Öffne die Prognose für die Koordinaten der Spot-Seite und vergleiche sie mit der regionalen Lage. Der Kartenpunkt ist kein genauer Plan des Einstiegskorridors. Eine angezeigte Prognose bestätigt weder einen offenen Einstieg noch geeignete Bedingungen."
+          },
+          {
+            "title": "Wo lassen sich Schutzgebiete prüfen?",
+            "text": "Öffne die Karte der Grande Cariçaie für deinen Abschnitt und beachte die Markierungen vor Ort. Die touristische Strandseite hilft bei der Anreise; sie ersetzt keine Kitesurf-Regeln."
+          }
+        ]
+      },
+      "it": {
+        "intro": "Cudrefin è uno spot di kitesurf presso il porto sul lago di Neuchâtel. L’area di partenza molto limitata richiede esperienza e una verifica delle regole locali di accesso.",
+        "sections": [
+          {
+            "title": "La spiaggia pubblica è una partenza per il kite?",
+            "text": "La scheda locale distingue la spiaggia per la balneazione dall’accesso presso il porto. Controlla cartello e corridoio prima di preparare le linee. L’accesso pubblico alla riva non autorizza il decollo."
+          },
+          {
+            "title": "Come leggere le previsioni?",
+            "text": "Apri la previsione calcolata alle coordinate della scheda e confrontala con la situazione regionale. Il punto sulla mappa non è un piano preciso del corridoio di partenza. Una previsione visibile non conferma che l’accesso sia aperto o le condizioni adatte."
+          },
+          {
+            "title": "Dove verificare le riserve?",
+            "text": "Consulta la carta della Grande Cariçaie per il settore scelto e controlla i segnali sul posto. La pagina turistica della spiaggia aiuta a preparare l’arrivo, senza sostituire le regole del kitesurf."
+          }
+        ]
+      }
+    },
+    "reviewedAt": "2026-10-26"
+  },
+  {
+    "id": "cmnr307uv0000ijf6j8zqjyis",
+    "name": "Estavayer-le-Lac",
+    "sources": [
+      {
+        "label": "Kitesurf Club Schweiz · Estavayer-le-Lac",
+        "url": "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder"
+      },
+      {
+        "label": "État de Fribourg · arrêté 785.21 et carte d’Estavayer · FR",
+        "url": "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes"
+      },
+      {
+        "label": "Grande Cariçaie · secteurs réglementés · FR",
+        "url": "https://grande-caricaie.ch/fr/visiter/navigateurs-et-baigneurs/"
+      }
+    ],
+    "translations": {
+      "fr": {
+        "intro": "À Estavayer-le-Lac, distinguez le départ de kitesurf des plages et réserves voisines. La fiche concerne un point de la rive sud du lac de Neuchâtel, pas l’ensemble du littoral.",
+        "sections": [
+          {
+            "title": "Bise ou sud-ouest : quel point comparer ?",
+            "text": "Les secteurs documentés sont le nord-est et le sud-ouest. La prévision est calculée au point d’Estavayer ; elle ne reprend pas simplement celle de Saint-Blaise ou de la ville de Neuchâtel."
+          },
+          {
+            "title": "Retrouver les limites du secteur",
+            "text": "L’annexe cantonale contient une carte propre à Estavayer. Consultez-la avant de choisir votre trajectoire et vérifiez les zones de réserve, la baignade et la navigation. Une photographie de plage ne suffit pas à identifier un départ autorisé."
+          },
+          {
+            "title": "Mesures régionales et prévision locale",
+            "text": "Payerne est une station dans les terres : sa mesure aide à lire la situation régionale. Comparez les heures et l’évolution du vent avec la prévision du spot, puis vérifiez les conditions près de la mise à l’eau."
+          }
+        ]
+      },
+      "de": {
+        "intro": "Unterscheide in Estavayer-le-Lac den Kite-Einstieg von benachbarten Stränden und Schutzgebieten. Die Spot-Seite beschreibt einen Punkt am Südufer des Neuenburgersees, nicht den gesamten Uferabschnitt.",
+        "sections": [
+          {
+            "title": "Bise oder Südwest: welchen Punkt vergleichen?",
+            "text": "Dokumentiert sind Nordost und Südwest. Die Prognose wird für Estavayer berechnet; sie übernimmt nicht einfach die Werte für Saint-Blaise oder die Stadt Neuenburg."
+          },
+          {
+            "title": "Die Grenzen des Bereichs erkennen",
+            "text": "Der kantonale Anhang enthält eine eigene Karte für Estavayer. Prüfe sie vor der Routenwahl und beachte Schutzgebiete, Badezonen und Schifffahrt. Ein Strandfoto reicht nicht aus, um einen erlaubten Einstieg zu erkennen."
+          },
+          {
+            "title": "Regionale Messungen und lokale Prognose",
+            "text": "Payerne ist eine Station im Landesinneren und hilft bei der regionalen Einordnung. Vergleiche Messzeiten und Windverlauf mit der Spot-Prognose und prüfe danach die Bedingungen am Einstieg."
+          }
+        ]
+      },
+      "it": {
+        "intro": "A Estavayer-le-Lac distingui l’accesso kitesurf dalle spiagge e dalle riserve vicine. La scheda descrive un punto sulla riva sud del lago di Neuchâtel, non l’intero litorale.",
+        "sections": [
+          {
+            "title": "Bise o sud-ovest: quale punto confrontare?",
+            "text": "I settori documentati sono nord-est e sud-ovest. La previsione è calcolata per Estavayer e non riprende semplicemente i valori di Saint-Blaise o della città di Neuchâtel."
+          },
+          {
+            "title": "Individuare i limiti del settore",
+            "text": "L’allegato cantonale contiene una carta specifica di Estavayer. Consultala prima di scegliere il percorso e verifica riserve, zone balneari e navigazione. Una fotografia di spiaggia non basta a individuare una partenza autorizzata."
+          },
+          {
+            "title": "Misure regionali e previsione locale",
+            "text": "Payerne è una stazione nell’entroterra e aiuta a leggere la situazione regionale. Confronta orari e andamento del vento con la previsione dello spot, poi verifica le condizioni presso l’accesso all’acqua."
+          }
+        ]
+      }
+    },
+    "reviewedAt": "2026-10-26"
+  }
+]

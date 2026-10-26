@@ -19,6 +19,13 @@ import {
 } from "@/lib/site";
 import { qualificationsFor } from "@/lib/planner-review-store";
 import { localDate } from "@/lib/planner";
+import { SpotEditorial } from "@/components/spot/SpotEditorial";
+import { editorialDisplayCopy } from "@/lib/neuchatel-seo-import";
+import {
+  getSpotEditorial,
+  spotEditorialTitle,
+  spotEditorialModified,
+} from "@/lib/spot-editorials";
 import { SpotPageClient } from "./SpotPageClient";
 
 // Deduplicated Prisma query: shared across generateMetadata() and SpotPage()
@@ -40,11 +47,15 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { id, locale } = await params;
   try {
-    const spot = await getSpot(id);
-    if (!spot) return { title: "Spot introuvable" };
+    const storedSpot = await getSpot(id);
+    if (!storedSpot) return { title: "Spot introuvable" };
+    const spot = editorialDisplayCopy(storedSpot);
 
     // Derive metadata from the same editable fields as the visible spot page.
-    const title = buildSpotTitle(spot, locale);
+    const editorial = getSpotEditorial(id, locale);
+    const title = editorial
+      ? spotEditorialTitle(spot.name, editorial.locale)
+      : buildSpotTitle(spot, locale);
     const description = buildSpotDescription(spot, locale);
     const socialImage = `${SITE_URL}/api/og?id=${id}`;
 
@@ -83,12 +94,25 @@ export default async function SpotPage({ params }: Props) {
   const { id, locale } = await params;
 
   // A DB failure must remain a server error, rather than removing a real URL.
-  const spot = await getSpot(id);
-  if (!spot) notFound();
+  const storedSpot = await getSpot(id);
+  if (!storedSpot) notFound();
+  const spot = editorialDisplayCopy(storedSpot);
 
   // ── Current wind via unified server entry point ─────────────────────────
   // getSpotLive: station fraîche (seuils par réseau) → vraie obs station.
   // Sinon → Open-Meteo.
+  const editorial = getSpotEditorial(id, locale);
+  const article = {
+    ...buildArticleSchema(spot, locale),
+    dateModified: spotEditorialModified(
+      id,
+      locale,
+      spot.updatedAt,
+    ).toISOString(),
+    ...(editorial
+      ? { citation: editorial.sources.map((source) => source.url) }
+      : {}),
+  };
   const today = localDate(new Date());
   const [liveResult, forecastResult, qualificationResult] =
     await Promise.allSettled([
@@ -107,7 +131,7 @@ export default async function SpotPage({ params }: Props) {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
             combineSchemas(
-              buildArticleSchema(spot, locale),
+              article,
               buildPlaceSchema(spot, locale),
               buildBreadcrumbSchema(spot.id, spot.name, locale),
             ),
@@ -126,7 +150,9 @@ export default async function SpotPage({ params }: Props) {
         initialForecast={
           forecastResult.status === "fulfilled" ? forecastResult.value : null
         }
-      />
+      >
+        <SpotEditorial id={id} locale={locale} />
+      </SpotPageClient>
     </>
   );
 }

@@ -12,6 +12,7 @@ import {
   GUIDE_PAGE_SIZE,
   collectionPath,
 } from "@/lib/collections";
+import { spotEditorialModified } from "@/lib/spot-editorials";
 import { articlePublicPath } from "@/lib/articles";
 
 // A DB outage must fail instead of silently dropping known URLs from the sitemap.
@@ -107,7 +108,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       );
     }),
     ...spots.flatMap((spot) =>
-      multilingual(`/spots/${spot.id}`, SITE_LOCALES, spot.updatedAt),
+      multilingual(`/spots/${spot.id}`, SITE_LOCALES, spot.updatedAt).map(
+        (entry, index) => ({
+          ...entry,
+          lastModified: spotEditorialModified(
+            spot.id,
+            SITE_LOCALES[index],
+            spot.updatedAt,
+          ),
+        }),
+      ),
     ),
     ...stations.flatMap((station) =>
       multilingual(`/stations/${encodeURIComponent(station.id)}`),

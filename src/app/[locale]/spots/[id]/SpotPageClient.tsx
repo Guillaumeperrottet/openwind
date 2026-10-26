@@ -4,7 +4,13 @@ import { QualificationPanel } from "@/components/plan/QualificationPanel";
 import type { PlannerQualification } from "@/lib/planner-review";
 import { plannerUiCopy } from "@/lib/planner-ui-copy";
 import { toSiteLocale } from "@/lib/site";
-import { useState, useEffect, useMemo, useSyncExternalStore } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -199,6 +205,7 @@ interface Props {
   live: WindLive | null;
   initialForecast?: FullForecast | null;
   qualification?: PlannerQualification;
+  children?: ReactNode;
 }
 
 function pickNewestLive(
@@ -219,6 +226,7 @@ export function SpotPageClient({
   live: initialLive,
   initialForecast = null,
   qualification,
+  children,
 }: Props) {
   const [useKnots, setUseKnots] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
@@ -936,6 +944,7 @@ export function SpotPageClient({
           </div>
         </div>
 
+        {children}
         <LocalGuideLinks locale={locale} spotId={spot.id} />
 
         {/* ── Lightbox modal ─────────────────────────────────────── */}

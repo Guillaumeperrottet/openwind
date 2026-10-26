@@ -86,4 +86,26 @@ describe("current, canonical sitemap", () => {
     mocks.spots.mockRejectedValueOnce(new Error("database unavailable"));
     await expect(sitemap()).rejects.toThrow("database unavailable");
   });
+  it("dates the new spot editorials in FR/DE/IT without fabricating an English update", async () => {
+    mocks.spots.mockResolvedValue([
+      { id: "cmnr31n570007ijf6q33aez75", updatedAt: new Date("2026-10-22") },
+    ]);
+    const entries = await sitemap();
+    for (const lang of ["fr", "de", "it"]) {
+      expect(
+        entries.find(
+          (entry) =>
+            entry.url ===
+            `https://www.openwind.ch/${lang}/spots/cmnr31n570007ijf6q33aez75`,
+        )?.lastModified,
+      ).toEqual(new Date("2026-10-26"));
+    }
+    expect(
+      entries.find(
+        (entry) =>
+          entry.url ===
+          "https://www.openwind.ch/en/spots/cmnr31n570007ijf6q33aez75",
+      )?.lastModified,
+    ).toEqual(new Date("2026-10-22"));
+  });
 });

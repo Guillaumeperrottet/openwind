@@ -201,6 +201,57 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
             </a>
           ))}
         </nav>
+        {translation.comparison && (
+          <section
+            aria-labelledby="guide-comparison"
+            className="mt-9 rounded-3xl border border-slate-200 bg-white p-5 sm:p-7"
+          >
+            <h2 id="guide-comparison" className="text-2xl font-bold">
+              {translation.comparison.title}
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+              {translation.comparison.intro}
+            </p>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {translation.comparison.items.flatMap((item) => {
+                const spot = data.spots.find(
+                  (entry) => entry.id === item.spotId,
+                );
+                if (!spot) return [];
+                return [
+                  <div
+                    key={spot.id}
+                    className="rounded-2xl border border-slate-200 p-5"
+                  >
+                    <h3 className="font-semibold">
+                      <Link
+                        href={`/spots/${spot.id}`}
+                        locale={locale}
+                        className="text-sky-800 underline underline-offset-4"
+                      >
+                        {spot.name} →
+                      </Link>
+                    </h3>
+                    <p className="mt-3 text-sm font-semibold text-slate-800">
+                      {item.wind}
+                    </p>
+                    <p className="mt-2 text-sm leading-7 text-slate-600">
+                      {item.access}
+                    </p>
+                    <a
+                      href={item.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-block text-sm text-sky-800 underline underline-offset-4"
+                    >
+                      {copy.source} ↗
+                    </a>
+                  </div>,
+                ];
+              })}
+            </div>
+          </section>
+        )}
         {translation.quickStart && (
           <section
             aria-labelledby="guide-essentials"

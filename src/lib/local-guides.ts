@@ -31,6 +31,16 @@ export interface GuideTranslation {
   coverAlt: string;
   content: string;
   spotsIntro?: string;
+  comparison?: {
+    title: string;
+    intro: string;
+    items: {
+      spotId: string;
+      wind: string;
+      access: string;
+      sourceUrl: string;
+    }[];
+  };
   quickStart?: {
     title: string;
     text: string;

@@ -14,8 +14,13 @@ export const SWISS_LAKE_GUIDES: LocalGuide[] = [
       "Yvonand",
       "Portalban",
       "Estavayer",
+      "Cudrefin",
+      "St-Blaise",
     ],
-    coordinates: { lat: 47.0001, lng: 6.9533 },
+    coordinates: {
+      lat: 47.0001,
+      lng: 6.9533,
+    },
     forecastPlace: "Neuchâtel",
     coverImage: "/images/guides/neuchatel.jpg",
     coverCredit: {
@@ -26,7 +31,7 @@ export const SWISS_LAKE_GUIDES: LocalGuide[] = [
       licenseUrl: "https://creativecommons.org/licenses/by-sa/2.0/",
     },
     publishedAt: "2026-10-21T11:07:43Z",
-    updatedAt: "2026-10-22T00:00:00Z",
+    updatedAt: "2026-10-26T00:00:00Z",
     stations: [
       {
         id: "NEU",
@@ -83,28 +88,28 @@ export const SWISS_LAKE_GUIDES: LocalGuide[] = [
         label: "MétéoSuisse — la bise",
         url: "https://www.meteosuisse.admin.ch/meteo/meteo-et-climat-de-a-a-z/bise.html",
       },
+      {
+        label: "Kitesurf Club Schweiz · Saint-Blaise et Estavayer-le-Lac",
+        url: "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+      },
+      {
+        label: "Let’s Kite · Cudrefin · EN",
+        url: "https://letskite.ch/en/spots/82/kitesurf/cudrefin",
+      },
+      {
+        label: "État de Fribourg · arrêté 785.21 et cartes · FR",
+        url: "https://bdlf.fr.ch/api/fr/versions/8441/pdf_file_with_annexes",
+      },
     ],
     translations: {
       fr: {
         title: "Vent au lac de Neuchâtel : balises en direct et prévisions",
         description:
-          "Comparez le vent à Neuchâtel, Payerne et Cressier, puis explorez Saint-Blaise, Yvonand et Portalban : mesures datées, prévisions et repères pour votre sortie.",
+          "Comparez les balises régionales et les départs de Saint-Blaise, Cudrefin et Estavayer au lac de Neuchâtel : prévisions, accès et sources locales.",
         place: "Lac de Neuchâtel",
         coverAlt: "Le port de Portalban et le lac de Neuchâtel",
-        content: `## Un lac, plusieurs rives à comparer
-Le lac de Neuchâtel se découvre aussi bien depuis Saint-Blaise et Neuchâtel que depuis Yvonand, Estavayer-le-Lac ou Portalban. Pour préparer une sortie, commencez par votre secteur de navigation. Une direction favorable sur une rive peut donner une exposition très différente sur la rive opposée.
-
-## Quelles balises regarder ?
-La station de Neuchâtel donne un repère proche de la rive nord. Payerne décrit la plaine de la Broye ; Cressier apporte un contexte au nord-est. Ces trois mesures ne constituent pas trois observations prises sur l’eau. Comparez d’abord leur heure et leur direction, puis ouvrez l’historique pour voir si la tendance se maintient.
-
-## Bise, sud-ouest et changements de direction
-La bise et les situations de sud-ouest n’exposent pas les mêmes rives de la même façon. Neuchâtel Tourisme cite notamment le sud-ouest pour Saint-Blaise. Cela ne suffit pas à choisir une mise à l’eau : regardez les rafales, les obstacles et la trajectoire de retour. Si les directions divergent entre les stations, vérifiez le ciel et le plan d’eau avant de décider.
-
-## Choisir un point de départ
-Les fiches de Saint-Blaise, Yvonand, Portalban et Estavayer rassemblent les informations disponibles dans Openwind. Consultez leurs accès et leurs particularités avant le déplacement. Le tableau météo de ce guide est calculé au point de Neuchâtel : il ne remplace pas une prévision pour Yvonand ou une observation sur la rive sud.
-
-## Consulter les webcams et les règles locales
-Une webcam peut compléter les mesures en montrant la visibilité et l’état apparent de l’eau ; contrôlez toujours l’heure de l’image. Les réserves de la Grande Cariçaie imposent des restrictions : consultez leur carte et les informations cantonales pour le secteur visé. Un spot présent sur la carte n’est pas une autorisation de pratiquer.`,
+        content:
+          "## Choisir sa rive avant de lire le vent\nLe lac de Neuchâtel ne se résume pas à une vitesse de vent. Saint-Blaise se situe au nord-est, Cudrefin près du port sur la rive sud-est, et Estavayer sur la rive sud. Les départs et le point de prévision diffèrent : choisissez d’abord votre lieu, puis comparez des données prises à des heures proches.\n\n## Quelles balises consulter ?\n[Neuchâtel](/fr/stations/NEU) fournit un repère proche de la rive nord. [Payerne](/fr/stations/PAY) mesure dans la plaine de la Broye, à l’intérieur des terres. [Cressier NE](/fr/stations/CRM) complète le contexte régional au nord-est. Aucune de ces trois stations ne mesure directement dans chacun des départs présentés.\n\nPour interpréter un écart, regardez la date, la direction, le vent moyen et les rafales. Ne faites pas la moyenne de plusieurs balises pour fabriquer une mesure sur le lac. Le tableau de ce guide est calculé au point de Neuchâtel : les fiches des spots donnent accès à leurs propres prévisions.\n\n## Saint-Blaise : préparer un départ par sud-ouest\nLa fiche de [Saint-Blaise](/fr/spots/cmnr31n570007ijf6q33aez75) rassemble le départ, la prévision et les informations documentées. Le secteur retenu est le sud-ouest. Une Bise ailleurs sur le lac ne valide pas ce départ. Comparez la tendance régionale, puis vérifiez le dégagement près du port.\n\n## Cudrefin : distinguer plage et départ\nLa fiche de [Cudrefin](/fr/spots/cmnr46jjd0000i5f6q521m974) distingue les repères d’arrivée du départ de kitesurf. La description locale signale un espace très contraint, destiné aux experts. Un marqueur Openwind ou une page touristique de plage ne constitue pas un plan de mise à l’eau. Vérifiez le panneau et le couloir avant d’installer les lignes.\n\n## Estavayer : ouvrir la prévision du bon point\nÀ [Estavayer-le-Lac](/fr/spots/cmnr307uv0000ijf6j8zqjyis), le profil documenté considère le nord-est et le sud-ouest. Consultez la prévision de cette fiche, distincte de celle de Neuchâtel. L’annexe cantonale contient une carte du secteur d’Estavayer : ouvrez-la pour situer les exclusions, puis contrôlez les indications locales.\n\n## Webcams et zones protégées\nUne webcam complète les chiffres seulement si son cadrage concerne votre rive et si son image est récente. La carte de la Grande Cariçaie aide à repérer les secteurs réglementés. Consultez les sources du canton concerné : Neuchâtel, Vaud et Fribourg ne se remplacent pas mutuellement. L’ouverture d’un accès et les conditions du jour restent à vérifier près du départ.",
         faq: [
           {
             question: "Où voir le vent en direct au lac de Neuchâtel ?",
@@ -127,27 +132,47 @@ Une webcam peut compléter les mesures en montrant la visibilité et l’état a
               "La Grande Cariçaie publie une carte des secteurs réglementés. Vérifiez aussi les règles du canton concerné et la signalisation sur place ; les liens officiels figurent dans les sources.",
           },
         ],
+        comparison: {
+          title: "Trois départs, trois lectures du lac",
+          intro:
+            "Ces repères décrivent les fiches locales, pas les conditions du jour. Ouvrez chaque spot pour sa prévision et vérifiez le départ sur place.",
+          items: [
+            {
+              spotId: "cmnr31n570007ijf6q33aez75",
+              wind: "Sud-ouest documenté",
+              access:
+                "Départ étroit près du port ; bonne maîtrise de la remontée au vent nécessaire.",
+              sourceUrl:
+                "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+            },
+            {
+              spotId: "cmnr46jjd0000i5f6q521m974",
+              wind: "Départ expert, accès à vérifier",
+              access:
+                "La plage de baignade ne se confond pas avec le départ près du port.",
+              sourceUrl: "https://letskite.ch/en/spots/82/kitesurf/cudrefin",
+            },
+            {
+              spotId: "cmnr307uv0000ijf6j8zqjyis",
+              wind: "Bise (NE) et sud-ouest documentés",
+              access:
+                "Secteur portuaire et réserves voisines : consulter la carte cantonale d’Estavayer.",
+              sourceUrl:
+                "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+            },
+          ],
+        },
+        spotsIntro:
+          "Ouvrez la fiche de votre départ pour sa prévision, les repères d’accès et les sources. Les fiches de Saint-Blaise, Cudrefin et Estavayer se complètent sans représenter toutes les rives.",
       },
       de: {
         title: "Wind am Neuenburgersee: Live-Messungen und Prognose",
         description:
-          "Vergleiche Wind und Böen in Neuenburg, Payerne und Cressier. Entdecke Saint-Blaise, Yvonand und Portalban mit aktuellen Zeitangaben und lokalen Informationen.",
+          "Vergleiche regionale Windstationen und die Einstiege Saint-Blaise, Cudrefin und Estavayer am Neuenburgersee: Prognosen, Zugang und lokale Quellen.",
         place: "Neuenburgersee / Lac de Neuchâtel",
         coverAlt: "Der Hafen von Portalban am Neuenburgersee",
-        content: `## Den See nach Uferabschnitten erkunden
-Saint-Blaise und Neuenburg, Yvonand, Estavayer-le-Lac und Portalban bieten unterschiedliche Ausgangspunkte am Neuenburgersee. Wähle zunächst den Abschnitt, an dem du aufs Wasser möchtest. Dieselbe Windrichtung kann am gegenüberliegenden Ufer ganz andere Bedingungen erzeugen.
-
-## Welche Messstation beschreibt welchen Ort?
-Neuenburg liefert einen Vergleichspunkt nahe dem Nordufer. Payerne misst in der Broye-Ebene im Landesinneren; Cressier ergänzt die regionale Übersicht im Nordosten. Es sind keine drei Messungen auf dem See. Vergleiche zuerst die Zeitangaben und Richtungen und prüfe danach den Verlauf auf den Stationsseiten.
-
-## Bise und Südwestwind einordnen
-Bei Bise und bei Südwestwind sind die Ufer unterschiedlich ausgerichtet. Neuchâtel Tourisme nennt Südwestwind für den Spot Saint-Blaise. Eine Windrichtung allein reicht aber nicht zur Wahl eines Startplatzes. Berücksichtige Böen, Hindernisse und den Rückweg. Bei widersprüchlichen Messungen sind die Entwicklung am Himmel und der Zustand des Wassers besonders aufschlussreich.
-
-## Einen passenden Ausgangspunkt finden
-Die Spot-Seiten von Saint-Blaise, Yvonand, Portalban und Estavayer enthalten die verfügbaren Openwind-Informationen zu Zugang und örtlichen Besonderheiten. Die Prognosetabelle dieses Guides wird für Neuenburg berechnet. Sie beschreibt weder automatisch Yvonand noch die Bedingungen am Südufer. Öffne für einen anderen Ort die zugehörige Spot-Prognose.
-
-## Webcams und Schutzgebiete prüfen
-Webcams ergänzen die Messungen mit einem Eindruck von Sicht und Wasseroberfläche. Achte auf den Zeitpunkt der Aufnahme. Für die Schutzgebiete der Grande Cariçaie gelten Einschränkungen; nutze die offizielle Karte und die Informationen des jeweiligen Kantons. Ein Kartenpunkt in Openwind ist keine Erlaubnis zum Starten.`,
+        content:
+          "## Erst das Ufer wählen, dann den Wind lesen\nDer Neuenburgersee lässt sich nicht mit einer einzigen Windgeschwindigkeit beschreiben. Saint-Blaise liegt im Nordosten, Cudrefin beim Hafen am südöstlichen Ufer und Estavayer am Südufer. Einstiege und Prognosepunkte sind verschieden. Wähle zunächst deinen Ort und vergleiche danach zeitnahe Daten.\n\n## Welche Windstationen vergleichen?\n[Neuenburg](/de/stations/NEU) liefert einen Vergleichspunkt nahe dem Nordufer. [Payerne](/de/stations/PAY) misst in der Broye-Ebene im Landesinneren. [Cressier NE](/de/stations/CRM) ergänzt den regionalen Kontext im Nordosten. Keine dieser Stationen misst direkt an allen hier beschriebenen Einstiegen.\n\nPrüfe Messzeit, Richtung, Mittelwind und Böen, bevor du Unterschiede deutest. Ein Mittelwert mehrerer Stationen ergibt keine Messung auf dem See. Die Tabelle dieses Guides wird für Neuenburg berechnet; auf den Spot-Seiten findest du die jeweilige Prognose.\n\n## Saint-Blaise: einen Einstieg bei Südwest vorbereiten\nDie Seite [Saint-Blaise](/de/spots/cmnr31n570007ijf6q33aez75) verbindet Einstieg, Prognose und dokumentierte Hinweise. Berücksichtigt wird Südwest. Bise an einem anderen Ufer bestätigt diesen Einstieg nicht. Vergleiche den regionalen Verlauf und prüfe anschliessend den freien Raum beim Hafen.\n\n## Cudrefin: Badestrand und Einstieg unterscheiden\nDie Seite [Cudrefin](/de/spots/cmnr46jjd0000i5f6q521m974) trennt Anreisehinweise vom Kite-Einstieg. Die lokale Beschreibung nennt einen stark begrenzten Bereich für Experten. Ein Openwind-Kartenpunkt oder eine touristische Strandseite ist kein Einstiegsplan. Prüfe Tafel und Korridor vor dem Auslegen der Leinen.\n\n## Estavayer: die Prognose für den richtigen Punkt öffnen\nDas dokumentierte Profil von [Estavayer-le-Lac](/de/spots/cmnr307uv0000ijf6j8zqjyis) berücksichtigt Nordost und Südwest. Öffne die eigene Spot-Prognose, getrennt von Neuenburg. Der kantonale Anhang enthält eine Karte des Abschnitts Estavayer. Prüfe dort Ausschlussbereiche und anschliessend die örtlichen Hinweise.\n\n## Webcams und Schutzgebiete\nEine Webcam ergänzt die Zahlen nur, wenn sie deinen Uferabschnitt zeigt und das Bild aktuell ist. Die Karte der Grande Cariçaie hilft bei den geregelten Bereichen. Nutze die Quellen des zuständigen Kantons: Angaben aus Neuenburg, Waadt und Freiburg sind nicht austauschbar. Zugang und Tagesbedingungen prüfst du vor Ort.",
         faq: [
           {
             question: "Wo finde ich Live-Wind am Neuenburgersee?",
@@ -170,27 +195,47 @@ Webcams ergänzen die Messungen mit einem Eindruck von Sicht und Wasseroberfläc
               "Die Grande Cariçaie veröffentlicht eine Karte der geregelten Bereiche. Prüfe zusätzlich die kantonalen Angaben und die örtliche Beschilderung. Die offiziellen Links stehen in den Quellen.",
           },
         ],
+        comparison: {
+          title: "Drei Einstiege, drei Perspektiven auf den See",
+          intro:
+            "Diese Hinweise beschreiben die lokalen Spot-Seiten, nicht die Bedingungen des Tages. Öffne die jeweilige Prognose und prüfe den Einstieg vor Ort.",
+          items: [
+            {
+              spotId: "cmnr31n570007ijf6q33aez75",
+              wind: "Südwest dokumentiert",
+              access:
+                "Enger Start beim Hafen; sicheres Höhelaufen erforderlich.",
+              sourceUrl:
+                "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+            },
+            {
+              spotId: "cmnr46jjd0000i5f6q521m974",
+              wind: "Experten-Einstieg, Zugang prüfen",
+              access:
+                "Der Badestrand ist vom Kite-Einstieg beim Hafen zu unterscheiden.",
+              sourceUrl: "https://letskite.ch/en/spots/82/kitesurf/cudrefin",
+            },
+            {
+              spotId: "cmnr307uv0000ijf6j8zqjyis",
+              wind: "Bise (NE) und Südwest dokumentiert",
+              access:
+                "Hafenbereich und benachbarte Reservate: kantonale Karte für Estavayer prüfen.",
+              sourceUrl:
+                "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+            },
+          ],
+        },
+        spotsIntro:
+          "Öffne deinen Einstieg für Prognose, Zugangshinweise und Quellen. Saint-Blaise, Cudrefin und Estavayer ergänzen sich, ohne alle Ufer zu beschreiben.",
       },
       it: {
         title: "Vento al lago di Neuchâtel: misure in diretta e previsioni",
         description:
-          "Confronta vento e raffiche a Neuchâtel, Payerne e Cressier. Esplora Saint-Blaise, Yvonand e Portalban con misure datate, previsioni e informazioni locali.",
+          "Confronta stazioni regionali e accessi di Saint-Blaise, Cudrefin ed Estavayer al lago di Neuchâtel: previsioni, indicazioni locali e fonti.",
         place: "Lago di Neuchâtel",
         coverAlt: "Il porto di Portalban sul lago di Neuchâtel",
-        content: `## Confrontare le diverse rive
-Saint-Blaise e Neuchâtel, Yvonand, Estavayer-le-Lac e Portalban sono punti di partenza diversi intorno al lago. Scegli prima il settore della tua uscita. La stessa direzione del vento può produrre condizioni molto differenti sulla riva opposta.
-
-## Quali stazioni consultare?
-Neuchâtel offre un riferimento vicino alla riva nord. Payerne descrive la pianura della Broye, nell’entroterra; Cressier aggiunge un confronto regionale a nord-est. Non si tratta di tre misure sull’acqua. Confronta prima orari e direzioni, poi apri lo storico delle stazioni per osservare l’evoluzione.
-
-## Bise e vento da sud-ovest
-Con la bise e con il sud-ovest le rive non hanno la stessa esposizione. Neuchâtel Tourisme indica il sud-ovest per Saint-Blaise. La sola direzione non basta però a scegliere il punto di entrata: considera raffiche, ostacoli e percorso di rientro. Se le direzioni delle stazioni divergono, controlla cielo e superficie del lago prima di decidere.
-
-## Preparare il punto di partenza
-Le schede di Saint-Blaise, Yvonand, Portalban ed Estavayer raccolgono le informazioni disponibili in Openwind sugli accessi e sulle particolarità locali. La tabella meteo di questa guida è calcolata per Neuchâtel: non sostituisce la previsione di Yvonand o un’osservazione sulla riva sud. Per un altro settore, consulta la scheda del relativo spot.
-
-## Webcams e zone protette
-Le webcam possono aggiungere informazioni sulla visibilità e sull’aspetto dell’acqua. Verifica l’ora dell’immagine. Nelle riserve della Grande Cariçaie esistono restrizioni: consulta la mappa ufficiale e le informazioni del cantone interessato. La presenza di uno spot sulla mappa non autorizza automaticamente la pratica.`,
+        content:
+          "## Scegliere la riva prima di leggere il vento\nIl lago di Neuchâtel non si riassume in una sola velocità del vento. Saint-Blaise è a nord-est, Cudrefin presso il porto sulla riva sud-est ed Estavayer sulla riva sud. Accessi e punti di previsione sono diversi: scegli prima il luogo, poi confronta dati rilevati a orari vicini.\n\n## Quali stazioni consultare?\n[Neuchâtel](/it/stations/NEU) offre un riferimento vicino alla riva nord. [Payerne](/it/stations/PAY) misura nella pianura della Broye, nell’entroterra. [Cressier NE](/it/stations/CRM) completa il contesto regionale a nord-est. Nessuna delle tre stazioni misura direttamente in tutti gli accessi descritti.\n\nPer interpretare una differenza, controlla ora, direzione, vento medio e raffiche. La media di più stazioni non crea una misura sul lago. La tabella di questa guida è calcolata per Neuchâtel; le schede degli spot mostrano le rispettive previsioni.\n\n## Saint-Blaise: preparare una partenza con sud-ovest\nLa scheda di [Saint-Blaise](/it/spots/cmnr31n570007ijf6q33aez75) riunisce accesso, previsione e indicazioni documentate. Il settore considerato è il sud-ovest. La Bise su un’altra riva non conferma questa partenza. Confronta l’andamento regionale e verifica lo spazio presso il porto.\n\n## Cudrefin: distinguere spiaggia e partenza\nLa scheda di [Cudrefin](/it/spots/cmnr46jjd0000i5f6q521m974) distingue i riferimenti per l’arrivo dall’accesso kitesurf. La descrizione locale segnala uno spazio molto limitato per esperti. Un punto Openwind o una pagina turistica di spiaggia non è un piano di accesso all’acqua. Controlla cartello e corridoio prima di stendere le linee.\n\n## Estavayer: aprire la previsione del punto giusto\nIl profilo documentato di [Estavayer-le-Lac](/it/spots/cmnr307uv0000ijf6j8zqjyis) considera nord-est e sud-ovest. Consulta la previsione della scheda, distinta da quella di Neuchâtel. L’allegato cantonale contiene una carta del settore di Estavayer: individua le esclusioni e controlla poi le indicazioni locali.\n\n## Webcam e zone protette\nUna webcam completa i numeri solo se inquadra la tua riva e mostra un’immagine recente. La carta della Grande Cariçaie aiuta a individuare i settori regolamentati. Consulta le fonti del cantone competente: Neuchâtel, Vaud e Friburgo non sono intercambiabili. Accesso e condizioni del giorno vanno verificati sul posto.",
         faq: [
           {
             question: "Dove vedere il vento in diretta al lago di Neuchâtel?",
@@ -213,6 +258,38 @@ Le webcam possono aggiungere informazioni sulla visibilità e sull’aspetto del
               "La Grande Cariçaie pubblica una mappa dei settori regolamentati. Controlla anche le informazioni cantonali e la segnaletica locale; i collegamenti ufficiali sono nelle fonti.",
           },
         ],
+        comparison: {
+          title: "Tre accessi, tre modi di leggere il lago",
+          intro:
+            "Questi riferimenti descrivono le schede locali, non le condizioni del giorno. Apri la previsione di ogni spot e verifica l’accesso sul posto.",
+          items: [
+            {
+              spotId: "cmnr31n570007ijf6q33aez75",
+              wind: "Sud-ovest documentato",
+              access:
+                "Partenza stretta presso il porto; necessaria una buona risalita al vento.",
+              sourceUrl:
+                "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+            },
+            {
+              spotId: "cmnr46jjd0000i5f6q521m974",
+              wind: "Accesso per esperti, da verificare",
+              access:
+                "La spiaggia per la balneazione va distinta dalla partenza presso il porto.",
+              sourceUrl: "https://letskite.ch/en/spots/82/kitesurf/cudrefin",
+            },
+            {
+              spotId: "cmnr307uv0000ijf6j8zqjyis",
+              wind: "Bise (NE) e sud-ovest documentati",
+              access:
+                "Zona portuale e riserve vicine: consultare la carta cantonale di Estavayer.",
+              sourceUrl:
+                "https://www.kitesurfclub.ch/de/?option=com_spotfinder&tmpl=component&view=spotfinder",
+            },
+          ],
+        },
+        spotsIntro:
+          "Apri la scheda del tuo accesso per previsione, indicazioni e fonti. Saint-Blaise, Cudrefin ed Estavayer si completano senza rappresentare tutte le rive.",
       },
     },
   },

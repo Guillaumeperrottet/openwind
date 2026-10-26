@@ -15,7 +15,8 @@
     "wind:tiles:publish": "python3 scripts/publish_wind_tiles.py",
     "wind:tiles:test": "python3 -m unittest scripts.test_publish_wind_tiles -v",
     "images:import:commons": "node scripts/import-commons-spot-images.mjs",
-    "planner:import:swiss": "tsx scripts/import-swiss-planner-profiles.ts"
+    "planner:import:swiss": "tsx scripts/import-swiss-planner-profiles.ts",
+    "seo:import:neuchatel": "tsx scripts/import-neuchatel-seo.ts"
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.1",
