@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
-import { fetchForecastBatch, analyzeMultiDay } from "@/lib/wind";
 import { articlePublicPath } from "@/lib/articles";
 import { getStationsFromCache } from "@/lib/stationData";
 import type { WindStation } from "@/lib/stations";
@@ -25,18 +24,6 @@ export const metadata: Metadata = {
   description: "Votre tableau de bord personnel Openwind.",
   robots: { index: false, follow: false },
 };
-
-function dateInZurich(offsetDays = 0): string {
-  const date = new Date(Date.now() + offsetDays * 86_400_000);
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Zurich",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${value.year}-${value.month}-${value.day}`;
-}
 
 export default async function MonOpenwindPage() {
   const supabase = await createClient();
@@ -97,7 +84,7 @@ export default async function MonOpenwindPage() {
       ? [{ linkedStationIds: { hasSome: favoriteStationIds } }]
       : []),
   ];
-  const [articles, community, forecasts] = await Promise.all([
+  const [articles, community] = await Promise.all([
     articleFavoriteFilters.length
       ? prisma.article.findMany({
           where: {
@@ -132,28 +119,11 @@ export default async function MonOpenwindPage() {
         _count: { select: { posts: true } },
       },
     }),
-    fetchForecastBatch(
-      favorites.map((favorite) => ({
-        lat: favorite.spot.latitude,
-        lng: favorite.spot.longitude,
-      })),
-      dateInZurich(),
-      dateInZurich(3),
-    ),
   ]);
 
   const favoriteSpots: DashboardFavoriteSpot[] = favorites.map(
-    (favorite, index) => {
+    (favorite) => {
       const spot = favorite.spot;
-      const rawForecast = forecasts[index];
-      const days = rawForecast
-        ? analyzeMultiDay(
-            rawForecast,
-            spot.sportType,
-            spot.bestWindDirections,
-          )
-        : [];
-
       return {
         id: spot.id,
         dashboardSelected: favorite.dashboardSelected,
@@ -169,21 +139,6 @@ export default async function MonOpenwindPage() {
         minWindKmh: spot.minWindKmh,
         maxWindKmh: spot.maxWindKmh,
         bestWindDirections: spot.bestWindDirections,
-        forecastDays: days.map((day) => ({
-          date: day.date,
-          score: day.score,
-          suitableHours: day.kitableHours,
-          averageWindKmh: day.avgWindKmh,
-          peakWindKmh: day.peakWindKmh,
-          bestHour: day.bestHour
-            ? {
-                time: day.bestHour.time,
-                windSpeedKmh: day.bestHour.windSpeedKmh,
-                gustsKmh: day.bestHour.gustsKmh,
-                windDirection: day.bestHour.windDirection,
-              }
-            : null,
-        })),
       };
     },
   );

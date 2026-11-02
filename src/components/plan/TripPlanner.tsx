@@ -34,6 +34,7 @@ import { trackEvent } from "@/lib/analytics";
 import { useTranslations } from "next-intl";
 import { useFavContext } from "@/lib/FavContext";
 import { useWindUnits } from "@/lib/useWindUnits";
+import { SaveSearchControl } from "./SaveSearchControl";
 import { plannerRecoveryActions } from "@/lib/planner-recovery";
 
 const PlannerMap = dynamic(() => import("./PlannerMap"), { ssr: false });
@@ -824,6 +825,7 @@ export function TripPlanner({
                 </button>
               </div>
             </div>
+            {applied && <SaveSearchControl key={applied.query} criteria={applied.criteria} place={applied.name} />}
             <div className="mb-4">
               <div role="group" aria-label={personal("units")} className="mb-4 flex justify-end gap-2">
                 {[true, false].map((knots) => <button type="button" key={String(knots)} aria-pressed={useKnots === knots} onClick={() => setUseKnots(knots)} className={`${buttonClass} border border-slate-200 ${useKnots === knots ? "bg-slate-900 text-white" : "bg-white text-slate-600"}`}>{knots ? "kts" : "km/h"}</button>)}

@@ -6,7 +6,6 @@ import {
   Bell,
   BellOff,
   BookOpen,
-  CalendarDays,
   Check,
   ChevronDown,
   ChevronUp,
@@ -36,6 +35,9 @@ import {
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { GuestOpenwind } from "./GuestOpenwind";
+import { PersonalBrief } from "./PersonalBrief";
+import { PersonalForecast } from "./PersonalForecast";
+import { SavedSearches } from "./SavedSearches";
 import { Link } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
 import { useSpotLive } from "@/lib/useSpotLive";
@@ -55,7 +57,6 @@ import type {
   DashboardCommunityItem,
   DashboardFavoriteSpot,
   DashboardFavoriteStation,
-  DashboardForecastDay,
   MonOpenwindData,
 } from "@/components/dashboard/types";
 import { NETWORK_LABELS } from "@/lib/stationConstants";
@@ -326,21 +327,8 @@ export function MonOpenwindClient({ initialData }: Props) {
     (item) => item.spotId === null || visibleSpotIds.has(item.spotId),
   );
 
-  const windows = useMemo(
-    () =>
-      dashboardSpots
-        .flatMap((spot) =>
-          spot.forecastDays.map((day) => ({ spot, day })),
-        )
-        .filter(({ day }) => day.score >= 35)
-        .sort((a, b) => b.day.score - a.day.score)
-        .slice(0, 6),
-    [dashboardSpots],
-  );
-
-  const promisingCount = windows.filter(({ day }) => day.score >= 60).length;
-  const firstName = initialData.userName?.trim().split(/\s+/)[0] ?? null;
-  const bestWindow = windows[0] ?? null;
+  const briefFavorites = dashboardFavorites.map(({ kind, item }) => ({ kind, id: item.id, name: item.name }));
+  const outlookSpotIds = dashboardSpots.map((spot) => spot.id);
 
   const selectDashboardFavorites = async (
     choices: DashboardFavoriteChoice[],
@@ -432,7 +420,7 @@ export function MonOpenwindClient({ initialData }: Props) {
       />
     ),
     FORECAST: (
-      <ForecastSection windows={windows} useKnots={preferences.useKnots} />
+      <PersonalForecast spotIds={outlookSpotIds} />
     ),
     ARTICLES: <ArticlesSection articles={articles} />,
     COMMUNITY: <CommunitySection items={community} spots={dashboardSpots} />,
@@ -470,21 +458,13 @@ export function MonOpenwindClient({ initialData }: Props) {
             </button>
           </div>
 
-          <div className="grid gap-7 md:grid-cols-[minmax(0,1fr)_minmax(310px,0.72fr)] md:items-stretch lg:gap-10">
-            <DashboardHeroIntro
-              firstName={firstName}
-              favoriteCount={dashboardFavorites.length}
-              promisingCount={promisingCount}
-            />
-            <BestWindowHeroCard
-              window={bestWindow}
-              useKnots={preferences.useKnots}
-            />
-          </div>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{initialData.userName ? t("helloName", { name: initialData.userName.trim().split(/\s+/)[0] }) : t("hello")}</h1>
+          <div className="mt-5"><PersonalBrief favorites={briefFavorites} spotIds={outlookSpotIds} /></div>
         </div>
       </div>
 
       <div className="mx-auto max-w-[1500px] space-y-12 px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
+        <SavedSearches />
         {preferences.dashboardLayout.map((module) => (
           <DashboardModuleContainer
             key={module}
@@ -552,169 +532,6 @@ function DashboardModuleContainer({
       >
         {children}
       </div>
-    </div>
-  );
-}
-
-function DashboardHeroIntro({
-  firstName,
-  favoriteCount,
-  promisingCount,
-}: {
-  firstName: string | null;
-  favoriteCount: number;
-  promisingCount: number;
-}) {
-  const t = useTranslations("MonOpenwind");
-  const locale = useLocale();
-  const today = new Intl.DateTimeFormat(locale, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(new Date());
-
-  return (
-    <div className="flex min-w-0 flex-col justify-center py-2 md:py-4">
-      <p className="mb-2 flex flex-wrap items-center gap-x-2 text-[11px] font-semibold uppercase tracking-[0.17em] text-sky-600">
-        <span>{t("eyebrow")}</span>
-        <span className="h-1 w-1 rounded-full bg-slate-300" />
-        <span className="capitalize text-slate-400">{today}</span>
-      </p>
-      <h1 className="max-w-3xl text-3xl font-bold tracking-[-0.04em] text-slate-950 sm:text-4xl lg:text-[44px] lg:leading-[1.05]">
-        {firstName ? t("helloName", { name: firstName }) : t("hello")}
-      </h1>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
-        {favoriteCount === 0
-          ? t("summary.empty")
-          : promisingCount > 0
-            ? t("summary.promising", {
-                count: promisingCount,
-                spots: favoriteCount,
-              })
-            : t("summary.quiet", { count: favoriteCount })}
-      </p>
-    </div>
-  );
-}
-
-function BestWindowHeroCard({
-  window,
-  useKnots,
-}: {
-  window: { spot: DashboardFavoriteSpot; day: DashboardForecastDay } | null;
-  useKnots: boolean;
-}) {
-  const t = useTranslations("MonOpenwind.hero");
-  const locale = useLocale();
-
-  if (!window) {
-    return (
-      <div className="relative flex min-h-52 flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-[linear-gradient(145deg,#f8fbff_0%,#ffffff_72%)] p-5 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-6">
-        <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-sky-100/60 blur-2xl" />
-        <div className="relative">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sky-600 shadow-sm ring-1 ring-slate-100">
-            <Wind className="h-5 w-5" />
-          </span>
-          <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-600">
-            {t("nextWindow")}
-          </p>
-          <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950">
-            {t("waitingTitle")}
-          </h2>
-          <p className="mt-2 text-sm leading-5 text-slate-500">
-            {t("waitingDescription")}
-          </p>
-        </div>
-        <Link
-          href="/?view=map"
-          className="relative mt-5 inline-flex items-center gap-1.5 self-start text-sm font-semibold text-sky-700 hover:text-sky-900"
-        >
-          {t("chooseSpots")}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-    );
-  }
-
-  const { spot, day } = window;
-  const date = new Intl.DateTimeFormat(locale, {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-  }).format(new Date(`${day.date}T12:00:00`));
-  const speedKmh = day.bestHour?.windSpeedKmh ?? day.averageWindKmh;
-  const gustsKmh = day.bestHour?.gustsKmh ?? day.peakWindKmh;
-  const speed = Math.round(useKnots ? speedKmh / 1.852 : speedKmh);
-  const gusts = Math.round(useKnots ? gustsKmh / 1.852 : gustsKmh);
-  const unit = useKnots ? "kts" : "km/h";
-  const time = day.bestHour
-    ? new Date(day.bestHour.time).toLocaleTimeString(locale, {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : null;
-
-  return (
-    <article className="relative flex min-h-52 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-[linear-gradient(145deg,#f8fbff_0%,#ffffff_70%)] p-5 shadow-[0_16px_50px_rgba(15,23,42,0.05)] sm:p-6">
-      <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-sky-100/70 blur-2xl" />
-      <div className="relative flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-600">
-            {t("nextWindow")}
-          </p>
-          <h2 className="mt-1 line-clamp-2 text-xl font-bold leading-tight tracking-tight text-slate-950 sm:text-2xl">
-            {spot.name}
-          </h2>
-          <p className="mt-1 flex items-center gap-1.5 text-xs capitalize text-slate-500">
-            <CalendarDays className="h-3.5 w-3.5" />
-            {date}
-            {time && <span>· {t("around", { time })}</span>}
-          </p>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-100">
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          {day.score}%
-        </span>
-      </div>
-
-      <div className="relative mt-5 grid grid-cols-3 divide-x divide-slate-100 rounded-2xl border border-white bg-white/85 px-1 py-3 shadow-sm backdrop-blur">
-        <HeroWeatherValue label={t("wind")} value={`${speed} ${unit}`} />
-        <HeroWeatherValue label={t("gusts")} value={`${gusts} ${unit}`} />
-        <HeroWeatherValue
-          label={t("direction")}
-          value={
-            day.bestHour
-              ? `${windArrow(day.bestHour.windDirection)} ${windDirectionLabel(day.bestHour.windDirection)}`
-              : "—"
-          }
-        />
-      </div>
-
-      <div className="relative mt-auto flex items-end justify-between gap-4 pt-5">
-        <p className="text-[11px] leading-4 text-slate-400">
-          {t("suitableHours", { count: day.suitableHours })}
-        </p>
-        <Link
-          href={`/spots/${spot.id}`}
-          className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
-        >
-          {t("viewWindow")}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-    </article>
-  );
-}
-
-function HeroWeatherValue({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0 px-2.5">
-      <span className="block text-[9px] uppercase tracking-[0.1em] text-slate-400">
-        {label}
-      </span>
-      <strong className="mt-1 block truncate text-sm tabular-nums text-slate-900">
-        {value}
-      </strong>
     </div>
   );
 }
@@ -1491,128 +1308,6 @@ function EmptyFavorites() {
         {t("explore")}
       </Link>
     </div>
-  );
-}
-
-function ForecastSection({
-  windows,
-  useKnots,
-}: {
-  windows: Array<{ spot: DashboardFavoriteSpot; day: DashboardForecastDay }>;
-  useKnots: boolean;
-}) {
-  const t = useTranslations("MonOpenwind.forecast");
-  return (
-    <section aria-labelledby="forecast-windows-heading">
-      <SectionHeading
-        id="forecast-windows-heading"
-        eyebrow={t("eyebrow")}
-        title={t("title")}
-        description={t("description")}
-        action={
-          <Link
-            href="/plan"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
-          >
-            {t("openPlanner")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        }
-      />
-
-      {windows.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-8 text-center">
-          <CalendarDays className="mx-auto h-7 w-7 text-slate-300" />
-          <p className="mt-3 text-sm font-semibold text-slate-700">
-            {t("emptyTitle")}
-          </p>
-          <p className="mt-1 text-xs text-slate-400">{t("emptyDescription")}</p>
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {windows.map(({ spot, day }) => (
-            <ForecastWindowCard
-              key={`${spot.id}-${day.date}`}
-              spot={spot}
-              day={day}
-              useKnots={useKnots}
-            />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function ForecastWindowCard({
-  spot,
-  day,
-  useKnots,
-}: {
-  spot: DashboardFavoriteSpot;
-  day: DashboardForecastDay;
-  useKnots: boolean;
-}) {
-  const t = useTranslations("MonOpenwind.forecast");
-  const locale = useLocale();
-  const speed = useKnots
-    ? Math.round(day.averageWindKmh / 1.852)
-    : Math.round(day.averageWindKmh);
-  const unit = useKnots ? "kts" : "km/h";
-  const date = new Intl.DateTimeFormat(locale, {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-  }).format(new Date(`${day.date}T12:00:00`));
-  const scoreTone =
-    day.score >= 70
-      ? "bg-emerald-500"
-      : day.score >= 50
-        ? "bg-amber-400"
-        : "bg-slate-300";
-
-  return (
-    <Link
-      href={`/spots/${spot.id}`}
-      className="group min-w-0 rounded-2xl border border-slate-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-lg"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-slate-900 group-hover:text-sky-700">
-            {spot.name}
-          </p>
-          <p className="mt-0.5 capitalize text-xs text-slate-400">{date}</p>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-600">
-          <span className={cn("h-2 w-2 rounded-full", scoreTone)} />
-          {day.score}%
-        </span>
-      </div>
-      <div className="mt-4 flex items-end justify-between gap-4">
-        <div>
-          <span className="text-2xl font-bold tabular-nums text-slate-950">
-            {speed}
-          </span>
-          <span className="ml-1 text-xs font-medium text-slate-400">{unit}</span>
-          <p className="mt-0.5 text-[11px] text-slate-400">{t("averageWind")}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm font-semibold text-slate-800">
-            {t("hours", { count: day.suitableHours })}
-          </p>
-          {day.bestHour && (
-            <p className="mt-0.5 text-[11px] text-slate-400">
-              {t("bestAround", {
-                time: new Date(day.bestHour.time).toLocaleTimeString(locale, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-              })}
-            </p>
-          )}
-        </div>
-      </div>
-    </Link>
   );
 }
 

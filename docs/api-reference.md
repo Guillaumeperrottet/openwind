@@ -160,11 +160,20 @@ Spots triés par score vent pour une période donnée.
 | `endDate`   | YYYY-MM-DD     | —      | Fin période                           |
 | `radius`    | number         | 150    | Rayon en km                           |
 | `sport`     | KITE/PARAGLIDE | —      | Type de sport                         |
+| `spotIds`   | IDs séparés par une virgule | — | Restreint aux spots publics demandés (1 à 12 IDs, 200 caractères par ID). Utilisé par le résumé personnel. |
 
-**Réponse** : Spots avec `days[]`, `bestScore`, `bestDayIndex`, `dataSource` ("forecast" ou "archive").
+**Réponse** : `mode` (`forecast` ou `seasonal`), `spots[]` avec `qualification`, `windows[]`, `weather`, `unavailable`, et `meta`. Les créneaux respectent les orientations, les seuils de vent et de rafales, la lumière du jour et les restrictions documentées. Le score interne sert au classement ; ce n’est ni une probabilité ni une évaluation de sécurité.
 
 - ≤ 16 jours : prévisions Open-Meteo temps réel
 - \> 16 jours : archives historiques 5 ans
+
+### Mon Openwind : résumé et recherches enregistrées
+
+- Le résumé interroge le même planificateur sur les quatre prochains jours, pour les spots favoris sélectionnés (jusqu’à 12 pour les invités). Les créneaux sont présentés chronologiquement avec leurs critères et sources ; aucun ancien score journalier n’est utilisé.
+- Les observations du résumé réutilisent les endpoints `/live`. Une évolution d’au moins 5 km/h est affichée seulement entre deux mesures fraîches de la même station et du même réseau, espacées de moins de 24 heures. Les estimations et changements de source ne produisent pas de fausse variation. La comparaison reste sur l’appareil.
+- Jusqu’à huit recherches sont conservées dans le navigateur, sous `openwind-searches:v1:<userId|guest>`. Elles sont distinctes par compte sur cet appareil, sans synchronisation distante. À la connexion, les recherches invitées sont fusionnées sans écraser celles du compte ; les recherches dépassant la limite restent conservées côté invité.
+- Une recherche conserve le sport, le lieu, les coordonnées, le rayon et soit des dates fixes, soit un week-end recalculé à l’ouverture. Les dates expirées ne sont jamais relancées silencieusement : la carte affiche les nouvelles dates et propose un bouton explicite pour repartir d’aujourd’hui en conservant la durée.
+- La relance reste manuelle. Le retrait peut être annulé immédiatement. Aucun service de surveillance ou de notification n’est ajouté.
 
 ---
 

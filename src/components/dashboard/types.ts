@@ -2,20 +2,6 @@ import type { AccountPreferences } from "@/lib/user-preferences";
 import type { SportType } from "@/types";
 import type { WindStation } from "@/lib/stations";
 
-export interface DashboardForecastDay {
-  date: string;
-  score: number;
-  suitableHours: number;
-  averageWindKmh: number;
-  peakWindKmh: number;
-  bestHour: {
-    time: string;
-    windSpeedKmh: number;
-    gustsKmh: number;
-    windDirection: number;
-  } | null;
-}
-
 export interface DashboardFavoriteSpot {
   id: string;
   dashboardSelected: boolean;
@@ -31,7 +17,6 @@ export interface DashboardFavoriteSpot {
   minWindKmh: number;
   maxWindKmh: number;
   bestWindDirections: string[];
-  forecastDays: DashboardForecastDay[];
 }
 
 export interface DashboardFavoriteStation {

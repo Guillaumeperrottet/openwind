@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { Star, ArrowRight, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { PersonalBrief } from "./PersonalBrief";
+import { PersonalForecast } from "./PersonalForecast";
+import { SavedSearches } from "./SavedSearches";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
 import { useWindUnits } from "@/lib/useWindUnits";
-import { useSpotLive } from "@/lib/useSpotLive";
-import { useStationLive } from "@/lib/useStationLive";
-import { WindProvenance } from "@/components/spot/WindProvenance";
 import type { SportFilter } from "@/lib/user-preferences";
 
 type Catalogue = {
@@ -71,15 +71,17 @@ export function GuestOpenwind() {
             {[true, false].map((knots) => <button key={String(knots)} className={`${button} ${useKnots === knots ? "bg-slate-900 text-white" : "bg-white text-slate-600"}`} aria-pressed={useKnots === knots} onClick={() => setUseKnots(knots)}>{knots ? "kts" : "km/h"}</button>)}
           </div>
         </div>
+        {count > 0 && <div className="mb-6"><PersonalBrief favorites={[
+          ...spots.map((id) => ({ kind: "spot" as const, id, name: catalogue.spots.find((s) => s.id === id)?.name ?? t("spot") })),
+          ...[...favoriteStationIds].map((id) => ({ kind: "station" as const, id, name: catalogue.stations.find((s) => s.id === id)?.name ?? t("station") })),
+        ]} spotIds={spots} manageFavorites /></div>}
         {count === 0 ? <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"><Star aria-hidden className="mx-auto mb-4 h-8 w-8 text-sky-700" /><p className="text-slate-600">{t("firstFavorite")}</p><Link className={`${button} mt-5 gap-2 bg-slate-900 text-white`} href="/?view=map">{t("explore")}<ArrowRight aria-hidden className="h-4 w-4" /></Link></div> : <>
           {error && <p role="status" className="mb-4 text-sm text-amber-800">{t("catalogueError")} <button className="min-h-11 underline" onClick={() => setRetry((v) => v + 1)}>{t("retry")}</button></p>}
           {loaded !== key && <p role="status" className="mb-4 text-sm text-slate-600">{t("loading")}</p>}
           {!spots.length && !favoriteStationIds.size && <p role="status" className="py-6 text-slate-600">{t("sportEmpty")}</p>}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {spots.map((id) => <LocalFavorite key={`spot:${id}`} id={id} kind="spot" name={catalogue.spots.find((s) => s.id === id)?.name} />)}
-            {[...favoriteStationIds].map((id) => <LocalFavorite key={`station:${id}`} id={id} kind="station" name={catalogue.stations.find((s) => s.id === id)?.name} />)}
-          </div>
         </>}
+        <div className="mt-8"><SavedSearches /></div>
+        <div className="mt-8"><PersonalForecast spotIds={spots} /></div>
         <section className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5" aria-label={t("sync")}>
           <p className="max-w-xl text-sm leading-6 text-slate-600">{t("syncDescription")}</p>
           <div className="flex flex-wrap gap-3">
@@ -91,18 +93,4 @@ export function GuestOpenwind() {
       </div>
     </div>
   );
-}
-
-function LocalFavorite({ id, kind, name }: { id: string; kind: "spot" | "station"; name?: string }) {
-  const t = useTranslations("PersonalExperience");
-  const { toggleFavorite, toggleStationFavorite } = useFavContext();
-  const { useKnots } = useWindUnits();
-  const spot = useSpotLive(kind === "spot" ? id : null);
-  const station = useStationLive(kind === "station" ? id : null);
-  const { data, isLoading } = kind === "spot" ? spot : station;
-  const speed = (value: number) => Math.round(useKnots ? value / 1.852 : value);
-  return <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <div className="flex items-start justify-between gap-3"><Link className="text-lg font-semibold text-slate-950 hover:text-sky-800 hover:underline" href={kind === "spot" ? `/spots/${id}` : `/stations/${encodeURIComponent(id)}`}>{name ?? t(kind)}</Link><button aria-label={t("removeFavorite")} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-amber-600 hover:bg-amber-50" onClick={() => void (kind === "spot" ? toggleFavorite(id) : toggleStationFavorite(id))}><Star aria-hidden className="h-5 w-5 fill-current" /></button></div>
-    {data ? <><p className="my-4 text-3xl font-semibold tabular-nums text-slate-950">{speed(data.windSpeedKmh)} <span className="text-sm text-slate-500">{useKnots ? "kts" : "km/h"}</span></p><p className="mb-3 text-sm text-slate-600">{t("gusts")} {speed(data.gustsKmh)} {useKnots ? "kts" : "km/h"}</p><WindProvenance compact live={data} /></> : <p className="py-6 text-sm text-slate-500">{isLoading ? t("loading") : t("unavailable")}</p>}
-  </article>;
 }

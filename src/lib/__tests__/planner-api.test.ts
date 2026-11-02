@@ -114,6 +114,19 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 describe("public planner API", () => {
+  it("scopes a personal outlook to the requested public spot IDs using the same qualification checks", async () => {
+    const res = await get("spotIds=test&sport=KITE");
+    expect(mocks.findMany.mock.calls[0][0].where).toEqual({ sportType: "KITE", id: { in: ["test"] } });
+    const body = await res.json();
+    expect(body.spots[0].qualification.eligible).toBe(true);
+    expect(body.spots[0].windows).toHaveLength(1);
+  });
+  it.each(["", Array.from({ length: 13 }, (_, i) => `id-${i}`).join(","), "x".repeat(201)])("rejects an invalid personal scope before reading data (%s)", async (ids) => {
+    const res = await get(`spotIds=${ids}`);
+    expect(res.status).toBe(400);
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.forecasts).not.toHaveBeenCalled();
+  });
   it.each(["fr", "de", "it"] as const)(
     "uses the eight sourced profiles anonymously in %s",
     async (locale) => {

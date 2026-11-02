@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { qualificationsFor } from "@/lib/planner-review-store";
 import { toSiteLocale } from "@/lib/site";
+import { z } from "zod";
 import {
   fetchPlannerForecasts,
   fetchPlannerSeasonal,
@@ -25,11 +26,17 @@ export async function GET(request: NextRequest) {
   const criteria = parsePlannerCriteria(params, today);
   if (!criteria)
     return NextResponse.json({ error: "INVALID_CRITERIA" }, { status: 400 });
+  // Personal outlooks reuse every planner check, scoped to a bounded public list.
+  const scopedIds = params.has("spotIds")
+    ? z.array(z.string().trim().min(1).max(200)).min(1).max(12).safeParse(params.get("spotIds")!.split(","))
+    : null;
+  if (scopedIds && !scopedIds.success)
+    return NextResponse.json({ error: "INVALID_SPOTS" }, { status: 400 });
   const locale = params.get("locale");
   try {
     // The whole catalogue in the radius is considered before weather ranking.
     const records = await prisma.spot.findMany({
-      where: { sportType: criteria.sport },
+      where: { sportType: criteria.sport, ...(scopedIds?.success ? { id: { in: scopedIds.data } } : {}) },
       orderBy: { id: "asc" },
       select: {
         id: true,
