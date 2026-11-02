@@ -81,6 +81,7 @@ export interface DashboardCommunityItem {
 }
 
 export interface MonOpenwindData {
+  userId: string;
   userName: string | null;
   preferences: AccountPreferences;
   favoriteSpots: DashboardFavoriteSpot[];

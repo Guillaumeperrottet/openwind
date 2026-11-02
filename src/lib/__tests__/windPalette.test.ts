@@ -5,9 +5,16 @@ import {
   windPaletteColor,
   windPaletteGradient,
   windPaletteRgba,
+  windPaletteLegend,
 } from "@/lib/windPalette";
 
 describe("Openwind wind palette", () => {
+  it("describes intensity with the same numeric bands in both units", () => {
+    expect(windPaletteLegend()[4]).toEqual({ color: windPaletteColor(14 * 1.852), range: "12–16 kts" });
+    expect(windPaletteLegend(false)[4].range).toBe("22–30 km/h");
+    expect(windPaletteLegend().at(-1)?.range).toBe("≥ 35 kts");
+    expect(windPaletteLegend()).toHaveLength(OPENWIND_WIND_PALETTE_KTS.length);
+  });
   it("switches bands exactly at the shared knot thresholds", () => {
     expect(windPaletteColor(1.99 * 1.852)).toBe("#f5f5f5");
     expect(windPaletteColor(2 * 1.852)).toBe("#d5f0d5");

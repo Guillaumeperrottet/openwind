@@ -8,6 +8,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: { spot: { findUnique: mocks.findUnique } },
 }));
 vi.mock("@/lib/stationData", () => ({ getSpotLive: vi.fn() }));
+vi.mock("@/lib/admin", () => ({ getAuthenticatedAdmin: vi.fn().mockResolvedValue(null) }));
 vi.mock("@/components/spot/SpotEditorial", () => ({
   SpotEditorial: () => null,
 }));

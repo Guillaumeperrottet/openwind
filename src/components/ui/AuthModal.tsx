@@ -9,11 +9,12 @@ import { trackEvent } from "@/lib/analytics";
 interface AuthModalProps {
   open: boolean;
   onClose: () => void;
+  initialMode?: "login" | "signup";
 }
 
-export function AuthModal({ open, onClose }: AuthModalProps) {
+export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalProps) {
   const t = useTranslations("AuthModal");
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +33,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     const supabase = createClient();
 
     if (mode === "signup") {
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`;
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
       const { error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -86,7 +87,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   const handleOAuth = async (provider: "google" | "github") => {
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname)}`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
     trackEvent("auth_oauth_started", { method: provider });
     await supabase.auth.signInWithOAuth({
       provider,

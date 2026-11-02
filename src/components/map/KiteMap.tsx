@@ -22,7 +22,8 @@ import {
   startPulseAnimation,
 } from "./mapSetup";
 import { useWindOverlay } from "./useWindOverlay";
-import { useAuth } from "@/lib/useAuth";
+import { useFavContext } from "@/lib/FavContext";
+import { useWindUnits } from "@/lib/useWindUnits";
 import {
   MAP_FOCUS_EVENT,
   MAP_FOCUS_STORAGE_KEY,
@@ -207,74 +208,29 @@ export function KiteMap({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [focusRequestVersion, setFocusRequestVersion] = useState(0);
   /** true = display speeds in knots (kn), false = km/h */
-  const [useKnots, _setUseKnots] = useState(true);
+  const { useKnots, setUseKnots } = useWindUnits();
   const useKnotsRef = useRef(true);
-  const setUseKnots = useCallback((v: boolean) => {
-    _setUseKnots(v);
-    fetch("/api/preferences", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ useKnots: v }),
-    }).catch(() => {});
-  }, []);
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(true);
-  /** Sport filter: "ALL" | "KITE" | "PARAGLIDE" */
-  const { user } = useAuth();
-  const [sportFilter, _setSportFilter] = useState<"ALL" | "KITE" | "PARAGLIDE">(
-    "ALL",
-  );
-  const setSportFilter = useCallback((v: "ALL" | "KITE" | "PARAGLIDE") => {
-    _setSportFilter(v);
-    sportFilterRef.current = v;
-    // Persist to server (fire-and-forget)
-    fetch("/api/preferences", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sportFilter: v }),
-    }).catch(() => {});
-  }, []);
-  // Load saved preferences when user is available
+  const { user, preferences, updatePreferences } = useFavContext();
+  const sportFilter = preferences?.sportFilter ?? "ALL";
+  sportFilterRef.current = sportFilter;
+  const updatePreferencesRef = useRef(updatePreferences);
+  const restoredAccountViewRef = useRef<string | null>(null);
+  updatePreferencesRef.current = updatePreferences;
+  const setSportFilter = useCallback((value: "ALL" | "KITE" | "PARAGLIDE") => {
+    sportFilterRef.current = value;
+    void updatePreferences({ sportFilter: value });
+  }, [updatePreferences]);
   useEffect(() => {
     userIdRef.current = user?.id ?? null;
-    if (!user) return;
-    fetch("/api/preferences")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (!data) return;
-        if (data.sportFilter === "KITE" || data.sportFilter === "PARAGLIDE") {
-          _setSportFilter(data.sportFilter);
-          setFilterOpen(false);
-        }
-        if (typeof data.useKnots === "boolean") _setUseKnots(data.useKnots);
-
-        // Apply server-stored map view — but only if the user hasn't started
-        // exploring yet (avoid yanking the view out from under them) and
-        // no explicit initialCenter was passed (e.g. edit mode).
-        if (
-          data.mapView &&
-          !userMovedRef.current &&
-          !initialCenter &&
-          mapRef.current
-        ) {
-          const { center, zoom } = data.mapView as {
-            center: [number, number];
-            zoom: number;
-          };
-          if (
-            Array.isArray(center) &&
-            Number.isFinite(center[0]) &&
-            Number.isFinite(center[1]) &&
-            Number.isFinite(zoom)
-          ) {
-            mapRef.current.jumpTo({ center, zoom });
-          }
-        }
-      })
-      .catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    const view = preferences?.mapView;
+    if (user && view && restoredAccountViewRef.current !== user.id && !userMovedRef.current && !initialCenter && mapRef.current) {
+      restoredAccountViewRef.current = user.id;
+      mapRef.current.jumpTo({ center: view.center, zoom: view.zoom });
+    }
+  }, [user, preferences?.mapView, initialCenter, mapLoaded]);
 
   // Station popup state (React-based with history chart)
   const [selectedStation, setSelectedStation] =
@@ -646,9 +602,9 @@ export function KiteMap({
         const curSpots = spotsRef.current;
         const curStations = initialStationsRef.current;
         const filteredSpots =
-          sportFilter === "ALL"
+          sportFilterRef.current === "ALL"
             ? curSpots
-            : curSpots.filter((s) => s.sportType === sportFilter);
+            : curSpots.filter((s) => s.sportType === sportFilterRef.current);
         spotFeaturesRef.current = filteredSpots.map((s) => ({
           type: "Feature" as const,
           geometry: {
@@ -931,12 +887,7 @@ export function KiteMap({
           clearTimeout(mapViewSaveTimerRef.current);
         }
         mapViewSaveTimerRef.current = setTimeout(() => {
-          fetch("/api/preferences", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mapView: view }),
-            keepalive: true,
-          }).catch(() => {});
+          void updatePreferencesRef.current({ mapView: view });
         }, 1500);
       }
     });
@@ -971,12 +922,7 @@ export function KiteMap({
                 zoom: map.getZoom(),
               },
             });
-            fetch("/api/preferences", {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body,
-              keepalive: true,
-            }).catch(() => {});
+            void updatePreferencesRef.current(JSON.parse(body));
           } catch {
             // map already disposed — ignore
           }
@@ -1643,6 +1589,7 @@ export function KiteMap({
 
       {selectedSpot && popupPos && (
         <SpotPopup
+          live={spotLive}
           spot={selectedSpot}
           wind={selectedWind}
           loadingWind={loadingWind}

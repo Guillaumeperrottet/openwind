@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { LayoutDashboard, Map, ArrowRight, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
@@ -12,10 +12,12 @@ import type { DefaultView } from "@/lib/user-preferences";
 export function AccountOnboarding() {
   const t = useTranslations("MonOpenwind.onboarding");
   const router = useRouter();
+  const pathname = usePathname();
   const {
     user,
     preferences,
     preferencesLoading,
+    favoritesReady,
     updatePreferences,
   } = useFavContext();
   const [selection, setSelection] = useState<DefaultView>("DASHBOARD");
@@ -24,6 +26,8 @@ export function AccountOnboarding() {
 
   const visible = Boolean(
     user &&
+      pathname !== "/spots/new" &&
+      favoritesReady &&
       !preferencesLoading &&
       preferences &&
       !preferences.onboardingCompleted,
@@ -57,7 +61,8 @@ export function AccountOnboarding() {
     trackEvent("openwind_onboarding_completed", {
       default_view: selection.toLowerCase(),
     });
-    router.replace(selection === "DASHBOARD" ? "/mon-openwind" : "/?view=map");
+    if (pathname === "/") router.replace(selection === "DASHBOARD" ? "/mon-openwind" : "/?view=map");
+    else router.refresh();
   };
 
   const options: Array<{

@@ -3,6 +3,8 @@
 import { useTranslations, useLocale } from "next-intl";
 import type { FullForecast, HourlyPoint } from "@/lib/forecast";
 import { windCellStyle, tempCellStyle, roundKnots } from "@/lib/forecast";
+import { useWindUnits } from "@/lib/useWindUnits";
+import { windPaletteLegend } from "@/lib/windPalette";
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
 
@@ -88,7 +90,7 @@ interface Props {
  * Windguru-style 7-day forecast table.
  *
  * Rows: Vent (kn) · Rafales (kn) · Direction · Temp (°C) ·
- *       Nuages (%) · Précip (mm) · [Vagues (m)] · Kite score
+ *       Nuages (%) · Précip (mm) · [Vagues (m)]
  *
  * Displayed values are in **knots** (industry standard for kitesurfing).
  * Colors are computed from km/h thresholds for accuracy.
@@ -96,16 +98,20 @@ interface Props {
 export function ForecastTable({ forecast, light = true, source }: Props) {
   const t = useTranslations("ForecastTable");
   const locale = useLocale();
+  const { useKnots } = useWindUnits();
+  const speed = (kmh: number) => useKnots ? roundKnots(kmh) : Math.round(kmh);
+  const unit = useKnots ? "kts" : "km/h";
+  const windLabel = (key: "wind" | "gusts") => t(key).replace(/\((?:kn|kts)\)/g, `(${unit})`);
   const points = filterEvery3h(forecast.hourly);
   const days = groupByDay(points, locale);
   const allPoints = days.flatMap((d) => d.points);
 
   const LABEL_CELL = light
-    ? "hidden sm:table-cell sticky left-0 z-10 bg-white text-[10px] text-gray-500 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-gray-100 select-none"
-    : "hidden sm:table-cell sticky left-0 z-10 bg-zinc-900 text-[10px] text-zinc-400 font-medium px-2 py-1 text-right whitespace-nowrap border-r border-white/10 select-none";
+    ? "sticky left-0 z-10 bg-white text-[11px] text-gray-600 font-semibold px-3 py-2 text-left whitespace-nowrap border-r border-gray-100 select-none"
+    : "sticky left-0 z-10 bg-zinc-900 text-[11px] text-zinc-300 font-semibold px-3 py-2 text-left whitespace-nowrap border-r border-white/10 select-none";
   const DATA_CELL = light
-    ? "text-center text-[10px] font-bold tabular-nums px-0 py-1 min-w-[30px] border-b border-gray-50"
-    : "text-center text-[10px] font-bold tabular-nums px-0 py-1 min-w-[30px] border-b border-white/5";
+    ? "text-center text-[11px] font-bold tabular-nums px-1 py-1.5 min-w-[34px] border-b border-gray-50"
+    : "text-center text-[11px] font-bold tabular-nums px-1 py-1.5 min-w-[34px] border-b border-white/5";
   const DAY_BORDER = light
     ? "border-l-2 border-gray-300"
     : "border-l-2 border-white/30";
@@ -121,8 +127,9 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
           : "rounded-xl border border-white/10 overflow-hidden bg-zinc-900"
       }
     >
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-sky-600" role="region" aria-label={t("caption")} tabIndex={0}>
         <table className="border-collapse w-max">
+          <caption className="sr-only">{t("caption")}</caption>
           {/* ── Header: day names ────────────────────────────── */}
           <thead>
             <tr>
@@ -134,13 +141,14 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                 <span
                   className={`${light ? "text-gray-400" : "text-zinc-600"} text-[8px] font-normal tracking-wide uppercase`}
                 >
-                  kn · °C
+                  {unit} · °C
                 </span>
               </th>
 
               {days.map((day) => (
                 <th
                   key={day.date}
+                  scope="colgroup"
                   colSpan={day.points.length}
                   className={`text-center text-[10px] font-semibold ${light ? "text-gray-700" : "text-zinc-200"} px-1 py-1 ${ROW_BORDER} ${light ? "border-l-2 border-gray-300" : "border-l-2 border-white/30"}`}
                 >
@@ -169,7 +177,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
           <tbody>
             {/* Wind speed (knots) */}
             <tr>
-              <td className={LABEL_CELL}>{t("wind")}</td>
+              <th scope="row" className={LABEL_CELL}>{windLabel("wind")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -177,14 +185,14 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                   className={`${DATA_CELL} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                   title={`${Math.round(pt.windSpeedKmh)} km/h`}
                 >
-                  {roundKnots(pt.windSpeedKmh)}
+                  {speed(pt.windSpeedKmh)}
                 </td>
               ))}
             </tr>
 
             {/* Gusts (knots) */}
             <tr>
-              <td className={LABEL_CELL}>{t("gusts")}</td>
+              <th scope="row" className={LABEL_CELL}>{windLabel("gusts")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -192,14 +200,14 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                   className={`${DATA_CELL} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                   title={`${Math.round(pt.gustsKmh)} km/h`}
                 >
-                  {roundKnots(pt.gustsKmh)}
+                  {speed(pt.gustsKmh)}
                 </td>
               ))}
             </tr>
 
             {/* Wind direction (SVG arrows) */}
             <tr>
-              <td className={LABEL_CELL}>{t("direction")}</td>
+              <th scope="row" className={LABEL_CELL}>{t("direction")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -213,7 +221,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Temperature */}
             <tr>
-              <td className={LABEL_CELL}>{t("temp")}</td>
+              <th scope="row" className={LABEL_CELL}>{t("temp")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -227,7 +235,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Cloud cover */}
             <tr>
-              <td className={LABEL_CELL}>{t("clouds")}</td>
+              <th scope="row" className={LABEL_CELL}>{t("clouds")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -240,7 +248,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Precipitation */}
             <tr>
-              <td className={LABEL_CELL}>{t("precip")}</td>
+              <th scope="row" className={LABEL_CELL}>{t("precip")}</th>
               {allPoints.map((pt, i) => {
                 const hasPrecip = pt.precipMmh >= 0.1;
                 return (
@@ -263,7 +271,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
             {forecast.hasWaves && (
               <>
                 <tr>
-                  <td className={LABEL_CELL}>{t("waves")}</td>
+                  <th scope="row" className={LABEL_CELL}>{t("waves")}</th>
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}
@@ -274,7 +282,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                   ))}
                 </tr>
                 <tr>
-                  <td className={LABEL_CELL}>{t("wavePeriod")}</td>
+                  <th scope="row" className={LABEL_CELL}>{t("wavePeriod")}</th>
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}
@@ -292,81 +300,21 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
         </table>
       </div>
 
-      {/* Footer — wind color legend (hidden on mobile) */}
-      <div
-        className={`hidden sm:block px-4 py-2.5 border-t ${light ? "border-gray-100" : "border-white/10"}`}
-      >
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
-          {[
-            {
-              bg: windCellStyle(3 * 1.852).background,
-              label: t("legendCalm"),
-              range: "< 5 kn",
-            },
-            {
-              bg: windCellStyle(6 * 1.852).background,
-              label: t("legendLight"),
-              range: "5–8",
-            },
-            {
-              bg: windCellStyle(10 * 1.852).background,
-              label: t("legendModerate"),
-              range: "8–12",
-            },
-            {
-              bg: windCellStyle(14 * 1.852).background,
-              label: t("legendKitable"),
-              range: "12–16",
-            },
-            {
-              bg: windCellStyle(18 * 1.852).background,
-              label: t("legendGood"),
-              range: "16–20",
-            },
-            {
-              bg: windCellStyle(22 * 1.852).background,
-              label: t("legendStrong"),
-              range: "20–25",
-            },
-            {
-              bg: windCellStyle(27 * 1.852).background,
-              label: t("legendVeryStrong"),
-              range: "25–30",
-              white: true,
-            },
-            {
-              bg: windCellStyle(32 * 1.852).background,
-              label: t("legendExtreme"),
-              range: "30–35",
-              white: true,
-            },
-            {
-              bg: windCellStyle(36 * 1.852).background,
-              label: t("legendDanger"),
-              range: "> 35",
-              white: true,
-            },
-          ].map((item) => (
-            <span key={item.label} className="inline-flex items-center gap-1">
-              <span
-                className="inline-block w-3 h-3 rounded-sm"
-                style={{ background: item.bg }}
-              />
-              <span className={light ? "text-gray-500" : "text-zinc-400"}>
-                {item.label}{" "}
-                <span className={light ? "text-gray-400" : "text-zinc-500"}>
-                  {item.range}
-                </span>
+      {/* Numeric intensity scale, separate from any assessment of suitability. */}
+      <div className={`px-4 py-3 border-t ${light ? "border-gray-100" : "border-white/10"}`}>
+        <div className="hidden sm:flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
+          {windPaletteLegend(useKnots).map(({ color, range }) => (
+            <span key={range} className="inline-flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-sm" style={{ background: color }} />
+              <span className={light ? "text-gray-600" : "text-zinc-300"}>
+                {range}
               </span>
             </span>
           ))}
         </div>
-        <div
-          className={`mt-1.5 text-[9px] ${light ? "text-gray-400" : "text-zinc-600"}`}
-        >
-          {source?.label ?? "Open-Meteo"} · CC BY 4.0 · {t("timezone")}{" "}
-          {forecast.timezone}
-        </div>
+        <p className={`text-xs leading-5 sm:mt-2 ${light ? "text-gray-600" : "text-zinc-300"}`}>
+          {source?.label ?? "Open-Meteo"} · CC BY 4.0 · {t("timezone")} {forecast.timezone}
+        </p>
       </div>
     </div>
   );

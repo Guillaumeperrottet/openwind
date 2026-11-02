@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { X, ExternalLink, Star } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { windConditionLabel, windDirectionLabel, barColors } from "@/lib/utils";
+import { windDirectionLabel, barColors } from "@/lib/utils";
+import { WindProvenance } from "@/components/spot/WindProvenance";
+import { detectNetwork, isNetworkFresh } from "@/lib/stationConstants";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import type { HistoryPoint } from "@/types";
 import { useStationLive } from "@/lib/useStationLive";
@@ -204,7 +206,6 @@ export function StationPopup({
   const dirLabel = windDirectionLabel(dir);
   const primary = useKnots ? `${speedKts} kts` : `${speedKmh} km/h`;
   const gusts = useKnots ? `${gustsKts} kts` : `${gustsKmh} km/h`;
-  const condLabel = windConditionLabel(speedKmh);
   const time = new Date(liveUpdatedAt).toLocaleTimeString("fr", {
     hour: "2-digit",
     minute: "2-digit",
@@ -360,10 +361,8 @@ export function StationPopup({
             {station.gustsKmh > 0 ? ` · ${t("gustsLabel")} ${gusts}` : ""}
           </div>
         </div>
-        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 shrink-0">
-          {condLabel}
-        </span>
       </div>
+      <div className="px-4 pb-3"><WindProvenance compact live={{ source: "station", network: detectNetwork(station.id), stationId: station.id, updatedAt: liveUpdatedAt, isFresh: liveForDisplay?.isFresh ?? isNetworkFresh(station.id, liveUpdatedAt) }} /></div>
 
       {/* 48h History Chart */}
       <div className="border-t border-gray-100">

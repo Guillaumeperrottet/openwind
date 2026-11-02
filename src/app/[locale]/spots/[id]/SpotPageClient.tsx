@@ -44,6 +44,7 @@ import { NearbyStationsPanel } from "@/components/spot/NearbyStationsPanel";
 import { useNearbyStations } from "@/components/spot/useNearbyStations";
 import { SpotLightbox } from "@/components/spot/SpotLightbox";
 import { ForecastSummary } from "@/components/spot/ForecastSummary";
+import { WindProvenance } from "@/components/spot/WindProvenance";
 import { LocalGuideLinks } from "@/components/carnet/LocalGuideLinks";
 
 // Lazy-load heavy below-fold components — keeps initial bundle small
@@ -65,7 +66,6 @@ const WindArchives = dynamic(
 );
 const SpotMiniMap = dynamic(() => import("./SpotMiniMap"), { ssr: false });
 import {
-  windConditionLabel,
   windDirectionLabel,
   MONTHS,
   getWindData,
@@ -75,6 +75,7 @@ import { useSpotLive } from "@/lib/useSpotLive";
 import { NETWORK_LABELS as STATION_NETWORK_LABELS } from "@/lib/stationConstants";
 import { roundKnots } from "@/lib/forecast";
 import { useFavContext } from "@/lib/FavContext";
+import { useWindUnits } from "@/lib/useWindUnits";
 import {
   Badge,
   DIFFICULTY_COLORS,
@@ -202,6 +203,7 @@ interface SpotData {
 
 interface Props {
   spot: SpotData;
+  canEdit?: boolean;
   live: WindLive | null;
   initialForecast?: FullForecast | null;
   qualification?: PlannerQualification;
@@ -223,12 +225,13 @@ function pickNewestLive(
 
 export function SpotPageClient({
   spot,
+  canEdit = false,
   live: initialLive,
   initialForecast = null,
   qualification,
   children,
 }: Props) {
-  const [useKnots, setUseKnots] = useState(true);
+  const { useKnots, setUseKnots } = useWindUnits();
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   // Infos détaillées (badges, description, meta, photos) :
@@ -369,7 +372,6 @@ export function SpotPageClient({
   const windSource = useMemo(() => {
     if (
       !resolvedLive ||
-      !resolvedLive.isFresh ||
       resolvedLive.source !== "station"
     ) {
       return null;
@@ -458,7 +460,6 @@ export function SpotPageClient({
 
   const speedKmh = wind?.windSpeedKmh ?? 0;
   const gustsKmh = wind?.gustsKmh ?? null;
-  const condLabel = wind ? windConditionLabel(speedKmh) : "—";
   const dirLabel = wind ? windDirectionLabel(wind.windDirection) : "—";
   const speedKts = roundKnots(speedKmh);
   const gustsKts = gustsKmh !== null ? roundKnots(gustsKmh) : null;
@@ -502,13 +503,13 @@ export function SpotPageClient({
                 style={isFav ? { color: "#f59e0b" } : undefined}
               />
             </button>
-            <Link
+            {canEdit && <Link
               href={`/spots/${spot.id}/edit`}
               className="inline-flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
               title={t("editSpot")}
             >
               <Pencil className="h-4 w-4" />
-            </Link>
+            </Link>}
           </div>
         </div>
 
@@ -731,6 +732,7 @@ export function SpotPageClient({
         {forecast && <PrecipAlert hourly={forecast.hourly} />}
 
         {/* ── Vent en direct + Info ──────────────────────────────── */}
+        {resolvedLive && <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"><WindProvenance live={resolvedLive} /></div>}
         <div className="flex flex-col md:flex-row items-start gap-3 mb-10">
           {/* Compass */}
           <div className="hidden sm:flex flex-col items-center gap-2 bg-gray-50 border border-gray-200 rounded-2xl p-4 shrink-0">
@@ -867,9 +869,6 @@ export function SpotPageClient({
                       </div>
                     </div>
                   </div>
-                  <div className="text-sm font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-700">
-                    {condLabel}
-                  </div>
                 </div>
               </div>
             )}
@@ -987,11 +986,11 @@ export function SpotPageClient({
           </div>
         )}
 
-        {/* ── Windguru ────────────────────────────────────── */}
+        {/* Detailed hourly forecast */}
         {forecast ? (
           <div className="mb-10">
             <h2 className="text-base font-semibold text-gray-900 mb-3">
-              Windguru
+              {t("windguru")}
             </h2>
             <ForecastWithToggle
               forecast={forecast}

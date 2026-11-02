@@ -27,6 +27,7 @@ import {
   spotEditorialModified,
 } from "@/lib/spot-editorials";
 import { SpotPageClient } from "./SpotPageClient";
+import { getAuthenticatedAdmin } from "@/lib/admin";
 
 // Deduplicated Prisma query: shared across generateMetadata() and SpotPage()
 // within the same request, so the DB is hit only once.
@@ -114,11 +115,12 @@ export default async function SpotPage({ params }: Props) {
       : {}),
   };
   const today = localDate(new Date());
-  const [liveResult, forecastResult, qualificationResult] =
+  const [liveResult, forecastResult, qualificationResult, adminResult] =
     await Promise.allSettled([
       getSpotLive(spot.id),
       fetchFullForecast(spot.latitude, spot.longitude),
       qualificationsFor([spot], today, today, today, toSiteLocale(locale)),
+      getAuthenticatedAdmin(),
     ]);
   const live = liveResult.status === "fulfilled" ? liveResult.value : null;
 
@@ -142,6 +144,7 @@ export default async function SpotPage({ params }: Props) {
         key={spot.id}
         spot={JSON.parse(JSON.stringify(spot))}
         live={live}
+        canEdit={adminResult.status === "fulfilled" && Boolean(adminResult.value)}
         qualification={
           qualificationResult.status === "fulfilled"
             ? qualificationResult.value.get(spot.id)

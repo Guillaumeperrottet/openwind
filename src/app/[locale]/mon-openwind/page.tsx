@@ -15,7 +15,7 @@ import type {
   DashboardFavoriteStation,
   MonOpenwindData,
 } from "@/components/dashboard/types";
-import { DashboardLoginGate } from "@/components/dashboard/DashboardLoginGate";
+import { GuestOpenwind } from "@/components/dashboard/GuestOpenwind";
 import { MonOpenwindClient } from "@/components/dashboard/MonOpenwindClient";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +44,7 @@ export default async function MonOpenwindPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return <DashboardLoginGate />;
+  if (!user) return <GuestOpenwind />;
 
   // Secure query: every personal record is filtered by the verified Supabase
   // user id. Only the fields used by the dashboard cross the server boundary.
@@ -237,6 +237,7 @@ export default async function MonOpenwindPage() {
   };
 
   const data: MonOpenwindData = {
+    userId: user.id,
     userName:
       dbUser?.name ??
       user.user_metadata?.full_name ??
@@ -272,5 +273,5 @@ export default async function MonOpenwindPage() {
     })),
   };
 
-  return <MonOpenwindClient initialData={data} />;
+  return <MonOpenwindClient key={user.id} initialData={data} />;
 }

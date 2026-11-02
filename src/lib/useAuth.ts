@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
-const supabase = createClient();
-
 /**
  * Non-blocking auth hook.
  * Silently checks if the user is logged in — never redirects or gates.
@@ -16,24 +14,32 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+    let sessionEvents = 0;
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+      if (!cancelled && sessionEvents === 0) setUser(session?.user ?? null);
+    }).catch(() => {}).finally(() => {
+      if (!cancelled) setLoading(false);
     });
 
     // Listen for auth state changes (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      sessionEvents++;
+      if (!cancelled) {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => { cancelled = true; subscription.unsubscribe(); };
   }, []);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await createClient().auth.signOut();
     setUser(null);
   }, []);
 

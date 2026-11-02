@@ -166,7 +166,7 @@ export default async function HomePage({
     <>
       <div
         className="relative bg-white"
-        style={{ height: "calc(100dvh - 56px)" }}
+        style={{ height: "calc(100dvh - 56px - var(--mobile-nav-height))" }}
       >
         <KiteMapLazy spots={spots} initialStations={initialStations} />
         <Link

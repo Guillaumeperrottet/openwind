@@ -167,7 +167,7 @@
     "windArchives": "Wind-Archiv",
     "location": "Lage",
     "openStreetMap": "Auf OpenStreetMap ansehen",
-    "windguru": "Windguru",
+    "windguru": "Detaillierte Prognose",
     "windguruLoading": "Laden…",
     "openMeteoSource": "Open-Meteo · NWP",
     "rain": {
@@ -471,6 +471,7 @@
     "source": "Quelle: Open-Meteo Archive"
   },
   "ForecastTable": {
+    "caption": "Stündliche Wind- und Wetterprognose",
     "wind": "Wind (kn)",
     "gusts": "Böen (kn)",
     "direction": "Richtung",
@@ -581,5 +582,61 @@
     "community": { "eyebrow": "In deiner Nähe", "title": "Lokale Aktivität", "description": "Diskussionen zu deinen Spots und Themen, an denen du teilnimmst.", "forum": "Forum öffnen", "emptyTitle": "Das Gespräch kann mit dir beginnen.", "emptyFavorite": "Teile die beobachteten Bedingungen an einem deiner Lieblingsspots.", "emptyNoFavorite": "Füge einen Favoriten hinzu oder beteilige dich an einer Diskussion.", "start": "Thema starten" },
     "actions": { "eyebrow": "Schnellzugriff", "title": "Was möchtest du tun?", "map": "Karte öffnen", "mapDetail": "Spots und Stationen live", "plan": "Ausflug planen", "planDetail": "Kommende Bedingungen vergleichen", "share": "Session teilen", "shareDetail": "Community informieren", "read": "Journal lesen", "readDetail": "Guides und lokales Wetter" },
     "settings": { "eyebrow": "Persönliche Einstellungen", "title": "Mein Openwind anpassen", "description": "Alles wird in deinem Konto gespeichert und geräteübergreifend synchronisiert.", "close": "Schließen", "favoritesTitle": "Favoriten der Übersicht", "favoritesDescription": "Wähle und sortiere bis zu drei Spots oder Stationen.", "notificationPermissionError": "Erlaube Benachrichtigungen in diesem Browser, um den Alarm zu aktivieren.", "alertsBrowserHelp": "Regeln werden mit deinem Konto synchronisiert. Benachrichtigungen erscheinen, während Mein Openwind in einem autorisierten Browser geöffnet ist.", "chooseOnMap": "Favoriten auf der Karte hinzufügen", "startTitle": "Startseite", "startDescription": "Wähle, was beim Öffnen von Openwind erscheint.", "dashboard": "Mein Openwind", "map": "Karte", "displayTitle": "Inhalt der Übersicht", "displayDescription": "Bereiche anzeigen, ausblenden und sortieren.", "modules": { "favorites": "Meine Favoriten", "forecast": "Nächste Zeitfenster", "articles": "Artikel für meine Favoriten", "community": "Lokale Aktivität", "actions": "Schnellzugriff" }, "moveUp": "Nach oben", "moveDown": "Nach unten", "practiceTitle": "Meine Aktivität", "practiceDescription": "Angezeigte Spots und Empfehlungen filtern.", "allSports": "Beide", "kite": "Kite", "paraglide": "Gleitschirm", "unitsTitle": "Windeinheiten", "unitsDescription": "Diese Einstellung gilt auch auf der Karte.", "knots": "Knoten", "kilometersPerHour": "Kilometer/Stunde", "save": "Einstellungen speichern", "saving": "Speichern…", "saved": "Einstellungen gespeichert", "error": "Speichern fehlgeschlagen. Bitte erneut versuchen." }
+  },
+  "SpotContribution": {
+    "loading": "Anmeldung wird geprüft…",
+    "title": "Teile einen Spot mit der Community.",
+    "description": "Erstelle ein kostenloses Konto oder melde dich an, um einen Kite- oder Gleitschirmspot hinzuzufügen.",
+    "signup": "Konto erstellen",
+    "login": "Anmelden",
+    "returnHere": "Nach der Anmeldung kannst du deinen Spot hier hinzufügen.",
+    "back": "Karte erkunden"
+  },
+  "ForecastSources": {
+    "unavailable": "MeteoSwiss nicht verfügbar · Open-Meteo wird angezeigt",
+    "loading": "MeteoSwiss-Prognose wird geladen…",
+    "swiss": "Windprognose von MeteoSwiss · weitere Wetterdaten von Open-Meteo",
+    "global": "Modellprognose · weltweite Abdeckung",
+    "mixed": "Wind: MeteoSwiss soweit verfügbar, ergänzt durch Open-Meteo · Weitere Wetterdaten: Open-Meteo"
+  },
+  "PersonalExperience": {
+    "feedback": "Deine Favoriten",
+    "savedLocally": "Favorit auf diesem Gerät gespeichert. Du findest ihn unter Mein Openwind.",
+    "favoriteError": "Der Favorit konnte nicht geändert werden. Bitte erneut versuchen.",
+    "storageError": "Dieser Browser kann deine Auswahl nicht speichern. Beim Schließen der Seite kann sie verloren gehen.",
+    "localLimit": "Du hast 12 lokale Favoriten erreicht. Melde dich an, um sie im Konto zu speichern und weitere hinzuzufügen.",
+    "syncError": "Einige Favoriten sind noch auf diesem Gerät: Die Synchronisierung ist nicht abgeschlossen. Versuche es erneut.",
+    "preferencesError": "Deine Auswahl gilt hier, konnte aber nicht gespeichert werden.",
+    "seeFavorites": "Meine Favoriten ansehen",
+    "close": "Schließen",
+    "sync": "Favoriten synchronisieren",
+    "retry": "Erneut versuchen",
+    "loading": "Wird geladen…",
+    "onDevice": "Deine Orte auf diesem Gerät",
+    "guestIntro": "Deine Lieblingsspots und Windstationen mit aktuellen Bedingungen. Mach bei jedem Besuch dort weiter, wo du aufgehört hast.",
+    "emptyIntro": "Behalte deine Spots und Windstationen im Blick, auch ohne Konto.",
+    "syncDescription": "Erstelle ein kostenloses Konto, um Favoriten zwischen Geräten zu synchronisieren. Vorhandene Favoriten bleiben erhalten.",
+    "login": "Anmelden",
+    "sport": "Sportart",
+    "units": "Windeinheit",
+    "ALL": "Alle",
+    "KITE": "Kitesurfen",
+    "PARAGLIDE": "Gleitschirmfliegen",
+    "firstFavorite": "Tippe auf den Stern eines Spots oder einer Windstation, um ihn hier zu finden.",
+    "explore": "Karte erkunden",
+    "catalogueError": "Die Namen der Favoriten sind vorübergehend nicht verfügbar. Deine Favoriten bleiben gespeichert.",
+    "sportEmpty": "Keine Favoriten für diese Sportart. Wähle „Alle“, um deine Auswahl zu sehen.",
+    "preferencesHelp": "Deine Sportart und Windeinheit gelten für Karte, Detailseiten und Prognosen.",
+    "removeFavorite": "Favorit entfernen",
+    "spot": "Gespeicherter Spot",
+    "station": "Gespeicherte Windstation",
+    "gusts": "Böen",
+    "unavailable": "Bedingungen vorübergehend nicht verfügbar",
+    "recoveryTitle": "Ein anderer Tag oder etwas weiter weg?",
+    "recoveryHelp": "Vergleiche eine andere Suche mit denselben Kriterien für Wind, Böen und Zugang.",
+    "nextDay": "Um einen Tag verschieben",
+    "weekend": "Dieses Wochenende vergleichen",
+    "wider": "Auf {radius} km erweitern",
+    "editSearch": "Suche ändern"
   }
 }

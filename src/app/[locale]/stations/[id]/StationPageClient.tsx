@@ -20,7 +20,8 @@ import { WindCompass } from "@/components/spot/WindCompass";
 import { WindChart } from "@/components/spot/WindChart";
 import { ForecastTable } from "@/components/spot/ForecastTable";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
-import { barColors, windDirectionLabel, windConditionKey } from "@/lib/utils";
+import { barColors, windDirectionLabel } from "@/lib/utils";
+import { WindProvenance } from "@/components/spot/WindProvenance";
 import { roundKnots } from "@/lib/forecast";
 import { useStationLive } from "@/lib/useStationLive";
 import { isNetworkFresh } from "@/lib/stationConstants";
@@ -34,6 +35,7 @@ import { StationConnections } from "./StationConnections";
 import { stationSeo } from "@/lib/station-seo";
 import { LocalGuideLinks } from "@/components/carnet/LocalGuideLinks";
 import { useFavContext } from "@/lib/FavContext";
+import { useWindUnits } from "@/lib/useWindUnits";
 
 interface Props {
   station: WindStation;
@@ -126,8 +128,7 @@ export function StationPageClient({
 }: Props) {
   const locale = useLocale();
   const t = useTranslations("StationPage");
-  const tWind = useTranslations("WindConditions");
-  const [useKnots, setUseKnots] = useState(true);
+  const { useKnots, setUseKnots } = useWindUnits();
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const router = useRouter();
   const { data: polledLive } = useStationLive(station.id);
@@ -184,17 +185,6 @@ export function StationPageClient({
   // Derived display values — use the same `barColors` palette as the chart
   // bars and the map flag so the colour is identical everywhere.
   const color = barColors(curWindKmh)[0];
-  type WindCondKey =
-    | "calm"
-    | "light"
-    | "gentle"
-    | "good"
-    | "strong"
-    | "veryStrong"
-    | "danger";
-  const condLabel = tWind(
-    windConditionKey(curWindKmh).split(".")[1] as WindCondKey,
-  );
   const dirLabel = windDirectionLabel(curDir);
   const speedKts = roundKnots(curWindKmh);
   const gustsKts = curGustsKmh !== null ? roundKnots(curGustsKmh) : null;
@@ -215,7 +205,7 @@ export function StationPageClient({
     windDirection: curDir,
     gustsKmh: curGustsKmh ?? curWindKmh,
     isKitable: curWindKmh >= 22 && curWindKmh <= 45,
-    conditionLabel: condLabel,
+    conditionLabel: "",
     color,
     updatedAt: curUpdatedAt,
   };
@@ -353,9 +343,6 @@ export function StationPageClient({
               >
                 <Camera className="h-4 w-4" />
               </Link>
-              <div className="text-xs font-bold px-3 py-1.5 rounded-full bg-gray-100 text-gray-700">
-                {condLabel}
-              </div>
             </div>
           </div>
         </div>
@@ -390,6 +377,7 @@ export function StationPageClient({
         </div>
 
         {/* ── Vent en direct + 48h Historique ────────────────────────────── */}
+        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"><WindProvenance live={{ source: "station", network: station.source, stationId: station.id, updatedAt: curUpdatedAt, isFresh: !isCurrentStale }} /></div>
         <div className="mb-10 grid grid-cols-1 items-start gap-3 sm:grid-cols-[auto_auto] xl:grid-cols-[auto_auto_minmax(0,1fr)]">
           {/* Compass */}
           <div className="hidden sm:flex flex-col items-center gap-2 bg-gray-50 border border-gray-200 rounded-2xl p-4 shrink-0">
@@ -507,9 +495,6 @@ export function StationPageClient({
                       <span className="text-base text-gray-500">{curDir}°</span>
                     </div>
                   </div>
-                </div>
-                <div className="text-sm font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-700">
-                  {condLabel}
                 </div>
               </div>
             </div>

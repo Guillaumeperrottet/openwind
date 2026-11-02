@@ -2,9 +2,19 @@
 
 Tous les endpoints sont sous `/api/`. Les réponses sont en JSON.
 
+Les visiteurs peuvent conserver jusqu'à 12 favoris sur leur appareil, sans
+compte. Les préférences de sport et d'unité sont également locales avant la
+connexion. La lecture des fiches et des conditions reste publique.
+
 ---
 
 ## Spots
+
+La lecture des spots reste publique. La création et l'ajout de nouvelles photos
+exigent un compte connecté (session Supabase vérifiée côté serveur). L'édition
+des fiches et la suppression des spots ou photos sont réservées aux comptes
+administrateurs configurés dans `ADMIN_USER_IDS`. Une session absente ou expirée
+renvoie `401` ; un compte sans les droits administrateur reçoit `403`.
 
 ### `GET /api/spots`
 
@@ -46,7 +56,8 @@ Détail d'un spot avec `images[]` et les 20 derniers `reports[]`.
 
 ### `PATCH /api/spots/[id]`
 
-Met à jour un spot. Tous les champs sont optionnels. Validation : `maxWindKmh ≥ minWindKmh`.
+Met à jour un spot (administrateur). Tous les champs sont optionnels. Validation :
+`maxWindKmh ≥ minWindKmh`, y compris lorsqu'une seule borne est modifiée.
 
 ### `DELETE /api/spots/[id]`
 
@@ -76,7 +87,8 @@ Upload multipart/form-data. Champ `file` requis.
 
 ### `DELETE /api/spots/[id]/images`
 
-Suppression d'images. Body : `{ imageIds: string[] }`.
+Suppression d'images (administrateur). Body : `{ imageIds: string[] }`, de 1 à 50
+identifiants. Seules les images du spot demandé peuvent être supprimées.
 
 ---
 
@@ -172,6 +184,26 @@ Spots triés par score vent pour une période donnée.
 
 Toggle : ajoute si absent, supprime si présent. Les métadonnées d’une balise sont résolues côté serveur depuis le cache partagé. **Réponse** : `{ favorited: boolean, kind: "spot" | "station" }`.
 
+### `PUT /api/favorites`
+
+**Auth** : requise. Importe les favoris de l'appareil de façon idempotente.
+
+**Body** : `{ spotIds?: string[], stationIds?: string[] }`, au plus 12 identifiants
+au total. Le compte cible vient exclusivement de la session vérifiée. Les favoris
+déjà enregistrés, leur ordre et leurs alertes sont conservés. Les nouveaux favoris
+sont ajoutés à la suite ; seules les places libres des trois cartes principales
+peuvent être sélectionnées automatiquement.
+
+**Réponse** : `{ spotIds: string[], stationIds: string[] }`, les identifiants
+confirmés dans le compte. Le client conserve les favoris non confirmés sur
+l'appareil pour permettre une nouvelle tentative.
+
+### `GET /api/favorites/preview`
+
+**Auth** : aucune. Paramètres `spots` et `stations`, identifiants séparés par des
+virgules (12 au total). Retourne uniquement des noms et métadonnées publiques
+nécessaires aux favoris locaux. Aucun favori invité n'est écrit en base.
+
 ---
 
 ## Préférences
@@ -187,6 +219,11 @@ Toggle : ajoute si absent, supprime si présent. Les métadonnées d’une balis
 **Auth** : requise.
 
 **Body** : `{ sportFilter?, useKnots? }`
+
+L'interface applique immédiatement les préférences partagées aux fiches, à la
+carte et aux prévisions. Les écritures d'un compte sont sérialisées. À la connexion,
+seuls les choix explicitement modifiés par le visiteur sont importés ; les valeurs
+par défaut locales ne remplacent pas les préférences déjà présentes dans le compte.
 
 ---
 

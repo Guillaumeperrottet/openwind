@@ -35,6 +35,30 @@ export interface AccountPreferences {
   } | null;
 }
 
+export const DEFAULT_PREFERENCES: AccountPreferences = {
+  sportFilter: "ALL",
+  useKnots: true,
+  defaultView: "MAP",
+  onboardingCompleted: true,
+  dashboardLayout: [...DEFAULT_DASHBOARD_LAYOUT],
+  mapView: null,
+};
+
+export type PreferencePatch = Partial<AccountPreferences>;
+
+/** Only explicitly changed guest settings are imported into an account. */
+export function parseLocalPreferences(value: unknown): PreferencePatch {
+  if (!value || typeof value !== "object") return {};
+  const input = value as Record<string, unknown>;
+  const result: PreferencePatch = {};
+  if (typeof input.useKnots === "boolean") result.useKnots = input.useKnots;
+  if (["ALL", "KITE", "PARAGLIDE"].includes(String(input.sportFilter)))
+    result.sportFilter = input.sportFilter as SportFilter;
+  if (input.defaultView === "MAP" || input.defaultView === "DASHBOARD")
+    result.defaultView = input.defaultView;
+  return result;
+}
+
 export function normalizeDashboardLayout(value: unknown): DashboardModule[] {
   if (!Array.isArray(value)) return [...DEFAULT_DASHBOARD_LAYOUT];
 

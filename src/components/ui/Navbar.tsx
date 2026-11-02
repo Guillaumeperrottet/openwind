@@ -150,7 +150,7 @@ export function Navbar() {
           >
             <Search className="h-4 w-4" />
           </button>
-          {links.map(({ href, label, icon: Icon, hideOnMobile }) => (
+          {links.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
@@ -158,7 +158,7 @@ export function Navbar() {
               aria-label={label}
               className={cn(
                 "items-center justify-center gap-1.5 rounded-lg px-2 py-2 sm:px-3 sm:py-1.5 text-sm transition-colors min-w-10 min-h-10 sm:min-w-0 sm:min-h-0",
-                hideOnMobile ? "hidden sm:flex" : "flex",
+                "hidden sm:flex",
                 (
                   href.startsWith("/?")
                     ? pathname === "/" &&
@@ -182,7 +182,6 @@ export function Navbar() {
             </Link>
           ))}
 
-          {user && (
             <Link
               href="/mon-openwind"
               aria-label={t("myOpenwind")}
@@ -196,7 +195,6 @@ export function Navbar() {
               <LayoutDashboard className="h-4 w-4 shrink-0" />
               <span className="hidden xl:inline">{t("myOpenwind")}</span>
             </Link>
-          )}
 
           <Link
             href="/spots/new"
@@ -432,6 +430,16 @@ export function Navbar() {
           )}
         </nav>
       </header>
+
+      <nav aria-label={t("myOpenwind")} className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 px-2 backdrop-blur sm:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+        {[
+          { href: "/?view=map", label: t("map"), icon: Map, active: pathname === "/" && query.get("view") === "map" },
+          { href: "/plan", label: t("plan"), icon: Route, active: pathname === "/plan" },
+          { href: "/mon-openwind", label: t("myOpenwind"), icon: LayoutDashboard, active: pathname === "/mon-openwind" },
+        ].map(({ href, label, icon: Icon, active }) => <Link key={href} href={href} prefetch={false} aria-current={active ? "page" : undefined} className={`relative flex h-16 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-semibold focus-visible:outline-2 focus-visible:outline-sky-700 ${active ? "text-sky-800" : "text-slate-500"}`}>
+          <span className="relative"><Icon aria-hidden className="h-5 w-5" />{href === "/mon-openwind" && favoriteCount > 0 && <span className="absolute -right-3 -top-2 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-sky-800 px-1 text-[9px] text-white">{favoriteCount}</span>}</span>{label}
+        </Link>)}
+      </nav>
 
       {/* Mobile search — inline in a second row below the navbar */}
       {mobileSearch && (

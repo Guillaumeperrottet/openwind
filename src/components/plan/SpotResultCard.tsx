@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Clock, AlertTriangle } from "lucide-react";
-import { windColor, windConditionLabel } from "@/lib/utils";
+import { windColor } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import type { SpotWithForecast } from "@/types";
 
@@ -290,27 +290,7 @@ function WindSummaryBar({
         <div className="text-[10px] text-gray-400 uppercase tracking-wide">
           {spot.sportType === "PARAGLIDE" ? "Moy. km/h" : "Pic kts"}
         </div>
-        <div
-          className="text-xs font-medium"
-          style={{
-            color:
-              spot.sportType === "PARAGLIDE"
-                ? bestDay.avgWindKmh < 10
-                  ? "#2e7d32"
-                  : bestDay.avgWindKmh < 15
-                    ? "#f59e0b"
-                    : "#d1d5db"
-                : color,
-          }}
-        >
-          {spot.sportType === "PARAGLIDE"
-            ? bestDay.avgWindKmh < 10
-              ? "Calme idéal"
-              : bestDay.avgWindKmh < 15
-                ? "Acceptable"
-                : "Venteux"
-            : windConditionLabel(bestDay.peakWindKmh) || "—"}
-        </div>
+
       </div>
       <div className="text-right space-y-0.5">
         <div className="flex items-center gap-1 text-xs text-gray-500 justify-end">

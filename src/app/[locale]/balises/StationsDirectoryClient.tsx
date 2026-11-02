@@ -10,7 +10,6 @@ import {
   Search,
   SlidersHorizontal,
   Star,
-  Wind,
   X,
   Zap,
   type LucideIcon,
@@ -22,10 +21,11 @@ import type { WindStation } from "@/lib/stations";
 import { roundKnots } from "@/lib/forecast";
 import {
   barColors,
-  windConditionKey,
   windDirectionLabel,
 } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
+import { useWindUnits } from "@/lib/useWindUnits";
+import { WindProvenance } from "@/components/spot/WindProvenance";
 
 interface Props {
   initialStations: WindStation[];
@@ -90,7 +90,7 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
   const [query, setQuery] = useState(initialQuery.query);
   const [source, setSource] = useState<SourceFilter>(initialQuery.source);
   const [sort, setSort] = useState<SortMode>(initialQuery.sort);
-  const [useKnots, setUseKnots] = useState(true);
+  const { useKnots, setUseKnots } = useWindUnits();
   const [page, setPage] = useState(initialQuery.page);
 
   const networkCounts = useMemo(() => {
@@ -305,7 +305,6 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
                 <StationDirectoryCard
                   key={station.id}
                   station={station}
-                  locale={locale}
                   useKnots={useKnots}
                 />
               ))}
@@ -393,15 +392,12 @@ function NetworkButton({
 
 function StationDirectoryCard({
   station,
-  locale,
   useKnots,
 }: {
   station: WindStation;
-  locale: string;
   useKnots: boolean;
 }) {
   const t = useTranslations("StationsDirectory");
-  const tWind = useTranslations("WindConditions");
   const { favoriteStationIds, toggleStationFavorite } = useFavContext();
   const isFavorite = favoriteStationIds.has(station.id);
   const style = NETWORK_STYLES[station.source];
@@ -415,24 +411,6 @@ function StationDirectoryCard({
         ? roundKnots(station.gustsKmh)
         : Math.round(station.gustsKmh)
       : null;
-  type WindCondition =
-    | "calm"
-    | "light"
-    | "gentle"
-    | "good"
-    | "strong"
-    | "veryStrong"
-    | "danger";
-  const condition = tWind(
-    windConditionKey(station.windSpeedKmh).split(".")[1] as WindCondition,
-  );
-  const measuredAt = new Intl.DateTimeFormat(locale, {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Zurich",
-  }).format(new Date(station.updatedAt));
 
   return (
     <article className="group relative flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md">
@@ -530,9 +508,6 @@ function StationDirectoryCard({
             °
           </p>
         </div>
-        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600">
-          {condition}
-        </span>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3">
@@ -550,12 +525,7 @@ function StationDirectoryCard({
           </p>
         </div>
         <div>
-          <p className="flex items-center gap-1 text-[10px] text-slate-400">
-            <Wind className="h-3 w-3" /> {t("measured")}
-          </p>
-          <p className="mt-1 truncate text-xs font-semibold text-slate-700">
-            {measuredAt}
-          </p>
+          <WindProvenance compact live={{ source: "station", network: station.source, updatedAt: station.updatedAt, isFresh: isNetworkFresh(station.id, station.updatedAt) }} />
         </div>
       </div>
 

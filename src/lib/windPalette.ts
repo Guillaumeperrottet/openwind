@@ -93,6 +93,21 @@ export const OPENWIND_WIND_PALETTE_KTS: readonly WindPaletteBand[] = [
 
 export type WindPaletteRole = "fill" | "accent" | "tint";
 
+/** Numeric legend only: intensity colors do not certify conditions for a sport. */
+export function windPaletteLegend(useKnots = true) {
+  const unit = useKnots ? "kts" : "km/h";
+  const speed = (knots: number) => useKnots ? knots : Math.round(knots * 1.852);
+  return OPENWIND_WIND_PALETTE_KTS.map((band, index) => {
+    const next = OPENWIND_WIND_PALETTE_KTS[index + 1];
+    return {
+      color: band.fill,
+      range: next
+        ? `${speed(band.minKnots)}–${speed(next.minKnots)} ${unit}`
+        : `≥ ${speed(band.minKnots)} ${unit}`,
+    };
+  });
+}
+
 const MAX_LEGEND_KNOTS = 50;
 
 export function windPaletteBand(kmh: number): WindPaletteBand {

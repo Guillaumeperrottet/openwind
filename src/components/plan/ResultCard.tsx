@@ -1,4 +1,5 @@
 "use client";
+import { useWindUnits } from "@/lib/useWindUnits";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import type { PlannerResult, PlannerWindow } from "@/lib/planner";
@@ -38,12 +39,13 @@ export function ResultCard({
   locale: SiteLocale;
   comparison?: PlannerResult[];
 }) {
+  const { useKnots } = useWindUnits();
   const ui = plannerUiCopy[locale],
     q = spot.qualification;
   const w = q?.eligible ? spot.windows[0] : undefined;
   const reason = comparisonReason(spot, comparison);
-  const divisor = spot.sportType === "KITE" ? 1.852 : 1,
-    unit = spot.sportType === "KITE" ? "kts" : "km/h";
+  const divisor = useKnots ? 1.852 : 1,
+    unit = useKnots ? "kts" : "km/h";
   const speed = (v: number) => Math.round(v / divisor);
   const number = (v: number) =>
     new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(v);

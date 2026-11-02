@@ -9,7 +9,7 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
-import { windColor, windConditionLabel, windDirectionLabel } from "@/lib/utils";
+import { windColor, windDirectionLabel } from "@/lib/utils";
 import { roundKnots, windCellStyle } from "@/lib/forecast";
 import type { SpotWithForecast, ForecastHour } from "@/types";
 
@@ -135,8 +135,7 @@ export function SpotPreview({
                     <span className="text-xs text-gray-400">kts</span>
                   </div>
                   <div className="text-[10px] text-gray-400">
-                    {Math.round(day.bestHour.windSpeedKmh)} km/h ·{" "}
-                    {windConditionLabel(day.bestHour.windSpeedKmh)}
+                    {Math.round(day.bestHour.windSpeedKmh)} km/h
                   </div>
                 </div>
                 <div className="ml-auto text-right">

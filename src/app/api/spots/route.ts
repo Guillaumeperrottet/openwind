@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { requireSpotContributor } from "@/lib/spot-access";
 
 const createSpotSchema = z.object({
   name: z.string().min(2),
@@ -18,8 +19,8 @@ const createSpotSchema = z.object({
     .default("INTERMEDIATE"),
   waterType: z.enum(["FLAT", "CHOP", "WAVES", "MIXED"]).default("CHOP"),
   sportType: z.enum(["KITE", "PARAGLIDE"]).default("KITE"),
-  minWindKmh: z.number().min(0).max(100).default(15),
-  maxWindKmh: z.number().min(0).max(150).default(35),
+  minWindKmh: z.number().int().min(0).max(100).default(15),
+  maxWindKmh: z.number().int().min(0).max(150).default(35),
   bestMonths: z.array(z.string()).default([]),
   bestWindDirections: z.array(z.string()).default([]),
   hazards: z.string().optional(),
@@ -31,6 +32,8 @@ const createSpotSchema = z.object({
   accessDe: z.string().optional(),
   accessIt: z.string().optional(),
   nearestStationId: z.string().optional(),
+}).refine((spot) => spot.maxWindKmh >= spot.minWindKmh, {
+  message: "Le vent max doit être ≥ au vent min", path: ["maxWindKmh"],
 });
 
 export async function GET(request: NextRequest) {
@@ -75,7 +78,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const access = await requireSpotContributor();
+  if (access.error) return access.error;
+
+  const body = await request.json().catch(() => null);
   const parsed = createSpotSchema.safeParse(body);
 
   if (!parsed.success) {

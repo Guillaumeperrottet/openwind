@@ -57,6 +57,36 @@ const spot: ComponentProps<typeof SpotPageClient>["spot"] = {
 };
 
 describe("spot details in the initial server HTML", () => {
+  it("only renders editing controls for an authorized administrator", () => {
+    state.locale = "fr";
+    expect(renderToStaticMarkup(<SpotPageClient spot={spot} live={null} />)).not.toContain(`/spots/${spot.id}/edit`);
+    expect(renderToStaticMarkup(<SpotPageClient spot={spot} live={null} canEdit />)).toContain(`/spots/${spot.id}/edit`);
+  });
+
+  it("identifies a model estimate next to the current values without a quality badge", () => {
+    state.locale = "fr";
+    const html = renderToStaticMarkup(<SpotPageClient spot={spot} live={{
+      source: "openmeteo", updatedAt: "2026-11-02T08:00:00Z", staleAt: "2026-11-02T09:00:00Z", isFresh: true,
+      windSpeedKmh: 24, windDirection: 56, gustsKmh: 48,
+    }} />);
+    expect(html).toContain("Vent estimé · Open-Meteo");
+    expect(html).toContain("Estimation pour le");
+    expect(html).not.toContain(">Bon<");
+    expect(html).not.toContain("Vent mesuré");
+  });
+
+  it("preserves the station attribution when an observation is outdated", () => {
+    state.locale = "fr";
+    const html = renderToStaticMarkup(<SpotPageClient spot={spot} live={{
+      source: "station", network: "pioupiou", stationId: "piou-110",
+      updatedAt: "2026-11-02T08:00:00Z", staleAt: "2026-11-02T08:20:00Z", isFresh: false,
+      windSpeedKmh: 24, windDirection: 56, gustsKmh: 48,
+    }} />);
+    expect(html).toContain("Vent mesuré · Pioupiou · piou-110");
+    expect(html).toContain("Données anciennes");
+    expect(html).not.toContain("Open-Meteo · NWP");
+  });
+
   it.each([
     ["fr", spot.description, spot.access, spot.hazards],
     ["en", spot.descriptionEn, spot.accessEn, spot.hazardsEn],

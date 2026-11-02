@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { X, Wind, Waves, ExternalLink, Star } from "lucide-react";
-import type { Spot, WindData } from "@/types";
+import type { Spot, WindData, WindLive } from "@/types";
+import { WindProvenance } from "@/components/spot/WindProvenance";
 import {
   windArrow,
   windDirectionLabel,
   barColors,
-  relativeTime,
 } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
 import {
@@ -21,6 +21,7 @@ import {
 interface SpotPopupProps {
   spot: Spot;
   wind: WindData | null;
+  live: WindLive | null;
   loadingWind: boolean;
   useKnots?: boolean;
   position: { x: number; y: number };
@@ -30,6 +31,7 @@ interface SpotPopupProps {
 export function SpotPopup({
   spot,
   wind,
+  live,
   loadingWind,
   useKnots = true,
   position,
@@ -160,7 +162,7 @@ export function SpotPopup({
 
         {/* Wind NOW */}
         <div className="rounded-lg p-3 bg-gray-50 border border-gray-100 mb-3">
-          <div className="text-xs text-gray-500 mb-1.5">Vent en direct</div>
+          {live && <div className="mb-2"><WindProvenance compact live={live} /></div>}
           {loadingWind ? (
             <div className="text-gray-400 text-xs animate-pulse">
               Chargement...
@@ -190,19 +192,6 @@ export function SpotPopup({
                   {windDirectionLabel(wind.windDirection)} · rafales{" "}
                   {fmt(wind.gustsKmh)}
                 </div>
-                {wind.updatedAt && (
-                  <div className="text-[10px] text-gray-400 mt-0.5">
-                    {relativeTime(wind.updatedAt)}
-                    {wind.source === "openmeteo" && (
-                      <span
-                        className="ml-1 text-gray-400"
-                        title="Balise hors-ligne — vent estimé via le modèle Open-Meteo aux coordonnées du spot"
-                      >
-                        · Open-Meteo
-                      </span>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           ) : (

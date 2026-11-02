@@ -25,6 +25,7 @@ import {
 } from "@/lib/search";
 import { toSiteLocale } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
+import { useFavContext } from "@/lib/favorite-context";
 
 const ICONS = {
   lake: Waves,
@@ -33,7 +34,6 @@ const ICONS = {
   webcam: Camera,
   article: BookOpen,
 };
-const EMPTY_IDS = new Set<string>();
 export interface GlobalSearchProps {
   variant?: "hero" | "compact";
   favoriteSpotIds?: Set<string>;
@@ -44,11 +44,14 @@ export interface GlobalSearchProps {
 
 export function GlobalSearch({
   variant = "compact",
-  favoriteSpotIds = EMPTY_IDS,
-  favoriteStationIds = EMPTY_IDS,
+  favoriteSpotIds: suppliedSpotIds,
+  favoriteStationIds: suppliedStationIds,
   autoFocus,
   onNavigate,
 }: GlobalSearchProps) {
+  const context = useFavContext();
+  const favoriteSpotIds = suppliedSpotIds ?? context.favoriteSpotIds;
+  const favoriteStationIds = suppliedStationIds ?? context.favoriteStationIds;
   const locale = toSiteLocale(useLocale());
   const copy = SEARCH_COPY[locale];
   const router = useRouter();

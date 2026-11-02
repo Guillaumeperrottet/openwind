@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { requireSpotContributor } from "@/lib/spot-access";
 
 const updateSchema = z
   .object({
@@ -19,8 +20,8 @@ const updateSchema = z
       .optional(),
     waterType: z.enum(["FLAT", "CHOP", "WAVES", "MIXED"]).optional(),
     sportType: z.enum(["KITE", "PARAGLIDE"]).optional(),
-    minWindKmh: z.number().min(0).max(100).optional(),
-    maxWindKmh: z.number().min(0).max(150).optional(),
+    minWindKmh: z.number().int().min(0).max(100).optional(),
+    maxWindKmh: z.number().int().min(0).max(150).optional(),
     bestMonths: z.array(z.string()).optional(),
     bestWindDirections: z.array(z.string()).optional(),
     hazards: z.string().optional().nullable(),
@@ -62,19 +63,26 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const access = await requireSpotContributor(true);
+  if (access.error) return access.error;
   const { id } = await params;
 
   const existing = await prisma.spot.findUnique({ where: { id } });
   if (!existing)
     return NextResponse.json({ error: "Spot introuvable" }, { status: 404 });
 
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
       { status: 400 },
     );
+  }
+
+  if ((parsed.data.maxWindKmh ?? existing.maxWindKmh) <
+      (parsed.data.minWindKmh ?? existing.minWindKmh)) {
+    return NextResponse.json({ error: "Le vent max doit être ≥ au vent min" }, { status: 400 });
   }
 
   const spot = await prisma.spot.update({
@@ -92,6 +100,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const access = await requireSpotContributor(true);
+  if (access.error) return access.error;
   const { id } = await params;
 
   const existing = await prisma.spot.findUnique({ where: { id } });

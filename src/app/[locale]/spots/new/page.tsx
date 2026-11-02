@@ -1,4 +1,5 @@
 import { CreateSpotForm } from "@/components/spot/CreateSpotForm";
+import { SpotContributionGate } from "@/components/spot/SpotContributionGate";
 
 export const metadata = {
   title: "Ajouter un spot",
@@ -8,5 +9,5 @@ export const metadata = {
 };
 
 export default function NewSpotPage() {
-  return <CreateSpotForm />;
+  return <SpotContributionGate><CreateSpotForm /></SpotContributionGate>;
 }

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
+import { useWindUnits } from "@/lib/useWindUnits";
 import { Button } from "@/components/ui/Button";
 import { WindDirectionPicker } from "@/components/spot/WindDirectionRose";
 
@@ -129,7 +130,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [useKnots, setUseKnots] = useState(true);
+  const { useKnots, setUseKnots } = useWindUnits();
   const [langTab, setLangTab] = useState<"fr" | "en" | "de" | "it">("fr");
   const [descriptionEn, setDescriptionEn] = useState(
     initialData?.descriptionEn ?? "",
@@ -335,7 +336,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
   return (
     <div
       className="flex flex-col lg:flex-row bg-white text-gray-900"
-      style={{ height: "calc(100vh - 56px)" }}
+      style={{ height: "calc(100dvh - 56px - var(--mobile-nav-height))" }}
     >
       {/* ── LEFT: Map ────────────────────────────────────────────────────── */}
       <div className="lg:flex-1 h-64 lg:h-full relative">

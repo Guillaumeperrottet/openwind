@@ -167,7 +167,7 @@
     "windArchives": "Wind archives",
     "location": "Location",
     "openStreetMap": "View on OpenStreetMap",
-    "windguru": "Windguru",
+    "windguru": "Detailed forecast",
     "windguruLoading": "Loading…",
     "openMeteoSource": "Open-Meteo · NWP",
     "rain": {
@@ -471,6 +471,7 @@
     "source": "Source: Open-Meteo Archive"
   },
   "ForecastTable": {
+    "caption": "Hourly wind and weather forecast",
     "wind": "Wind (kn)",
     "gusts": "Gusts (kn)",
     "direction": "Direction",
@@ -640,5 +641,61 @@
       "modules": { "favorites": "My favorites", "forecast": "Upcoming windows", "articles": "Articles for my favorites", "community": "Local activity", "actions": "Shortcuts" },
       "moveUp": "Move up", "moveDown": "Move down", "practiceTitle": "My activity", "practiceDescription": "Filter the displayed spots and recommendations.", "allSports": "Both", "kite": "Kite", "paraglide": "Paragliding", "unitsTitle": "Wind units", "unitsDescription": "This setting is also used on the map.", "knots": "Knots", "kilometersPerHour": "Kilometres/hour", "save": "Save my settings", "saving": "Saving…", "saved": "Settings saved", "error": "Saving failed. Please try again."
     }
+  },
+  "SpotContribution": {
+    "loading": "Checking your session…",
+    "title": "Share a spot with the community.",
+    "description": "Create a free account or sign in to add a kitesurfing or paragliding spot.",
+    "signup": "Create an account",
+    "login": "Sign in",
+    "returnHere": "You can add your spot here after signing in.",
+    "back": "Explore the map"
+  },
+  "ForecastSources": {
+    "unavailable": "MeteoSwiss unavailable · showing Open-Meteo",
+    "loading": "Loading MeteoSwiss forecast…",
+    "swiss": "MeteoSwiss wind forecast · other weather from Open-Meteo",
+    "global": "Model forecast · worldwide coverage",
+    "mixed": "Wind: MeteoSwiss where available, supplemented by Open-Meteo · Other weather data: Open-Meteo"
+  },
+  "PersonalExperience": {
+    "feedback": "Your favorites",
+    "savedLocally": "Favorite saved on this device. Find it in My Openwind.",
+    "favoriteError": "The favorite could not be updated. Please try again.",
+    "storageError": "This browser cannot keep your choices. They may be lost when you close the page.",
+    "localLimit": "You have reached 12 local favorites. Sign in to keep them in your account and add more.",
+    "syncError": "Some favorites are still on this device: synchronization did not complete. You can try again.",
+    "preferencesError": "Your choices apply here, but could not be saved.",
+    "seeFavorites": "See my favorites",
+    "close": "Close",
+    "sync": "Sync my favorites",
+    "retry": "Try again",
+    "loading": "Loading…",
+    "onDevice": "Your places, on this device",
+    "guestIntro": "Your favorite spots and stations, with their latest conditions. Pick up where you left off on every visit.",
+    "emptyIntro": "Keep your spots and stations close, even without an account.",
+    "syncDescription": "Create a free account to sync your favorites across devices. Your existing account favorites will be kept.",
+    "login": "Sign in",
+    "sport": "Sport",
+    "units": "Wind unit",
+    "ALL": "All",
+    "KITE": "Kitesurfing",
+    "PARAGLIDE": "Paragliding",
+    "firstFavorite": "Tap the star on a spot or station to find it here.",
+    "explore": "Explore the map",
+    "catalogueError": "Favorite names are temporarily unavailable. Your favorites have been kept.",
+    "sportEmpty": "No favorites for this sport. Choose “All” to see your selection.",
+    "preferencesHelp": "Your sport and unit choices apply to the map, details and forecasts.",
+    "removeFavorite": "Remove favorite",
+    "spot": "Saved spot",
+    "station": "Saved station",
+    "gusts": "Gusts",
+    "unavailable": "Conditions temporarily unavailable",
+    "recoveryTitle": "Another day or a little further away?",
+    "recoveryHelp": "Compare another search with the same wind, gust and access criteria.",
+    "nextDay": "Move one day later",
+    "weekend": "Compare this weekend",
+    "wider": "Expand to {radius} km",
+    "editSearch": "Edit the search"
   }
 }

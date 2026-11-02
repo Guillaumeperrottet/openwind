@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { CreateSpotForm } from "@/components/spot/CreateSpotForm";
+import { getAuthenticatedAdmin } from "@/lib/admin";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function EditSpotPage({ params }: Props) {
+  if (!(await getAuthenticatedAdmin())) notFound();
   const { id } = await params;
 
   const spot = await prisma.spot

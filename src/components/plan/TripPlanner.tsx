@@ -31,6 +31,10 @@ import { ResultCard } from "./ResultCard";
 import { plannerUiCopy } from "@/lib/planner-ui-copy";
 import { plannerMapScope } from "@/lib/planner-map-state";
 import { trackEvent } from "@/lib/analytics";
+import { useTranslations } from "next-intl";
+import { useFavContext } from "@/lib/FavContext";
+import { useWindUnits } from "@/lib/useWindUnits";
+import { plannerRecoveryActions } from "@/lib/planner-recovery";
 
 const PlannerMap = dynamic(() => import("./PlannerMap"), { ssr: false });
 type Place = { id?: number; name: string; lat: number; lng: number };
@@ -51,6 +55,10 @@ export function TripPlanner({
   today: string;
 }) {
   const router = useRouter();
+  const personal = useTranslations("PersonalExperience");
+  const { preferences, updatePreferences } = useFavContext();
+  const { useKnots, setUseKnots } = useWindUnits();
+  const preferredSport = preferences?.sportFilter === "PARAGLIDE" ? "PARAGLIDE" : "KITE";
   const ui = plannerUiCopy[locale];
   const formRef = useRef<HTMLFormElement>(null);
   const [applied, setApplied] = useState<{
@@ -69,6 +77,11 @@ export function TripPlanner({
   const [sport, setSport] = useState<PlannerCriteria["sport"]>(
     initial?.sport ?? "KITE",
   );
+  const sportEdited = useRef(false);
+  useEffect(() => {
+    if (searchParams.sport || searchParams.startDate || sportEdited.current) return;
+    queueMicrotask(() => setSport(preferredSport));
+  }, [preferredSport, searchParams.sport, searchParams.startDate]);
   const [radius, setRadius] = useState(initial?.radius ?? 150);
   const [place, setPlace] = useState<Place | null>(
     initial?.lat !== undefined && initial.lng !== undefined
@@ -415,7 +428,9 @@ export function TripPlanner({
                     key={s}
                     aria-pressed={sport === s}
                     onClick={() => {
+                      sportEdited.current = true;
                       setSport(s);
+                      void updatePreferences({ sportFilter: s });
                       setDirty(true);
                     }}
                     className={`${buttonClass} px-3 sm:px-4 ${sport === s ? "bg-white text-sky-800 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
@@ -810,6 +825,9 @@ export function TripPlanner({
               </div>
             </div>
             <div className="mb-4">
+              <div role="group" aria-label={personal("units")} className="mb-4 flex justify-end gap-2">
+                {[true, false].map((knots) => <button type="button" key={String(knots)} aria-pressed={useKnots === knots} onClick={() => setUseKnots(knots)} className={`${buttonClass} border border-slate-200 ${useKnots === knots ? "bg-slate-900 text-white" : "bg-white text-slate-600"}`}>{knots ? "kts" : "km/h"}</button>)}
+              </div>
               <h2 className="text-xl font-semibold">
                 {response.mode === "seasonal"
                   ? c.seasonal
@@ -849,6 +867,24 @@ export function TripPlanner({
                 {weatherCount ? ui.noReviewedWindow : ui.noDaylightForecast}
               </p>
             ) : null}
+            {applied && (response.meta.candidates === 0 || (response.mode === "forecast" && !recommendations.length)) && (
+              <section className="mb-6 rounded-2xl border border-sky-200 bg-sky-50 p-5" aria-labelledby="planner-recovery-title">
+                <h3 id="planner-recovery-title" className="text-base font-semibold text-slate-950">{personal("recoveryTitle")}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{personal("recoveryHelp")}</p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {plannerRecoveryActions(applied.criteria, today).map(({ kind, criteria }) => <button key={kind} type="button" disabled={loading} className={`${buttonClass} border border-sky-300 bg-white text-sky-900 hover:bg-sky-100 disabled:opacity-50`} onClick={() => {
+                    setStartDate(criteria.startDate); setEndDate(criteria.endDate); setRadius(criteria.radius); setSport(criteria.sport);
+                    setPlace(criteria.lat !== undefined && criteria.lng !== undefined ? { name: applied.name, lat: criteria.lat, lng: criteria.lng } : null);
+                    setQuery(applied.name);
+                    void runSearch(criteria, applied.name, true);
+                  }}>{personal(kind, { radius: criteria.radius })}</button>)}
+                  <button type="button" className={`${buttonClass} text-sky-900 underline underline-offset-4`} onClick={() => {
+                    formRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+                    document.getElementById("planner-city")?.focus({ preventScroll: true });
+                  }}>{personal("editSearch")}</button>
+                </div>
+              </section>
+            )}
             {view === "map" && mapSpots.length > 0 ? (
               <div className="space-y-4">
                 <PlannerMap

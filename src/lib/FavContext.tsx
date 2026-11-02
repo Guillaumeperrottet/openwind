@@ -1,72 +1,20 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
   useState,
   useCallback,
   useMemo,
-  useEffect,
 } from "react";
-import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/lib/useAuth";
 import { useFavorites } from "@/lib/useFavorites";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { AccountOnboarding } from "@/components/account/AccountOnboarding";
-import type { AccountPreferences } from "@/lib/user-preferences";
+import { useBrowserPreferences } from "@/lib/browser-preferences";
+import { FavoriteFeedback } from "@/components/account/FavoriteFeedback";
 
-export type AccountPreferencePatch = Partial<
-  Pick<
-    AccountPreferences,
-    | "sportFilter"
-    | "useKnots"
-    | "defaultView"
-    | "onboardingCompleted"
-    | "dashboardLayout"
-  >
->;
-
-interface FavContextValue {
-  user: User | null;
-  authLoading: boolean;
-  /** Backward-compatible alias for favoriteSpotIds. */
-  favoriteIds: Set<string>;
-  favoriteSpotIds: Set<string>;
-  favoriteStationIds: Set<string>;
-  preferences: AccountPreferences | null;
-  preferencesLoading: boolean;
-  /** Toggle favorite. Returns null if not logged in (modal opens). */
-  toggleFavorite: (spotId: string) => Promise<boolean | null>;
-  toggleSpotFavorite: (spotId: string) => Promise<boolean | null>;
-  toggleStationFavorite: (stationId: string) => Promise<boolean | null>;
-  /** Open the auth modal programmatically. */
-  requestAuth: () => void;
-  updatePreferences: (
-    patch: AccountPreferencePatch,
-  ) => Promise<AccountPreferences | null>;
-  /** Sign out the current user. */
-  signOut: () => Promise<void>;
-}
-
-const FavContext = createContext<FavContextValue>({
-  user: null,
-  authLoading: true,
-  favoriteIds: new Set(),
-  favoriteSpotIds: new Set(),
-  favoriteStationIds: new Set(),
-  preferences: null,
-  preferencesLoading: true,
-  toggleFavorite: async () => null,
-  toggleSpotFavorite: async () => null,
-  toggleStationFavorite: async () => null,
-  requestAuth: () => {},
-  updatePreferences: async () => null,
-  signOut: async () => {},
-});
-
-export function useFavContext() {
-  return useContext(FavContext);
-}
+export { useFavContext } from "./favorite-context";
+export type { AccountPreferencePatch } from "./favorite-context";
+import { FavoriteContext as FavContext } from "./favorite-context";
 
 /**
  * Wrap around the app in layout.tsx (or just inside body).
@@ -78,87 +26,30 @@ export function FavProvider({ children }: { children: React.ReactNode }) {
     favoriteIds,
     favoriteSpotIds,
     favoriteStationIds,
-    toggleFavorite: rawToggle,
-    toggleStationFavorite: rawToggleStation,
-  } = useFavorites(user);
+    toggleFavorite,
+    toggleStationFavorite,
+    favoritesReady,
+    retryFavorites,
+    notice,
+    dismissNotice,
+  } = useFavorites(user, authLoading);
   const [showAuth, setShowAuth] = useState(false);
-  const [preferenceState, setPreferenceState] = useState<{
-    userId: string;
-    data: AccountPreferences | null;
-  } | null>(null);
-  const preferences =
-    user && preferenceState?.userId === user.id ? preferenceState.data : null;
-  const preferencesLoading =
-    authLoading || Boolean(user && preferenceState?.userId !== user.id);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
+  const { preferences, preferencesLoading, preferencesError, updatePreferences, retryPreferences, dismissPreferencesError } =
+    useBrowserPreferences(user, authLoading);
+  const dismissFeedback = useCallback(() => {
+    dismissNotice();
+    dismissPreferencesError();
+  }, [dismissNotice, dismissPreferencesError]);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) return;
-
-    let cancelled = false;
-
-    // Sync first so a brand-new account receives its one-time onboarding row
-    // before the preferences are read.
-    fetch("/api/auth/sync", { method: "POST" })
-      .then(() => fetch("/api/preferences", { cache: "no-store" }))
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: AccountPreferences | null) => {
-        if (!cancelled) setPreferenceState({ userId: user.id, data });
-      })
-      .catch(() => {
-        if (!cancelled) setPreferenceState({ userId: user.id, data: null });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, user]);
-
-  const toggleFavorite = useCallback(
-    async (spotId: string) => {
-      if (!user) {
-        setShowAuth(true);
-        return null;
-      }
-      return rawToggle(spotId);
-    },
-    [user, rawToggle],
-  );
-
-  const toggleStationFavorite = useCallback(
-    async (stationId: string) => {
-      if (!user) {
-        setShowAuth(true);
-        return null;
-      }
-      return rawToggleStation(stationId);
-    },
-    [user, rawToggleStation],
-  );
-
-  const requestAuth = useCallback(() => setShowAuth(true), []);
-
-  const updatePreferences = useCallback(
-    async (
-      patch: AccountPreferencePatch,
-    ): Promise<AccountPreferences | null> => {
-      if (!user) return null;
-      try {
-        const response = await fetch("/api/preferences", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch),
-        });
-        if (!response.ok) return null;
-        const next = (await response.json()) as AccountPreferences;
-        setPreferenceState({ userId: user.id, data: next });
-        return next;
-      } catch {
-        return null;
-      }
-    },
-    [user],
-  );
+  const requestAuth = useCallback(() => {
+    setAuthMode("login");
+    setShowAuth(true);
+  }, []);
+  const requestSignup = useCallback(() => {
+    setAuthMode("signup");
+    setShowAuth(true);
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -170,9 +61,12 @@ export function FavProvider({ children }: { children: React.ReactNode }) {
       preferences,
       preferencesLoading,
       toggleFavorite,
+      favoritesReady,
+      retryFavorites,
       toggleSpotFavorite: toggleFavorite,
       toggleStationFavorite,
       requestAuth,
+      requestSignup,
       updatePreferences,
       signOut,
     }),
@@ -185,8 +79,11 @@ export function FavProvider({ children }: { children: React.ReactNode }) {
       preferences,
       preferencesLoading,
       toggleFavorite,
+      favoritesReady,
+      retryFavorites,
       toggleStationFavorite,
       requestAuth,
+      requestSignup,
       updatePreferences,
       signOut,
     ],
@@ -196,7 +93,8 @@ export function FavProvider({ children }: { children: React.ReactNode }) {
     <FavContext.Provider value={value}>
       {children}
       <AccountOnboarding />
-      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} />
+      <FavoriteFeedback notice={notice} preferencesError={preferencesError} onDismiss={dismissFeedback} onRetryPreferences={retryPreferences} />
+      {showAuth && <AuthModal key={authMode} initialMode={authMode} open onClose={() => setShowAuth(false)} />}
     </FavContext.Provider>
   );
 }

@@ -1,3 +1,6 @@
+"use client";
+
+import { useWindUnits } from "@/lib/useWindUnits";
 import type { FullForecast } from "@/lib/forecast";
 import { toKnots } from "@/lib/forecast";
 import { toSiteLocale } from "@/lib/site";
@@ -69,6 +72,9 @@ export function ForecastSummary({
   forecast: FullForecast;
   locale: string;
 }) {
+  const { useKnots } = useWindUnits();
+  const speed = (value: number) => useKnots ? toKnots(value) : Math.round(value);
+  const unit = useKnots ? "kts" : "km/h";
   const language = toSiteLocale(locale);
   const copy = COPY[language];
   const days = summarizeForecast(forecast);
@@ -107,12 +113,12 @@ export function ForecastSummary({
                   </time>
                 </th>
                 <td className="py-3 pr-4">
-                  {toKnots(values.min)}–{toKnots(values.max)} kts{" "}
+                  {speed(values.min)}–{speed(values.max)} {unit}{" "}
                   <span className="text-xs text-slate-500">
-                    ({Math.round(values.min)}–{Math.round(values.max)} km/h)
+                    ({useKnots ? `${Math.round(values.min)}–${Math.round(values.max)} km/h` : `${toKnots(values.min)}–${toKnots(values.max)} kts`})
                   </span>
                 </td>
-                <td className="py-3">{toKnots(values.gusts)} kts</td>
+                <td className="py-3">{speed(values.gusts)} {unit}</td>
               </tr>
             ))}
           </tbody>

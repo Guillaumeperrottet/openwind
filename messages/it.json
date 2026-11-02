@@ -167,7 +167,7 @@
     "windArchives": "Archivi vento",
     "location": "Posizione",
     "openStreetMap": "Vedi su OpenStreetMap",
-    "windguru": "Windguru",
+    "windguru": "Previsioni dettagliate",
     "windguruLoading": "Caricamento…",
     "openMeteoSource": "Open-Meteo · NWP",
     "rain": {
@@ -471,6 +471,7 @@
     "source": "Fonte: Open-Meteo Archive"
   },
   "ForecastTable": {
+    "caption": "Previsioni orarie di vento e meteo",
     "wind": "Vento (kn)",
     "gusts": "Raffiche (kn)",
     "direction": "Direzione",
@@ -581,5 +582,61 @@
     "community": { "eyebrow": "Intorno a te", "title": "Attività locale", "description": "Discussioni collegate ai tuoi spot e argomenti a cui partecipi.", "forum": "Vedi il forum", "emptyTitle": "La conversazione può iniziare da te.", "emptyFavorite": "Condividi le condizioni osservate in uno dei tuoi spot preferiti.", "emptyNoFavorite": "Aggiungi un preferito o partecipa a una discussione.", "start": "Apri un argomento" },
     "actions": { "eyebrow": "Scorciatoie", "title": "Cosa vuoi fare?", "map": "Apri la mappa", "mapDetail": "Spot e stazioni live", "plan": "Pianifica un’uscita", "planDetail": "Confronta le prossime condizioni", "share": "Condividi una sessione", "shareDetail": "Informa la comunità", "read": "Leggi il Giornale", "readDetail": "Guide e meteo locale" },
     "settings": { "eyebrow": "Impostazioni personali", "title": "Personalizza Il mio Openwind", "description": "Tutto viene salvato nel tuo account e sincronizzato sui dispositivi.", "close": "Chiudi", "favoritesTitle": "Preferiti della dashboard", "favoritesDescription": "Scegli e ordina fino a tre spot o stazioni.", "notificationPermissionError": "Consenti le notifiche in questo browser per attivare l’avviso.", "alertsBrowserHelp": "Le regole sono sincronizzate con il tuo account. Le notifiche appaiono mentre Il mio Openwind è aperto in un browser autorizzato.", "chooseOnMap": "Aggiungi preferiti sulla mappa", "startTitle": "Pagina iniziale", "startDescription": "Scegli cosa appare quando apri Openwind.", "dashboard": "Il mio Openwind", "map": "Mappa", "displayTitle": "Contenuto della dashboard", "displayDescription": "Mostra, nascondi e ordina le sezioni.", "modules": { "favorites": "I miei preferiti", "forecast": "Prossime finestre", "articles": "Articoli per i miei preferiti", "community": "Attività locale", "actions": "Scorciatoie" }, "moveUp": "Sposta su", "moveDown": "Sposta giù", "practiceTitle": "La mia attività", "practiceDescription": "Filtra gli spot e i suggerimenti visualizzati.", "allSports": "Entrambi", "kite": "Kite", "paraglide": "Parapendio", "unitsTitle": "Unità del vento", "unitsDescription": "Questa scelta vale anche sulla mappa.", "knots": "Nodi", "kilometersPerHour": "Chilometri/ora", "save": "Salva impostazioni", "saving": "Salvataggio…", "saved": "Impostazioni salvate", "error": "Salvataggio non riuscito. Riprova." }
+  },
+  "SpotContribution": {
+    "loading": "Verifica dell’accesso…",
+    "title": "Condividi uno spot con la community.",
+    "description": "Crea un account gratuito o accedi per aggiungere uno spot di kitesurf o parapendio.",
+    "signup": "Crea un account",
+    "login": "Accedi",
+    "returnHere": "Dopo l’accesso potrai aggiungere qui il tuo spot.",
+    "back": "Esplora la mappa"
+  },
+  "ForecastSources": {
+    "unavailable": "MeteoSwiss non disponibile · dati Open-Meteo visualizzati",
+    "loading": "Caricamento delle previsioni MeteoSwiss…",
+    "swiss": "Vento previsto da MeteoSwiss · altri dati meteo da Open-Meteo",
+    "global": "Previsioni del modello · copertura mondiale",
+    "mixed": "Vento: MeteoSwiss dove disponibile, integrato da Open-Meteo · Altri dati meteo: Open-Meteo"
+  },
+  "PersonalExperience": {
+    "feedback": "I tuoi preferiti",
+    "savedLocally": "Preferito salvato su questo dispositivo. Lo trovi in Il mio Openwind.",
+    "favoriteError": "Non è stato possibile modificare il preferito. Riprova.",
+    "storageError": "Questo browser non può conservare le tue scelte. Potrebbero andare perse alla chiusura della pagina.",
+    "localLimit": "Hai raggiunto 12 preferiti locali. Accedi per salvarli nel tuo account e aggiungerne altri.",
+    "syncError": "Alcuni preferiti sono ancora su questo dispositivo: la sincronizzazione non è stata completata. Puoi riprovare.",
+    "preferencesError": "Le tue scelte sono applicate qui, ma non è stato possibile salvarle.",
+    "seeFavorites": "Vedi i miei preferiti",
+    "close": "Chiudi",
+    "sync": "Sincronizza i miei preferiti",
+    "retry": "Riprova",
+    "loading": "Caricamento…",
+    "onDevice": "I tuoi luoghi, su questo dispositivo",
+    "guestIntro": "I tuoi spot e le tue stazioni preferite, con le condizioni più recenti. Riprendi da dove eri rimasto a ogni visita.",
+    "emptyIntro": "Tieni a portata di mano spot e stazioni, anche senza account.",
+    "syncDescription": "Crea un account gratuito per sincronizzare i preferiti tra i dispositivi. I preferiti già presenti verranno conservati.",
+    "login": "Accedi",
+    "sport": "Sport",
+    "units": "Unità del vento",
+    "ALL": "Tutti",
+    "KITE": "Kitesurf",
+    "PARAGLIDE": "Parapendio",
+    "firstFavorite": "Tocca la stella di uno spot o di una stazione per ritrovarlo qui.",
+    "explore": "Esplora la mappa",
+    "catalogueError": "I nomi dei preferiti non sono disponibili al momento. I tuoi preferiti sono conservati.",
+    "sportEmpty": "Nessun preferito per questo sport. Scegli “Tutti” per vedere la tua selezione.",
+    "preferencesHelp": "Sport e unità scelti si applicano alla mappa, alle schede e alle previsioni.",
+    "removeFavorite": "Rimuovi dai preferiti",
+    "spot": "Spot salvato",
+    "station": "Stazione salvata",
+    "gusts": "Raffiche",
+    "unavailable": "Condizioni momentaneamente non disponibili",
+    "recoveryTitle": "Un altro giorno o un po’ più lontano?",
+    "recoveryHelp": "Confronta un’altra ricerca mantenendo gli stessi criteri di vento, raffiche e accesso.",
+    "nextDay": "Sposta di un giorno",
+    "weekend": "Confronta questo weekend",
+    "wider": "Amplia a {radius} km",
+    "editSearch": "Modifica la ricerca"
   }
 }

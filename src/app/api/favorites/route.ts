@@ -4,6 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { getStationFromCache } from "@/lib/stationData";
 import type { User } from "@supabase/supabase-js";
 import { z } from "zod";
+import { MAX_LOCAL_FAVORITES } from "@/lib/favorites";
+
+const importFavoritesSchema = z.object({
+  spotIds: z.array(z.string().trim().min(1).max(200)).max(MAX_LOCAL_FAVORITES).default([]),
+  stationIds: z.array(z.string().trim().min(1).max(200)).max(MAX_LOCAL_FAVORITES).default([]),
+}).strict().refine((v) => v.spotIds.length + v.stationIds.length <= MAX_LOCAL_FAVORITES);
 
 const toggleFavoriteSchema = z.union([
   z.object({ spotId: z.string().trim().min(1) }).strict(),
@@ -249,6 +255,61 @@ export async function POST(request: NextRequest) {
   ]);
 
   return NextResponse.json({ favorited: true, kind: "station" });
+}
+
+/** Idempotent import: existing favorites, order and alert settings stay intact. */
+export async function PUT(request: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const parsed = importFavoritesSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Favoris invalides" }, { status: 400 });
+  const spotIds = [...new Set(parsed.data.spotIds)];
+  const stationIds = [...new Set(parsed.data.stationIds)];
+  const [spots, stationResults] = await Promise.all([
+    prisma.spot.findMany({ where: { id: { in: spotIds } }, select: { id: true } }),
+    Promise.all(stationIds.map((id) => getStationFromCache(id))),
+  ]);
+  const stations = stationResults.filter((station) => station !== null);
+  await ensureDatabaseUser(user);
+  const imported = await prisma.$transaction(async (tx) => {
+    const [existingSpots, existingStations] = await Promise.all([
+      tx.favorite.findMany({ where: { userId: user.id } }),
+      tx.stationFavorite.findMany({ where: { userId: user.id } }),
+    ]);
+    let selected = [...existingSpots, ...existingStations].filter((f) => f.dashboardSelected).length;
+    let spotOrder = Math.max(-1, ...existingSpots.map((f) => f.sortOrder)) + 1;
+    let stationOrder = Math.max(-1, ...existingStations.map((f) => f.sortOrder)) + 1;
+    for (const spotId of spotIds.filter((id) => spots.some((spot) => spot.id === id))) {
+      const spot = { id: spotId };
+      if (existingSpots.some((f) => f.spotId === spot.id)) continue;
+      const dashboardSelected = selected < 3;
+      await tx.favorite.upsert({
+        where: { userId_spotId: { userId: user.id, spotId: spot.id } }, update: {},
+        create: { userId: user.id, spotId: spot.id, sortOrder: spotOrder++, dashboardSelected, dashboardOrder: dashboardSelected ? selected++ : 0 },
+      });
+    }
+    for (const station of stations) {
+      if (existingStations.some((f) => f.stationId === station.id)) continue;
+      const dashboardSelected = selected < 3;
+      await tx.stationFavorite.upsert({
+        where: { userId_stationId: { userId: user.id, stationId: station.id } }, update: {},
+        create: {
+          userId: user.id, stationId: station.id, stationName: station.name, source: station.source,
+          latitude: station.lat, longitude: station.lng, altitudeM: station.altitudeM,
+          sortOrder: stationOrder++, dashboardSelected, dashboardOrder: dashboardSelected ? selected++ : 0,
+        },
+      });
+    }
+    return {
+      spotIds: spots.map((s) => s.id),
+      stationIds: [...new Set([
+        ...stations.map((s) => s.id),
+        ...existingStations.filter((s) => stationIds.includes(s.stationId)).map((s) => s.stationId),
+      ])],
+    };
+  });
+  return NextResponse.json(imported);
 }
 
 /**

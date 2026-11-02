@@ -167,7 +167,7 @@
     "windArchives": "Archives vent",
     "location": "Situation",
     "openStreetMap": "Voir sur OpenStreetMap",
-    "windguru": "Windguru",
+    "windguru": "Prévisions détaillées",
     "windguruLoading": "Chargement…",
     "openMeteoSource": "Open-Meteo · NWP",
     "rain": {
@@ -471,6 +471,7 @@
     "source": "Source : Open-Meteo Archive"
   },
   "ForecastTable": {
+    "caption": "Prévisions horaires du vent et de la météo",
     "wind": "Vent (kn)",
     "gusts": "Rafales (kn)",
     "direction": "Direction",
@@ -775,5 +776,61 @@
       "saved": "Réglages enregistrés",
       "error": "L’enregistrement a échoué. Réessaie."
     }
+  },
+  "SpotContribution": {
+    "loading": "Vérification de votre connexion…",
+    "title": "Partagez un spot avec la communauté.",
+    "description": "Créez un compte gratuit ou connectez-vous pour ajouter un spot de kitesurf ou de parapente.",
+    "signup": "Créer un compte",
+    "login": "Se connecter",
+    "returnHere": "Vous pourrez ajouter votre spot ici après votre connexion.",
+    "back": "Explorer la carte"
+  },
+  "ForecastSources": {
+    "unavailable": "MeteoSwiss indisponible · Open-Meteo affiché",
+    "loading": "Chargement des prévisions MeteoSwiss…",
+    "swiss": "Vent prévu par MeteoSwiss · complément météo Open-Meteo",
+    "global": "Prévisions de modèle · couverture mondiale",
+    "mixed": "Vent : MeteoSwiss selon disponibilité, complété par Open-Meteo · Autres données météo : Open-Meteo"
+  },
+  "PersonalExperience": {
+    "feedback": "Vos favoris",
+    "savedLocally": "Favori enregistré sur cet appareil. Retrouvez-le dans Mon Openwind.",
+    "favoriteError": "Le favori n’a pas pu être modifié. Réessayez.",
+    "storageError": "Ce navigateur ne permet pas de conserver vos choix. Ils risquent de disparaître à la fermeture de la page.",
+    "localLimit": "Vous avez atteint les 12 favoris locaux. Connectez-vous pour les retrouver dans votre compte et en ajouter d’autres.",
+    "syncError": "Certains favoris restent sur cet appareil : leur synchronisation n’a pas abouti. Vous pouvez réessayer.",
+    "preferencesError": "Vos choix sont appliqués ici, mais leur enregistrement n’a pas abouti.",
+    "seeFavorites": "Voir mes favoris",
+    "close": "Fermer",
+    "sync": "Synchroniser mes favoris",
+    "retry": "Réessayer",
+    "loading": "Chargement…",
+    "onDevice": "Vos repères, sur cet appareil",
+    "guestIntro": "Vos spots et balises favoris, avec leurs dernières conditions. Commencez ici et retrouvez vos habitudes à chaque visite.",
+    "emptyIntro": "Gardez vos spots et balises à portée de main, même sans compte.",
+    "syncDescription": "Créez un compte gratuit pour synchroniser vos favoris entre vos appareils. Vos favoris existants seront conservés.",
+    "login": "Se connecter",
+    "sport": "Sport",
+    "units": "Unité du vent",
+    "ALL": "Tous",
+    "KITE": "Kitesurf",
+    "PARAGLIDE": "Parapente",
+    "firstFavorite": "Touchez l’étoile d’un spot ou d’une balise pour le retrouver ici.",
+    "explore": "Explorer la carte",
+    "catalogueError": "Les noms des favoris ne sont pas disponibles pour le moment. Vos favoris sont conservés.",
+    "sportEmpty": "Aucun favori pour ce sport. Choisissez « Tous » pour retrouver votre sélection.",
+    "preferencesHelp": "Votre choix de sport et d’unité s’applique à la carte, aux fiches et aux prévisions.",
+    "removeFavorite": "Retirer des favoris",
+    "spot": "Spot enregistré",
+    "station": "Balise enregistrée",
+    "gusts": "Rafales",
+    "unavailable": "Conditions momentanément indisponibles",
+    "recoveryTitle": "Une autre date ou un peu plus loin ?",
+    "recoveryHelp": "Comparez une autre recherche en conservant les mêmes critères de vent, de rafales et d’accès.",
+    "nextDay": "Décaler d’un jour",
+    "weekend": "Comparer ce week-end",
+    "wider": "Élargir à {radius} km",
+    "editSearch": "Modifier la recherche"
   }
 }

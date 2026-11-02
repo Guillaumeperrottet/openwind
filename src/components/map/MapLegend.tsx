@@ -1,41 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { windPaletteGradient, windSpeedColor } from "@/lib/windField";
-
-type WindCondKey =
-  | "calm"
-  | "light"
-  | "gentle"
-  | "good"
-  | "strong"
-  | "veryStrong";
-
-type LegendEntry = {
-  range: string;
-  condKey: WindCondKey | null;
-  color: string;
-};
-
-const LEGEND_KTS: LegendEntry[] = [
-  { range: "< 4", condKey: null, color: colorCss(2) },
-  { range: "4-8", condKey: "calm", color: colorCss(6) },
-  { range: "8-12", condKey: "light", color: colorCss(10) },
-  { range: "12-16", condKey: "gentle", color: colorCss(14) },
-  { range: "16-21", condKey: "good", color: colorCss(18) },
-  { range: "21-27", condKey: "strong", color: colorCss(24) },
-  { range: "> 27", condKey: "veryStrong", color: colorCss(33) },
-];
-
-const LEGEND_KMH: LegendEntry[] = [
-  { range: "< 8", condKey: null, color: colorCss(2) },
-  { range: "8-15", condKey: "calm", color: colorCss(6) },
-  { range: "15-22", condKey: "light", color: colorCss(10) },
-  { range: "22-30", condKey: "gentle", color: colorCss(14) },
-  { range: "30-38", condKey: "good", color: colorCss(18) },
-  { range: "38-50", condKey: "strong", color: colorCss(24) },
-  { range: "> 50", condKey: "veryStrong", color: colorCss(33) },
-];
+import { windPaletteGradient, windPaletteLegend } from "@/lib/windPalette";
 
 interface MapLegendProps {
   useKnots: boolean;
@@ -46,11 +12,6 @@ interface MapLegendProps {
   windOverlayActive?: boolean;
 }
 
-function colorCss(knots: number): string {
-  const [red, green, blue] = windSpeedColor(knots * 1.852);
-  return `rgb(${red} ${green} ${blue})`;
-}
-
 export function MapLegend({
   useKnots,
   setUseKnots,
@@ -59,9 +20,8 @@ export function MapLegend({
   pickMode,
   windOverlayActive = false,
 }: MapLegendProps) {
-  const tCond = useTranslations("WindConditions");
   const tCommon = useTranslations("Common");
-  const entries = useKnots ? LEGEND_KTS : LEGEND_KMH;
+  const entries = windPaletteLegend(useKnots);
 
   return (
     <div
@@ -134,14 +94,13 @@ export function MapLegend({
               </p>
             </div>
           ) : (
-            entries.map(({ range, condKey, color }, i) => (
+            entries.map(({ range, color }, i) => (
               <div key={i} className="flex items-center gap-2 mb-1">
                 <span
                   className="w-3 h-3 rounded-full shrink-0 border border-gray-200"
                   style={{ background: color }}
                 />
                 {range}
-                {condKey ? ` – ${tCond(condKey)}` : " – -"}
               </div>
             ))
           )}

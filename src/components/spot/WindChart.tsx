@@ -472,34 +472,6 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
             className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 ml-10 text-[9px] text-gray-400"
             style={{ touchAction: "pan-x" }}
           >
-            <span className="flex items-center gap-1">
-              <span
-                className="inline-block w-4 h-2 rounded-sm"
-                style={{ background: "#d1d5db" }}
-              />
-              Calme
-            </span>
-            <span className="flex items-center gap-1">
-              <span
-                className="inline-block w-4 h-2 rounded-sm"
-                style={{ background: "#5cb85c" }}
-              />
-              Kitable
-            </span>
-            <span className="flex items-center gap-1">
-              <span
-                className="inline-block w-4 h-2 rounded-sm"
-                style={{ background: "#ffa726" }}
-              />
-              Fort
-            </span>
-            <span className="flex items-center gap-1">
-              <span
-                className="inline-block w-4 h-2 rounded-sm"
-                style={{ background: "#b71c1c" }}
-              />
-              Danger
-            </span>
             <span className="flex items-center gap-1 pl-3 border-l border-gray-100">
               <span
                 className="inline-block w-4 h-0.5 rounded"

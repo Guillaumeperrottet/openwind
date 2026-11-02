@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { FullForecast, HourlyPoint } from "@/lib/forecast";
 import { ForecastTable } from "./ForecastTable";
+import { useTranslations } from "next-intl";
 
 const STORAGE_KEY = "openwind-forecast-source";
 
@@ -36,6 +37,7 @@ export function ForecastWithToggle({
   lng,
   enableMeteoSwiss = true,
 }: Props) {
+  const t = useTranslations("ForecastSources");
   const [source, setSource] = useState<Source>("openmeteo");
   const [mchForecast, setMchForecast] = useState<FullForecast | null>(null);
   const [loading, setLoading] = useState(false);
@@ -168,15 +170,15 @@ export function ForecastWithToggle({
           </div>
           {error && (
             <span className="text-[10px] text-red-600">
-              MeteoSwiss indisponible — Open-Meteo affiché
+              {t("unavailable")}
             </span>
           )}
           <span className="text-[10px] text-gray-400">
             {source === "meteoswiss"
               ? loading
-                ? "Téléchargement du modèle ICON-CH2-EPS… (cache 1h)"
-                : "Modèle ICON-CH2-EPS · ~6000 points · maillé Suisse"
-              : "Modèle global · couverture mondiale"}
+                ? t("loading")
+                : t("swiss")
+              : t("global")}
           </span>
         </div>
       )}
@@ -187,7 +189,7 @@ export function ForecastWithToggle({
         light
         source={
           source === "meteoswiss" && mchForecast
-            ? { label: "MeteoSwiss ICON-CH2-EPS (vent) + Open-Meteo (météo)" }
+            ? { label: t("mixed") }
             : { label: "Open-Meteo" }
         }
       />

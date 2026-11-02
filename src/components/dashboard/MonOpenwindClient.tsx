@@ -34,6 +34,8 @@ import {
   X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
+import { GuestOpenwind } from "./GuestOpenwind";
 import { Link } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
 import { useSpotLive } from "@/lib/useSpotLive";
@@ -245,13 +247,26 @@ function StatusCheck({ label, passed }: { label: string; passed: boolean }) {
 
 export function MonOpenwindClient({ initialData }: Props) {
   const t = useTranslations("MonOpenwind");
-  const { preferences: contextPreferences } = useFavContext();
-  const preferences = contextPreferences ?? initialData.preferences;
+  const { preferences: contextPreferences, preferencesLoading, user, authLoading } = useFavContext();
+  const router = useRouter();
+  const preferences = preferencesLoading ? initialData.preferences : contextPreferences ?? initialData.preferences;
   const [favoriteSpots, setFavoriteSpots] = useState(initialData.favoriteSpots);
   const [favoriteStations, setFavoriteStations] = useState(
     initialData.favoriteStations,
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    const refresh = () => router.refresh();
+    window.addEventListener("openwind:favorites-imported", refresh);
+    return () => window.removeEventListener("openwind:favorites-imported", refresh);
+  }, [router]);
+  useEffect(() => {
+    queueMicrotask(() => {
+      setFavoriteSpots(initialData.favoriteSpots);
+      setFavoriteStations(initialData.favoriteStations);
+    });
+  }, [initialData.favoriteSpots, initialData.favoriteStations]);
 
   useEffect(() => {
     trackEvent("mon_openwind_viewed", {
@@ -423,6 +438,8 @@ export function MonOpenwindClient({ initialData }: Props) {
     COMMUNITY: <CommunitySection items={community} spots={dashboardSpots} />,
     QUICK_ACTIONS: <QuickActions />,
   };
+
+  if (!authLoading && (!user || user.id !== initialData.userId)) return <GuestOpenwind />;
 
   return (
     <div className="min-h-[calc(100dvh-56px)] bg-white text-slate-950">

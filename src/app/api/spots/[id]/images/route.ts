@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { createClient as createServerClient } from "@/lib/supabase/server";
+import { requireSpotContributor } from "@/lib/spot-access";
+import { z } from "zod";
 
 const supabaseAdmin = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,7 @@ const supabaseAdmin = createAdminClient(
 );
 const BUCKET = process.env.NEXT_PUBLIC_STORAGE_BUCKET || "spot-images";
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+const deleteImagesSchema = z.object({ imageIds: z.array(z.string().min(1)).min(1).max(50) });
 
 function optionalText(formData: FormData, key: string, maxLength: number) {
   const value = formData.get(key);
@@ -34,14 +36,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  // Signed-in community members can contribute new photos, never replace them.
+  const access = await requireSpotContributor();
+  if (access.error) return access.error;
   const { id } = await params;
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-  }
 
   // Verify spot exists
   const spot = await prisma.spot.findUnique({ where: { id } });
@@ -63,8 +61,7 @@ export async function POST(
   }
 
   // Upload to Supabase Storage with service role key
-  const ext = file.name.split(".").pop() || "jpg";
-  const path = `${id}/${Date.now()}.${ext}`;
+  const path = `${id}/${crypto.randomUUID()}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const { error: uploadErr } = await supabaseAdmin.storage
@@ -115,22 +112,17 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const access = await requireSpotContributor(true);
+  if (access.error) return access.error;
   const { id } = await params;
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-  }
-  const { imageIds } = (await request.json()) as { imageIds?: string[] };
-
-  if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
+  const parsed = deleteImagesSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
     return NextResponse.json(
       { error: "imageIds array required" },
       { status: 400 },
     );
   }
+  const { imageIds } = parsed.data;
 
   // Fetch the images to get their storage paths
   const images = await prisma.spotImage.findMany({
@@ -148,7 +140,10 @@ export async function DELETE(
     .filter((p: string | null): p is string => p !== null);
 
   if (storagePaths.length > 0) {
-    await supabaseAdmin.storage.from(BUCKET).remove(storagePaths);
+    const { error } = await supabaseAdmin.storage.from(BUCKET).remove(storagePaths);
+    if (error) {
+      return NextResponse.json({ error: "Impossible de supprimer les photos. Réessayez." }, { status: 502 });
+    }
   }
 
   // Delete from DB

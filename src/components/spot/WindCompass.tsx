@@ -2,6 +2,7 @@
 
 import { barColors, windDirectionLabel } from "@/lib/utils";
 import { roundKnots } from "@/lib/forecast";
+import { useWindUnits } from "@/lib/useWindUnits";
 import type { WindData } from "@/types";
 
 interface Props {
@@ -31,8 +32,10 @@ export function WindCompass({
   light = false,
   sourceLabel,
 }: Props) {
-  const speedKnots = roundKnots(wind.windSpeedKmh);
-  const gustsKnots = roundKnots(wind.gustsKmh);
+  const { useKnots } = useWindUnits();
+  const unit = useKnots ? "kts" : "km/h";
+  const speedKnots = useKnots ? roundKnots(wind.windSpeedKmh) : Math.round(wind.windSpeedKmh);
+  const gustsKnots = useKnots ? roundKnots(wind.gustsKmh) : Math.round(wind.gustsKmh);
   const arrowRotation = (wind.windDirection + 180) % 360;
   const color = barColors(wind.windSpeedKmh)[0] || wind.color;
   const dirLabel = windDirectionLabel(wind.windDirection);
@@ -77,7 +80,7 @@ export function WindCompass({
         viewBox="0 0 200 200"
         width={size}
         height={size}
-        aria-label={`Vent : ${speedKnots} nœuds, rafales ${gustsKnots} nœuds, direction ${dirLabel}${sourceLabel ? `, source ${sourceLabel}` : ""}`}
+        aria-label={`Vent : ${speedKnots} ${unit}, rafales ${gustsKnots} ${unit}, direction ${dirLabel}${sourceLabel ? `, source ${sourceLabel}` : ""}`}
         style={{ display: "block", overflow: "visible" }}
       >
         {/* Open, data-first compass surface */}
@@ -223,7 +226,7 @@ export function WindCompass({
           fontWeight="700"
           fontFamily="system-ui, -apple-system, sans-serif"
         >
-          kts
+          {unit}
         </text>
       </svg>
 
@@ -233,7 +236,7 @@ export function WindCompass({
         <div
           className={`text-base font-semibold tabular-nums ${light ? "text-gray-900" : "text-white"}`}
         >
-          {speedKnots}&thinsp;/&thinsp;{gustsKnots} kts
+          {speedKnots}&thinsp;/&thinsp;{gustsKnots} {unit}
         </div>
         <div
           className={`text-xs mt-0.5 font-medium ${light ? "text-gray-500" : "text-zinc-400"}`}
