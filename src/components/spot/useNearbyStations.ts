@@ -13,12 +13,14 @@ export type StationWithDist = WindStation & { dist: number };
 export function useNearbyStations(initialLat?: number, initialLng?: number) {
   const [nearbyStations, setNearbyStations] = useState<StationWithDist[]>([]);
   const [loadingStations, setLoadingStations] = useState(false);
+  const [stationsError, setStationsError] = useState(false);
 
   const refresh = useCallback(async (lat: number, lng: number) => {
     setLoadingStations(true);
+    setStationsError(false);
     try {
       const res = await fetch("/api/stations");
-      if (!res.ok) return;
+      if (!res.ok) throw new Error("Stations unavailable");
       const all: WindStation[] = await res.json();
       const withDist: StationWithDist[] = all.map((s) => ({
         ...s,
@@ -27,7 +29,7 @@ export function useNearbyStations(initialLat?: number, initialLng?: number) {
       withDist.sort((a, b) => a.dist - b.dist);
       setNearbyStations(withDist.filter((s) => s.dist <= 10).slice(0, 5));
     } catch {
-      // silent
+      setStationsError(true);
     } finally {
       setLoadingStations(false);
     }
@@ -41,5 +43,5 @@ export function useNearbyStations(initialLat?: number, initialLng?: number) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // intentionally run only on mount
 
-  return { nearbyStations, loadingStations, refresh };
+  return { nearbyStations, loadingStations, stationsError, refresh };
 }

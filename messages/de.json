@@ -702,5 +702,27 @@
     "fewerFavorites": "Weniger Favoriten anzeigen",
     "removeFavorite": "„{name}“ aus Favoriten entfernen",
     "undo": "Entfernen rückgängig machen"
+  },
+  "AppDesign": {
+    "spotNavigation": "Spot-Navigation",
+    "forecastShortcut": "Vorhersage",
+    "paraShort": "Para",
+    "activity": "Aktivität",
+    "ALL": "Alle",
+    "KITE": "Kite",
+    "PARAGLIDE": "Gleitschirm",
+    "findWindow": "Zeitfenster finden",
+    "layerDetails": "Daten der Ebene",
+    "legend": "Windskala",
+    "units": "Windeinheit",
+    "openLegend": "Windlegende öffnen",
+    "closeLegend": "Legende schliessen",
+    "spotInformation": "Spot und Zugang",
+    "currentConditions": "Aktuelle Bedingungen",
+    "close": "Schliessen",
+    "partner": "Partner",
+    "stationsLoading": "Messstationen werden geladen…",
+    "noNearbyStations": "Keine Messstation im Umkreis von 10 km. Die Vorhersagen stehen oben zur Verfügung.",
+    "stationsUnavailable": "Die Messstationen sind vorübergehend nicht verfügbar. Bitte versuchen Sie es in Kürze erneut."
   }
 }

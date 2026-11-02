@@ -1,0 +1,47 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full
+ * nav: existing Openwind shell · signature: wind map and measured conditions
+ * states: loading, empty, error, full · axes: light/system/sky · posture: restrained · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E3 S4 R4 V3 · weakest: E, unify controls and verify real charts at mobile sizes */
+/* Hallmark · finish-review: subagent · 2 findings · 2 resolved · gap: none; render: CUA desktop/mobile full-page captures; static sweep: 0 FAIL, 0 REFLEX; existing Tailwind WARNs retained on record */
+:root {
+  --ow-paper: oklch(98.4% 0.003 247.858);
+  --ow-surface: oklch(100% 0 0);
+  --ow-surface-soft: oklch(96.8% 0.007 247.896);
+  --ow-ink: oklch(20.8% 0.042 265.755);
+  --ow-ink-secondary: oklch(37.2% 0.044 257.287);
+  --ow-on-dark-muted: oklch(86.9% 0.022 252.894);
+  --ow-muted: oklch(44.6% 0.043 257.281);
+  --ow-rule: oklch(87% 0.015 255);
+  --ow-accent: oklch(44.3% 0.11 240.79);
+  --ow-accent-hover: oklch(37% 0.09 240.79);
+  --ow-accent-soft: oklch(95.1% 0.026 236.824);
+  --ow-accent-ink: oklch(100% 0 0);
+  --ow-focus: oklch(50% 0.134 242.749);
+  --ow-rain: oklch(42.4% 0.199 265.638);
+  --ow-rain-ink: oklch(93.2% 0.032 255.585);
+  --ow-favorite: oklch(52% 0.13 65);
+  --ow-warning: oklch(47% 0.12 55);
+  --ow-warning-soft: oklch(97% 0.025 75);
+  --ow-font: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --ow-text-caption: 0.8125rem;
+  --ow-text-label: 0.875rem;
+  --ow-text-body: 1rem;
+  --ow-text-title: 1.25rem;
+  --ow-text-page: 2rem;
+  --ow-text-measure: 3.5rem;
+  --ow-space-1: 4px;
+  --ow-space-2: 8px;
+  --ow-space-3: 12px;
+  --ow-space-4: 16px;
+  --ow-space-5: 24px;
+  --ow-space-6: 32px;
+  --ow-space-7: 48px;
+  --ow-space-8: 64px;
+  --ow-control: 44px;
+  --ow-radius-control: 8px;
+  --ow-radius-panel: 16px;
+  --ow-elevation: 0 4px 24px oklch(20.8% 0.042 265.755 / 0.12);
+  --ow-container: 1184px;
+  --ow-duration: 120ms;
+  --ow-ease: cubic-bezier(0.2, 0, 0, 1);
+}

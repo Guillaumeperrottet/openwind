@@ -8,7 +8,6 @@ import { WindProvenance } from "@/components/spot/WindProvenance";
 import {
   windArrow,
   windDirectionLabel,
-  barColors,
 } from "@/lib/utils";
 import { useFavContext } from "@/lib/FavContext";
 import {
@@ -45,9 +44,17 @@ export function SpotPopup({
     useKnots ? `${Math.round(kmh / 1.852)} kts` : `${Math.round(kmh)} km/h`;
   const ref = useRef<HTMLDivElement>(null);
   const [flipBelow, setFlipBelow] = useState(false);
-  const [isMobile] = useState(() =>
+  const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 768 : false,
   );
+
+  useEffect(() => {
+    const mobileViewport = window.matchMedia("(max-width: 767px)");
+    const updateViewport = () => setIsMobile(mobileViewport.matches);
+    updateViewport();
+    mobileViewport.addEventListener("change", updateViewport);
+    return () => mobileViewport.removeEventListener("change", updateViewport);
+  }, []);
 
   // Measure popup height and flip below if not enough room above
   useEffect(() => {
@@ -78,8 +85,8 @@ export function SpotPopup({
     ? {
         position: "fixed",
         left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
+        bottom: "calc(var(--mobile-nav-height) + 16px)",
+        transform: "translateX(-50%)",
         zIndex: 100,
       }
     : {
@@ -94,7 +101,7 @@ export function SpotPopup({
     <div
       ref={ref}
       style={style}
-      className="w-72 max-w-[calc(100vw-24px)] rounded-xl bg-white border border-gray-200 shadow-2xl text-sm text-gray-900 overflow-hidden"
+      className="ow-map-popup"
     >
       {/* Image */}
       {spot.images[0] && (
@@ -108,7 +115,7 @@ export function SpotPopup({
         </div>
       )}
 
-      <div className="p-4">
+      <div className="ow-popup-content">
         {/* Header */}
         <div className="flex items-start justify-between mb-2 gap-2">
           <div>
@@ -123,20 +130,24 @@ export function SpotPopup({
           </div>
           <div className="flex items-center gap-1 shrink-0 mt-0.5">
             <button
+              type="button"
+              aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+              aria-pressed={isFav}
               onClick={() => toggleFavorite(spot.id)}
-              className="text-gray-400 hover:text-amber-500 transition-colors"
+              className="ow-icon-button"
               title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
             >
               <Star
                 className="h-4 w-4"
                 fill={isFav ? "currentColor" : "none"}
                 strokeWidth={isFav ? 0 : 2}
-                style={isFav ? { color: "#f59e0b" } : undefined}
               />
             </button>
             <button
+              type="button"
+              aria-label="Fermer"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-900"
+              className="ow-icon-button"
             >
               <X className="h-4 w-4" />
             </button>
@@ -161,11 +172,11 @@ export function SpotPopup({
         </div>
 
         {/* Wind NOW */}
-        <div className="rounded-lg p-3 bg-gray-50 border border-gray-100 mb-3">
+        <div className="ow-popup-reading">
           {live && <div className="mb-2"><WindProvenance compact live={live} /></div>}
           {loadingWind ? (
             <div className="text-gray-400 text-xs animate-pulse">
-              Chargement...
+              Chargement…
             </div>
           ) : wind ? (
             <div className="flex items-center gap-3">
@@ -174,7 +185,7 @@ export function SpotPopup({
                 style={{
                   background: wind.color + "22",
                   borderColor: wind.color,
-                  color: wind.color,
+                  color: "var(--ow-ink-secondary)",
                 }}
               >
                 {windArrow(wind.windDirection)}
@@ -183,7 +194,7 @@ export function SpotPopup({
                 <div className="flex items-baseline gap-1.5">
                   <span
                     className="font-bold text-xl tabular-nums"
-                    style={{ color: barColors(wind.windSpeedKmh)[0] }}
+                    style={{ color: "var(--ow-ink)" }}
                   >
                     {fmt(wind.windSpeedKmh)}
                   </span>
@@ -207,7 +218,7 @@ export function SpotPopup({
 
         <Link
           href={`/spots/${spot.id}`}
-          className="flex items-center justify-center gap-1.5 w-full rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors py-2 text-xs font-medium"
+          className="ow-primary w-full"
         >
           Voir le spot <ExternalLink className="h-3 w-3" />
         </Link>

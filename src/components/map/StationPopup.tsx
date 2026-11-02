@@ -61,9 +61,17 @@ export function StationPopup({
   const ref = useRef<HTMLDivElement>(null);
   const [flipBelow, setFlipBelow] = useState(false);
   const [popupH, setPopupH] = useState(0);
-  const [isMobile] = useState(() =>
+  const [isMobile, setIsMobile] = useState(() =>
     typeof window !== "undefined" ? window.innerWidth < 768 : false,
   );
+
+  useEffect(() => {
+    const mobileViewport = window.matchMedia("(max-width: 767px)");
+    const updateViewport = () => setIsMobile(mobileViewport.matches);
+    updateViewport();
+    mobileViewport.addEventListener("change", updateViewport);
+    return () => mobileViewport.removeEventListener("change", updateViewport);
+  }, []);
 
   // Fetch 48h history (API now returns combined past + 15-min forecast)
   useEffect(() => {
@@ -257,10 +265,10 @@ export function StationPopup({
     ? {
         position: "fixed",
         left: "50%",
-        top: "50%",
-        transform: "translate(-50%, -50%)",
+        bottom: "calc(var(--mobile-nav-height) + 16px)",
+        transform: "translateX(-50%)",
         zIndex: 100,
-        maxHeight: maxH,
+        maxHeight: "calc(100dvh - var(--mobile-nav-height) - 88px)",
       }
     : {
         position: "fixed",
@@ -278,7 +286,7 @@ export function StationPopup({
     <div
       ref={ref}
       style={style}
-      className="w-105 max-w-[90vw] rounded-xl bg-white border border-gray-200 shadow-2xl text-sm overflow-y-auto"
+      className="ow-map-popup"
     >
       {/* Header */}
       <div className="flex items-start justify-between px-4 pt-3 pb-2 border-b border-gray-100">
@@ -304,7 +312,7 @@ export function StationPopup({
             aria-label={isFavorite ? t("removeFavorite") : t("addFavorite")}
             aria-pressed={isFavorite}
             title={isFavorite ? t("removeFavorite") : t("addFavorite")}
-            className="rounded-full p-1 text-gray-400 transition-colors hover:bg-amber-50 hover:text-amber-500"
+            className="ow-icon-button"
           >
             <Star
               className={`h-4 w-4 ${
@@ -316,7 +324,7 @@ export function StationPopup({
             type="button"
             onClick={onClose}
             aria-label={tCommon("close")}
-            className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="ow-icon-button"
           >
             <X className="h-4 w-4" />
           </button>
@@ -325,7 +333,7 @@ export function StationPopup({
 
       {/* Wind info row */}
       <div className="flex items-center gap-3 px-4 py-3">
-        <svg width="40" height="40" viewBox="0 0 40 40" className="shrink-0">
+        <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40" className="shrink-0">
           <circle
             cx="20"
             cy="20"
@@ -351,7 +359,7 @@ export function StationPopup({
           <div className="flex items-baseline gap-2">
             <span
               className="text-2xl font-bold tabular-nums"
-              style={{ color: barColors(speedKmh)[0] }}
+              style={{ color: "var(--ow-ink)" }}
             >
               {primary}
             </span>

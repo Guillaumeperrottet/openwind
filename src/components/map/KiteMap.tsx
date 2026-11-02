@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo, type ReactNode } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Wind } from "lucide-react";
+import { Check, ChevronDown, Info, LoaderCircle, TriangleAlert, Wind } from "lucide-react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { io, type Socket } from "socket.io-client";
@@ -33,6 +33,7 @@ import {
 } from "@/lib/mapFocus";
 
 interface KiteMapProps {
+  children?: ReactNode;
   spots: Spot[];
   /** Pre-fetched stations from server (avoids client-side fetch delay) */
   initialStations?: WindStation[];
@@ -127,6 +128,7 @@ function selectedStationFromWindStation(station: WindStation): SelectedStation {
 }
 
 export function KiteMap({
+  children,
   spots,
   initialStations,
   pickMode = false,
@@ -136,6 +138,7 @@ export function KiteMap({
   initialZoom,
 }: KiteMapProps) {
   const tCommon = useTranslations("Common");
+  const app = useTranslations("AppDesign");
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const pickMarkerRef = useRef<maplibregl.Marker | null>(null);
@@ -212,7 +215,6 @@ export function KiteMap({
   const useKnotsRef = useRef(true);
   const [showWindOverlay, setShowWindOverlay] = useState(false);
   const [legendOpen, setLegendOpen] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(true);
   const { user, preferences, updatePreferences } = useFavContext();
   const sportFilter = preferences?.sportFilter ?? "ALL";
   sportFilterRef.current = sportFilter;
@@ -864,11 +866,6 @@ export function KiteMap({
     });
     // ─────────────────────────────────────────────────────────────────────
 
-    // Auto-collapse the sport filter pill as soon as the user starts panning/zooming
-    map.on("movestart", () => {
-      setFilterOpen(false);
-    });
-
     // Persist map position to localStorage on every move (survives reloads & browser restarts)
     map.on("moveend", () => {
       const c = map.getCenter();
@@ -1296,6 +1293,13 @@ export function KiteMap({
     };
   }, [mapLoaded, pickMode, renderCurrentSpots]);
 
+  useEffect(() => {
+    if (!mapLoaded || !containerRef.current || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => mapRef.current?.resize());
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [mapLoaded]);
+
   // Highlight a spot on hover from external panel (e.g. TripPlanner results)
   useEffect(() => {
     const map = mapRef.current;
@@ -1320,70 +1324,16 @@ export function KiteMap({
   }, [highlightSpotId, mapLoaded, spots]);
 
   return (
-    <div className="relative w-full h-full">
-      <div ref={containerRef} className="w-full h-full" />
+    <div className="ow-map-workspace">
+      <div ref={containerRef} className="ow-map-canvas" />
 
-      {/* Sport filter toggle — hidden in pickMode (trip planner) */}
-      <div
-        className={`absolute top-4 left-4 z-10 flex flex-col gap-1.5 ${pickMode ? "hidden" : ""}`}
-      >
-        {/* Sport filter toggle — collapses to active label when a specific sport is selected */}
-        <div className="flex items-center rounded-full bg-white/95 shadow-lg border border-gray-200 p-0.5 text-[11px] font-semibold overflow-hidden">
-          {(["ALL", "KITE", "PARAGLIDE"] as const).map((v) => {
-            const isActive = sportFilter === v;
-            const show = filterOpen || isActive;
-            const label =
-              v === "ALL" ? (
-                "Tous"
-              ) : v === "KITE" ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src="/icon_kite.png"
-                  alt="Kite"
-                  width={16}
-                  height={16}
-                  className="shrink-0"
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src="/icon_para.png"
-                  alt="Para"
-                  width={16}
-                  height={16}
-                  className="shrink-0"
-                />
-              );
-            return (
-              <button
-                key={v}
-                onClick={() => {
-                  if (!filterOpen) {
-                    setFilterOpen(true);
-                    return;
-                  }
-                  setSportFilter(v);
-                  setFilterOpen(false);
-                }}
-                className="rounded-full transition-all duration-200 ease-in-out overflow-hidden whitespace-nowrap flex items-center justify-center"
-                style={{
-                  maxWidth: show ? "4rem" : "0",
-                  opacity: show ? 1 : 0,
-                  paddingLeft: show ? "0.625rem" : "0",
-                  paddingRight: show ? "0.625rem" : "0",
-                  paddingTop: "0.25rem",
-                  paddingBottom: "0.25rem",
-                  background: isActive ? "rgba(0,0,0,0.08)" : "transparent",
-                  color: isActive ? "#111827" : "#6b7280",
-                  pointerEvents: show ? "auto" : "none",
-                }}
-              >
-                {label}
-              </button>
-            );
-          })}
+      <div className="ow-map-toolbar" hidden={pickMode}>
+        <div className="ow-sport-filter" role="group" aria-label={app("activity")}>
+          {(["ALL", "KITE", "PARAGLIDE"] as const).map((v) => <button type="button" key={v} aria-label={app(v)} title={app(v)} aria-pressed={sportFilter === v} onClick={() => setSportFilter(v)}>
+            {v === "PARAGLIDE" ? app("paraShort") : app(v)}
+          </button>)}
         </div>
-
+        <div className="ow-map-toolbar-row">
         <button
           type="button"
           onClick={() =>
@@ -1408,39 +1358,26 @@ export function KiteMap({
                   })}`
                 : tCommon("liveWind")
           }
-          className={`group inline-flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-lg backdrop-blur transition-all ${
-            showWindOverlay
-              ? "border-sky-300 bg-sky-600 text-white hover:bg-sky-700"
-              : "border-gray-200 bg-white/95 text-gray-700 hover:bg-white hover:text-sky-700"
-          }`}
+          className="ow-layer-toggle"
+          aria-busy={showWindOverlay && windOverlay.status === "loading"}
         >
-          <Wind
-            className={`h-4 w-4 ${
-              windOverlay.status === "loading" ? "animate-pulse" : ""
-            }`}
-          />
-          <span>{tCommon("liveWind")}</span>
-          {showWindOverlay && windOverlay.status === "ready" && (
-            <span
-              className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_0_3px_rgba(110,231,183,0.2)]"
-              aria-hidden="true"
-            />
-          )}
-          {showWindOverlay && windOverlay.status === "error" && (
-            <span
-              className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-700"
-              aria-hidden="true"
-            >
-              !
-            </span>
-          )}
+          {showWindOverlay && windOverlay.status === "loading"
+            ? <LoaderCircle aria-hidden className="h-4 w-4 animate-spin" />
+            : showWindOverlay && windOverlay.status === "error"
+              ? <TriangleAlert aria-hidden className="h-4 w-4" />
+              : showWindOverlay && windOverlay.status === "ready"
+                ? <Check aria-hidden className="h-4 w-4" />
+                : <Wind aria-hidden className="h-4 w-4" />}
+
         </button>
+        {children}
+        </div>
 
         {showWindOverlay &&
           windOverlay.status === "ready" &&
           windOverlay.details && (
             <div
-              className="w-fit max-w-56 rounded-xl border border-white/70 bg-zinc-950/75 px-3 py-2 text-[10px] leading-snug text-white shadow-lg backdrop-blur-md"
+              className="ow-wind-info"
               data-wind-overlay-status="ready"
               data-wind-quality={
                 windOverlay.details.performance?.tier ?? "high"
@@ -1457,16 +1394,18 @@ export function KiteMap({
                 "warming-up"
               }
             >
-              <div className="flex items-center gap-1.5 font-semibold">
+              <details>
+              <summary><Info aria-hidden className="h-4 w-4" />{app("layerDetails")}<ChevronDown aria-hidden className="ml-auto h-4 w-4" /></summary>
+              <p className="flex flex-wrap items-center gap-2">
                 <span>{windOverlay.details.model.label}</span>
                 {windOverlay.details.model.resolutionKm != null && (
                   <>
-                    <span className="text-white/40">·</span>
+                    <span aria-hidden> / </span>
                     <span>{windOverlay.details.model.resolutionKm} km</span>
                   </>
                 )}
-              </div>
-              <div className="mt-0.5 text-white/70">
+              </p>
+              <p>
                 {windOverlay.details.dataSource === "openwind_tiles"
                   ? tCommon("windOpenwindGrid")
                   : windOverlay.details.dataSource === "native"
@@ -1481,7 +1420,7 @@ export function KiteMap({
                       })}
                 {windOverlay.validAt && (
                   <>
-                    <span className="mx-1 text-white/35">·</span>
+                    <span aria-hidden>, </span>
                     {new Date(windOverlay.validAt).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -1491,20 +1430,21 @@ export function KiteMap({
                 )}
                 {windOverlay.details.stale && (
                   <>
-                    <span className="mx-1 text-white/35">·</span>
-                    <span className="text-amber-200">
+                    <span aria-hidden>, </span>
+                    <span className="ow-warning-text">
                       {tCommon("windDataStale")}
                     </span>
                   </>
                 )}
-              </div>
+              </p>
+              </details>
             </div>
           )}
       </div>
 
       {windOverlay.hoveredWind && windOverlay.status === "ready" && (
         <div
-          className="pointer-events-none absolute z-20 min-w-40 rounded-xl border border-white/70 bg-white/95 px-3 py-2.5 text-xs text-zinc-700 shadow-xl backdrop-blur-md"
+          className="ow-map-wind-tooltip"
           style={{
             left:
               windOverlay.hoveredWind.x +
@@ -1556,7 +1496,7 @@ export function KiteMap({
         </div>
       )}
 
-      {/* Wind legend + unit toggle */}
+      <div className="ow-map-dock">
       <MapLegend
         useKnots={useKnots}
         setUseKnots={setUseKnots}
@@ -1570,17 +1510,19 @@ export function KiteMap({
       {!pickMode && (
         <Link
           href="/plan?quick=now"
-          className="absolute bottom-8 left-4 z-10 inline-flex items-center gap-2 rounded-full bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 text-sm font-medium shadow-lg transition-colors"
+          className="ow-primary order-first"
         >
           <Wind className="h-4 w-4" />
-          <span>Ça souffle&nbsp;?</span>
+          <span>{app("findWindow")}</span>
         </Link>
       )}
+
+      </div>
 
       {/* Pick toast — hidden on mobile where the TripPlanner controls provide guidance */}
       {pickMode && (
         <div className="hidden lg:flex flex-col items-center absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-amber-500/90 text-zinc-900 text-sm font-medium px-5 py-2.5 rounded-2xl shadow-lg">
-          <span>🎯 Cliquez sur la carte pour choisir votre destination</span>
+          <span>Cliquez sur la carte pour choisir votre destination</span>
           <span className="text-xs font-normal opacity-75 mt-0.5">
             ou laissez vide et utilisez « Autour de moi » ou « Meilleurs spots »
           </span>

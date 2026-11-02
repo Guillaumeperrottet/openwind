@@ -18,7 +18,7 @@ import {
   ArrowLeft,
   MapPin,
   Wind,
-  Zap,
+  TrendingUp,
   Waves,
   Calendar,
   AlertTriangle,
@@ -26,7 +26,6 @@ import {
   ExternalLink,
   Sailboat,
   Mountain,
-  TrendingUp,
   Pencil,
   Images,
   Star,
@@ -295,7 +294,7 @@ export function SpotPageClient({
           : null
     )?.trim() || spot.access;
 
-  const { nearbyStations, loadingStations } = useNearbyStations(
+  const { nearbyStations, loadingStations, stationsError } = useNearbyStations(
     spot.latitude,
     spot.longitude,
   );
@@ -463,6 +462,7 @@ export function SpotPageClient({
   const speedKts = roundKnots(speedKmh);
   const gustsKts = gustsKmh !== null ? roundKnots(gustsKmh) : null;
 
+  const app = useTranslations("AppDesign");
   const tMonths = useTranslations("Months");
   const { difficultyLabel, waterLabel } = useBadgeLabels();
 
@@ -478,107 +478,181 @@ export function SpotPageClient({
   const isKite = spot.sportType === "KITE";
 
   return (
-    <div className="min-h-screen bg-white pb-20">
-      {/* ── Header ───────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-6">
-        <div className="flex items-center justify-between mb-5">
-          <Link
-            href="/?view=map"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t("backToMap")}
-          </Link>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => toggleFavorite(spot.id)}
-              className="inline-flex items-center justify-center text-gray-400 hover:text-amber-500 transition-colors"
-              title={isFav ? t("removeFavorite") : t("addFavorite")}
-            >
-              <Star
-                className="h-5 w-5"
-                fill={isFav ? "currentColor" : "none"}
-                strokeWidth={isFav ? 0 : 2}
-                style={isFav ? { color: "#f59e0b" } : undefined}
-              />
-            </button>
-            {canEdit && <Link
-              href={`/spots/${spot.id}/edit`}
-              className="inline-flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors"
-              title={t("editSpot")}
-            >
-              <Pencil className="h-4 w-4" />
-            </Link>}
+    <div className="ow-spot">
+      <header className="ow-spot-heading">
+        <div className="ow-spot-container">
+          <div className="ow-spot-breadcrumb">
+            <nav className="ow-spot-quicklinks" aria-label={app("spotNavigation")}>
+            <Link href="/?view=map" className="ow-spot-back"><ArrowLeft aria-hidden className="h-4 w-4" />{t("backToMap")}</Link>
+              <a href="#previsions" className="ow-spot-back ow-forecast-shortcut"><Calendar aria-hidden className="h-4 w-4" />{app("forecastShortcut")}</a>
+            </nav>
+            <div className="ow-spot-actions">
+              <button type="button" onClick={() => toggleFavorite(spot.id)} className="ow-icon-button" aria-label={isFav ? t("removeFavorite") : t("addFavorite")} aria-pressed={isFav} title={isFav ? t("removeFavorite") : t("addFavorite")}>
+                <Star aria-hidden className="h-5 w-5" fill={isFav ? "currentColor" : "none"} strokeWidth={isFav ? 0 : 2} />
+              </button>
+              {canEdit && <Link href={`/spots/${spot.id}/edit`} className="ow-icon-button" aria-label={t("editSpot")} title={t("editSpot")}><Pencil aria-hidden className="h-4 w-4" /></Link>}
+            </div>
+          </div>
+          <div className="ow-spot-title">
+            <h1>{spot.name}</h1>
+            {spot.bestWindDirections.length > 0 && <div title={`Meilleures directions : ${spot.bestWindDirections.join(", ")}`}><WindDirectionRose bestDirections={spot.bestWindDirections} size={48} variant="minimal" showLabels /></div>}
+          </div>
+          <div className="ow-spot-meta">
+            {(spot.country || spot.region) && <span><MapPin aria-hidden className="h-4 w-4" />{[spot.region, spot.country].filter(Boolean).join(", ")}</span>}
+            <span>{isKite ? <Sailboat aria-hidden className="h-4 w-4" /> : <Mountain aria-hidden className="h-4 w-4" />}{isKite ? "Kitesurf" : "Parapente"}</span>
+            <Link href={`/webcams?lat=${spot.latitude}&lng=${spot.longitude}&name=${encodeURIComponent(spot.name)}&back=${encodeURIComponent(`/spots/${spot.id}`)}`}><Camera aria-hidden className="h-4 w-4" />Webcams</Link>
+            <a href="#balises"><Radio aria-hidden className="h-4 w-4" />{t("nearbyStationsLink")}</a>
           </div>
         </div>
-
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 wrap-break-word">
-                {spot.name}
-              </h1>
-              {spot.bestWindDirections.length > 0 && (
-                <div
-                  title={`Meilleures directions : ${spot.bestWindDirections.join(", ")}`}
+      </header>
+      <div className="ow-spot-container ow-spot-body">
+        <section aria-label={app("currentConditions")}>
+          <div className="ow-conditions-toolbar">
+            <div className="ow-conditions-source">{resolvedLive && <WindProvenance live={resolvedLive} expandable />}</div>
+            <div className="ow-unit-control" role="group" aria-label={app("units")}>
+              <button type="button" aria-pressed={useKnots} onClick={() => setUseKnots(true)}>kts</button>
+              <button type="button" aria-pressed={!useKnots} onClick={() => setUseKnots(false)}>km/h</button>
+            </div>
+          </div>
+          {forecast && <PrecipAlert hourly={forecast.hourly} />}
+          <div className="ow-current-grid">
+            <dl className="ow-current-metrics">
+              <div className="ow-current-metric"><dt>{t("avgWind")}</dt><dd><span className="ow-current-value">{wind ? (useKnots ? speedKts : Math.round(speedKmh)) : "—"}</span>{wind && <span className="ow-current-unit">{useKnots ? "kts" : "km/h"}</span>}</dd>{wind?.updatedAt && <span className="ow-current-age">{relativeTime(wind.updatedAt)}</span>}</div>
+              <div className="ow-current-metric"><dt>{t("gusts")}</dt><dd><span className="ow-current-value">{gustsKts !== null && gustsKmh !== null ? (useKnots ? gustsKts : Math.round(gustsKmh)) : "—"}</span>{gustsKmh !== null && <span className="ow-current-unit">{useKnots ? "kts" : "km/h"}</span>}</dd></div>
+              <div className="ow-current-metric"><dt>{t("direction")}</dt><dd><span className="ow-current-value">{dirLabel}</span>{wind && <span className="ow-current-unit">{wind.windDirection}°</span>}</dd></div>
+            </dl>
+            <div className="ow-current-compass">
+              {wind ? <WindCompass wind={wind} size={112} light sourceLabel={windSource ? `${windSource.name} · ${windSource.network}` : "Open-Meteo · NWP"} /> : <p>{t("windUnavailable")}</p>}
+              {windSource ? <span>{windSource.network}</span> : <a href="https://open-meteo.com" target="_blank" rel="noopener noreferrer">Open-Meteo <ExternalLink aria-hidden className="inline h-3 w-3" /></a>}
+            </div>
+          </div>
+        </section>
+          {/* 48h history chart */}
+          <section className="ow-section" id="spot-history">
+            <div className="ow-section-header">
+              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                <TrendingUp className="h-4 w-4 text-gray-500" />
+                {t("history48h")}
+              </h2>
+              {historySource ? (
+                <span className="text-[10px] text-gray-500">
+                  {historySource}
+                  {nearbyStations.find((s) => s.id === historySource)
+                    ? ` · ${nearbyStations.find((s) => s.id === historySource)?.source === "meteoswiss" ? "MeteoSwiss" : nearbyStations.find((s) => s.id === historySource)?.source === "pioupiou" ? "Pioupiou" : nearbyStations.find((s) => s.id === historySource)?.source === "netatmo" ? "Netatmo" : nearbyStations.find((s) => s.id === historySource)?.source === "meteofrance" ? "Météo-France" : nearbyStations.find((s) => s.id === historySource)?.source === "windball" ? "Windball" : ""}`
+                    : windSource
+                      ? ` · ${windSource.network}`
+                      : ""}
+                </span>
+              ) : windSource ? (
+                <span className="text-[10px] text-gray-500">
+                  {windSource.name} · {windSource.network}
+                </span>
+              ) : (
+                <a
+                  href="https://open-meteo.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-gray-500 hover:text-gray-700 inline-flex items-center gap-0.5"
                 >
-                  <WindDirectionRose
-                    bestDirections={spot.bestWindDirections}
-                    size={72}
-                    variant="minimal"
-                    showLabels
-                  />
+                  Open-Meteo · NWP open source
+                  <ExternalLink className="h-2.5 w-2.5 ml-0.5" />
+                </a>
+              )}
+            </div>
+            <div className="ow-section-chart">
+              {historyLoading ? (
+                <div className="flex items-center justify-center h-28 text-sm text-gray-400 gap-2">
+                  <svg aria-hidden="true" className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  {t("loading")}
+                </div>
+              ) : chartHistory && chartHistory.length > 0 ? (
+                <WindHistoryChart
+                  history={chartHistory}
+                  forecast={forecast?.hourly}
+                  useKnots={useKnots}
+                  timezone={forecast?.timezone ?? "UTC"}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-28 text-sm text-gray-500">
+                  {t("historyUnavailable")}
                 </div>
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-              {(spot.country || spot.region) && (
-                <>
-                  <span
-                    className={`${showInfo ? "flex" : "hidden"} items-center gap-1`}
-                  >
-                    <MapPin className="h-3.5 w-3.5" />
-                    {[spot.region, spot.country].filter(Boolean).join(", ")}
-                  </span>
-                  <span hidden={!showInfo}>·</span>
-                </>
-              )}
-              <span
-                className={`${showInfo ? "flex" : "hidden"} items-center gap-1`}
-              >
-                {isKite ? (
-                  <Sailboat className="h-3.5 w-3.5" />
-                ) : (
-                  <Mountain className="h-3.5 w-3.5" />
-                )}
-                {isKite ? "Kitesurf" : "Parapente"}
-              </span>
-              <span hidden={!showInfo}>·</span>
-              <Link
-                href={`/webcams?lat=${spot.latitude}&lng=${spot.longitude}&name=${encodeURIComponent(spot.name)}&back=${encodeURIComponent(`/spots/${spot.id}`)}`}
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <Camera className="h-3.5 w-3.5" />
-                Webcams
-              </Link>
-              <span>·</span>
+          </section>
+
+        {/* Detailed hourly forecast */}
+        {forecast ? (
+          <section id="previsions" className="ow-section ow-forecast-first">
+            <h2 className="text-base font-semibold text-gray-900 mb-3">
+              {t("windguru")}
+            </h2>
+            <ForecastWithToggle
+              forecast={forecast}
+              spotId={spot.id}
+              lat={spot.latitude}
+              lng={spot.longitude}
+              enableMeteoSwiss={isInSwitzerland(spot.latitude, spot.longitude)}
+            />
+          </section>
+        ) : (
+          <div id="previsions" className="ow-section ow-forecast-first text-sm text-gray-500 py-8">
+            {t("forecastUnavailable")}
+          </div>
+        )}
+
+        {/* ── Graphique vent · 7 jours ───────────────────────────── */}
+        {forecast && (
+          <section className="ow-section">
+            <div className="ow-section-header">
+              <h2 className="text-base font-semibold text-gray-900">
+                {t("forecast7days")}
+              </h2>
               <a
-                href="#balises"
-                className="flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors"
+                href="https://open-meteo.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-gray-500 hover:text-gray-700 inline-flex items-center gap-0.5"
               >
-                <Radio className="h-3.5 w-3.5" />
-                {t("nearbyStationsLink")}
+                Open-Meteo · NWP open source
+                <ExternalLink className="h-2.5 w-2.5 ml-0.5" />
               </a>
             </div>
+            <div className="ow-section-chart">
+              <WindChart
+                hourly={forecast.hourly}
+                timezone={forecast.timezone}
+                useKnots={useKnots}
+              />
+            </div>
+          </section>
+        )}
 
-            <details className="mt-4 max-w-2xl rounded-xl border border-slate-200 bg-slate-50 px-3">
+        <section className="ow-spot-information" aria-labelledby="spot-information-title">
+          <h2 id="spot-information-title" className="text-xl font-semibold">{app("spotInformation")}</h2>
+          <div className="ow-spot-info-grid"><div>
+            <details className="ow-qualification">
               <summary className="flex min-h-11 cursor-pointer items-center text-xs font-semibold text-slate-700">
                 {
                   plannerUiCopy[toSiteLocale(locale)].status[
                     qualification?.status ?? "MISSING"
                   ]
                 }{" "}
-                · {plannerUiCopy[toSiteLocale(locale)].details}
+                {" / "}{plannerUiCopy[toSiteLocale(locale)].details}
               </summary>
               <div className="pb-3">
                 <QualificationPanel
@@ -596,7 +670,7 @@ export function SpotPageClient({
               }}
               aria-expanded={showInfo}
               aria-controls="spot-info-details"
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 transition-colors"
+              className="ow-spot-back"
             >
               <ChevronDown
                 className={`h-3.5 w-3.5 transition-transform ${showInfo ? "rotate-180" : ""}`}
@@ -653,8 +727,7 @@ export function SpotPageClient({
 
             {lastRefreshed && (
               <span className="inline-flex items-center gap-1 text-[10px] text-gray-500 mt-2">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                màj auto ·{" "}
+                màj auto,{" "}
                 {lastRefreshed.toLocaleTimeString(undefined, {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -662,18 +735,18 @@ export function SpotPageClient({
               </span>
             )}
           </div>
-
-          {/* ── Right side: photos ──────────────────────────── */}
           <div
-            className={`${showInfo ? "flex" : "hidden"} shrink-0 flex-row sm:flex-col items-center sm:items-end gap-3 w-full sm:w-auto`}
+            className="ow-spot-photos"
+            hidden={!showInfo}
           >
             {spot.images.length > 0 && (
               <div className="flex gap-1.5">
                 {spot.images.slice(0, 3).map((img, idx) => (
                   <button
+                    type="button"
                     key={img.id}
                     onClick={() => setLightboxIndex(idx)}
-                    className="relative overflow-hidden rounded-lg border border-gray-200 w-20 h-20 sm:w-24 sm:h-24 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                    className="relative"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -681,7 +754,7 @@ export function SpotPageClient({
                       alt={img.caption || spot.name}
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                      className="w-full h-full object-cover"
                     />
                     {idx === 2 && spot.images.length > 3 && (
                       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-0.5">
@@ -696,252 +769,8 @@ export function SpotPageClient({
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* ── Main content ─────────────────────────────────────────── */}
-      <div className="px-4 sm:px-6 py-8">
-        {/* Unit toggle */}
-        <div className="flex justify-end mb-5">
-          <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden text-sm shadow-sm">
-            <button
-              onClick={() => setUseKnots(true)}
-              className={`px-4 py-1.5 font-medium transition-colors ${
-                useKnots
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              kts
-            </button>
-            <button
-              onClick={() => setUseKnots(false)}
-              className={`px-4 py-1.5 font-medium transition-colors border-l border-gray-200 ${
-                !useKnots
-                  ? "bg-gray-900 text-white"
-                  : "bg-white text-gray-500 hover:bg-gray-50"
-              }`}
-            >
-              km/h
-            </button>
           </div>
-        </div>
-
-        {/* ── Alerte précipitation (conditionnelle) ───────────────── */}
-        {forecast && <PrecipAlert hourly={forecast.hourly} />}
-
-        {/* ── Vent en direct + Info ──────────────────────────────── */}
-        {resolvedLive && <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"><WindProvenance live={resolvedLive} /></div>}
-        <div className="flex flex-col md:flex-row items-start gap-3 mb-10">
-          {/* Compass */}
-          <div className="hidden sm:flex flex-col items-center gap-2 bg-gray-50 border border-gray-200 rounded-2xl p-4 shrink-0">
-            {wind ? (
-              <WindCompass
-                wind={wind}
-                size={170}
-                light
-                sourceLabel={
-                  windSource
-                    ? `${windSource.name} · ${windSource.network}`
-                    : "Open-Meteo · NWP"
-                }
-              />
-            ) : (
-              <div className="flex items-center justify-center h-48 w-48 text-sm text-gray-400">
-                {t("windUnavailable")}
-              </div>
-            )}
-            <p className="text-[10px] text-gray-500 text-center leading-snug">
-              {windSource ? (
-                <span>{windSource.network}</span>
-              ) : (
-                <a
-                  href="https://open-meteo.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-gray-700 inline-flex items-center gap-0.5"
-                >
-                  Open-Meteo
-                  <ExternalLink className="h-2 w-2 ml-0.5" />
-                </a>
-              )}
-            </p>
-          </div>
-
-          {/* Cards */}
-          <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
-            <div className="flex gap-2">
-              {/* Vent moyen */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 flex-1 sm:flex-none sm:w-40">
-                <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium mb-3">
-                  <Wind className="h-4 w-4" />
-                  {t("avgWind")}
-                </div>
-                {wind ? (
-                  <>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl sm:text-5xl font-bold tabular-nums leading-none text-gray-900">
-                        {useKnots ? speedKts : Math.round(speedKmh)}
-                      </span>
-                      <span className="text-base text-gray-500 font-medium">
-                        {useKnots ? "kts" : "km/h"}
-                      </span>
-                    </div>
-                    {wind.updatedAt && (
-                      <div className="text-[10px] text-gray-400 mt-2">
-                        {relativeTime(wind.updatedAt)}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-4xl sm:text-5xl font-bold text-gray-400">
-                    —
-                  </div>
-                )}
-              </div>
-
-              {/* Rafales */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 sm:p-5 flex-1 sm:flex-none sm:w-40">
-                <div className="flex items-center gap-1.5 text-sm text-gray-600 font-medium mb-3">
-                  <Zap className="h-4 w-4" />
-                  {t("gusts")}
-                </div>
-                {gustsKts !== null && gustsKmh !== null ? (
-                  <>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl sm:text-5xl font-bold tabular-nums leading-none text-gray-900">
-                        {useKnots ? gustsKts : Math.round(gustsKmh)}
-                      </span>
-                      <span className="text-base text-gray-500 font-medium">
-                        {useKnots ? "kts" : "km/h"}
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-4xl sm:text-5xl font-bold text-gray-400">
-                    —
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Direction */}
-            {wind && (
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-gray-600 mb-2">
-                      {t("direction")}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <svg
-                        width="32"
-                        height="32"
-                        viewBox="0 0 16 16"
-                        aria-hidden="true"
-                      >
-                        <g
-                          transform={`rotate(${(wind.windDirection + 180) % 360}, 8, 8)`}
-                        >
-                          <line
-                            x1="8"
-                            y1="13"
-                            x2="8"
-                            y2="4.5"
-                            stroke="#374151"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                          <polygon
-                            points="8,1.5 4.5,6.5 11.5,6.5"
-                            fill="#374151"
-                          />
-                        </g>
-                      </svg>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold text-gray-900 leading-none">
-                          {dirLabel}
-                        </span>
-                        <span className="text-base text-gray-500">
-                          {wind.windDirection}°
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 48h history chart */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-w-0 flex-1">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
-              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
-                <TrendingUp className="h-4 w-4 text-gray-500" />
-                {t("history48h")}
-              </h2>
-              {historySource ? (
-                <span className="text-[10px] text-gray-500">
-                  {historySource}
-                  {nearbyStations.find((s) => s.id === historySource)
-                    ? ` · ${nearbyStations.find((s) => s.id === historySource)?.source === "meteoswiss" ? "MeteoSwiss" : nearbyStations.find((s) => s.id === historySource)?.source === "pioupiou" ? "Pioupiou" : nearbyStations.find((s) => s.id === historySource)?.source === "netatmo" ? "Netatmo" : nearbyStations.find((s) => s.id === historySource)?.source === "meteofrance" ? "Météo-France" : nearbyStations.find((s) => s.id === historySource)?.source === "windball" ? "Windball" : ""}`
-                    : windSource
-                      ? ` · ${windSource.network}`
-                      : ""}
-                </span>
-              ) : windSource ? (
-                <span className="text-[10px] text-gray-500">
-                  {windSource.name} · {windSource.network}
-                </span>
-              ) : (
-                <a
-                  href="https://open-meteo.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-gray-500 hover:text-gray-700 inline-flex items-center gap-0.5"
-                >
-                  Open-Meteo · NWP open source
-                  <ExternalLink className="h-2.5 w-2.5 ml-0.5" />
-                </a>
-              )}
-            </div>
-            <div className="px-3 py-2">
-              {historyLoading ? (
-                <div className="flex items-center justify-center h-28 text-sm text-gray-400 gap-2">
-                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  {t("loading")}
-                </div>
-              ) : chartHistory && chartHistory.length > 0 ? (
-                <WindHistoryChart
-                  history={chartHistory}
-                  forecast={forecast?.hourly}
-                  useKnots={useKnots}
-                  timezone={forecast?.timezone ?? "UTC"}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-28 text-sm text-gray-500">
-                  {t("historyUnavailable")}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
+        </section>
         {children}
         <LocalGuideLinks locale={locale} spotId={spot.id} />
 
@@ -956,79 +785,33 @@ export function SpotPageClient({
           />
         )}
 
-        {/* ── Graphique vent · 7 jours ───────────────────────────── */}
-        {forecast && (
-          <div className="mb-10">
-            <div className="flex items-baseline justify-between mb-3">
-              <h2 className="text-base font-semibold text-gray-900">
-                {t("forecast7days")}
-              </h2>
-              <a
-                href="https://open-meteo.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] text-gray-500 hover:text-gray-700 inline-flex items-center gap-0.5"
-              >
-                Open-Meteo · NWP open source
-                <ExternalLink className="h-2.5 w-2.5 ml-0.5" />
-              </a>
-            </div>
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 pt-5">
-              <WindChart
-                hourly={forecast.hourly}
-                timezone={forecast.timezone}
-                useKnots={useKnots}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Detailed hourly forecast */}
-        {forecast ? (
-          <div className="mb-10">
-            <h2 className="text-base font-semibold text-gray-900 mb-3">
-              {t("windguru")}
-            </h2>
-            <ForecastWithToggle
-              forecast={forecast}
-              spotId={spot.id}
-              lat={spot.latitude}
-              lng={spot.longitude}
-              enableMeteoSwiss={isInSwitzerland(spot.latitude, spot.longitude)}
-            />
-          </div>
-        ) : (
-          <div className="text-sm text-gray-500 text-center py-8">
-            {t("forecastUnavailable")}
-          </div>
-        )}
-
         {/* ── Balises à proximité ─────────────────────────────── */}
-        <div id="balises" className="mb-10 scroll-mt-6">
+        <section id="balises" className="ow-section scroll-mt-20">
           <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-1.5">
             <Radio className="h-4 w-4 text-gray-500" />
             {t("nearbyStations")}
           </h2>
-          <p className="text-xs text-gray-400 mb-3">{t("selectStationHint")}</p>
+          {!loadingStations && nearbyStations.length > 0 && <p className="ow-caption mb-3">{t("selectStationHint")}</p>}
           <NearbyStationsPanel
             stations={nearbyStations}
             loading={loadingStations}
+            error={stationsError}
             useKnots={useKnots}
             selectedId={selectedStationId}
             onSelect={(s) => setSelectedStationId(s.id)}
           />
-        </div>
+        </section>
 
         {/* ── Archives vent historiques ────────────────────────── */}
-        <div className="mb-10">
+        <section className="ow-section">
           <h2 className="text-base font-semibold text-gray-900 mb-3">
             {t("windArchives")}
           </h2>
           <WindArchives spotId={spot.id} useKnots={useKnots} />
-        </div>
+        </section>
 
         {/* ── Situation ─────────────────────────────────────────── */}
-        <div className="mb-10">
+        <section className="ow-section">
           <h2 className="text-base font-semibold text-gray-900 mb-3">
             {t("location")}
           </h2>
@@ -1040,7 +823,7 @@ export function SpotPageClient({
               bestDirections={spot.bestWindDirections}
             />
           </div>
-        </div>
+        </section>
 
         {/* ── Coordonnées + liens ──────────────────────────────────── */}
         <div className="mt-14 pt-6 border-t border-gray-200">
@@ -1054,7 +837,7 @@ export function SpotPageClient({
               rel="noopener noreferrer"
               className="hover:text-gray-500 transition-colors"
             >
-              {t("openStreetMap")} →
+              {t("openStreetMap")}
             </a>
           </div>
         </div>

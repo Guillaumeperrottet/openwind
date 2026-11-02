@@ -702,5 +702,27 @@
     "fewerFavorites": "Riduci la lista",
     "removeFavorite": "Rimuovi «{name}» dai preferiti",
     "undo": "Annulla rimozione"
+  },
+  "AppDesign": {
+    "spotNavigation": "Navigazione dello spot",
+    "forecastShortcut": "Previsioni",
+    "paraShort": "Para",
+    "activity": "Attività",
+    "ALL": "Tutti",
+    "KITE": "Kite",
+    "PARAGLIDE": "Parapendio",
+    "findWindow": "Trova una finestra",
+    "layerDetails": "Dati del livello",
+    "legend": "Scala del vento",
+    "units": "Unità del vento",
+    "openLegend": "Apri la legenda del vento",
+    "closeLegend": "Chiudi legenda",
+    "spotInformation": "Spot e accessi",
+    "currentConditions": "Condizioni attuali",
+    "close": "Chiudi",
+    "partner": "Partner",
+    "stationsLoading": "Caricamento delle stazioni…",
+    "noNearbyStations": "Nessuna stazione entro 10 km da questo spot. Le previsioni restano disponibili sopra.",
+    "stationsUnavailable": "Le stazioni sono temporaneamente indisponibili. Riprova tra poco."
   }
 }

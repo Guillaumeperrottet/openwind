@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { ReactNode } from "react";
 import type { Spot } from "@/types";
 import type { WindStation } from "@/lib/stations";
 import { AdBanner } from "@/components/ui/AdBanner";
@@ -55,14 +56,15 @@ const KiteMap = dynamic(
 );
 
 interface Props {
+  children?: ReactNode;
   spots: Spot[];
   initialStations?: WindStation[];
 }
 
-export function KiteMapLazy({ spots, initialStations }: Props) {
+export function KiteMapLazy({ spots, initialStations, children }: Props) {
   return (
-    <div className="relative w-full h-full">
-      <KiteMap spots={spots} initialStations={initialStations} />
+    <div className="ow-map-frame">
+      <KiteMap spots={spots} initialStations={initialStations}>{children}</KiteMap>
       <AdBanner />
     </div>
   );

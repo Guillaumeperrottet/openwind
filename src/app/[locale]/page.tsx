@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { House } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { KiteMapLazy } from "@/components/map/KiteMapLazy";
 import { HomeLanding } from "@/components/home/HomeLanding";
@@ -168,13 +169,16 @@ export default async function HomePage({
         className="relative bg-white"
         style={{ height: "calc(100dvh - 56px - var(--mobile-nav-height))" }}
       >
-        <KiteMapLazy spots={spots} initialStations={initialStations} />
+        <KiteMapLazy spots={spots} initialStations={initialStations}>
         <Link
           href="/?view=home"
-          className="absolute bottom-7 left-1/2 z-20 -translate-x-1/2 rounded-full border border-slate-200 bg-white/95 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-white focus-visible:outline-2 focus-visible:outline-sky-600"
+          className="ow-map-home"
+          aria-label={HOME_COPY[toSiteLocale(locale)].home}
+          title={HOME_COPY[toSiteLocale(locale)].home}
         >
-          {HOME_COPY[toSiteLocale(locale)].home}
+          <House aria-hidden className="h-4 w-4" />
         </Link>
+        </KiteMapLazy>
       </div>
       <HomeDiscovery locale={locale} spots={spots} />
     </>

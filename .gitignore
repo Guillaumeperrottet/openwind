@@ -49,3 +49,6 @@ next-env.d.ts
 # Prisma generated client
 src/generated/
 .env.local
+
+# Local design review artifacts
+/.hallmark/

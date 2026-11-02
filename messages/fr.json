@@ -896,5 +896,27 @@
     "fewerFavorites": "Réduire la liste",
     "removeFavorite": "Retirer « {name} » des favoris",
     "undo": "Annuler le retrait"
+  },
+  "AppDesign": {
+    "spotNavigation": "Navigation du spot",
+    "forecastShortcut": "Prévisions",
+    "paraShort": "Para",
+    "activity": "Activité",
+    "ALL": "Tous",
+    "KITE": "Kite",
+    "PARAGLIDE": "Parapente",
+    "findWindow": "Trouver un créneau",
+    "layerDetails": "Données de la couche",
+    "legend": "Échelle du vent",
+    "units": "Unité du vent",
+    "openLegend": "Ouvrir la légende du vent",
+    "closeLegend": "Fermer la légende",
+    "spotInformation": "Le spot et ses accès",
+    "currentConditions": "Conditions actuelles",
+    "close": "Fermer",
+    "partner": "Partenaire",
+    "stationsLoading": "Chargement des balises…",
+    "noNearbyStations": "Aucune balise à moins de 10 km de ce spot. Les prévisions restent disponibles ci-dessus.",
+    "stationsUnavailable": "Les balises sont temporairement indisponibles. Réessayez dans quelques instants."
   }
 }

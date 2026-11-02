@@ -761,5 +761,27 @@
     "fewerFavorites": "Show fewer favorites",
     "removeFavorite": "Remove “{name}” from favorites",
     "undo": "Undo removal"
+  },
+  "AppDesign": {
+    "spotNavigation": "Spot navigation",
+    "forecastShortcut": "Forecast",
+    "paraShort": "Para",
+    "activity": "Activity",
+    "ALL": "All",
+    "KITE": "Kite",
+    "PARAGLIDE": "Paragliding",
+    "findWindow": "Find a window",
+    "layerDetails": "Layer data",
+    "legend": "Wind scale",
+    "units": "Wind units",
+    "openLegend": "Open wind legend",
+    "closeLegend": "Close legend",
+    "spotInformation": "The spot and access",
+    "currentConditions": "Current conditions",
+    "close": "Close",
+    "partner": "Partner",
+    "stationsLoading": "Loading stations…",
+    "noNearbyStations": "No station within 10 km of this spot. Forecasts remain available above.",
+    "stationsUnavailable": "Stations are temporarily unavailable. Please try again shortly."
   }
 }

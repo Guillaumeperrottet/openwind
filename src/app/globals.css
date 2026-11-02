@@ -1,4 +1,11 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: brand · redesign: full
+ * nav: existing Openwind shell · signature: wind map and measured conditions
+ * states: loading, empty, error, full · axes: light/system/sky · posture: restrained · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E3 S4 R4 V3 · weakest: E, unify controls and verify real charts at mobile sizes */
+/* Hallmark · finish-review: subagent · 2 findings · 2 resolved · gap: none; render: CUA desktop/mobile full-page captures; static sweep: 0 FAIL, 0 REFLEX; existing Tailwind WARNs retained on record */
 @import "tailwindcss";
+@import "../styles/openwind/tokens.css";
+@import "../styles/openwind/base.css";
 @plugin "@tailwindcss/typography";
 
 :root {

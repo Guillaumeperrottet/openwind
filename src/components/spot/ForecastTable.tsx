@@ -120,13 +120,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
     : "border-b border-white/10";
 
   return (
-    <div
-      className={
-        light
-          ? "rounded-xl border border-gray-100 overflow-hidden bg-white"
-          : "rounded-xl border border-white/10 overflow-hidden bg-zinc-900"
-      }
-    >
+    <div className="ow-forecast-scroll" data-tone={light ? "light" : "dark"}>
       <div className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-sky-600" role="region" aria-label={t("caption")} tabIndex={0}>
         <table className="border-collapse w-max">
           <caption className="sr-only">{t("caption")}</caption>
@@ -139,9 +133,9 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                 rowSpan={2}
               >
                 <span
-                  className={`${light ? "text-gray-400" : "text-zinc-600"} text-[8px] font-normal tracking-wide uppercase`}
+                  className={`ow-forecast-muted font-normal`}
                 >
-                  {unit} · °C
+                  {unit} / °C
                 </span>
               </th>
 
@@ -164,7 +158,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                 return (
                   <td
                     key={i}
-                    className={`text-center text-[9px] ${light ? "text-gray-400" : "text-zinc-500"} px-0 py-0.5 ${ROW_BORDER} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
+                    className={`text-center text-[9px] ow-forecast-muted px-0 py-0.5 ${ROW_BORDER} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                   >
                     {hourStr}
                   </td>
@@ -239,7 +233,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
-                  className={`${DATA_CELL} font-normal ${light ? "text-gray-500" : "text-zinc-500"} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
+                  className={`${DATA_CELL} font-normal ow-forecast-muted ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                 >
                   {pt.cloudcover > 0 ? pt.cloudcover : ""}
                 </td>
@@ -257,7 +251,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                     className={`${DATA_CELL} font-normal ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                     style={
                       hasPrecip
-                        ? { background: "#1e40af", color: "#bfdbfe" }
+                        ? { background: "var(--ow-rain)", color: "var(--ow-rain-ink)" }
                         : {}
                     }
                   >
@@ -275,7 +269,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}
-                      className={`${DATA_CELL} font-normal ${light ? "text-gray-400" : "text-zinc-400"} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
+                      className={`${DATA_CELL} font-normal ow-forecast-muted ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                     >
                       {pt.waveHeightM != null ? pt.waveHeightM.toFixed(1) : "—"}
                     </td>
@@ -286,7 +280,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}
-                      className={`${DATA_CELL} font-normal ${light ? "text-gray-400" : "text-zinc-500"} ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
+                      className={`${DATA_CELL} font-normal ow-forecast-muted ${isDayStart(pt, i) ? DAY_BORDER : ""}`}
                     >
                       {pt.wavePeriodS != null
                         ? Math.round(pt.wavePeriodS)

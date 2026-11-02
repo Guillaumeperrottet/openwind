@@ -139,16 +139,12 @@ export function ForecastWithToggle({
     <div>
       {/* Toggle bar */}
       {enableMeteoSwiss && (
-        <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
-          <div className="inline-flex items-center rounded-lg border border-gray-200 bg-white p-0.5 text-xs shadow-sm">
+        <div className="ow-forecast-source">
+          <div className="ow-unit-control">
             <button
               type="button"
               onClick={() => handleToggle("openmeteo")}
-              className={`px-2.5 py-1 rounded-md font-medium transition ${
-                source === "openmeteo"
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+
               aria-pressed={source === "openmeteo"}
             >
               Open-Meteo
@@ -156,11 +152,7 @@ export function ForecastWithToggle({
             <button
               type="button"
               onClick={() => handleToggle("meteoswiss")}
-              className={`px-2.5 py-1 rounded-md font-medium transition inline-flex items-center gap-1 ${
-                source === "meteoswiss"
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+
               aria-pressed={source === "meteoswiss"}
               disabled={loading}
             >
@@ -169,11 +161,11 @@ export function ForecastWithToggle({
             </button>
           </div>
           {error && (
-            <span className="text-[10px] text-red-600">
+            <span className="ow-caption ow-warning-text">
               {t("unavailable")}
             </span>
           )}
-          <span className="text-[10px] text-gray-400">
+          <span className="ow-caption">
             {source === "meteoswiss"
               ? loading
                 ? t("loading")

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useId, useRef } from "react";
+import { ChevronDown, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { windPaletteGradient, windPaletteLegend } from "@/lib/windPalette";
 
@@ -12,121 +14,50 @@ interface MapLegendProps {
   windOverlayActive?: boolean;
 }
 
-export function MapLegend({
-  useKnots,
-  setUseKnots,
-  legendOpen,
-  setLegendOpen,
-  pickMode,
-  windOverlayActive = false,
-}: MapLegendProps) {
+export function MapLegend({ useKnots, setUseKnots, legendOpen, setLegendOpen, pickMode, windOverlayActive = false }: MapLegendProps) {
   const tCommon = useTranslations("Common");
+  const app = useTranslations("AppDesign");
   const entries = windPaletteLegend(useKnots);
+  const root = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const id = useId();
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (!legendOpen) {
+      if (wasOpen.current && document.activeElement === document.body) trigger.current?.focus();
+      wasOpen.current = false;
+      return;
+    }
+    wasOpen.current = true;
+    root.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setLegendOpen(false);
+      trigger.current?.focus();
+    };
+    const outside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !root.current?.contains(event.target)) setLegendOpen(false);
+    };
+    document.addEventListener("keydown", escape);
+    document.addEventListener("pointerdown", outside);
+    return () => { document.removeEventListener("keydown", escape); document.removeEventListener("pointerdown", outside); };
+  }, [legendOpen, setLegendOpen]);
 
-  return (
-    <div
-      className={`absolute bottom-8 right-4 z-10 ${pickMode ? "hidden lg:block" : ""}`}
-    >
-      {legendOpen ? (
-        <div className="rounded-xl bg-white/90 backdrop-blur p-3 border border-gray-200 text-xs text-gray-600 shadow-lg">
-          <div className="flex items-center justify-between gap-3 mb-2.5">
-            <span className="font-semibold text-gray-900">
-              {tCommon("wind")}
-            </span>
-            <div className="flex items-center gap-2">
-              <div className="flex rounded-full overflow-hidden border border-gray-200 text-[10px]">
-                <button
-                  onClick={() => setUseKnots(false)}
-                  className={`px-2 py-0.5 transition-colors ${
-                    !useKnots
-                      ? "bg-sky-600 text-white"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  km/h
-                </button>
-                <button
-                  onClick={() => setUseKnots(true)}
-                  className={`px-2 py-0.5 transition-colors ${
-                    useKnots
-                      ? "bg-sky-600 text-white"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  kts
-                </button>
-              </div>
-              <button
-                onClick={() => setLegendOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label="Fermer la légende"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="w-4 h-4"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-          {windOverlayActive ? (
-            <div className="w-56">
-              <div
-                className="h-3.5 rounded-full border border-black/10 shadow-inner"
-                style={{ background: windPaletteGradient() }}
-              />
-              <div className="mt-1 flex justify-between font-medium tabular-nums text-[9px] text-gray-600">
-                {[0, 10, 20, 30, 40, 50].map((knots) => (
-                  <span key={knots}>
-                    {useKnots ? knots : Math.round(knots * 1.852)}
-                  </span>
-                ))}
-              </div>
-              <p className="mt-2 text-[10px] leading-snug text-gray-500">
-                {tCommon("windOverlayLegendHint")}
-              </p>
-            </div>
-          ) : (
-            entries.map(({ range, color }, i) => (
-              <div key={i} className="flex items-center gap-2 mb-1">
-                <span
-                  className="w-3 h-3 rounded-full shrink-0 border border-gray-200"
-                  style={{ background: color }}
-                />
-                {range}
-              </div>
-            ))
-          )}
-        </div>
-      ) : (
-        <button
-          onClick={() => setLegendOpen(true)}
-          className="rounded-xl bg-white/90 backdrop-blur px-3 py-2 border border-gray-200 text-xs text-gray-600 shadow-lg hover:bg-white transition-colors flex items-center gap-1.5"
-          aria-label="Ouvrir la légende du vent"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="w-4 h-4"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="font-semibold text-gray-900">{tCommon("wind")}</span>
-          <span className="text-gray-400">({useKnots ? "kts" : "km/h"})</span>
-        </button>
-      )}
-    </div>
-  );
+  return <div ref={root} className={`ow-legend ${pickMode ? "hidden lg:block" : ""}`}>
+    {legendOpen && <div id={id} className="ow-legend-panel" role="group" aria-label={app("legend")}>
+      <div className="ow-legend-heading"><strong>{tCommon("wind")}</strong><button type="button" className="ow-icon-button" aria-label={app("closeLegend")} onClick={() => setLegendOpen(false)}><X aria-hidden className="h-4 w-4" /></button></div>
+      <div className="ow-unit-control" role="group" aria-label={app("units")}>
+        <button type="button" aria-pressed={!useKnots} onClick={() => setUseKnots(false)}>km/h</button>
+        <button type="button" aria-pressed={useKnots} onClick={() => setUseKnots(true)}>kts</button>
+      </div>
+      {windOverlayActive ? <div className="mt-4">
+        <div className="h-3 rounded" style={{ background: windPaletteGradient() }} />
+        <div className="mt-2 flex justify-between tabular-nums">{[0, 10, 20, 30, 40, 50].map((knots) => <span key={knots}>{useKnots ? knots : Math.round(knots * 1.852)}</span>)}</div>
+        <p className="mt-3 leading-relaxed">{tCommon("windOverlayLegendHint")}</p>
+      </div> : <div className="mt-3">{entries.map(({ range, color }, i) => <div key={i} className="ow-legend-range"><span aria-hidden className="ow-legend-swatch" style={{ background: color }} />{range}</div>)}</div>}
+    </div>}
+    <button ref={trigger} type="button" onClick={() => setLegendOpen(!legendOpen)} className="ow-legend-toggle" aria-label={app("openLegend")} aria-expanded={legendOpen} aria-controls={id}>
+      <span>{tCommon("wind")} ({useKnots ? "kts" : "km/h"})</span><ChevronDown aria-hidden className={`h-4 w-4 ${legendOpen ? "rotate-180" : ""}`} />
+    </button>
+  </div>;
 }
