@@ -112,11 +112,7 @@ export function Navbar() {
       <header className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center px-3 sm:px-4 bg-white border-b border-gray-100 shadow-sm gap-2">
         {/* Logo */}
         <Link
-          href={
-            user && preferences?.defaultView === "DASHBOARD"
-              ? "/mon-openwind"
-              : "/?view=home"
-          }
+          href="/?view=map"
           className="flex items-center shrink-0"
         >
           <Image

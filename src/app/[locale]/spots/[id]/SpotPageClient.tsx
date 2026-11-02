@@ -8,6 +8,7 @@ import {
   useState,
   useEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
@@ -246,6 +247,7 @@ export function SpotPageClient({
         Date.parse(initialForecast.fetchedAt))
       ? fetchedForecast
       : initialForecast;
+  const historySection = useRef<HTMLElement>(null);
   const [history, setHistory] = useState<HistoryPoint[] | null>(null);
   const [selectedStationId, setSelectedStationId] = useState<string | null>(
     spot.nearestStationId,
@@ -528,9 +530,9 @@ export function SpotPageClient({
           </div>
         </section>
           {/* 48h history chart */}
-          <section className="ow-section" id="spot-history">
+          <section ref={historySection} className="ow-section scroll-mt-20" id="spot-history" tabIndex={-1} aria-labelledby="spot-history-title">
             <div className="ow-section-header">
-              <h2 className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+              <h2 id="spot-history-title" className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
                 <TrendingUp className="h-4 w-4 text-gray-500" />
                 {t("history48h")}
               </h2>
@@ -798,7 +800,16 @@ export function SpotPageClient({
             error={stationsError}
             useKnots={useKnots}
             selectedId={selectedStationId}
-            onSelect={(s) => setSelectedStationId(s.id)}
+            onSelect={(s) => {
+              setSelectedStationId(s.id);
+              historySection.current?.focus({ preventScroll: true });
+              historySection.current?.scrollIntoView({
+                behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                  ? "auto"
+                  : "smooth",
+                block: "start",
+              });
+            }}
           />
         </section>
 

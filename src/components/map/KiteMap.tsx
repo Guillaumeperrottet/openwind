@@ -51,6 +51,11 @@ interface KiteMapProps {
 const MAP_STYLE =
   process.env.NEXT_PUBLIC_MAP_STYLE ||
   "https://tiles.openfreemap.org/styles/liberty";
+// Fit the whole country on both a phone and a desktop at first launch.
+const SWITZERLAND_BOUNDS: [[number, number], [number, number]] = [
+  [5.9, 45.75],
+  [10.55, 47.95],
+];
 const OPEN_METEO_SPOT_WIND_TTL_MS = 10 * 60 * 1000;
 const MAX_OPEN_METEO_SPOTS_PER_BATCH = 80;
 
@@ -555,10 +560,19 @@ export function KiteMap({
       style: MAP_STYLE,
       center: initialCenter ??
         focusRequest?.center ??
-        restored?.center ?? [10, 35],
+        restored?.center ?? [8.2275, 46.8182],
       zoom: initialCenter
         ? (initialZoom ?? 12)
-        : (focusRequest?.zoom ?? restored?.zoom ?? 2.5),
+        : (focusRequest?.zoom ?? restored?.zoom ?? 7),
+      ...(!initialCenter && !focusRequest && !restored
+        ? {
+            bounds: SWITZERLAND_BOUNDS,
+            fitBoundsOptions: {
+              padding: { top: 80, right: 64, bottom: 76, left: 24 },
+              maxZoom: 7,
+            },
+          }
+        : {}),
       attributionControl: false,
     });
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
@@ -571,13 +585,10 @@ export function KiteMap({
     map.addControl(new maplibregl.NavigationControl(), "top-right");
     map.addControl(geolocate, "top-right");
 
-    // Auto-trigger geolocation once the map is ready (skip if we have an initial center)
+    // Geolocation stays available through its control; first launch shows Switzerland.
     let mounted = true;
     map.on("load", () => {
       if (!mounted) return; // effect was cleaned up before load fired
-      // Only auto-geolocate on very first visit (no saved position, no explicit center)
-      if (!initialCenter && !restored && !focusRequest) geolocate.trigger();
-
       // Place initial pick marker (e.g. edit mode)
       if (initialCenter && pickMode) {
         const el = document.createElement("div");
