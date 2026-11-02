@@ -43,7 +43,6 @@ import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import { NearbyStationsPanel } from "@/components/spot/NearbyStationsPanel";
 import { useNearbyStations } from "@/components/spot/useNearbyStations";
 import { SpotLightbox } from "@/components/spot/SpotLightbox";
-import { ForecastSummary } from "@/components/spot/ForecastSummary";
 import { WindProvenance } from "@/components/spot/WindProvenance";
 import { LocalGuideLinks } from "@/components/carnet/LocalGuideLinks";
 
@@ -956,8 +955,6 @@ export function SpotPageClient({
             onNavigate={setLightboxIndex}
           />
         )}
-
-        {forecast && <ForecastSummary forecast={forecast} locale={locale} />}
 
         {/* ── Graphique vent · 7 jours ───────────────────────────── */}
         {forecast && (
