@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { fetchClientJson } from "@/lib/fetch-client-json";
 import { haversineKm } from "@/lib/utils";
 import type { WindStation } from "@/lib/stations";
 
@@ -19,9 +20,7 @@ export function useNearbyStations(initialLat?: number, initialLng?: number) {
     setLoadingStations(true);
     setStationsError(false);
     try {
-      const res = await fetch("/api/stations");
-      if (!res.ok) throw new Error("Stations unavailable");
-      const all: WindStation[] = await res.json();
+      const all = await fetchClientJson<WindStation[]>("/api/stations");
       const withDist: StationWithDist[] = all.map((s) => ({
         ...s,
         dist: haversineKm(lat, lng, s.lat, s.lng),

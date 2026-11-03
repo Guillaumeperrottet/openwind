@@ -1,3 +1,7 @@
+import { NextIntlClientProvider } from "next-intl";
+import frMessages from "../../../messages/fr.json";
+import deMessages from "../../../messages/de.json";
+import itMessages from "../../../messages/it.json";
 import type { ComponentProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -85,7 +89,7 @@ describe("local guides served without browser interaction", () => {
         forecast,
         relatedArticles: [],
       };
-      const html = renderToStaticMarkup(<LocalGuideTemplate data={data} />);
+      const html = renderToStaticMarkup(<NextIntlClientProvider locale={locale} timeZone="Europe/Zurich" messages={{ fr: frMessages, de: deMessages, it: itMessages }[locale]}><LocalGuideTemplate data={data} /></NextIntlClientProvider>);
       expect(html).toContain(translation.title);
       expect(html).toContain('dateTime="2026-10-21T08:00:00Z"');
       expect(html).toContain("19 km/h");

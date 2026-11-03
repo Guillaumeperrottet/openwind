@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   spots: vi.fn(),
@@ -18,6 +18,8 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/station-catalog", () => ({ getStationCatalog: mocks.catalog }));
 import sitemap from "./sitemap";
 import { LOCAL_GUIDES, guideLanguages } from "@/lib/local-guides";
+
+afterEach(() => vi.unstubAllEnvs());
 
 beforeEach(() => {
   mocks.spots.mockResolvedValue([
@@ -71,7 +73,10 @@ describe("current, canonical sitemap", () => {
     expect(
       entries.some((entry) => entry.url.endsWith("/stations/ntm-70%3Aee%3A50")),
     ).toBe(true);
-    expect(entries.some((entry) => entry.url.includes("/webcams"))).toBe(false);
+    expect(entries.filter((entry) => entry.url.endsWith("/webcams"))).toHaveLength(4);
+    expect(entries.filter((entry) => entry.url.endsWith("/temperatures"))).toHaveLength(4);
+    expect(entries.filter((entry) => entry.url.endsWith("/lacs/gruyere"))).toHaveLength(4);
+    expect(entries.some((entry) => entry.url.includes("/webcams?"))).toBe(false);
     expect(
       entries.filter((entry) =>
         entry.url.endsWith("/carnet/lac-de-la-gruyere"),
@@ -80,6 +85,11 @@ describe("current, canonical sitemap", () => {
     expect(new Set(entries.map((entry) => entry.url)).size).toBe(
       entries.length,
     );
+  });
+
+  it("omits the lake from the sitemap when explicitly disabled", async () => {
+    vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "false");
+    expect((await sitemap()).some(entry => entry.url.endsWith("/lacs/gruyere"))).toBe(false);
   });
 
   it("does not publish a successful truncated sitemap after a database error", async () => {

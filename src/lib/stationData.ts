@@ -280,15 +280,18 @@ export async function getStationLive(
   const lng = opts?.lng;
   if (allowFallback && lat != null && lng != null) {
     const omWind = await fetchCurrentWind(lat, lng);
+    const modelTime = Date.parse(omWind.updatedAt ?? "");
+    if (!Number.isFinite(modelTime)) throw new Error("Model validity time unavailable");
+    const modelStaleAt = modelTime + 60 * 60 * 1000;
     return {
       windSpeedKmh: omWind.windSpeedKmh,
       windDirection: omWind.windDirection,
       gustsKmh: omWind.gustsKmh,
       updatedAt: omWind.updatedAt ?? new Date().toISOString(),
       source: "openmeteo",
-      // Open-Meteo is always considered fresh (NWP nowcast)
-      staleAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-      isFresh: true,
+      // Validity comes from the model slot, never from the HTTP retrieval time.
+      staleAt: new Date(modelStaleAt).toISOString(),
+      isFresh: Date.now() < modelStaleAt,
     };
   }
 
@@ -380,13 +383,16 @@ export async function getSpotLive(spotId: string): Promise<WindLive> {
 
   // No assigned station or station unavailable → Open-Meteo grid
   const omWind = await fetchCurrentWind(spot.latitude, spot.longitude);
+  const modelTime = Date.parse(omWind.updatedAt ?? "");
+  if (!Number.isFinite(modelTime)) throw new Error("Model validity time unavailable");
+  const modelStaleAt = modelTime + 60 * 60 * 1000;
   return {
     windSpeedKmh: omWind.windSpeedKmh,
     windDirection: omWind.windDirection,
     gustsKmh: omWind.gustsKmh,
     updatedAt: omWind.updatedAt ?? new Date().toISOString(),
     source: "openmeteo",
-    staleAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-    isFresh: true,
+    staleAt: new Date(modelStaleAt).toISOString(),
+    isFresh: Date.now() < modelStaleAt,
   };
 }

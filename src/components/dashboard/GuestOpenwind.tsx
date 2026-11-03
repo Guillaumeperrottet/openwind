@@ -5,6 +5,7 @@ import { Star, ArrowRight, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PersonalBrief } from "./PersonalBrief";
 import { PersonalForecast } from "./PersonalForecast";
+import { SavedArticles } from "./SavedArticles";
 import { SavedSearches } from "./SavedSearches";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
@@ -49,7 +50,7 @@ export function GuestOpenwind() {
     return () => controller.abort();
   }, [key, count, user, retry]);
 
-  if (authLoading || user) return <div className="px-5 py-20 text-center" role="status">{t("loading")}{user && <button className={`${button} ml-3`} onClick={retryFavorites}>{t("retry")}</button>}</div>;
+  if (authLoading || !favoritesReady || user) return <div className="px-5 py-20 text-center" role="status">{t("loading")}{user && <button className={`${button} ml-3`} onClick={retryFavorites}>{t("retry")}</button>}</div>;
   const sport = preferences?.sportFilter ?? "ALL";
   const spots = [...favoriteSpotIds].filter((id) => {
     const spot = catalogue.spots.find((s) => s.id === id);
@@ -58,38 +59,39 @@ export function GuestOpenwind() {
 
   return (
     <div className="min-h-[calc(100dvh-56px)] bg-slate-50 px-4 py-8 sm:px-8 sm:py-12">
-      <div className="mx-auto max-w-6xl">
-        <p className="text-xs font-bold uppercase tracking-widest text-sky-800">{t("onDevice")}</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{nav("myOpenwind")}</h1>
+      <div className="mx-auto max-w-[1184px]">
+        <p className="text-sm font-medium text-slate-600">{t("onDevice")}</p>
+        <h1 className="ow-access-title mt-3">{nav("myOpenwind")}</h1>
         <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">{count ? t("guestIntro") : t("emptyIntro")}</p>
 
-        <div className="my-6 flex flex-wrap items-center justify-between gap-3">
+        {count > 0 && <div className="my-6 flex flex-wrap items-center justify-between gap-3">
           <div role="group" aria-label={t("sport")} className="flex flex-wrap gap-2">
             {(["ALL", "KITE", "PARAGLIDE"] as SportFilter[]).map((s) => <button key={s} className={`${button} ${sport === s ? "bg-slate-900 text-white" : "bg-white text-slate-600"}`} aria-pressed={sport === s} onClick={() => void updatePreferences({ sportFilter: s })}>{t(s)}</button>)}
           </div>
           <div role="group" aria-label={t("units")} className="flex gap-2">
             {[true, false].map((knots) => <button key={String(knots)} className={`${button} ${useKnots === knots ? "bg-slate-900 text-white" : "bg-white text-slate-600"}`} aria-pressed={useKnots === knots} onClick={() => setUseKnots(knots)}>{knots ? "kts" : "km/h"}</button>)}
           </div>
-        </div>
+        </div>}
         {count > 0 && <div className="mb-6"><PersonalBrief favorites={[
           ...spots.map((id) => ({ kind: "spot" as const, id, name: catalogue.spots.find((s) => s.id === id)?.name ?? t("spot") })),
           ...[...favoriteStationIds].map((id) => ({ kind: "station" as const, id, name: catalogue.stations.find((s) => s.id === id)?.name ?? t("station") })),
         ]} spotIds={spots} manageFavorites /></div>}
-        {count === 0 ? <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"><Star aria-hidden className="mx-auto mb-4 h-8 w-8 text-sky-700" /><p className="text-slate-600">{t("firstFavorite")}</p><Link className={`${button} mt-5 gap-2 bg-slate-900 text-white`} href="/?view=map">{t("explore")}<ArrowRight aria-hidden className="h-4 w-4" /></Link></div> : <>
+        {count === 0 ? <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"><Star aria-hidden className="mx-auto mb-4 h-8 w-8 text-sky-700" /><p className="text-slate-600">{t("firstFavorite")}</p><Link className={`${button} mt-5 gap-2 bg-slate-900 text-white`} href="/?view=map">{t("explore")}<ArrowRight aria-hidden className="h-4 w-4" /></Link></div> : <>
           {error && <p role="status" className="mb-4 text-sm text-amber-800">{t("catalogueError")} <button className="min-h-11 underline" onClick={() => setRetry((v) => v + 1)}>{t("retry")}</button></p>}
           {loaded !== key && <p role="status" className="mb-4 text-sm text-slate-600">{t("loading")}</p>}
           {!spots.length && !favoriteStationIds.size && <p role="status" className="py-6 text-slate-600">{t("sportEmpty")}</p>}
         </>}
-        <div className="mt-8"><SavedSearches /></div>
-        <div className="mt-8"><PersonalForecast spotIds={spots} /></div>
+        <div className="mt-8"><SavedSearches hideWhenEmpty={count === 0} /></div>
+        {spots.length > 0 && <div className="mt-8"><PersonalForecast spotIds={spots} /></div>}
+        <SavedArticles className="my-6" />
         <section className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5" aria-label={t("sync")}>
           <p className="max-w-xl text-sm leading-6 text-slate-600">{t("syncDescription")}</p>
           <div className="flex flex-wrap gap-3">
-            <button className={`${button} border-sky-800 bg-sky-800 text-white`} onClick={requestSignup}>{t("sync")}</button>
+            <button className={`${button} ${count ? "border-sky-800 bg-sky-800 text-white" : "bg-white text-sky-900"}`} onClick={requestSignup}>{t("sync")}</button>
             <button className={button} onClick={requestAuth}>{t("login")}</button>
           </div>
         </section>
-        <p className="mt-8 flex items-start gap-2 text-xs leading-6 text-slate-500"><Settings2 aria-hidden className="mt-1 h-4 w-4 shrink-0" />{t("preferencesHelp")}</p>
+        {count > 0 && <p className="mt-8 flex items-start gap-2 text-xs leading-6 text-slate-500"><Settings2 aria-hidden className="mt-1 h-4 w-4 shrink-0" />{t("preferencesHelp")}</p>}
       </div>
     </div>
   );

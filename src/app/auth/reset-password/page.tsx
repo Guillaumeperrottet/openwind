@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff, CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -40,16 +41,14 @@ export default function ResetPasswordPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.updateUser({
-      password,
-    });
-    setLoading(false);
-
-    if (authError) {
-      setError(authError.message);
-    } else {
-      setDone(true);
+    try {
+      const { error: authError } = await createClient().auth.updateUser({ password });
+      if (authError) setError(authErrorMessage(authError));
+      else setDone(true);
+    } catch (error) {
+      setError(authErrorMessage(error));
+    } finally {
+      setLoading(false);
     }
   };
 

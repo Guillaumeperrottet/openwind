@@ -4,8 +4,10 @@ import {
   DEFAULT_OG_IMAGE,
   localizedAlternates,
   localizedUrl,
+  toSiteLocale,
 } from "@/lib/site";
 import { WebcamsClient } from "./WebcamsClient";
+import { WebcamDirectory } from "@/components/ui/WebcamDirectory";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -14,19 +16,21 @@ interface Props {
     lng?: string;
     name?: string;
     back?: string;
+    q?: string;
   }>;
 }
 
 export async function generateMetadata({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { name } = await searchParams;
+  const { name: rawName, lat, lng, q } = await searchParams;
+  const name = typeof rawName === "string" ? rawName : undefined;
   const t = await getTranslations({ locale, namespace: "WebcamsPage" });
   return {
     title: name ? t("metaTitleNear", { name }) : t("metaTitle"),
     description: name ? t("metaDescNear", { name }) : t("metaDesc"),
     alternates: localizedAlternates(locale, "/webcams"),
     // Coordinates and return URLs describe an internal search, not a stable guide.
-    robots: { index: false, follow: true },
+    robots: { index: !(lat || lng || q || name), follow: true },
     openGraph: {
       title: name ? t("metaTitleNear", { name }) : t("metaTitle"),
       description: name ? t("metaDescNear", { name }) : t("metaDesc"),
@@ -39,13 +43,14 @@ export async function generateMetadata({ params, searchParams }: Props) {
 
 export default async function WebcamsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { lat, lng, name, back } = await searchParams;
+  const { lat, lng, name, q } = await searchParams;
   const t = await getTranslations({ locale, namespace: "WebcamsPage" });
 
-  const latNum = lat ? parseFloat(lat) : null;
-  const lngNum = lng ? parseFloat(lng) : null;
-  const locationName = name ?? t("fallbackLocation");
-  const backUrl = back ?? "/";
+  const latNum = typeof lat === "string" && lat.trim() ? Number(lat) : null;
+  const lngNum = typeof lng === "string" && lng.trim() ? Number(lng) : null;
+  const locationName = typeof name === "string" && name.trim() ? name.trim().slice(0, 150) : t("fallbackLocation");
+
+  if (latNum === null || lngNum === null || !Number.isFinite(latNum) || !Number.isFinite(lngNum) || Math.abs(latNum) > 90 || Math.abs(lngNum) > 180) return <WebcamDirectory locale={toSiteLocale(locale)} query={typeof q === "string" ? q.slice(0, 100).trim() : ""} />;
 
   let webcams: WindyWebcam[] = [];
 
@@ -79,9 +84,8 @@ export default async function WebcamsPage({ params, searchParams }: Props) {
     <WebcamsClient
       webcams={webcams}
       locationName={locationName}
-      backUrl={backUrl}
-      lat={latNum ?? 0}
-      lng={lngNum ?? 0}
+      lat={latNum}
+      lng={lngNum}
     />
   );
 }

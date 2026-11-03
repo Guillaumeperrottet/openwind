@@ -19,7 +19,7 @@ interface ArticleShareProps {
 }
 
 const secondaryButtonClass =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800";
 
 export function ArticleShare({
   title,
@@ -77,8 +77,9 @@ export function ArticleShare({
 
   return (
     <section
+      id="article-share"
       aria-labelledby="article-share-heading"
-      className="border-y border-slate-200 py-5"
+      className="scroll-mt-24 border-y border-slate-200 py-5"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -97,7 +98,7 @@ export function ArticleShare({
           <button
             type="button"
             onClick={shareNative}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-sky-700 px-4 text-sm font-semibold text-white transition hover:bg-sky-800"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-sky-700 px-4 text-sm font-semibold text-white transition hover:bg-sky-800"
           >
             <Share2 className="h-4 w-4" />
             Partager

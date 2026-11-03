@@ -1,15 +1,14 @@
+import { AccessPageHeader } from "@/components/ui/AccessPageHeader";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import {
   ArrowRight,
-  Compass,
   MapPin,
   MessageSquare,
   Radio,
   ShieldCheck,
-  Wind,
 } from "lucide-react";
 import { CarnetArticleIndex } from "@/components/carnet/CarnetArticleIndex";
 import { Link } from "@/i18n/navigation";
@@ -169,99 +168,11 @@ export default async function CarnetPage({ params, searchParams }: Props) {
         }}
       />
 
-      <header className="border-b border-slate-200">
-        <div className="mx-auto w-full max-w-[1480px] px-5 pb-12 pt-10 sm:px-8 sm:pb-16 sm:pt-14 lg:px-10 xl:px-12">
-          <div className="flex items-center justify-between border-y border-slate-900 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600 sm:text-xs">
-            <span>Journal de terrain</span>
-            <span className="hidden sm:inline">Les lacs suisses</span>
-            <span>Édition 2026</span>
-          </div>
-
-          <div className="grid gap-10 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:gap-16">
-            <div>
-              <div className="flex items-center gap-2 text-sky-700">
-                <Wind className="h-5 w-5" />
-                <span className="text-xs font-bold uppercase tracking-[0.22em]">
-                  Openwind présente
-                </span>
-              </div>
-              <h1 className="mt-5 font-serif text-6xl font-semibold leading-[0.9] tracking-[-0.04em] text-slate-950 sm:text-7xl lg:text-[6.4rem] xl:text-[7.4rem]">
-                Le Carnet{" "}
-                <span className="block italic text-sky-700">Openwind</span>
-              </h1>
-              <p className="mt-7 max-w-xl text-lg leading-8 text-slate-700 sm:text-xl">
-                Des lacs suisses aux vents locaux : guides de terrain,
-                décryptages et conseils pour préparer vos sorties.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-medium text-slate-600">
-                <span className="inline-flex items-center gap-2">
-                  <Compass className="h-4 w-4 text-sky-700" />
-                  Guides locaux
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Radio className="h-4 w-4 text-sky-700" />
-                  Balises en direct
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-sky-700" />
-                  Sources vérifiées
-                </span>
-              </div>
-              <div
-                className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-sky-800"
-                aria-label="Catalogue des guides par langue"
-              >
-                <Link
-                  href="/vent-en-direct"
-                  locale="fr"
-                  className="underline underline-offset-4"
-                >
-                  Guides · FR
-                </Link>
-                <Link
-                  href="/vent-en-direct"
-                  locale="de"
-                  className="underline underline-offset-4"
-                >
-                  Guides · DE
-                </Link>
-                <Link
-                  href="/vent-en-direct"
-                  locale="it"
-                  className="underline underline-offset-4"
-                >
-                  Guide · IT
-                </Link>
-              </div>
-            </div>
-
-            <figure>
-              <div className="relative aspect-[4/3] overflow-hidden bg-slate-200">
-                <Image
-                  src={HERO_IMAGE}
-                  alt="Vue aérienne du lac de la Gruyère"
-                  fill
-                  loading="eager"
-                  sizes="(max-width: 1024px) 100vw, 46vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/25 via-transparent to-transparent" />
-                <span className="absolute bottom-4 right-4 bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-900 sm:left-4 sm:right-auto">
-                  Carnet Nº01 · La Gruyère
-                </span>
-              </div>
-              <figcaption className="mt-2 flex justify-between gap-4 text-[10px] uppercase tracking-[0.12em] text-slate-500">
-                <span>Morlon, Fribourg</span>
-                <span>Photo de la communauté Openwind</span>
-              </figcaption>
-            </figure>
-          </div>
-        </div>
-      </header>
+      <div className="ow-access-content !pb-0"><AccessPageHeader title="Le Carnet Openwind" description="Guides des lacs, vents locaux et conseils pour préparer vos sorties." /></div>
 
       <div>
-        <section className="mx-auto w-full max-w-[1480px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
-          <div className="mb-8 border-b border-slate-900 pb-3">
+        <section aria-label="Articles et guides des lacs" className="mx-auto w-full max-w-[1184px] px-5 py-6 sm:px-8 sm:py-8 lg:px-10 xl:px-12">
+          <div className="sr-only border-b border-slate-900 pb-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
                 Articles & guides des lacs
@@ -275,8 +186,25 @@ export default async function CarnetPage({ params, searchParams }: Props) {
           <CarnetArticleIndex articles={carnetIndexArticles} query={query} />
         </section>
 
+        <section aria-label="Le Carnet au bord du lac" className="mx-auto max-w-[1184px] px-5 pb-10 sm:px-8 lg:px-10 xl:px-12">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+            <p>Des repères locaux, reliés aux spots et aux balises.</p>
+            <nav aria-label="Catalogue des guides par langue" className="flex flex-wrap gap-4">
+              <Link href="/vent-en-direct" locale="fr" className="inline-flex min-h-11 items-center text-sky-800 underline underline-offset-4">Guides · FR</Link>
+              <Link href="/vent-en-direct" locale="de" className="inline-flex min-h-11 items-center text-sky-800 underline underline-offset-4">Guides · DE</Link>
+              <Link href="/vent-en-direct" locale="it" className="inline-flex min-h-11 items-center text-sky-800 underline underline-offset-4">Guide · IT</Link>
+            </nav>
+          </div>
+          <figure>
+            <div className="relative aspect-[3/1] overflow-hidden bg-slate-100">
+              <Image src={HERO_IMAGE} alt="Vue aérienne du lac de la Gruyère" fill loading="lazy" sizes="(max-width: 1480px) 100vw, 1400px" className="object-cover" />
+            </div>
+            <figcaption className="mt-2 text-sm text-slate-500">Morlon, Fribourg · Photo de la communauté Openwind</figcaption>
+          </figure>
+        </section>
+
         <section className="border-y border-slate-200 bg-slate-50">
-          <div className="mx-auto w-full max-w-[1480px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
+          <div className="mx-auto w-full max-w-[1184px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
             <div className="max-w-3xl">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
                 Notre ligne éditoriale
@@ -316,7 +244,7 @@ export default async function CarnetPage({ params, searchParams }: Props) {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-[1480px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
+        <section className="mx-auto w-full max-w-[1184px] px-5 py-14 sm:px-8 sm:py-20 lg:px-10 xl:px-12">
           <aside className="border-l-2 border-sky-700 pl-6 sm:pl-8">
             <MessageSquare className="h-6 w-6 text-sky-700" />
             <h2 className="mt-5 font-serif text-3xl font-semibold">

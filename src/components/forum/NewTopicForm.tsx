@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send, X } from "lucide-react";
 import { useFavContext } from "@/lib/FavContext";
@@ -8,13 +8,16 @@ import { useFavContext } from "@/lib/FavContext";
 interface NewTopicFormProps {
   categorySlug: string;
   onCancel: () => void;
+  initialTitle?: string;
+  initialBody?: string;
 }
 
-export function NewTopicForm({ categorySlug, onCancel }: NewTopicFormProps) {
+export function NewTopicForm({ categorySlug, onCancel, initialTitle = "", initialBody = "" }: NewTopicFormProps) {
   const { user, requestAuth } = useFavContext();
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const [title, setTitle] = useState(initialTitle);
+  const id = useId();
+  const [body, setBody] = useState(initialBody);
   const [spotId, setSpotId] = useState("");
   const [spots, setSpots] = useState<
     Array<{ id: string; name: string; region: string | null }>
@@ -41,7 +44,7 @@ export function NewTopicForm({ categorySlug, onCancel }: NewTopicFormProps) {
       requestAuth();
       return;
     }
-    if (!title.trim() || !body.trim() || loading) return;
+    if (!title.trim() || !body.trim() || loading || (initialBody && body.trim() === initialBody.trim())) return;
     setLoading(true);
     setError(null);
 
@@ -65,6 +68,8 @@ export function NewTopicForm({ categorySlug, onCancel }: NewTopicFormProps) {
 
       const topic = await res.json();
       router.push(`/forum/${categorySlug}/${topic.id}`);
+    } catch {
+      setError("Publication momentanément indisponible. Réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
@@ -80,7 +85,8 @@ export function NewTopicForm({ categorySlug, onCancel }: NewTopicFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="text-gray-400 hover:text-gray-700"
+          aria-label="Fermer le formulaire"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
         >
           <X className="h-5 w-5" />
         </button>
@@ -92,22 +98,26 @@ export function NewTopicForm({ categorySlug, onCancel }: NewTopicFormProps) {
         </div>
       )}
 
+      <label htmlFor={`${id}-title`} className="mb-2 block text-sm font-medium text-slate-700">Titre du sujet</label>
       <input
+        id={`${id}-title`}
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Titre du sujet"
         maxLength={200}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none mb-3"
+        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base font-medium text-gray-900 sm:text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none mb-3"
         autoFocus
       />
 
+      <label htmlFor={`${id}-body`} className="mb-2 block text-sm font-medium text-slate-700">Message</label>
       <textarea
+        id={`${id}-body`}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="Exprimez-vous…"
         rows={5}
-        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none resize-y min-h-[120px] mb-3"
+        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-base text-gray-900 sm:text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none resize-y min-h-[120px] mb-3"
       />
 
       <label className="mb-3 block">
@@ -128,11 +138,12 @@ export function NewTopicForm({ categorySlug, onCancel }: NewTopicFormProps) {
         </select>
       </label>
 
+      {initialBody && body.trim() === initialBody.trim() && <p className="mb-3 text-sm text-slate-600">Ajoute ta correction au message avant de publier.</p>}
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={!title.trim() || !body.trim() || loading}
-          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-sky-600 text-white text-sm font-medium hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          disabled={!title.trim() || !body.trim() || loading || (!!initialBody && body.trim() === initialBody.trim())}
+          className="flex items-center gap-2 min-h-11 px-5 py-2 rounded-lg bg-sky-600 text-white text-sm font-medium hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Send className="h-4 w-4" />
           {loading ? "Publication…" : "Publier"}

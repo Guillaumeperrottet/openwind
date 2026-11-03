@@ -1,3 +1,6 @@
+import { cache } from "react";
+import { forumCategorySchema } from "@/lib/forum-seo";
+import { jsonLd } from "@/lib/public-seo";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/site";
@@ -7,13 +10,12 @@ interface Props {
   params: Promise<{ locale: string; slug: string }>;
 }
 
+const getCategory = cache((slug: string) => prisma.forumCategory.findUnique({ where: { slug } }));
+
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   try {
-    const cat = await prisma.forumCategory.findUnique({
-      where: { slug },
-      select: { name: true, description: true },
-    });
+    const cat = await getCategory(slug);
     if (!cat) return { title: "Catégorie introuvable" };
     return {
       title: cat.name,
@@ -31,9 +33,7 @@ export async function generateMetadata({ params }: Props) {
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
 
-  const category = await prisma.forumCategory.findUnique({
-    where: { slug },
-  });
+  const category = await getCategory(slug);
 
   if (!category) notFound();
 
@@ -63,6 +63,8 @@ export default async function CategoryPage({ params }: Props) {
   }));
 
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(forumCategorySchema(category, enriched)) }} />
     <CategoryPageClient
       category={{
         id: category.id,
@@ -72,5 +74,6 @@ export default async function CategoryPage({ params }: Props) {
       }}
       topics={enriched}
     />
+    </>
   );
 }

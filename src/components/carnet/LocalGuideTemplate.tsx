@@ -1,3 +1,8 @@
+import { ACCESS_COPY } from "@/lib/access";
+import { createHash } from "node:crypto";
+import { articleReading } from "@/lib/article-reading";
+import { SaveArticleButton } from "./SaveArticleButton";
+import { ArticleReadingProgress } from "./ArticleReadingProgress";
 import { Link } from "@/i18n/navigation";
 import { localizedUrl } from "@/lib/site";
 import { GUIDE_COPY, LOCAL_GUIDES, guideLanguages } from "@/lib/local-guides";
@@ -14,6 +19,9 @@ import { ForecastSummary } from "@/components/spot/ForecastSummary";
 export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
   const { definition, translation, locale } = data;
   const copy = GUIDE_COPY[locale];
+  const readingArticle = { kind: "LOCAL_GUIDE" as const, slug: definition.slug, title: translation.title, readTime: Math.max(1, Math.ceil(data.content.split(/\s+/).length / 200)) };
+  const headings = articleReading(data.content).outline;
+  const revision = createHash("sha256").update(data.content).digest("hex").slice(0, 16);
   const url = localizedUrl(locale, `/vent-en-direct/${definition.slug}`);
   const date = new Intl.DateTimeFormat(locale, {
     timeZone: "Europe/Zurich",
@@ -107,16 +115,6 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-slate-900/30" />
         <div className="relative mx-auto flex min-h-[500px] max-w-6xl flex-col justify-end px-5 py-12 sm:px-8 lg:px-10">
-          <nav
-            aria-label={copy.guides}
-            className="mb-12 flex flex-wrap gap-2 text-sm text-white/80"
-          >
-            <Link href="/">Openwind</Link>
-            <span aria-hidden="true">/</span>
-            <Link href="/vent-en-direct">{copy.guides}</Link>
-            <span aria-hidden="true">/</span>
-            <span aria-current="page">{translation.place}</span>
-          </nav>
           <p className="text-sm font-semibold uppercase tracking-widest text-sky-200">
             {definition.region}
           </p>
@@ -171,6 +169,7 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
             ))}
           </nav>
         </div>
+        <div className="mt-5"><SaveArticleButton article={readingArticle} /><ArticleReadingProgress article={readingArticle} revision={revision} headings={headings} /></div>
         {locale === "fr" && (
           <div className="mt-6">
             <ArticleShare
@@ -325,7 +324,8 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
           className="scroll-mt-24 mt-14 grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]"
         >
           <div className="min-w-0">
-            <ArticleMarkdown>{data.content}</ArticleMarkdown>
+            <div id="article-content"><ArticleMarkdown>{data.content}</ArticleMarkdown></div>
+            <span id="article-reading-end" aria-hidden className="block h-px" />
             <ArticleReadTracker
               articleSlug={definition.slug}
               contentType="local_guide"
@@ -382,6 +382,7 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
         <section className="mt-14 rounded-3xl bg-sky-700 p-7 text-white">
           <h2 className="text-2xl font-bold">{copy.plan}</h2>
           <div className="mt-5 flex flex-wrap gap-5 font-semibold">
+            {definition.slug === "lac-de-la-gruyere" && <Link href="/temperatures" className="underline underline-offset-4">{ACCESS_COPY[locale].temperatures} →</Link>}
             <Link href="/plan" className="underline underline-offset-4">
               {copy.plan} →
             </Link>

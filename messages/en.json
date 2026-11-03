@@ -97,7 +97,13 @@
     "switchToLoginAction": "Sign in",
     "forgotLink": "Forgot password?",
     "invalidCredentials": "Incorrect email or password.",
-    "orSeparator": "or"
+    "orSeparator": "or",
+    "emailLabel": "Email address",
+    "passwordLabel": "Password",
+    "close": "Close",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "requestFailed": "Unable to connect right now. Please try again shortly."
   },
   "Badge": {
     "difficulty": {
@@ -291,7 +297,9 @@
     "pagination": "Wind station pages",
     "previousPage": "Previous",
     "nextPage": "Next",
-    "pageLabel": "Page {page}"
+    "pageLabel": "Page {page}",
+    "pageTitle": "Live wind stations",
+    "aboutDirectory": "Networks and strongest wind"
   },
   "ForumPage": {
     "title": "Forum",
@@ -783,5 +791,48 @@
     "stationsLoading": "Loading stations…",
     "noNearbyStations": "No station within 10 km of this spot. Forecasts remain available above.",
     "stationsUnavailable": "Stations are temporarily unavailable. Please try again shortly."
+  },
+  "WindChart": {
+    "browse": "Browse hours",
+    "clear": "Clear selection",
+    "selectHour": "Tap the chart or browse the hours to read the details.",
+    "forecast": "Forecast",
+    "history": "History",
+    "wind": "Wind",
+    "gusts": "Gusts",
+    "hover": "Hover",
+    "selected": "Selected hour",
+    "now": "Now"
+  },
+  "ReadingExperience": {
+    "saveButton": "Read later",
+    "savedButton": "Saved",
+    "saveNamed": "Read later: {title}",
+    "removeNamed": "Remove from My reading: {title}",
+    "myReading": "My reading",
+    "saved": "Saved to My reading on this device.",
+    "removed": "Removed from My reading.",
+    "limit": "You can save up to {count} publications. Remove one to add another.",
+    "error": "Unable to save on this device. Check your browser settings and try again.",
+    "lastReading": "Last read: {section}",
+    "resume": "Resume reading",
+    "explore": "Explore the journal",
+    "deviceOnly": "Reading saved on this device, including when signed in.",
+    "loading": "Loading your reading…",
+    "catalogueError": "The catalogue is temporarily unavailable. Your saved reading is retained.",
+    "retry": "Try again",
+    "read": "Read",
+    "unavailable": "This publication is no longer available. You can remove it from your list.",
+    "undo": "Undo",
+    "restoreError": "Unable to restore this publication. Try again or free a place in your list."
+  },
+  "FieldExperience": {
+    "oldMeasurement": "Old observation",
+    "unavailable": "This data is temporarily unavailable.",
+    "refreshFailed": "Unable to refresh. Previous data is still shown; check its date.",
+    "retry": "Try again",
+    "retrying": "Trying again…",
+    "mapUnavailable": "The map is not responding. Try again or browse the stations.",
+    "openStations": "Browse stations"
   }
 }

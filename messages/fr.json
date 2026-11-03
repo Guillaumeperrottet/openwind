@@ -97,7 +97,13 @@
     "switchToLoginAction": "Se connecter",
     "forgotLink": "Mot de passe oublié ?",
     "invalidCredentials": "Email ou mot de passe incorrect.",
-    "orSeparator": "ou"
+    "orSeparator": "ou",
+    "emailLabel": "Adresse e-mail",
+    "passwordLabel": "Mot de passe",
+    "close": "Fermer",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "requestFailed": "Connexion impossible pour le moment. Réessayez dans un instant."
   },
   "Badge": {
     "difficulty": {
@@ -291,7 +297,9 @@
     "pagination": "Pages des balises",
     "previousPage": "Précédente",
     "nextPage": "Suivante",
-    "pageLabel": "Page {page}"
+    "pageLabel": "Page {page}",
+    "pageTitle": "Balises en direct",
+    "aboutDirectory": "Réseaux et vent le plus fort"
   },
   "ForumPage": {
     "title": "Forum",
@@ -918,5 +926,48 @@
     "stationsLoading": "Chargement des balises…",
     "noNearbyStations": "Aucune balise à moins de 10 km de ce spot. Les prévisions restent disponibles ci-dessus.",
     "stationsUnavailable": "Les balises sont temporairement indisponibles. Réessayez dans quelques instants."
+  },
+  "WindChart": {
+    "browse": "Parcourir les heures",
+    "clear": "Effacer la sélection",
+    "selectHour": "Touchez le graphique ou parcourez les heures pour lire le détail.",
+    "forecast": "Prévision",
+    "history": "Historique",
+    "wind": "Vent",
+    "gusts": "Rafales",
+    "hover": "Survol",
+    "selected": "Heure sélectionnée",
+    "now": "Maintenant"
+  },
+  "ReadingExperience": {
+    "saveButton": "Lire plus tard",
+    "savedButton": "Enregistré",
+    "saveNamed": "Lire plus tard : {title}",
+    "removeNamed": "Retirer de Mes lectures : {title}",
+    "myReading": "Mes lectures",
+    "saved": "Ajouté à Mes lectures sur cet appareil.",
+    "removed": "Retiré de Mes lectures.",
+    "limit": "Tu peux garder jusqu’à {count} lectures. Retire un article pour en ajouter un autre.",
+    "error": "Enregistrement impossible sur cet appareil. Réessaie après avoir vérifié les réglages de ton navigateur.",
+    "lastReading": "Dernière lecture : {section}",
+    "resume": "Reprendre la lecture",
+    "explore": "Explorer le Carnet",
+    "deviceOnly": "Lectures enregistrées sur cet appareil, même avec un compte.",
+    "loading": "Chargement des lectures…",
+    "catalogueError": "Le catalogue est momentanément indisponible. Tes lectures enregistrées sont conservées.",
+    "retry": "Réessayer",
+    "read": "Lire",
+    "unavailable": "Cette publication n’est plus disponible. Tu peux la retirer de ta liste.",
+    "undo": "Annuler",
+    "restoreError": "Impossible de rétablir cette lecture. Réessaie ou libère une place dans ta liste."
+  },
+  "FieldExperience": {
+    "oldMeasurement": "Mesure ancienne",
+    "unavailable": "Ces données sont momentanément indisponibles.",
+    "refreshFailed": "Actualisation impossible. Les dernières données restent affichées ; vérifie leur date.",
+    "retry": "Réessayer",
+    "retrying": "Nouvel essai…",
+    "mapUnavailable": "La carte ne répond pas pour le moment. Tu peux réessayer ou consulter les balises.",
+    "openStations": "Consulter les balises"
   }
 }

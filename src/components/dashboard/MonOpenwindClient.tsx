@@ -32,11 +32,13 @@ import {
   Wind,
   X,
 } from "lucide-react";
+import { spotActivityLabel } from "@/lib/spot-activity";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { GuestOpenwind } from "./GuestOpenwind";
 import { PersonalBrief } from "./PersonalBrief";
 import { PersonalForecast } from "./PersonalForecast";
+import { SavedArticles } from "./SavedArticles";
 import { SavedSearches } from "./SavedSearches";
 import { Link } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
@@ -401,6 +403,13 @@ export function MonOpenwindClient({ initialData }: Props) {
     }
   };
 
+  const hasFavorites = favoriteSpots.length + favoriteStations.length > 0;
+  const visibleModules = preferences.dashboardLayout.filter((module) => {
+    if (module === "FORECAST") return outlookSpotIds.length > 0;
+    if (hasFavorites) return true;
+    return module === "QUICK_ACTIONS" || (module === "ARTICLES" && articles.length > 0) || (module === "COMMUNITY" && community.length > 0);
+  });
+
   const moduleContent: Record<DashboardModule, React.ReactNode> = {
     FAVORITES: (
       <FavoritesSection
@@ -432,7 +441,7 @@ export function MonOpenwindClient({ initialData }: Props) {
   return (
     <div className="min-h-[calc(100dvh-56px)] bg-white text-slate-950">
       <div className="border-b border-slate-100 bg-white">
-        <div className="mx-auto max-w-[1500px] px-4 pb-7 pt-5 sm:px-6 sm:pb-9 sm:pt-6 lg:px-10">
+        <div className="mx-auto max-w-[1184px] px-4 pb-7 pt-5 sm:px-6 sm:pb-9 sm:pt-6 lg:px-10">
           <div className="mb-6 flex items-center justify-between gap-3 sm:mb-7">
             <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
               <Link
@@ -458,14 +467,15 @@ export function MonOpenwindClient({ initialData }: Props) {
             </button>
           </div>
 
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-950">{initialData.userName ? t("helloName", { name: initialData.userName.trim().split(/\s+/)[0] }) : t("hello")}</h1>
-          <div className="mt-5"><PersonalBrief favorites={briefFavorites} spotIds={outlookSpotIds} /></div>
+          <h1 className="ow-access-title">{initialData.userName ? t("helloName", { name: initialData.userName.trim().split(/\s+/)[0] }) : t("hello")}</h1>
+          {hasFavorites && <div className="mt-5"><PersonalBrief favorites={briefFavorites} spotIds={outlookSpotIds} /></div>}
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1500px] space-y-12 px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
-        <SavedSearches />
-        {preferences.dashboardLayout.map((module) => (
+      <div className="mx-auto max-w-[1184px] space-y-12 px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
+        {!hasFavorites && <EmptyFavorites />}
+        <SavedSearches hideWhenEmpty={!hasFavorites} />
+        {visibleModules.map((module) => (
           <DashboardModuleContainer
             key={module}
             module={module}
@@ -476,6 +486,7 @@ export function MonOpenwindClient({ initialData }: Props) {
             {moduleContent[module]}
           </DashboardModuleContainer>
         ))}
+        <SavedArticles />
       </div>
 
       {settingsOpen && (
@@ -771,7 +782,7 @@ function DashboardFavoriteOption({
           aria-describedby="dashboard-favorite-selector-help"
           disabled={disabled}
           onClick={onClick}
-          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
+          className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 text-left"
         >
           <span
             className={cn(
@@ -794,7 +805,7 @@ function DashboardFavoriteOption({
               type="button"
               onClick={onMoveUp}
               disabled={position === 0}
-              className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
+              className="flex h-11 w-11 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
               aria-label={t("moveFavoriteUp", { name: label })}
             >
               <ChevronUp className="h-4 w-4" />
@@ -803,7 +814,7 @@ function DashboardFavoriteOption({
               type="button"
               onClick={onMoveDown}
               disabled={position === selectedTotal - 1}
-              className="flex h-8 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
+              className="flex h-11 w-11 items-center justify-center rounded-md text-slate-400 hover:bg-white hover:text-sky-700 disabled:opacity-25"
               aria-label={t("moveFavoriteDown", { name: label })}
             >
               <ChevronDown className="h-4 w-4" />
@@ -813,13 +824,13 @@ function DashboardFavoriteOption({
       </div>
       {selected && alert && (
         <div className="mt-2 border-t border-sky-100 pt-2">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <button
               type="button"
               aria-pressed={alert.enabled}
               onClick={onToggleAlert}
               className={cn(
-                "inline-flex min-h-8 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold",
+                "inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold",
                 alert.enabled
                   ? "bg-sky-600 text-white"
                   : "bg-white text-slate-500 ring-1 ring-slate-200",
@@ -844,7 +855,7 @@ function DashboardFavoriteOption({
                     onChange={(event) =>
                       onAlertChange({ minWindKmh: Number(event.target.value) })
                     }
-                    className="h-8 w-12 rounded-lg border border-slate-200 bg-white px-1.5 text-center tabular-nums"
+                    className="h-11 w-12 rounded-lg border border-slate-200 bg-white px-1.5 text-center tabular-nums"
                   />
                 </label>
                 <span>–</span>
@@ -858,7 +869,7 @@ function DashboardFavoriteOption({
                     onChange={(event) =>
                       onAlertChange({ maxWindKmh: Number(event.target.value) })
                     }
-                    className="h-8 w-12 rounded-lg border border-slate-200 bg-white px-1.5 text-center tabular-nums"
+                    className="h-11 w-12 rounded-lg border border-slate-200 bg-white px-1.5 text-center tabular-nums"
                   />
                 </label>
                 <span>km/h</span>
@@ -954,13 +965,13 @@ function FavoriteSpotCard({
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-transparent" />
         <span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-700 backdrop-blur">
-          {spot.sportType === "KITE" ? t("kite") : t("paraglide")}
+          {spotActivityLabel(spot, locale)}
         </span>
         <button
           type="button"
           onClick={remove}
           disabled={removing}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
           aria-label={t("remove")}
           title={t("remove")}
         >
@@ -989,7 +1000,7 @@ function FavoriteSpotCard({
               aria-expanded={detailsOpen}
               onClick={() => setDetailsOpen((current) => !current)}
               className={cn(
-                "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors hover:ring-2 hover:ring-offset-1",
+                "min-h-11 shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors hover:ring-2 hover:ring-offset-1",
                 windCompatible
                   ? "bg-emerald-50 text-emerald-700"
                   : "bg-amber-50 text-amber-700",
@@ -1158,7 +1169,7 @@ function FavoriteStationCard({
           type="button"
           onClick={remove}
           disabled={removing}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-amber-500 shadow-sm backdrop-blur transition-colors hover:bg-white disabled:opacity-50"
           aria-label={t("removeStation")}
           title={t("removeStation")}
         >
@@ -1188,7 +1199,7 @@ function FavoriteStationCard({
             aria-expanded={detailsOpen}
             onClick={() => setDetailsOpen((current) => !current)}
             className={cn(
-              "shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors hover:ring-2 hover:ring-offset-1",
+              "min-h-11 shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors hover:ring-2 hover:ring-offset-1",
               live?.source === "station" && live.isFresh
                 ? "bg-emerald-50 text-emerald-700"
                 : windSpeedKmh !== null
@@ -1410,7 +1421,7 @@ function CommunitySection({
       {items.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-8 sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sky-600 shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-sky-600 shadow-sm">
               <Users className="h-5 w-5" />
             </div>
             <div>
@@ -1763,7 +1774,7 @@ function DashboardSettings({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-700"
             aria-label={t("close")}
           >
             <X className="h-5 w-5" />
@@ -1865,7 +1876,7 @@ function DashboardSettings({
                       type="button"
                       aria-pressed={active}
                       onClick={() => toggleModule(module)}
-                      className="flex min-w-0 flex-1 items-center gap-2 text-left text-sm font-medium"
+                      className="flex min-h-11 min-w-0 flex-1 items-center gap-2 text-left text-sm font-medium"
                     >
                       <span
                         className={cn(
@@ -1885,7 +1896,7 @@ function DashboardSettings({
                           type="button"
                           onClick={() => moveModule(module, -1)}
                           disabled={index === 0}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"
+                          className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"
                           aria-label={t("moveUp")}
                         >
                           <ChevronUp className="h-4 w-4" />
@@ -1894,7 +1905,7 @@ function DashboardSettings({
                           type="button"
                           onClick={() => moveModule(module, 1)}
                           disabled={index === layout.length - 1}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"
+                          className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 disabled:opacity-25"
                           aria-label={t("moveDown")}
                         >
                           <ChevronDown className="h-4 w-4" />

@@ -1,0 +1,74 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Openwind brand, design.md
+ * nav: existing site shell · signature: Gruyere model temperature timeline
+ * states: loading, unavailable, stale, full · data: real Alplakes · posture: restrained · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V3 · weakest: V, keep the shared app system and give this page a single temperature timeline */
+/* Hallmark · finish-review: subagent · 2 findings · 2 resolved; CUA viewport captures verify gutters and labelled present boundary; static sweep: 0 FAIL, 0 REFLEX, 0 WARN; automated render tier unavailable (puppeteer-core absent) */
+.ow-lake { width: 100%; max-width: var(--ow-container); margin-inline: auto; padding: 0 var(--ow-space-5) var(--ow-space-7); font-family: var(--ow-font); font-size: var(--ow-text-body); line-height: 1.5; color: var(--ow-ink); font-variant-numeric: tabular-nums; }
+.ow-lake :is(h1,h2) { min-width: 0; overflow-wrap: break-word; font-weight: 600; text-wrap: balance; }
+.ow-lake h1 { font-size: var(--ow-text-page); line-height: 1.2; }
+.ow-lake h2 { font-size: var(--ow-text-title); }
+.ow-lake-header > p { margin-top: var(--ow-space-3); color: var(--ow-muted); max-width: 65ch; }
+.ow-lake :is(a,summary):focus-visible { outline: 2px solid var(--ow-focus); outline-offset: 3px; }
+.ow-lake :is(a,summary) { min-height: var(--ow-control); }
+.ow-lake :is(a,summary):active { opacity: 0.8; }
+.ow-lake-back { display: inline-flex; align-items: center; margin-bottom: var(--ow-space-4); color: var(--ow-muted); font-size: var(--ow-text-label); }
+.ow-lake-back:hover { color: var(--ow-accent); }
+.ow-lake-overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--ow-space-7); padding-block: var(--ow-space-6); border-bottom: 1px solid var(--ow-rule); }
+.ow-lake-temperature { margin-block: var(--ow-space-2); font-size: var(--ow-text-measure); font-weight: 500; line-height: 1.15; }
+.ow-lake-temperature > span { font-size: var(--ow-text-page); color: var(--ow-muted); }
+.ow-lake-current > p:not(.ow-lake-temperature) { color: var(--ow-muted); }
+.ow-lake-caption { margin-top: var(--ow-space-2); color: var(--ow-muted); font-size: var(--ow-text-caption); max-width: 65ch; }
+.ow-lake-stale { display: block; color: var(--ow-warning); font-weight: 500; }
+.ow-lake-days li { display: flex; align-items: center; justify-content: space-between; gap: var(--ow-space-4); padding-block: var(--ow-space-3); border-bottom: 1px solid var(--ow-rule); }
+.ow-lake-days li div > span { display: block; color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-lake-days strong { font-size: var(--ow-text-title); font-weight: 500; white-space: nowrap; }
+.ow-lake-days strong > span { font-size: var(--ow-text-label); color: var(--ow-muted); }
+.ow-lake-evolution { padding-block: var(--ow-space-6); }
+.ow-lake-section-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--ow-space-2); }
+.ow-lake-section-head > p { color: var(--ow-muted); font-size: var(--ow-text-label); }
+.ow-lake-legend { display: flex; flex-wrap: wrap; gap: var(--ow-space-5); margin-block: var(--ow-space-4) var(--ow-space-5); font-size: var(--ow-text-label); color: var(--ow-ink-secondary); }
+.ow-lake-legend > span { display: inline-flex; align-items: center; gap: var(--ow-space-2); }
+.ow-lake-legend i { width: var(--ow-space-5); border-top: 2px dashed var(--ow-muted); }
+.ow-lake-legend > span:last-child i { border-color: var(--ow-accent); border-top-style: solid; }
+.ow-lake-chart-grid { display: grid; grid-template-columns: var(--ow-space-7) minmax(0, 1fr); row-gap: var(--ow-space-3); }
+.ow-lake-chart { display: block; width: 100%; height: 220px; overflow: visible; }
+.ow-lake-plot { position: relative; min-width: 0; }
+.ow-lake-now-label { position: absolute; inset-block-start: calc(-1 * var(--ow-space-5)); transform: translateX(-50%); color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-lake-y-axis { display: flex; flex-direction: column; justify-content: space-between; color: var(--ow-muted); font-size: var(--ow-text-caption); line-height: 1; }
+.ow-lake-x-axis { grid-column: 2; display: flex; justify-content: space-between; gap: var(--ow-space-2); color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-lake-x-axis > span { max-width: 25%; }
+.ow-lake-x-axis > span:last-child { text-align: right; }
+.ow-lake-x-axis small { display: block; font-size: inherit; }
+.ow-lake-gridline { stroke: var(--ow-rule); stroke-width: 1; }
+.ow-lake-line-past { fill: none; stroke: var(--ow-muted); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 4 4; }
+.ow-lake-line-future { fill: none; stroke: var(--ow-accent); stroke-width: 2.5; stroke-linecap: round; }
+.ow-lake-now-line { stroke: var(--ow-rule); stroke-width: 1; }
+.ow-lake-figure figcaption { margin-top: var(--ow-space-4); color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-lake :is(.ow-lake-hourly,.ow-lake-method) > summary { display: flex; align-items: center; gap: var(--ow-space-2); padding-block: var(--ow-space-2); font-size: var(--ow-text-label); font-weight: 500; cursor: pointer; list-style: none; }
+.ow-lake :is(.ow-lake-hourly,.ow-lake-method) > summary::before { content: "+"; font-size: var(--ow-text-title); width: var(--ow-space-4); }
+.ow-lake :is(.ow-lake-hourly,.ow-lake-method)[open] > summary::before { content: "−"; }
+.ow-lake-hourly { margin-top: var(--ow-space-4); }
+.ow-lake-hourly table { width: 100%; max-width: 640px; border-collapse: collapse; text-align: left; font-size: var(--ow-text-label); }
+.ow-lake-hourly :is(th,td) { padding: var(--ow-space-3) var(--ow-space-2); border-bottom: 1px solid var(--ow-rule); font-weight: 400; }
+.ow-lake-hourly thead { color: var(--ow-muted); }
+.ow-lake-hourly td { text-align: right; white-space: nowrap; }
+.ow-lake-hourly th > span { display: block; color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-lake-hourly caption { text-align: left; padding-block: var(--ow-space-3); color: var(--ow-muted); }
+.ow-lake-links { padding-block: var(--ow-space-5); border-block: 1px solid var(--ow-rule); }
+.ow-lake-links > div { display: flex; flex-wrap: wrap; gap: var(--ow-space-3); margin-top: var(--ow-space-4); }
+.ow-lake-link { display: inline-flex; align-items: center; padding: var(--ow-space-2) var(--ow-space-4); border: 1px solid var(--ow-rule); border-radius: var(--ow-radius-control); font-size: var(--ow-text-label); }
+.ow-lake-link:hover { background: var(--ow-surface-soft); }
+.ow-lake-method { margin-top: var(--ow-space-5); }
+.ow-lake-method p { max-width: 65ch; margin-top: var(--ow-space-3); color: var(--ow-muted); font-size: var(--ow-text-label); }
+.ow-lake-source-links { display: flex; flex-wrap: wrap; gap: var(--ow-space-4); }
+.ow-lake :is(.ow-lake-source-links,.ow-lake-attribution,.ow-lake-unavailable) a { display: inline-flex; align-items: center; color: var(--ow-accent); text-decoration: underline; text-underline-offset: 3px; }
+.ow-lake-attribution { margin-top: var(--ow-space-3); color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-lake-unavailable { max-width: 65ch; color: var(--ow-muted); }
+.ow-lake-loading { min-height: 480px; padding-block: var(--ow-space-6); color: var(--ow-muted); }
+.ow-lake-loading-value { display: block; width: 180px; height: var(--ow-space-8); margin-bottom: var(--ow-space-4); border-radius: var(--ow-radius-control); background: var(--ow-surface-soft); }
+@media (max-width: 639px) {
+  .ow-lake { padding-inline: var(--ow-space-4); }
+  .ow-lake-overview { grid-template-columns: minmax(0, 1fr); gap: var(--ow-space-5); padding-block: var(--ow-space-5); }
+  .ow-lake-days li { padding-block: var(--ow-space-2); }
+  .ow-lake-legend { gap: var(--ow-space-4); }
+}

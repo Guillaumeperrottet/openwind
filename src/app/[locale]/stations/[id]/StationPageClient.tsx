@@ -23,6 +23,8 @@ import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import { barColors, windDirectionLabel } from "@/lib/utils";
 import { WindProvenance } from "@/components/spot/WindProvenance";
 import { roundKnots } from "@/lib/forecast";
+import { useFreshWind, useFreshnessClock } from "@/lib/useFreshWind";
+import { RequestFeedback } from "@/components/ui/RequestFeedback";
 import { useStationLive } from "@/lib/useStationLive";
 import { isNetworkFresh } from "@/lib/stationConstants";
 import type { WindStation } from "@/lib/stations";
@@ -131,7 +133,7 @@ export function StationPageClient({
   const { useKnots, setUseKnots } = useWindUnits();
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const router = useRouter();
-  const { data: polledLive } = useStationLive(station.id);
+  const { data: polledLive, error: liveError, isValidating: livePending, refresh: refreshLive } = useStationLive(station.id);
   const { favoriteStationIds, toggleStationFavorite } = useFavContext();
   const isFavorite = favoriteStationIds.has(station.id);
 
@@ -168,7 +170,8 @@ export function StationPageClient({
   }, [router]);
 
   // Pick freshest values: unified WindLive if newer/equal, else snapshot.
-  const live = pickNewestLive(initialLive, polledLive);
+  const live = useFreshWind(pickNewestLive(initialLive, polledLive));
+  const now = useFreshnessClock();
   const stationTime = new Date(station.updatedAt).getTime();
   const liveTime = live ? new Date(live.updatedAt).getTime() : NaN;
   const liveIsNewer = Boolean(
@@ -180,7 +183,7 @@ export function StationPageClient({
   const curUpdatedAt = liveIsNewer ? live!.updatedAt : station.updatedAt;
   const isCurrentStale = liveIsNewer
     ? !live!.isFresh
-    : !isNetworkFresh(station.id, station.updatedAt);
+    : !isNetworkFresh(station.id, station.updatedAt, now);
 
   // Derived display values — use the same `barColors` palette as the chart
   // bars and the map flag so the colour is identical everywhere.
@@ -377,6 +380,7 @@ export function StationPageClient({
         </div>
 
         {/* ── Vent en direct + 48h Historique ────────────────────────────── */}
+        <RequestFeedback error={Boolean(liveError)} pending={livePending} hasData onRetry={refreshLive} />
         <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"><WindProvenance live={{ source: "station", network: station.source, stationId: station.id, updatedAt: curUpdatedAt, isFresh: !isCurrentStale }} /></div>
         <div className="mb-10 grid grid-cols-1 items-start gap-3 sm:grid-cols-[auto_auto] xl:grid-cols-[auto_auto_minmax(0,1fr)]">
           {/* Compass */}

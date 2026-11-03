@@ -3,19 +3,13 @@
  * Best practices: schema.org, JSON-LD format
  */
 
+import { spotActivityLabel } from "@/lib/spot-activity";
 import type { Spot, WindReport } from "@/generated/prisma/client";
 import { DEFAULT_OG_IMAGE, SITE_URL, localizedUrl } from "@/lib/site";
 
 type Locale = "fr" | "en" | "de" | "it";
 
 // ── Locale-aware string tables ─────────────────────────────────────────────────
-
-const SPORT_LABELS: Record<Locale, { kite: string; para: string }> = {
-  fr: { kite: "Kitesurf", para: "Parapente" },
-  en: { kite: "Kitesurfing", para: "Paragliding" },
-  de: { kite: "Kitesurfen", para: "Gleitschirmfliegen" },
-  it: { kite: "Kitesurf", para: "Parapendio" },
-};
 
 const SPOT_COPY: Record<
   Locale,
@@ -118,8 +112,7 @@ function localizedSpotDescription(
 /** The layout appends the brand; keep the spot's full name and real location. */
 export function buildSpotTitle(spot: SpotIdentity, locale?: string): string {
   const l = toLocale(locale);
-  const sport =
-    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
+  const sport = spotActivityLabel(spot, l);
   return SPOT_COPY[l].title(sport, spotPlace(spot, true));
 }
 
@@ -129,8 +122,7 @@ export function buildSpotDescription(
   locale?: string,
 ): string {
   const l = toLocale(locale);
-  const sport =
-    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
+  const sport = spotActivityLabel(spot, l);
   const copy = SPOT_COPY[l];
   const detail = localizedSpotDescription(spot, l);
   // Keep local editorial facts ahead of repeated sport / region wording.
@@ -170,8 +162,7 @@ export function buildArticleSchema(
   locale?: string,
 ) {
   const l = toLocale(locale);
-  const sport =
-    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
+  const sport = spotActivityLabel(spot, l);
   const location = [spot.region, spot.country].filter(Boolean).join(", ");
   const inPrep = l === "en" ? "in" : l === "de" ? "in" : l === "it" ? "a" : "à";
   const headline = location
@@ -233,8 +224,7 @@ export function buildPlaceSchema(
   locale?: string,
 ) {
   const l = toLocale(locale);
-  const sport =
-    spot.sportType === "KITE" ? SPORT_LABELS[l].kite : SPORT_LABELS[l].para;
+  const sport = spotActivityLabel(spot, l);
 
   return {
     "@context": "https://schema.org",

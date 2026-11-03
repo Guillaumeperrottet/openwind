@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { X, Mail, Eye, EyeOff } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { authErrorMessage } from "@/lib/auth-errors";
+import { toSiteLocale } from "@/lib/site";
 
 interface AuthModalProps {
   open: boolean;
@@ -14,6 +16,7 @@ interface AuthModalProps {
 
 export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalProps) {
   const t = useTranslations("AuthModal");
+  const locale = toSiteLocale(useLocale());
   const [mode, setMode] = useState<"login" | "signup" | "forgot">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,6 +26,34 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
   const [signupDone, setSignupDone] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const emailId = useId();
+  const passwordId = useId();
+  const errorId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const previousFocus = document.activeElement;
+    const overflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = "hidden";
+    dialog.querySelector<HTMLInputElement>("input")?.focus();
+    return () => {
+      dialog.close();
+      document.body.style.overflow = overflow;
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (signupDone || resetSent) dialogRef.current?.querySelector<HTMLElement>("h2")?.focus();
+    else dialogRef.current?.querySelector<HTMLInputElement>("input")?.focus();
+  }, [mode, signupDone, resetSent, open]);
+
   if (!open) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,87 +61,79 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-
-    if (mode === "signup") {
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
-      const { error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: redirectTo },
-      });
-      setLoading(false);
-      if (authError) {
-        setError(authError.message);
+    try {
+      const supabase = createClient();
+      if (mode === "signup") {
+        const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
+        const { error: authError } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo } });
+        if (authError) setError(authErrorMessage(authError, locale));
+        else { trackEvent("sign_up", { method: "email" }); setSignupDone(true); }
       } else {
-        trackEvent("sign_up", { method: "email" });
-        setSignupDone(true);
-      }
-    } else {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      setLoading(false);
-      if (authError) {
-        if (authError.message === "Invalid login credentials") {
-          setError(t("invalidCredentials"));
-        } else {
-          setError(authError.message);
+        const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        if (authError) setError(authErrorMessage(authError, locale));
+        else {
+          trackEvent("login", { method: "email" });
+          fetch("/api/auth/sync", { method: "POST" }).catch(() => {});
+          onClose();
         }
-      } else {
-        trackEvent("login", { method: "email" });
-        // Sync user to Prisma (non-blocking)
-        fetch("/api/auth/sync", { method: "POST" }).catch(() => {});
-        onClose();
       }
-    }
+    } catch (error) { setError(authErrorMessage(error, locale)); }
+    finally { setLoading(false); }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/reset-password`;
-    const { error: authError } = await supabase.auth.resetPasswordForEmail(
-      email,
-      { redirectTo },
-    );
-    setLoading(false);
-    if (authError) {
-      setError(authError.message);
-    } else {
-      setResetSent(true);
-    }
+    setLoading(true); setError(null);
+    try {
+      const { error: authError } = await createClient().auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/reset-password` });
+      if (authError) setError(authErrorMessage(authError, locale));
+      else setResetSent(true);
+    } catch (error) { setError(authErrorMessage(error, locale)); }
+    finally { setLoading(false); }
   };
 
   const handleOAuth = async (provider: "google" | "github") => {
-    const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
-    trackEvent("auth_oauth_started", { method: provider });
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo },
-    });
+    setLoading(true); setError(null);
+    try {
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`;
+      trackEvent("auth_oauth_started", { method: provider });
+      const { error: authError } = await createClient().auth.signInWithOAuth({ provider, options: { redirectTo } });
+      if (authError) setError(authErrorMessage(authError, locale));
+    } catch (error) { setError(authErrorMessage(error, locale)); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-200 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      className="ow-auth"
+      onCancel={(e) => { e.preventDefault(); onClose(); }}
+      onKeyDown={(e) => {
+        if (e.key !== "Tab") return;
+        const controls = [...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), a[href], [tabindex="0"]')];
+        const first = controls[0], last = controls.at(-1);
+        if (e.shiftKey && (document.activeElement === first || !e.currentTarget.contains(document.activeElement))) {
+          e.preventDefault(); last?.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first?.focus();
+        }
+      }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        const rect = e.currentTarget.getBoundingClientRect();
+        if (e.target === e.currentTarget && (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom)) onClose();
       }}
     >
-      <div className="relative w-full max-w-sm mx-4 bg-white rounded-2xl shadow-2xl p-6">
+      <div className="relative w-full bg-white rounded-2xl p-6">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700"
+          aria-label={t("close")}
+          className="absolute top-2 right-2 flex h-11 w-11 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <h2 className="text-lg font-bold text-gray-900 mb-1">
+        <h2 id={titleId} tabIndex={-1} className="pr-8 text-lg font-bold text-gray-900 mb-1">
           {mode === "login"
             ? t("loginTitle")
             : mode === "signup"
@@ -126,7 +149,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
         </p>
 
         {resetSent ? (
-          <div className="text-center py-4">
+          <div role="status" className="text-center py-4">
             <Mail className="h-8 w-8 text-sky-500 mx-auto mb-2" />
             <p className="text-sm text-gray-700 font-medium">
               {t("resetSentTitle")}{" "}
@@ -135,7 +158,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
             <p className="text-xs text-gray-500 mt-1">{t("resetSentBody")}</p>
           </div>
         ) : signupDone ? (
-          <div className="text-center py-4">
+          <div role="status" className="text-center py-4">
             <Mail className="h-8 w-8 text-sky-500 mx-auto mb-2" />
             <p className="text-sm text-gray-700 font-medium">
               {t("signupDoneTitle")}{" "}
@@ -146,19 +169,25 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
         ) : mode === "forgot" ? (
           <>
             <form onSubmit={handleForgotPassword} className="space-y-3">
+              <label htmlFor={emailId} className="block text-sm font-medium text-slate-700">{t("emailLabel")}</label>
               <input
+                id={emailId}
+                name="email"
+                autoComplete="email"
+                aria-invalid={!!error}
+                aria-describedby={error ? errorId : undefined}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("emailPlaceholder")}
                 required
-                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
+                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
-              {error && <p className="text-xs text-red-500">{error}</p>}
+              {error && <p id={errorId} role="alert" className="text-sm text-red-700">{error}</p>}
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 w-full rounded-lg bg-sky-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 min-h-11 w-full rounded-lg bg-sky-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
               >
                 {loading && (
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
@@ -172,7 +201,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
                   setMode("login");
                   setError(null);
                 }}
-                className="text-sky-600 hover:underline font-medium"
+                className="inline-flex min-h-11 items-center text-sky-600 hover:underline font-medium"
               >
                 {t("backToLogin")}
               </button>
@@ -183,8 +212,9 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
             {/* OAuth buttons */}
             <div className="flex flex-col gap-2 mb-4">
               <button
+                disabled={loading}
                 onClick={() => handleOAuth("google")}
-                className="flex items-center justify-center gap-2 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center gap-2 min-h-11 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
                   <path
@@ -207,8 +237,9 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
                 {t("loginWithGoogle")}
               </button>
               <button
+                disabled={loading}
                 onClick={() => handleOAuth("github")}
-                className="flex items-center justify-center gap-2 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center gap-2 min-h-11 w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <svg
                   className="h-4 w-4"
@@ -229,28 +260,42 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
 
             {/* Email + Password form */}
             <form onSubmit={handleSubmit} className="space-y-3">
+              <label htmlFor={emailId} className="block text-sm font-medium text-slate-700">{t("emailLabel")}</label>
               <input
+                id={emailId}
+                name="email"
+                autoComplete="email"
+                aria-invalid={!!error}
+                aria-describedby={error ? errorId : undefined}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("emailPlaceholder")}
                 required
-                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
+                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
               />
+              <label htmlFor={passwordId} className="block text-sm font-medium text-slate-700">{t("passwordLabel")}</label>
               <div className="relative">
                 <input
+                  id={passwordId}
+                  name="password"
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  aria-invalid={!!error}
+                  aria-describedby={error ? errorId : undefined}
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("passwordPlaceholder")}
                   required
                   minLength={6}
-                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
+                  className="w-full rounded-lg border border-gray-200 px-4 py-2.5 pr-14 text-base sm:text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  aria-label={t(showPassword ? "hidePassword" : "showPassword")}
+                  aria-pressed={showPassword}
+                  className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -260,7 +305,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
                 </button>
               </div>
 
-              {error && <p className="text-xs text-red-500">{error}</p>}
+              {error && <p id={errorId} role="alert" className="text-sm text-red-700">{error}</p>}
 
               {mode === "login" && (
                 <button
@@ -269,7 +314,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
                     setMode("forgot");
                     setError(null);
                   }}
-                  className="text-xs text-sky-600 hover:underline"
+                  className="min-h-11 text-sm text-sky-700 hover:underline"
                 >
                   {t("forgotLink")}
                 </button>
@@ -278,7 +323,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 w-full rounded-lg bg-sky-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center gap-2 min-h-11 w-full rounded-lg bg-sky-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-sky-700 transition-colors disabled:opacity-50"
               >
                 {loading && (
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
@@ -296,7 +341,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
                       setMode("signup");
                       setError(null);
                     }}
-                    className="text-sky-600 hover:underline font-medium"
+                    className="inline-flex min-h-11 items-center text-sky-600 hover:underline font-medium"
                   >
                     {t("switchToSignupAction")}
                   </button>
@@ -309,7 +354,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
                       setMode("login");
                       setError(null);
                     }}
-                    className="text-sky-600 hover:underline font-medium"
+                    className="inline-flex min-h-11 items-center text-sky-600 hover:underline font-medium"
                   >
                     {t("switchToLoginAction")}
                   </button>
@@ -319,6 +364,6 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
           </>
         )}
       </div>
-    </div>
+    </dialog>
   );
 }

@@ -97,7 +97,13 @@
     "switchToLoginAction": "Accedi",
     "forgotLink": "Password dimenticata?",
     "invalidCredentials": "Email o password errata.",
-    "orSeparator": "o"
+    "orSeparator": "o",
+    "emailLabel": "Indirizzo e-mail",
+    "passwordLabel": "Password",
+    "close": "Chiudi",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password",
+    "requestFailed": "Connessione non disponibile. Riprova tra poco."
   },
   "Badge": {
     "difficulty": {
@@ -291,7 +297,9 @@
     "pagination": "Pagine delle stazioni",
     "previousPage": "Precedente",
     "nextPage": "Successiva",
-    "pageLabel": "Pagina {page}"
+    "pageLabel": "Pagina {page}",
+    "pageTitle": "Stazioni del vento in diretta",
+    "aboutDirectory": "Reti e vento più forte"
   },
   "ForumPage": {
     "title": "Forum",
@@ -724,5 +732,48 @@
     "stationsLoading": "Caricamento delle stazioni…",
     "noNearbyStations": "Nessuna stazione entro 10 km da questo spot. Le previsioni restano disponibili sopra.",
     "stationsUnavailable": "Le stazioni sono temporaneamente indisponibili. Riprova tra poco."
+  },
+  "WindChart": {
+    "browse": "Scorri le ore",
+    "clear": "Cancella selezione",
+    "selectHour": "Tocca il grafico o scorri le ore per leggere i dettagli.",
+    "forecast": "Previsione",
+    "history": "Storico",
+    "wind": "Vento",
+    "gusts": "Raffiche",
+    "hover": "Anteprima",
+    "selected": "Ora selezionata",
+    "now": "Adesso"
+  },
+  "ReadingExperience": {
+    "saveButton": "Leggi più tardi",
+    "savedButton": "Salvato",
+    "saveNamed": "Leggi più tardi: {title}",
+    "removeNamed": "Rimuovi dalle mie letture: {title}",
+    "myReading": "Le mie letture",
+    "saved": "Aggiunto alle mie letture su questo dispositivo.",
+    "removed": "Rimosso dalle mie letture.",
+    "limit": "Puoi salvare fino a {count} pubblicazioni. Rimuovine una per aggiungerne un’altra.",
+    "error": "Impossibile salvare su questo dispositivo. Controlla le impostazioni del browser e riprova.",
+    "lastReading": "Ultima lettura: {section}",
+    "resume": "Riprendi la lettura",
+    "explore": "Esplora il diario",
+    "deviceOnly": "Letture salvate su questo dispositivo, anche con un account.",
+    "loading": "Caricamento delle letture…",
+    "catalogueError": "Il catalogo è temporaneamente indisponibile. Le tue letture salvate sono conservate.",
+    "retry": "Riprova",
+    "read": "Leggi",
+    "unavailable": "Questa pubblicazione non è più disponibile. Puoi rimuoverla dall’elenco.",
+    "undo": "Annulla",
+    "restoreError": "Impossibile ripristinare la lettura. Riprova o libera un posto nell’elenco."
+  },
+  "FieldExperience": {
+    "oldMeasurement": "Misura non recente",
+    "unavailable": "Questi dati sono temporaneamente non disponibili.",
+    "refreshFailed": "Aggiornamento non riuscito. Restano visibili gli ultimi dati; controlla la data.",
+    "retry": "Riprova",
+    "retrying": "Nuovo tentativo…",
+    "mapUnavailable": "La mappa non risponde. Riprova oppure consulta le stazioni.",
+    "openStations": "Consulta le stazioni"
   }
 }

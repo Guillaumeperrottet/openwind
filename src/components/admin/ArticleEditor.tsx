@@ -403,7 +403,7 @@ export function ArticleEditor({ articleId }: { articleId?: string }) {
                   <span className="mb-1.5 block text-sm font-semibold text-slate-700">
                     Adresse de l’article
                   </span>
-                  <div className="flex rounded-lg border border-slate-300 bg-slate-50 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-100">
+                  <div className="flex rounded-lg border border-slate-300 bg-slate-50 focus-within:border-slate-600">
                     <span className="hidden items-center border-r border-slate-200 px-3 text-xs text-slate-400 sm:flex">
                       {isLocalGuide ? "/fr/vent-en-direct/" : "/fr/carnet/"}
                     </span>

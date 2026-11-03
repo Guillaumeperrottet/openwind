@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { roundKnots } from "@/lib/forecast";
 import { barColors } from "@/lib/utils";
+import { ChartReading } from "./ChartReading";
 import { HistoryTooltip } from "./HistoryTooltip";
 import type { HistoryPoint } from "@/types";
 import type { HourlyPoint } from "@/lib/forecast";
@@ -25,6 +26,7 @@ export function WindHistoryChart({
   const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [containerWidth, setContainerWidth] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -49,15 +51,15 @@ export function WindHistoryChart({
       <div
         ref={containerRef}
         className="relative overflow-hidden"
-        style={{ height: 259 }}
+        style={{ height: 272 }}
       />
     );
   }
 
   // ── Layout constants ──────────────────────────────────────────────────────
   const CHART_H = 230;
-  const DAY_H = 16;
-  const TIME_H = 13;
+  const DAY_H = 22;
+  const TIME_H = 20;
   const AXIS_W = 30;
   const totalH = DAY_H + TIME_H + CHART_H;
 
@@ -102,7 +104,7 @@ export function WindHistoryChart({
 
   // Filter history to start from yesterday midnight (local TZ) → true 48h window
   const filteredHistory = history.filter(
-    (p) => toTZ(p.time) >= yesterdayMidnightInTZ,
+    (p) => toTZ(p.time) >= yesterdayMidnightInTZ && toTZ(p.time) < tomorrowMidnightInTZ,
   );
 
   // Use filteredHistory everywhere below instead of raw history
@@ -238,6 +240,7 @@ export function WindHistoryChart({
     svgEl: SVGSVGElement,
     clientX: number,
     clientY: number,
+    pin = false,
   ) => {
     const svgRect = svgEl.getBoundingClientRect();
     const svgX =
@@ -253,6 +256,7 @@ export function WindHistoryChart({
     }
     if (bestIdx >= 0) {
       setHoveredIdx(bestIdx);
+      if (pin) setSelectedIdx(bestIdx);
       const containerRect = containerRef.current!.getBoundingClientRect();
       setTooltipPos({
         x: clientX - containerRect.left,
@@ -265,14 +269,12 @@ export function WindHistoryChart({
     handlePointer(e.currentTarget, e.clientX, e.clientY);
 
   const handleSvgTouch = (e: React.TouchEvent<SVGSVGElement>) => {
-    e.preventDefault();
     const touch = e.touches[0];
-    if (touch) handlePointer(e.currentTarget, touch.clientX, touch.clientY);
+    if (touch) handlePointer(e.currentTarget, touch.clientX, touch.clientY, true);
   };
 
   // Hover point: history or forecast?
   const hovPt = hoveredIdx !== null ? allPoints[hoveredIdx] : null;
-  const isHoverForecast = hovPt?.isForecast ?? false;
   const hovHistPoint =
     hovPt && !hovPt.isForecast && hovPt.histIdx !== undefined
       ? filteredHistory[hovPt.histIdx]
@@ -282,6 +284,12 @@ export function WindHistoryChart({
       ? futureForecast[hovPt.fcstIdx]
       : null;
   const hovPoint = hovHistPoint ?? null;
+  const isHoverForecast = !!hovFcstPoint || !!(hovHistPoint && toTZ(hovHistPoint.time) > nowInTZ);
+
+  const selected = selectedIdx !== null ? allPoints[selectedIdx] : null;
+  const selectedHistory = selected?.histIdx !== undefined ? filteredHistory[selected.histIdx] : null;
+  const selectedForecast = selected?.fcstIdx !== undefined ? futureForecast[selected.fcstIdx] : null;
+  const selectedPoint = selectedHistory ?? selectedForecast;
 
   return (
     <div
@@ -296,8 +304,8 @@ export function WindHistoryChart({
       {/* ── Hover tooltip ───────────────────────────────────────────────── */}
       {(hovPoint ?? hovFcstPoint) && (
         <HistoryTooltip
-          point={(hovPoint ?? hovFcstPoint)!}
-          isForecast={hovFcstPoint !== null}
+          point={hovHistPoint && isHoverForecast ? { ...hovHistPoint, time: toTZ(hovHistPoint.time) } : (hovPoint ?? hovFcstPoint)!}
+          isForecast={isHoverForecast}
           useKnots={useKnots}
           tooltipPos={tooltipPos}
           containerWidth={containerRef.current?.clientWidth ?? 0}
@@ -316,9 +324,10 @@ export function WindHistoryChart({
           cursor: "crosshair",
           WebkitUserSelect: "none",
           WebkitTouchCallout: "none",
-          touchAction: "none",
+          touchAction: "pan-y",
         }}
         onMouseMove={handleMouseMove}
+        onClick={(e) => handlePointer(e.currentTarget, e.clientX, e.clientY, true)}
         onTouchStart={handleSvgTouch}
         onTouchMove={handleSvgTouch}
       >
@@ -342,8 +351,8 @@ export function WindHistoryChart({
                   x={AXIS_W - 5}
                   y={y + 3.5}
                   textAnchor="end"
-                  fontSize="9"
-                  fill="#d1d5db"
+                  fontSize="11"
+                  fill="var(--ow-muted)"
                   fontFamily="system-ui, sans-serif"
                 >
                   {tick}
@@ -358,8 +367,8 @@ export function WindHistoryChart({
           x={10}
           y={DAY_H + TIME_H + CHART_H / 2}
           textAnchor="middle"
-          fontSize="8"
-          fill="#d1d5db"
+          fontSize="11"
+          fill="var(--ow-muted)"
           fontFamily="system-ui, sans-serif"
           transform={`rotate(-90, 10, ${DAY_H + TIME_H + CHART_H / 2})`}
         >
@@ -384,8 +393,8 @@ export function WindHistoryChart({
                 x={g.x + g.w / 2}
                 y={DAY_H / 2 + 5}
                 textAnchor="middle"
-                fontSize="10"
-                fill="#9ca3af"
+                fontSize="12"
+                fill="var(--ow-muted)"
                 fontFamily="system-ui, sans-serif"
                 fontWeight="500"
               >
@@ -400,7 +409,7 @@ export function WindHistoryChart({
           const labels: React.ReactNode[] = [];
           const startMs = tzToMs(yesterdayMidnightInTZ);
           const endMs = tzToMs(tomorrowMidnightInTZ);
-          for (let ms = startMs; ms < endMs; ms += 3 * 3600_000) {
+          for (let ms = startMs; ms < endMs; ms += (effectiveW < 500 ? 6 : 3) * 3600_000) {
             const isoStr = new Date(ms).toISOString().slice(0, 16);
             const hourStr = isoStr.slice(11, 13);
             const x = timeToX(isoStr);
@@ -411,8 +420,8 @@ export function WindHistoryChart({
                 x={x}
                 y={DAY_H + TIME_H - 3}
                 textAnchor="middle"
-                fontSize="8"
-                fill="#9ca3af"
+                fontSize="11"
+                fill="var(--ow-muted)"
                 fontFamily="system-ui, sans-serif"
               >
                 {hourStr}h
@@ -585,6 +594,7 @@ export function WindHistoryChart({
           strokeWidth="1"
         />
 
+        {selected && <line x1={selected.x} x2={selected.x} y1={DAY_H + TIME_H} y2={totalH} stroke="var(--ow-accent)" strokeWidth="2" strokeDasharray="3 3" pointerEvents="none" />}
         {/* ── NOW vertical line (always visible) ─────────────────────── */}
         <line
           x1={nowX}
@@ -598,8 +608,9 @@ export function WindHistoryChart({
         />
       </svg>
 
+      <ChartReading point={selectedPoint} time={selectedHistory ? toTZ(selectedHistory.time) : selectedForecast?.time ?? ""} forecast={!!selectedForecast || !!(selectedHistory && toTZ(selectedHistory.time) > nowInTZ)} useKnots={useKnots} index={selectedIdx ?? Math.max(0, filteredHistory.findLastIndex((p) => toTZ(p.time) <= nowInTZ))} count={allPoints.length} onSelect={setSelectedIdx} onClear={() => { setSelectedIdx(null); setHoveredIdx(null); }} />
       {/* ── Legend ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 px-1 text-[10px] text-gray-400">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 px-1 text-sm text-slate-600">
         <span className="flex items-center gap-1">
           <span className="inline-block w-3 h-3 border-l-[3px] border-dashed border-orange-400" />
           Maintenant

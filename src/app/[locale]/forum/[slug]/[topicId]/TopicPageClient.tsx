@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   Pin,
   Lock,
@@ -92,21 +91,7 @@ export function TopicPageClient({ topic, categorySlug, isAdmin }: Props) {
   const refresh = () => router.refresh();
 
   return (
-    <div className="mx-auto px-4 sm:px-6 lg:px-10 pt-20 pb-12">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3 flex-wrap">
-        <Link href="/forum" className="hover:text-gray-600 transition-colors">
-          Forum
-        </Link>
-        <span>/</span>
-        <Link
-          href={`/forum/${categorySlug}`}
-          className="hover:text-gray-600 transition-colors"
-        >
-          {topic.category.name}
-        </Link>
-      </div>
-
+    <div className="ow-access-content">
       {/* Topic title */}
       <div className="mb-4">
         <div className="flex items-center gap-2 flex-wrap">
@@ -119,7 +104,7 @@ export function TopicPageClient({ topic, categorySlug, isAdmin }: Props) {
               className="flex-1 border border-gray-300 rounded px-2 py-1 text-lg font-semibold text-gray-900 outline-none focus:border-gray-400"
             />
           ) : (
-            <h1 className="text-lg font-semibold text-gray-900 wrap-break-words">
+            <h1 className="ow-access-title wrap-break-words">
               {topic.title}
             </h1>
           )}

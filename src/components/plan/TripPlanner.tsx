@@ -1,5 +1,7 @@
 "use client";
 
+import { AccessPageHeader } from "@/components/ui/AccessPageHeader";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -379,40 +381,8 @@ export function TripPlanner({
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] pb-28 text-slate-900 sm:pb-16">
-      <div className="mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-14">
-        <div className="mb-6 flex items-start justify-between gap-8 sm:mb-8">
-          <div className="max-w-2xl">
-            <p className="mb-3 text-[11px] font-bold tracking-[0.2em] text-sky-700">
-              {c.eyebrow}
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-5xl sm:leading-[1.1]">
-              {c.title}
-            </h1>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:mt-4 sm:text-lg">
-              {c.intro}
-            </p>
-          </div>
-          <div
-            aria-hidden
-            className="hidden shrink-0 rounded-[2rem] border border-white bg-gradient-to-br from-sky-100 via-white to-teal-50 p-8 shadow-sm lg:block"
-          >
-            <Compass
-              size={46}
-              strokeWidth={1.25}
-              className="mb-7 text-sky-700"
-            />
-            <div className="space-y-3 text-sm text-slate-600">
-              {[c.datesStep, c.compareStep, c.goStep].map((s, i) => (
-                <div key={s} className="flex items-center gap-3">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs text-sky-700 shadow-sm">
-                    {i + 1}
-                  </span>
-                  {s}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="ow-access-content">
+        <AccessPageHeader title={c.title} description={c.intro} />
         <form
           ref={formRef}
           onSubmit={submit}
@@ -610,7 +580,7 @@ export function TripPlanner({
               </select>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-4 gap-2 sm:mt-5 sm:flex sm:flex-wrap">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-5 sm:flex sm:flex-wrap">
             {(["today", "tomorrow", "weekend", "week"] as const).map(
               (preset) => {
                 const [a, b] = quickDates(today, preset);
@@ -825,29 +795,27 @@ export function TripPlanner({
                 </button>
               </div>
             </div>
-            {applied && <SaveSearchControl key={applied.query} criteria={applied.criteria} place={applied.name} />}
             <div className="mb-4">
-              <div role="group" aria-label={personal("units")} className="mb-4 flex justify-end gap-2">
-                {[true, false].map((knots) => <button type="button" key={String(knots)} aria-pressed={useKnots === knots} onClick={() => setUseKnots(knots)} className={`${buttonClass} border border-slate-200 ${useKnots === knots ? "bg-slate-900 text-white" : "bg-white text-slate-600"}`}>{knots ? "kts" : "km/h"}</button>)}
-              </div>
-              <h2 className="text-xl font-semibold">
+              <div className="mb-2 flex items-center justify-between gap-3">
+              <h2 className="min-w-0 flex-1 text-xl font-semibold">
                 {response.mode === "seasonal"
                   ? c.seasonal
                   : recommendations.length
                     ? c.results
-                    : ui.weatherResults}
+                    : c.noWindow}
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <div role="group" aria-label={personal("units")} className="flex shrink-0 gap-2">
+                {[true, false].map((knots) => <button type="button" key={String(knots)} aria-pressed={useKnots === knots} onClick={() => setUseKnots(knots)} className={`${buttonClass} border border-slate-200 ${useKnots === knots ? "bg-slate-900 text-white" : "bg-white text-slate-600"}`}>{knots ? "kts" : "km/h"}</button>)}
+              </div>
+              </div>
+              {(response.mode === "seasonal" || recommendations.length > 0) && <p className="mt-1 text-sm text-slate-500">
                 {response.mode === "seasonal"
                   ? c.seasonalText
                   : recommendations.length
                     ? c.resultIntro
                     : ui.weatherIntro}
-              </p>
-              <p className="mt-2 text-xs text-slate-500">
-                {response.meta.qualified ?? 0}/{response.meta.candidates}{" "}
-                {ui.qualified}
-              </p>
+              </p>}
+
               {loading && (
                 <p role="status" className="mt-2 text-sm text-sky-800">
                   {c.loading}
@@ -863,7 +831,7 @@ export function TripPlanner({
               <Empty title={c.noSpots} text={c.emptyText} />
             ) : response.mode === "forecast" && !recommendations.length ? (
               <p
-                className="mb-4 rounded-xl bg-slate-100 p-3 text-xs leading-relaxed text-slate-600"
+                className="mb-4 rounded-xl bg-slate-100 p-3 text-sm leading-relaxed text-slate-600"
                 role="status"
               >
                 {weatherCount ? ui.noReviewedWindow : ui.noDaylightForecast}
@@ -887,6 +855,11 @@ export function TripPlanner({
                 </div>
               </section>
             )}
+              <p className="mb-4 mt-2 text-sm text-slate-600">
+                {response.meta.qualified ?? 0}/{response.meta.candidates}{" "}
+                {ui.qualified}
+              </p>
+            {applied && recommendations.length === 0 && <SaveSearchControl key={applied.query} criteria={applied.criteria} place={applied.name} />}
             {view === "map" && mapSpots.length > 0 ? (
               <div className="space-y-4">
                 <PlannerMap
@@ -995,6 +968,7 @@ export function TripPlanner({
                 )}
               </>
             )}
+            {applied && recommendations.length > 0 && <SaveSearchControl key={applied.query} criteria={applied.criteria} place={applied.name} />}
             <p className="mt-5 text-xs leading-relaxed text-slate-500">
               {c.note}
             </p>

@@ -1,3 +1,4 @@
+vi.mock("@/components/spot/WaterTemperature", () => ({ WaterTemperature: () => null, WaterTemperatureLoading: () => null }));
 import { describe, expect, it, vi } from "vitest";
 import { generateMetadata } from "../page";
 import { buildSpotDescription, buildSpotTitle } from "@/lib/seo";

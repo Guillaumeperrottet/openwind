@@ -15,6 +15,9 @@ import {
   ArrowUpRight,
   Star,
   LoaderCircle,
+  Thermometer,
+  Compass,
+  MessagesSquare,
 } from "lucide-react";
 import {
   SEARCH_COPY,
@@ -23,6 +26,11 @@ import {
   type SearchResponse,
   type SearchResult,
 } from "@/lib/search";
+import { contextualHref } from "@/lib/place";
+import { useSelectedPlace } from "@/lib/place-store";
+import { PLACE_COPY } from "@/lib/place";
+import { rememberJourney } from "@/lib/journey-store";
+import { returnTitle } from "@/lib/access";
 import { toSiteLocale } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
 import { useFavContext } from "@/lib/favorite-context";
@@ -33,9 +41,10 @@ const ICONS = {
   station: RadioTower,
   webcam: Camera,
   article: BookOpen,
+  water: Thermometer, page: Compass, discussion: MessagesSquare,
 };
 export interface GlobalSearchProps {
-  variant?: "hero" | "compact";
+  variant?: "hero" | "compact" | "explorer";
   favoriteSpotIds?: Set<string>;
   favoriteStationIds?: Set<string>;
   autoFocus?: boolean;
@@ -49,17 +58,20 @@ export function GlobalSearch({
   autoFocus,
   onNavigate,
 }: GlobalSearchProps) {
+  const place = useSelectedPlace();
+  const destination = (href: string) => contextualHref(href, place, locale);
   const context = useFavContext();
   const favoriteSpotIds = suppliedSpotIds ?? context.favoriteSpotIds;
   const favoriteStationIds = suppliedStationIds ?? context.favoriteStationIds;
   const locale = toSiteLocale(useLocale());
-  const copy = SEARCH_COPY[locale];
+  const copy = SEARCH_COPY[locale], placeCopy = PLACE_COPY[locale];
   const router = useRouter();
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<SearchKind | "">("");
+  const resultsHref = `/${locale}/recherche?${new URLSearchParams({ q: query.trim(), ...(kind ? { type: kind } : {}) })}`;
   const [open, setOpen] = useState(Boolean(autoFocus));
   const [active, setActive] = useState(-1);
   const [retry, setRetry] = useState(0);
@@ -82,7 +94,11 @@ export function GlobalSearch({
   const data = settled.key === key ? settled.data : undefined;
   const error = settled.key === key && settled.error;
   const loading = open && settled.key !== key;
-  const results = SEARCH_KINDS.flatMap(
+  const groups = [...SEARCH_KINDS].sort((a, b) => {
+    const position = (kind: SearchKind) => { const index = data?.results.findIndex(result => result.kind === kind) ?? -1; return index < 0 ? Number.MAX_SAFE_INTEGER : index; };
+    return position(a) - position(b);
+  });
+  const results = groups.flatMap(
     (group) => data?.results.filter((result) => result.kind === group) ?? [],
   );
   const selected = results[active];
@@ -128,7 +144,13 @@ export function GlobalSearch({
         ?.scrollIntoView({ block: "nearest" });
   }, [active, id, selected]);
 
+  function rememberDestination(href: string) {
+    const from = window.location.pathname + window.location.search + window.location.hash;
+    rememberJourney(href, { href: from, title: document.querySelector("main h1")?.textContent?.trim() || returnTitle(from, locale) }, locale);
+  }
+
   function choose(result: SearchResult) {
+    rememberDestination(destination(result.href));
     trackEvent("search_result_open", {
       result_type: result.kind,
       result_id: result.id,
@@ -141,18 +163,22 @@ export function GlobalSearch({
   return (
     <div
       ref={ref}
-      className="relative min-w-0 flex-1 text-left"
+      className={`ow-global-search relative min-w-0 flex-1 text-left ${variant === "explorer" ? "ow-search-explorer" : ""}`}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null))
           setOpen(false);
       }}
     >
-      <div
-        className={`relative flex items-center border bg-white transition focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100 ${variant === "hero" ? "rounded-2xl border-slate-200 p-2 shadow-[0_12px_45px_-18px_rgba(15,23,42,0.28)]" : "rounded-full border-slate-200 bg-slate-50"}`}
+      <form role="search" onSubmit={(event) => {
+        event.preventDefault();
+        if (selected) { choose(selected); router.push(destination(selected.href)); }
+        else { rememberDestination(resultsHref); setOpen(false); onNavigate?.(); router.push(resultsHref); }
+      }}
+        className={`relative flex items-center border bg-white transition ${variant !== "compact" ? "rounded-2xl border-slate-200 p-2 shadow-[0_12px_45px_-18px_rgba(15,23,42,0.28)]" : "rounded-full border-slate-200 bg-slate-50"}`}
       >
         <Search
           aria-hidden="true"
-          className={`pointer-events-none shrink-0 text-sky-700 ${variant === "hero" ? "ml-3 h-6 w-6" : "ml-3 h-4 w-4"}`}
+          className={`pointer-events-none shrink-0 text-sky-700 ${variant !== "compact" ? "ml-3 h-6 w-6" : "ml-3 h-4 w-4"}`}
         />
         <label className="sr-only" htmlFor={`${id}-input`}>
           {copy.label}
@@ -173,7 +199,7 @@ export function GlobalSearch({
           autoComplete="off"
           maxLength={80}
           value={query}
-          placeholder={variant === "hero" ? copy.placeholder : copy.short}
+          placeholder={variant !== "compact" ? copy.placeholder : copy.short}
           onFocus={() => setOpen(true)}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -202,14 +228,13 @@ export function GlobalSearch({
                   : -1,
               );
             }
-            if (event.key === "Enter" && results.length) {
+            if (event.key === "Enter") {
               event.preventDefault();
-              const result = selected ?? results[0];
-              choose(result);
-              router.push(result.href);
+              if (selected) { choose(selected); router.push(destination(selected.href)); }
+              else { rememberDestination(resultsHref); setOpen(false); onNavigate?.(); router.push(resultsHref); }
             }
           }}
-          className={`min-w-0 flex-1 bg-transparent text-base text-slate-950 outline-none placeholder:text-slate-500 ${variant === "hero" ? "px-3 py-3 sm:py-4" : "px-2 py-2 sm:text-sm"}`}
+          className={`min-w-0 flex-1 bg-transparent text-base text-slate-950 outline-none placeholder:text-slate-500 ${variant !== "compact" ? "px-3 py-3 sm:py-4" : "px-2 py-2 sm:text-sm"}`}
         />
         {query && (
           <button
@@ -220,11 +245,12 @@ export function GlobalSearch({
               setActive(-1);
               input.current?.focus();
             }}
-            className="mr-2 rounded-full p-2 text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-sky-600"
+            className="mr-2 min-h-11 min-w-11 rounded-full p-2 text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-sky-600"
           >
             <X aria-hidden="true" className="h-4 w-4" />
           </button>
         )}
+        {variant === "explorer" && <button className="ow-search-submit" type="submit" aria-label={placeCopy.searchButton}><Search size={20} aria-hidden /><span>{placeCopy.searchButton}</span></button>}
         {variant === "hero" && (
           <span
             aria-hidden="true"
@@ -233,7 +259,7 @@ export function GlobalSearch({
             ↵
           </span>
         )}
-      </div>
+      </form>
       <span
         id={`${id}-status`}
         role="status"
@@ -245,7 +271,7 @@ export function GlobalSearch({
             ? copy.loading
             : error
               ? copy.error
-              : `${results.length} ${copy.count}`
+              : `${results.length} ${results.length === 1 ? placeCopy.countOne : placeCopy.count}`
           : ""}
       </span>
       {open && (
@@ -264,7 +290,7 @@ export function GlobalSearch({
                   setActive(-1);
                   input.current?.focus();
                 }}
-                className={`shrink-0 rounded-full px-3 py-2 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-sky-600 ${kind === type ? "bg-sky-100 text-sky-900" : "text-slate-600 hover:bg-slate-100"}`}
+                className={`min-h-11 shrink-0 rounded-full px-3 py-2 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-sky-600 ${kind === type ? "bg-sky-100 text-sky-900" : "text-slate-600 hover:bg-slate-100"}`}
               >
                 {type ? copy.kinds[type as SearchKind] : copy.all}
               </button>
@@ -305,7 +331,7 @@ export function GlobalSearch({
                 {copy.empty}
               </p>
             )}
-            {SEARCH_KINDS.map((group) => {
+            {groups.map((group) => {
               const matches = results.filter((result) => result.kind === group);
               if (!matches.length) return null;
               return (
@@ -332,7 +358,7 @@ export function GlobalSearch({
                       <Link
                         key={`${result.kind}-${result.id}`}
                         id={`${id}-option-${index}`}
-                        href={result.href}
+                        href={destination(result.href)}
                         role="option"
                         aria-label={`${result.title} · ${result.subtitle}`}
                         aria-selected={active === index}
@@ -368,6 +394,7 @@ export function GlobalSearch({
               );
             })}
           </div>
+          {query.trim() && <Link href={resultsHref} onClick={() => { rememberDestination(resultsHref); setOpen(false); onNavigate?.(); }} className="ow-search-all">{placeCopy.seeAll}</Link>}
           {data?.partial && (
             <p className="border-t border-slate-100 px-4 py-3 text-xs text-amber-800">
               {copy.partial}

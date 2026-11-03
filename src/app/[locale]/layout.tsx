@@ -1,3 +1,7 @@
+import { jsonLd as serializeJsonLd, publicSiteSchema } from "@/lib/public-seo";
+import { Suspense } from "react";
+import { WebVitals } from "@/components/ui/WebVitals";
+import { PlaceObserver } from "@/components/navigation/PlaceObserver";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
@@ -5,6 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Navbar } from "@/components/ui/Navbar";
+import { AccessFrame } from "@/components/ui/AccessFrame";
 import { DocumentLanguage } from "@/components/ui/DocumentLanguage";
 import { SiteFooter } from "@/components/ui/SiteFooter";
 import { FavProvider } from "@/lib/FavContext";
@@ -13,7 +18,6 @@ import {
   DEFAULT_OG_IMAGE,
   HOME_SEO,
   SITE_URL,
-  localizedUrl,
   toSiteLocale,
 } from "@/lib/site";
 import { notFound } from "next/navigation";
@@ -104,38 +108,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   const messages = await getMessages();
-  const copy = HOME_SEO[toSiteLocale(locale)];
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebSite",
-        name: "Openwind",
-        url: SITE_URL,
-        description: copy.description,
-      },
-      {
-        "@type": "SiteNavigationElement",
-        name: "Carte",
-        url: localizedUrl(locale),
-      },
-      {
-        "@type": "SiteNavigationElement",
-        name: "Planification",
-        url: localizedUrl(locale, "/plan"),
-      },
-      {
-        "@type": "SiteNavigationElement",
-        name: "Balises météo et vent",
-        url: localizedUrl(locale, "/balises"),
-      },
-      {
-        "@type": "SiteNavigationElement",
-        name: "Forum",
-        url: localizedUrl(locale, "/forum"),
-      },
-    ],
-  };
+  const jsonLd = publicSiteSchema(toSiteLocale(locale));
 
   return (
     <>
@@ -154,11 +127,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          __html: serializeJsonLd(jsonLd),
         }}
       />
       <NextIntlClientProvider messages={messages}>
         <FavProvider>
+          <Suspense fallback={null}><PlaceObserver /></Suspense>
+          <WebVitals />
           <Navbar />
           <main className={`${inter.className} antialiased pt-14`}>
             <noscript>
@@ -169,7 +144,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 style={{ display: "none", visibility: "hidden" }}
               />
             </noscript>
-            {children}
+            <AccessFrame>{children}</AccessFrame>
           </main>
           <SiteFooter />
         </FavProvider>

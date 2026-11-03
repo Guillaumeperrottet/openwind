@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useLocale } from "next-intl";
+import { ChartReading } from "./ChartReading";
+import { useLocale, useTranslations } from "next-intl";
 import { windCellStyle } from "@/lib/forecast";
 import { windDirectionLabel } from "@/lib/utils";
 import { MiniCompass } from "@/components/spot/MiniCompass";
@@ -19,11 +20,13 @@ interface Props {
 /** SVG bar chart — wind speed + gusts, hourly, 7 days, with hover compass. */
 export function WindChart({ hourly, timezone, useKnots }: Props) {
   const locale = useLocale();
+  const t = useTranslations("WindChart");
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const yAxisRef = useRef<HTMLDivElement>(null);
   const [nowIdx, setNowIdx] = useState(-1);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
   // Use all hourly points (168 = 7 days × 24h)
@@ -60,10 +63,9 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
   const BAR_SLOT = BAR_W + BAR_GAP;
   const Y_AXIS_W = 38;
 
-  // Touch handler for mobile — floating tooltip (blocks scroll on chart area)
+  // Touch selects a reading; vertical page scrolling remains available.
   const handleSvgTouch = useCallback(
     (e: TouchEvent) => {
-      e.preventDefault(); // block scroll on chart bars — scroll via bottom grip
       const touch = e.touches[0];
       if (!touch) return;
       const svg = svgRef.current;
@@ -73,6 +75,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
       const idx = Math.floor((svgX - Y_AXIS_W) / BAR_SLOT);
       if (idx >= 0 && idx < points.length) {
         setHoveredIdx(idx);
+        setSelectedIdx(idx);
         const container = containerRef.current;
         if (container) {
           const containerRect = container.getBoundingClientRect();
@@ -86,12 +89,12 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
     [points.length, BAR_SLOT],
   );
 
-  // Attach non-passive touch listeners so preventDefault works
+  // Observe touches without blocking native page scrolling.
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-    svg.addEventListener("touchstart", handleSvgTouch, { passive: false });
-    svg.addEventListener("touchmove", handleSvgTouch, { passive: false });
+    svg.addEventListener("touchstart", handleSvgTouch, { passive: true });
+    svg.addEventListener("touchmove", handleSvgTouch, { passive: true });
     return () => {
       svg.removeEventListener("touchstart", handleSvgTouch);
       svg.removeEventListener("touchmove", handleSvgTouch);
@@ -114,8 +117,9 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
   if (points.length === 0) return null;
 
   // Active point: hovered > now > first
-  const activeIdx = hoveredIdx !== null ? hoveredIdx : nowIdx >= 0 ? nowIdx : 0;
+  const activeIdx = hoveredIdx ?? (selectedIdx !== null && selectedIdx < points.length ? selectedIdx : nowIdx >= 0 ? nowIdx : 0);
   const activePoint = points[activeIdx];
+  const highlightedIdx = hoveredIdx ?? selectedIdx;
 
   // ── Remaining layout constants ────────────────────────────────────────────
   const CHART_H = 150;
@@ -179,6 +183,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
   const TTW = 190;
 
   return (
+    <div>
     <div className="flex gap-4 items-start">
       {/* Left: scrollable bar chart */}
       <div
@@ -197,9 +202,13 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
             style={{
               display: "block",
               cursor: "crosshair",
-              touchAction: "none",
+              touchAction: "pan-y",
             }}
             onMouseMove={handleSvgMouseMove}
+            onClick={(e) => {
+              const idx = Math.floor((e.clientX - e.currentTarget.getBoundingClientRect().left - Y_AXIS_W) / BAR_SLOT);
+              if (idx >= 0 && idx < points.length) setSelectedIdx(idx);
+            }}
           >
             {/* Gridlines */}
             {yTicks.map((tick) => {
@@ -237,8 +246,8 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
                     x={x + w / 2}
                     y={DAY_H / 2 + 4}
                     textAnchor="middle"
-                    fontSize="10"
-                    fill="#9ca3af"
+                    fontSize="12"
+                    fill="var(--ow-muted)"
                     fontFamily="system-ui, sans-serif"
                     fontWeight="500"
                   >
@@ -249,9 +258,9 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
             })}
 
             {/* Hovered column highlight */}
-            {hoveredIdx !== null && (
+            {highlightedIdx !== null && (
               <rect
-                x={Y_AXIS_W + hoveredIdx * BAR_SLOT - BAR_GAP / 2}
+                x={Y_AXIS_W + highlightedIdx * BAR_SLOT - BAR_GAP / 2}
                 y={DAY_H}
                 width={BAR_SLOT}
                 height={CHART_H}
@@ -316,8 +325,8 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
                   x={Y_AXIS_W + i * BAR_SLOT + BAR_SLOT / 2}
                   y={DAY_H + CHART_H + 13}
                   textAnchor="middle"
-                  fontSize="8"
-                  fill="#d1d5db"
+                  fontSize="11"
+                  fill="var(--ow-muted)"
                   fontFamily="system-ui, sans-serif"
                   style={{ pointerEvents: "none" }}
                 >
@@ -359,8 +368,8 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
                     x={16}
                     y={y + 3.5}
                     textAnchor="end"
-                    fontSize="9"
-                    fill="#d1d5db"
+                    fontSize="11"
+                    fill="var(--ow-muted)"
                     fontFamily="system-ui, sans-serif"
                   >
                     {tick}
@@ -410,7 +419,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
                   className="sm:hidden absolute z-20 bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-2.5 pointer-events-none"
                   style={{ left: tipX, top: tipY, width: TTW }}
                 >
-                  <div className="text-[10px] text-gray-400 font-medium mb-2">
+                  <div className="text-sm text-slate-600 font-medium mb-2">
                     {dateLabel} — {timeLabel}
                   </div>
                   <div className="flex justify-between items-center mb-1">
@@ -469,7 +478,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
 
           {/* Legend */}
           <div
-            className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 ml-10 text-[9px] text-gray-400"
+            className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 ml-10 text-sm text-slate-600"
             style={{ touchAction: "pan-x" }}
           >
             <span className="flex items-center gap-1 pl-3 border-l border-gray-100">
@@ -486,7 +495,7 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
       {/* Right: hover compass panel */}
       <div className="hidden sm:flex flex-col items-center gap-1 w-44 shrink-0 pt-4">
         <div className="text-center mb-1">
-          <div className="text-[10px] text-gray-400 font-medium">
+          <div className="text-sm text-slate-600 font-medium">
             {dateLabel}
           </div>
           <div className="text-xs font-bold text-gray-700 tabular-nums">
@@ -494,10 +503,16 @@ export function WindChart({ hourly, timezone, useKnots }: Props) {
           </div>
         </div>
         <MiniCompass point={activePoint} useKnots={useKnots} />
-        <p className="text-[9px] text-gray-300 mt-1 text-center">
-          {hoveredIdx !== null ? "survol" : "maintenant"}
+        <p className="text-sm text-slate-600 mt-1 text-center">
+          {t(hoveredIdx !== null ? "hover" : selectedIdx !== null ? "selected" : "now")}
         </p>
       </div>
+    </div>
+    <ChartReading point={selectedIdx !== null ? points[selectedIdx] ?? null : null} time={selectedIdx !== null ? points[selectedIdx]?.time ?? "" : ""} forecast useKnots={useKnots} index={selectedIdx ?? Math.max(0, nowIdx)} count={points.length} onSelect={(index) => {
+      setSelectedIdx(index);
+      const container = containerRef.current;
+      if (container) container.scrollTo({ left: Math.max(0, Y_AXIS_W + index * BAR_SLOT - container.clientWidth / 2), behavior: "instant" });
+    }} onClear={() => { setSelectedIdx(null); setHoveredIdx(null); }} />
     </div>
   );
 }

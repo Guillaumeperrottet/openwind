@@ -1,23 +1,11 @@
 "use client";
 
-import { Children, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
+import { articleHeadingPlugin } from "@/lib/article-headings";
 
 interface ArticleMarkdownProps {
   children: string;
   compact?: boolean;
-}
-
-function headingId(children: ReactNode) {
-  const text = Children.toArray(children)
-    .map((child) => (typeof child === "string" ? child : ""))
-    .join(" ");
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 export function ArticleMarkdown({
@@ -33,12 +21,13 @@ export function ArticleMarkdown({
       }
     >
       <ReactMarkdown
+        remarkPlugins={[articleHeadingPlugin]}
         components={{
-          h2: ({ children: headingChildren }) => (
-            <h2 id={headingId(headingChildren)}>{headingChildren}</h2>
+          h2: ({ id, children: headingChildren }) => (
+            <h2 id={id} tabIndex={-1}>{headingChildren}</h2>
           ),
-          h3: ({ children: headingChildren }) => (
-            <h3 id={headingId(headingChildren)}>{headingChildren}</h3>
+          h3: ({ id, children: headingChildren }) => (
+            <h3 id={id} tabIndex={-1}>{headingChildren}</h3>
           ),
           a: ({ href, children: linkChildren, ...props }) => {
             const external = href?.startsWith("http");

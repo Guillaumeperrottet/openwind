@@ -59,11 +59,15 @@ export function CollectionSearch({
   locale,
   query,
   label,
+  compact = false,
+  placeholder,
 }: {
   path: string;
   locale: Locale;
   query: CollectionQuery;
   label?: string;
+  compact?: boolean;
+  placeholder?: string;
 }) {
   const copy = COLLECTION_COPY[locale];
   return (
@@ -71,9 +75,9 @@ export function CollectionSearch({
       action={`/${locale}${path}#collection-results`}
       method="get"
       role="search"
-      className="flex max-w-3xl flex-wrap items-end gap-3"
+      className={compact ? "grid max-w-3xl grid-cols-[minmax(0,1fr)_48px] items-end gap-3 sm:flex sm:flex-wrap" : "flex max-w-3xl flex-wrap items-end gap-3"}
     >
-      <div className="min-w-0 flex-1 basis-60">
+      <div className={compact ? "min-w-0 flex-1 sm:basis-60" : "min-w-0 flex-1 basis-60"}>
         <label
           htmlFor="collection-search"
           className="mb-2 block text-sm font-semibold text-slate-700"
@@ -92,7 +96,7 @@ export function CollectionSearch({
             type="search"
             defaultValue={query.q}
             maxLength={120}
-            placeholder={copy.placeholder}
+            placeholder={placeholder ?? copy.placeholder}
             className={`h-12 w-full rounded-xl border border-slate-300 bg-white pl-11 pr-4 text-base text-slate-950 ${focus}`}
           />
         </div>
@@ -102,14 +106,15 @@ export function CollectionSearch({
       )}
       <button
         type="submit"
-        className={`min-h-12 rounded-xl bg-sky-800 px-5 text-sm font-semibold text-white hover:bg-sky-900 ${focus}`}
+        className={`inline-flex min-h-12 items-center justify-center rounded-xl bg-sky-800 ${compact ? "px-3 sm:px-5" : "px-5"} text-sm font-semibold text-white hover:bg-sky-900 ${focus}`}
       >
-        {copy.search}
+        {compact && <Search aria-hidden className="h-4 w-4 sm:hidden" />}
+        <span className={compact ? "sr-only sm:not-sr-only" : undefined}>{copy.search}</span>
       </button>
       {(query.q || query.kind !== "all") && (
         <Link
           href={`${path}#collection-results`}
-          className={`py-3 text-sm font-semibold text-sky-800 underline underline-offset-4 ${focus}`}
+          className={`${compact ? "col-span-2 sm:col-auto" : ""} py-3 text-sm font-semibold text-sky-800 underline underline-offset-4 ${focus}`}
         >
           {copy.clear}
         </Link>

@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "frozen_before_historical_download": "2026-11-03",
+  "purpose": "Retrospective cross-station validation, not archived forecast verification",
+  "start": "2026-09-22T00:00:00Z",
+  "holdout_start": "2026-10-20T00:00:00Z",
+  "end_exclusive": "2026-11-03T00:00:00Z",
+  "model": "mitgcm",
+  "lake": "zurich",
+  "target_depth_m": 1,
+  "model_depths_m": [0.76, 1.28],
+  "vertical_interpolation": "linear, checked against returned depth metadata",
+  "max_grid_distance_m": 500,
+  "stations": {
+    "mythenquai": {
+      "utm_epsg": 32632,
+      "easting": 464985,
+      "northing": 5244991,
+      "source": "https://www.tecson-data.ch/zurich/mythenquai/index.php"
+    },
+    "tiefenbrunnen": {
+      "utm_epsg": 32632,
+      "easting": 466887,
+      "northing": 5243984,
+      "source": "https://www.tecson-data.ch/zurich/tiefenbrunnen/index.php"
+    }
+  },
+  "observation_status": "ok",
+  "observation_range_c": [0, 35],
+  "observation_match_tolerance_seconds": 300,
+  "availability_lag_minutes_assumed": 60,
+  "sensitivity_lags_minutes": [180, 360],
+  "max_residual_age_minutes": 420,
+  "temporal_alignment": "native model timestamps only, nearest observation within 5 min; source observation and model validity both <= t - lag; no temporal model interpolation. With 3-hour model output, 60 and 180 min can select the same source residual.",
+  "correction": "target model(t) + alpha * (other observation(s) - other model(s)); s <= t - lag. Never use the target station in its own dynamic correction.",
+  "alpha_candidates": [0, 0.25, 0.5, 0.75, 1],
+  "alpha_selection": "lowest pooled MAE on development period only; smallest alpha wins ties; one shared alpha for both stations",
+  "baseline": "raw model on identical paired timestamps; also compare a constant per-target bias fitted on development only",
+  "uncertainty": "paired bootstrap of UTC days, both stations sampled together, 10000 replicates, seed 20261103; conditional on the development-selected alpha",
+  "success_rule": {
+    "minimum_pooled_mae_reduction_percent": 10,
+    "pooled_daily_bootstrap_gain_lower_95_ci_above_zero": true,
+    "neither_station_mae_worsens": true,
+    "minimum_holdout_days": 10,
+    "minimum_paired_coverage_of_possible_native_slots": 0.8
+  },
+  "limits": [
+    "Historical publication times of sensor observations and original model runs are unavailable. Availability lag is a scenario, not a verified SLA.",
+    "The two points validate a transfer between these stations only, not an IDW field across the lake.",
+    "Independent from Openwind fitting does not establish independence from Eawag model calibration or data assimilation.",
+    "No claim about other seasons, other lakes or multi-day forecast improvement.",
+    "No automatic production activation."
+  ]
+}

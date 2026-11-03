@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useFreshnessClock } from "@/lib/useFreshWind";
+import { isNetworkFresh } from "@/lib/stationConstants";
+import { RequestFeedback } from "@/components/ui/RequestFeedback";
+import { useLocale, useTranslations } from "next-intl";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { windDirectionLabel } from "@/lib/utils";
 import { windPaletteColor } from "@/lib/windPalette";
@@ -26,6 +29,7 @@ interface Props {
   stations: StationWithDist[];
   loading: boolean;
   error?: boolean;
+  onRetry?: () => void;
   useKnots: boolean;
   /** Currently selected station ID (highlighted) */
   selectedId?: string | null;
@@ -37,12 +41,17 @@ export function NearbyStationsPanel({
   stations,
   loading,
   error = false,
+  onRetry,
   useKnots,
   selectedId,
   onSelect,
 }: Props) {
   const app = useTranslations("AppDesign");
-  if (loading) {
+  const field = useTranslations("FieldExperience");
+  const locale = useLocale();
+  const now = useFreshnessClock();
+  const feedback = <RequestFeedback error={error} pending={loading} hasData={stations.length > 0} onRetry={onRetry ?? (() => {})} />;
+  if (loading && !stations.length) {
     return (
       <div className="flex items-center justify-center py-10 ow-caption gap-2">
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -51,13 +60,17 @@ export function NearbyStationsPanel({
     );
   }
 
+  if (error && !stations.length && onRetry) return feedback;
   if (stations.length === 0) return <p role="status" className="ow-caption py-4">{app(error ? "stationsUnavailable" : "noNearbyStations")}</p>;
 
   return (
+    <>
+    {error && onRetry && feedback}
     <div className="ow-station-list">
       {stations.map((s) => {
         const kts = roundKnots(s.windSpeedKmh);
         const dir = windDirectionLabel(s.windDirection);
+        const fresh = isNetworkFresh(s.id, s.updatedAt, now);
         const isSelected = selectedId === s.id;
         const cls = `group text-left bg-white rounded-xl border shadow-sm p-3.5 hover:border-gray-300 hover:shadow transition-colors ${
           isSelected ? "border-sky-400 ring-2 ring-sky-100" : "border-gray-200"
@@ -70,7 +83,7 @@ export function NearbyStationsPanel({
               <div className="flex items-center gap-1.5 min-w-0">
                 <span
                   className="inline-block w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: stationColor(s.windSpeedKmh) }}
+                  style={{ backgroundColor: fresh ? stationColor(s.windSpeedKmh) : "#94a3b8" }}
                 />
                 <span className="text-sm font-medium text-gray-800 truncate">
                   {s.name}
@@ -145,10 +158,10 @@ export function NearbyStationsPanel({
               </span>
               <div className="flex items-center gap-1">
                 {s.updatedAt && (
-                  <span className="text-[9px] ow-muted">
-                    {new Date(s.updatedAt).toLocaleTimeString("fr", {
-                      hour: "2-digit",
-                      minute: "2-digit",
+                  <span className={`text-[11px] ${fresh ? "ow-muted" : "text-amber-800"}`}>
+                    {!fresh && <span className="block">{field("oldMeasurement")}</span>}
+                    {new Date(s.updatedAt).toLocaleString(locale, {
+                      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Zurich",
                     })}
                   </span>
                 )}
@@ -175,5 +188,6 @@ export function NearbyStationsPanel({
         );
       })}
     </div>
+    </>
   );
 }

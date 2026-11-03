@@ -1,6 +1,6 @@
 const fr = {
   eyebrow: "LE BON SPOT, AU BON MOMENT",
-  title: "Votre prochaine sortie commence ici.",
+  title: "Planifier une sortie",
   intro:
     "Choisissez vos dates. Comparez jusqu’à trois pistes expliquées, puis vérifiez les conditions sur place.",
   mapLink: "Ouvrir la carte en direct",
@@ -113,7 +113,7 @@ type Copy = {
 };
 const de: Copy = {
   eyebrow: "DER PASSENDE SPOT ZUR PASSENDEN ZEIT",
-  title: "Dein nächster Ausflug beginnt hier.",
+  title: "Einen Ausflug planen",
   intro:
     "Wähle deine Daten. Vergleiche bis zu drei begründete Vorschläge und prüfe die Bedingungen vor Ort.",
   mapLink: "Live-Karte öffnen",
@@ -220,7 +220,7 @@ const de: Copy = {
 };
 const it: Copy = {
   eyebrow: "LO SPOT GIUSTO AL MOMENTO GIUSTO",
-  title: "La tua prossima uscita inizia qui.",
+  title: "Pianifica un’uscita",
   intro:
     "Scegli le date. Confronta fino a tre proposte motivate, poi verifica le condizioni sul posto.",
   mapLink: "Apri la mappa in diretta",
@@ -326,7 +326,7 @@ const it: Copy = {
 };
 const en: Copy = {
   eyebrow: "THE RIGHT SPOT AT THE RIGHT TIME",
-  title: "Your next session starts here.",
+  title: "Plan a session",
   intro:
     "Pick your dates. Compare up to three explained suggestions, then check conditions on site.",
   mapLink: "Open the live map",

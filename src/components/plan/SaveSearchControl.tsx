@@ -20,7 +20,7 @@ export function SaveSearchControl({ criteria, place }: { criteria: PlannerCriter
   const id = useId();
   const savedLink = useRef<HTMLAnchorElement>(null);
   useEffect(() => { if (saved) savedLink.current?.focus(); }, [saved]);
-  return <div className="my-4 rounded-2xl border border-slate-200 bg-white p-4">
+  return <div className={`my-5 ${open ? "rounded-2xl border border-slate-200 bg-white p-4" : "border-y border-slate-200 py-3"}`}>
     {!open ? <div className="flex flex-wrap items-center justify-between gap-3">
       <button type="button" className={`${button} text-sky-900`} disabled={!ready} aria-expanded={false} onClick={() => { setOpen(true); setSaved(false); setFailed(false); }}><Bookmark aria-hidden className="h-4 w-4" />{t("saveSearch")}</button>
       <span className="text-xs text-slate-500">{t("deviceOnly")}</span>

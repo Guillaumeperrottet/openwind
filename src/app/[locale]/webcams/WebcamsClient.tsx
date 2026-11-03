@@ -1,13 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import {
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Camera,
   X,
   MapPin,
   AlertCircle,
@@ -15,11 +12,11 @@ import {
   ExternalLink,
 } from "lucide-react";
 import type { WindyWebcam } from "@/app/api/webcams/route";
+import { AccessPageHeader } from "@/components/ui/AccessPageHeader";
 
 interface Props {
   webcams: WindyWebcam[];
   locationName: string;
-  backUrl: string;
   lat: number;
   lng: number;
 }
@@ -64,7 +61,6 @@ function formatTime(iso: string, locale: string): string {
 export function WebcamsClient({
   webcams: initial,
   locationName,
-  backUrl,
   lat,
   lng,
 }: Props) {
@@ -121,40 +117,20 @@ export function WebcamsClient({
       : null;
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="ow-access-content">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-6">
-        <Link
-          href={backUrl}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-5"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("backTo", { name: locationName })}
-        </Link>
-
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Camera className="h-6 w-6 text-gray-500" />
-              {t("title")}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              {locationName} · {t("inRadius", { radius })}
-            </p>
-          </div>
-
-          {/* Sélecteur de rayon */}
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-gray-500">{t("radiusLabel")}</span>
+      <AccessPageHeader title={t("title")} description={`${locationName} · ${t("inRadius", { radius })}`} actions={
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="w-full text-gray-500 sm:w-auto">{t("radiusLabel")}</span>
             {[10, 15, 25, 50].map((r) => (
               <button
                 key={r}
+                aria-pressed={radius === r}
                 onClick={() => {
                   setRadius(r);
                   fetchWithRadius(r);
                 }}
-                className={`px-3 py-1 rounded-full border transition-colors ${
+                className={`min-h-11 px-3 py-1 rounded-full border transition-colors ${
                   radius === r
                     ? "bg-gray-900 text-white border-gray-900"
                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
@@ -164,11 +140,10 @@ export function WebcamsClient({
               </button>
             ))}
           </div>
-        </div>
-      </div>
+      } />
 
       {/* ── Grille ─────────────────────────────────────────────── */}
-      <div className="px-4 sm:px-6 py-8">
+      <div className="py-6">
         {loading && (
           <div className="flex justify-center py-16">
             <div className="h-8 w-8 rounded-full border-2 border-gray-900 border-t-transparent animate-spin" />

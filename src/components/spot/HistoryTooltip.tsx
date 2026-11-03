@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from "next-intl";
 import { windCellStyle, roundKnots } from "@/lib/forecast";
 import { windDirectionLabel } from "@/lib/utils";
 import type { HistoryPoint } from "@/types";
@@ -23,6 +24,8 @@ export function HistoryTooltip({
   containerWidth,
   toTZ,
 }: Props) {
+  const locale = useLocale();
+  const t = useTranslations("WindChart");
   const style = windCellStyle(point.windSpeedKmh);
 
   const tipX = Math.max(
@@ -47,13 +50,13 @@ export function HistoryTooltip({
       style={{ left: tipX, top: tipY, width: TTW }}
     >
       {isForecast && (
-        <div className="text-[9px] font-semibold text-sky-500 mb-1 uppercase tracking-wide">
-          Prévision
+        <div className="text-sm font-semibold text-sky-500 mb-1 uppercase tracking-wide">
+          {t("forecast")}
         </div>
       )}
-      <div className="text-[10px] text-gray-400 font-medium mb-2">
+      <div className="text-sm text-slate-600 font-medium mb-2">
         {new Date(displayTime.slice(0, 10) + "T12:00:00Z").toLocaleDateString(
-          "fr",
+          locale,
           {
             weekday: "short",
             day: "numeric",
@@ -64,7 +67,7 @@ export function HistoryTooltip({
         — {displayTime.slice(11, 16)}
       </div>
       <div className="flex justify-between items-center mb-1">
-        <span className="text-xs text-gray-500">Vent moyen</span>
+        <span className="text-xs text-gray-500">{t("wind")}</span>
         <span
           className="text-xs font-bold tabular-nums px-1.5 py-0.5 rounded"
           style={{ background: style.background, color: style.color }}
@@ -76,7 +79,7 @@ export function HistoryTooltip({
         </span>
       </div>
       <div className="flex justify-between items-center mb-1">
-        <span className="text-xs text-gray-500">Rafales</span>
+        <span className="text-xs text-gray-500">{t("gusts")}</span>
         <span className="text-xs font-semibold tabular-nums text-gray-600">
           {useKnots ? roundKnots(point.gustsKmh) : Math.round(point.gustsKmh)}{" "}
           {useKnots ? "kts" : "km/h"}

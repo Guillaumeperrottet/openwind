@@ -47,10 +47,11 @@ export function detectNetwork(stationId: string): NetworkId {
 export function isNetworkFresh(
   stationId: string,
   iso: string | undefined | null,
+  now = Date.now(),
 ): boolean {
   if (!iso) return false;
   const t = new Date(iso).getTime();
   if (isNaN(t)) return false;
   const network = detectNetwork(stationId);
-  return Date.now() - t < FRESHNESS_BY_NETWORK[network];
+  return now - t < FRESHNESS_BY_NETWORK[network];
 }

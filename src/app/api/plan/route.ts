@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { qualificationsFor } from "@/lib/planner-review-store";
 import { toSiteLocale } from "@/lib/site";
 import { z } from "zod";
+import { isSnowkiteSpot } from "@/lib/spot-activity";
 import {
   fetchPlannerForecasts,
   fetchPlannerSeasonal,
@@ -63,7 +64,10 @@ export async function GET(request: NextRequest) {
         hazardsEn: true,
       },
     });
-    const scoped = candidatesInRadius(records, criteria);
+    const scoped = candidatesInRadius(
+      records.filter((spot) => criteria.sport !== "KITE" || !isSnowkiteSpot(spot)),
+      criteria,
+    );
     const qualifications = await qualificationsFor(
       scoped,
       criteria.startDate,
@@ -71,7 +75,7 @@ export async function GET(request: NextRequest) {
       today,
       toSiteLocale(locale || "fr"),
     );
-    const candidates = scoped.map((s) => ({
+    const candidates = scoped.filter((s) => qualifications.get(s.id)?.discipline !== "SNOW_KITE").map((s) => ({
       id: s.id,
       name: s.name,
       latitude: s.latitude,

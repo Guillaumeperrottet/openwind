@@ -1,4 +1,6 @@
 import { LOCAL_GUIDES, isGuideLocale } from "./local-guides";
+import { ACCESS_COPY } from "./access";
+import { PLACE_COPY } from "./place";
 import { toSiteLocale, type SiteLocale } from "./site";
 
 export const SEARCH_KINDS = [
@@ -7,6 +9,9 @@ export const SEARCH_KINDS = [
   "station",
   "webcam",
   "article",
+  "water",
+  "page",
+  "discussion",
 ] as const;
 export type SearchKind = (typeof SEARCH_KINDS)[number];
 export interface SearchEntry {
@@ -82,7 +87,7 @@ export function guideSearchEntries(locale: SiteLocale): SearchEntry[] {
 }
 
 /** Exact names and word prefixes beat description matches. No unrelated fuzzy results. */
-export function searchEntries(
+export function rankSearchEntries(
   entries: SearchEntry[],
   query: string,
   kind?: SearchKind,
@@ -104,6 +109,9 @@ export function searchEntries(
       "balise balises station stations windstation messstation meteo meteoswiss pioupiou windball netatmo",
     webcam: "webcam webcams camera cameras kamera",
     article: "article articles carnet lesen leggere read",
+    water: "eau temperature temperatures water wasser acqua alplakes",
+    page: "fonction fonctionnalite fonctionnalites feature features funktion funzioni page pages",
+    discussion: "forum discussion discussions sujet sujets topic topics fragen domande",
   };
   const scored = entries
     .filter((entry) => !requestedKind || entry.kind === requestedKind)
@@ -135,7 +143,7 @@ export function searchEntries(
           : 0
         : favorites.has(`${entry.kind}:${entry.id}`)
           ? 100
-          : entry.kind === "lake"
+          : requestedKind || entry.kind === "lake"
             ? 5
             : 0;
       return { entry, score };
@@ -147,27 +155,25 @@ export function searchEntries(
         a.entry.title.localeCompare(b.entry.title) ||
         a.entry.id.localeCompare(b.entry.id),
     );
+  return scored.map(({ entry }) => ({ id: entry.id, kind: entry.kind, title: entry.title, subtitle: entry.subtitle, href: entry.href }));
+}
+
+export function searchEntries(entries: SearchEntry[], query: string, kind?: SearchKind, favoriteIds: string[] = []): SearchResult[] {
+  const requestedKind = kind || (normalizeSearch(query).split(" ").some(word => ["webcam", "webcams", "camera", "cameras", "kamera"].includes(word)) ? "webcam" : undefined);
   const counts = new Map<SearchKind, number>();
-  return scored
-    .filter(({ entry }) => {
+  return rankSearchEntries(entries, query, kind, favoriteIds)
+    .filter((entry) => {
       const count = counts.get(entry.kind) ?? 0;
       counts.set(entry.kind, count + 1);
       return count < (requestedKind ? 10 : 3);
     })
-    .slice(0, 15)
-    .map(({ entry }) => ({
-      id: entry.id,
-      kind: entry.kind,
-      title: entry.title,
-      subtitle: entry.subtitle,
-      href: entry.href,
-    }));
+    .slice(0, 18);
 }
 
 export const SEARCH_COPY = {
   fr: {
     label: "Rechercher dans Openwind",
-    placeholder: "Lac, spot, balise, webcam, article…",
+    placeholder: "Lieu, météo, webcam, article…",
     short: "Rechercher dans Openwind…",
     clear: "Effacer la recherche",
     loading: "Recherche en cours…",
@@ -181,11 +187,12 @@ export const SEARCH_COPY = {
     favorites: "Favori",
     all: "Tout",
     kinds: {
-      lake: "Lacs et guides",
+      lake: "Guides des lacs",
       spot: "Spots",
       station: "Balises",
       webcam: "Webcams autour du lieu",
       article: "Articles",
+      water: PLACE_COPY.fr.waterKind, page: PLACE_COPY.fr.page, discussion: PLACE_COPY.fr.discussion,
     },
   },
   de: {
@@ -209,6 +216,7 @@ export const SEARCH_COPY = {
       station: "Windstationen",
       webcam: "Webcams in der Umgebung",
       article: "Artikel",
+      water: PLACE_COPY.de.waterKind, page: PLACE_COPY.de.page, discussion: PLACE_COPY.de.discussion,
     },
   },
   it: {
@@ -232,6 +240,7 @@ export const SEARCH_COPY = {
       station: "Stazioni",
       webcam: "Webcam nei dintorni",
       article: "Articoli",
+      water: PLACE_COPY.it.waterKind, page: PLACE_COPY.it.page, discussion: PLACE_COPY.it.discussion,
     },
   },
   en: {
@@ -254,6 +263,27 @@ export const SEARCH_COPY = {
       station: "Wind stations",
       webcam: "Nearby webcams",
       article: "Articles",
+      water: PLACE_COPY.en.waterKind, page: PLACE_COPY.en.page, discussion: PLACE_COPY.en.discussion,
     },
   },
 } satisfies Record<SiteLocale, object>;
+
+
+/** All public app destinations remain discoverable even during a database outage. */
+export function appSearchEntries(locale: SiteLocale): SearchEntry[] {
+  const c = ACCESS_COPY[locale], p = PLACE_COPY[locale];
+  const pages: [string, string, string, string][] = [
+    ["explorer", c.explorer, "lieux conditions decouvrir discover entdecken esplora", c.waterIntro],
+    ["balises", c.stations, "vent mesure direct meteo wind stations capteurs", p.allWind],
+    ["webcams", c.webcams, "camera cameras regarder images live", c.choose],
+    ["temperatures", c.temperatures, "eau water wasser acqua temperature temperatures alplakes eawag", c.waterCoverage],
+    ["plan", c.plan, "sortie creneau prevision forecast weekend demain kite parapente", ({fr:"Trouver un créneau pour votre prochaine sortie.",en:"Find a window for your next outing.",de:"Ein Zeitfenster für den nächsten Ausflug finden.",it:"Trova una finestra per la prossima uscita."})[locale]],
+    ["mon-openwind", c.personal, "favoris favoris recherches enregistrees articles lire plus tard preferences compte favorites saved", ({fr:"Vos favoris, recherches et lectures enregistrées.",en:"Your favourites, saved searches and reading list.",de:"Favoriten, gespeicherte Suchen und Leseliste.",it:"Preferiti, ricerche salvate e letture."})[locale]],
+    ["vent-en-direct", c.guides, "lac lacs lake lakes guide guides vent local", p.guide],
+    ["carnet", c.carnet, "article articles conseils apprendre comprendre recits journal", ({fr:"Conseils et récits pour mieux connaître le terrain.",en:"Advice and stories to understand the terrain.",de:"Tipps und Geschichten über die Bedingungen vor Ort.",it:"Consigli e racconti per conoscere il territorio."})[locale]],
+    ["forum", c.forum, "discussion discussions question aide help communaute community", p.discussion],
+    ["spots/new", c.contribute, "ajouter creer contribuer contribution nouveau spot compte", c.contribute],
+    ["about", c.about, "a propos contact open source sources donnees projet openwind", c.about],
+  ];
+  return pages.map(([path, title, terms, subtitle]) => ({ id: `page-${path}`, kind: "page", title, subtitle, terms, href: `/${(path === "carnet" || path === "vent-en-direct") && locale === "en" ? "fr" : locale}/${path}` }));
+}

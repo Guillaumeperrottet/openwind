@@ -141,97 +141,33 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
 
   return (
     <div className="min-h-screen bg-white pb-10">
-      <section className="border-b border-slate-200 bg-slate-50/60">
-        <div className="mx-auto max-w-[1480px] px-4 py-10 sm:px-6 sm:py-14">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
-            <div>
-              <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
-                <RadioTower className="h-4 w-4" />
-                {t("eyebrow")}
-              </p>
-              <h1 className="max-w-4xl text-3xl font-bold tracking-tight text-slate-950 sm:text-5xl">
-                {t("title")}
-              </h1>
-              <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-                {t("description")}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                  {t("stationCount", { count: initialStations.length })}
-                </span>
-                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                  {t("networkCount", { count: availableSources.length })}
-                </span>
-                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
-                  {t("historyIncluded")}
-                </span>
-              </div>
-            </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                {t("strongestNow")}
-              </p>
-              {strongest ? (
-                <>
-                  <div className="mt-3 flex items-end justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="truncate text-lg font-bold text-slate-950">
-                        {strongest.name}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {sourceLabel(strongest.source)}
-                      </p>
-                    </div>
-                    <p className="shrink-0 text-right text-3xl font-bold tabular-nums text-sky-700">
-                      {useKnots
-                        ? roundKnots(strongest.windSpeedKmh)
-                        : Math.round(strongest.windSpeedKmh)}
-                      <span className="ml-1 text-xs font-semibold text-slate-400">
-                        {useKnots ? "kts" : "km/h"}
-                      </span>
-                    </p>
-                  </div>
-                  <Link
-                    href={`/stations/${encodeURIComponent(strongest.id)}`}
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
-                  >
-                    {t("openStation")}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </>
-              ) : (
-                <p className="mt-3 text-sm text-slate-500">{t("empty")}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[1480px] px-4 py-8 sm:px-6">
+      <section className="mx-auto max-w-[1480px] px-4 py-6 sm:px-6 sm:py-8">
+        <h1 className="mb-5 text-3xl font-semibold tracking-tight text-slate-950">{t("pageTitle")}</h1>
         <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-            <label className="relative min-w-0 flex-1">
-              <span className="sr-only">{t("search")}</span>
+            <div className="relative min-w-0 flex-1">
+              <label htmlFor="station-directory-search" className="sr-only">{t("search")}</label>
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
+                id="station-directory-search"
                 type="search"
                 value={query}
                 onChange={(event) => updateQuery(event.target.value)}
                 placeholder={t("searchPlaceholder")}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-10 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100 sm:text-sm"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-14 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100 sm:text-sm"
               />
               {query && (
                 <button
                   type="button"
                   onClick={() => updateQuery("")}
                   aria-label={t("clearSearch")}
-                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                  className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
-            </label>
+            </div>
 
             <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 xl:pb-0">
               <NetworkButton
@@ -257,19 +193,19 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
             <p className="text-xs text-slate-500">
               {t("resultCount", { count: filteredStations.length })}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto">
               <SlidersHorizontal className="hidden h-4 w-4 text-slate-400 sm:block" />
               <select
                 value={sort}
                 onChange={(event) => updateSort(event.target.value as SortMode)}
                 aria-label={t("sortLabel")}
-                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 outline-none focus:border-sky-400"
+                className="h-11 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 outline-none focus:border-sky-400"
               >
                 <option value="wind">{t("sortWind")}</option>
                 <option value="latest">{t("sortLatest")}</option>
                 <option value="name">{t("sortName")}</option>
               </select>
-              <div className="inline-flex h-9 overflow-hidden rounded-lg border border-slate-200 text-xs font-semibold">
+              <div className="inline-flex h-11 overflow-hidden rounded-lg border border-slate-200 text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setUseKnots(true)}
@@ -289,7 +225,8 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
               </div>
               <Link
                 href="/?view=map"
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+                aria-label={t("map")}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
               >
                 <MapIcon className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("map")}</span>
@@ -352,6 +289,74 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
             {t("promiseNetworkDescription")}
           </DirectoryPromise>
         </div>
+      <details className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-6">
+        <summary className="min-h-11 cursor-pointer content-center text-sm font-semibold text-slate-700">{t("aboutDirectory")}</summary>
+        <div className="pt-5">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
+            <div>
+              <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
+                <RadioTower className="h-4 w-4" />
+                {t("eyebrow")}
+              </p>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+                {t("title")}
+              </h2>
+              <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                {t("description")}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                  {t("stationCount", { count: initialStations.length })}
+                </span>
+                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                  {t("networkCount", { count: availableSources.length })}
+                </span>
+                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+                  {t("historyIncluded")}
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                {t("strongestNow")}
+              </p>
+              {strongest ? (
+                <>
+                  <div className="mt-3 flex items-end justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-lg font-bold text-slate-950">
+                        {strongest.name}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {sourceLabel(strongest.source)}
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-right text-3xl font-bold tabular-nums text-sky-700">
+                      {useKnots
+                        ? roundKnots(strongest.windSpeedKmh)
+                        : Math.round(strongest.windSpeedKmh)}
+                      <span className="ml-1 text-xs font-semibold text-slate-400">
+                        {useKnots ? "kts" : "km/h"}
+                      </span>
+                    </p>
+                  </div>
+                  <Link
+                    href={`/stations/${encodeURIComponent(strongest.id)}`}
+                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-sky-700 hover:text-sky-900"
+                  >
+                    {t("openStation")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </>
+              ) : (
+                <p className="mt-3 text-sm text-slate-500">{t("empty")}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </details>
+
       </section>
     </div>
   );

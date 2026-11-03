@@ -9,7 +9,7 @@ import { MAX_SAVED_SEARCHES, resolveSavedSearch, searchParams, type SavedSearch 
 import { useSavedSearches } from "@/lib/useSavedSearches";
 import { trackEvent } from "@/lib/analytics";
 
-export function SavedSearches() {
+export function SavedSearches({ hideWhenEmpty = false }: { hideWhenEmpty?: boolean }) {
   const t = useTranslations("ReturnExperience");
   const locale = useLocale();
   const { searches, remove, save, error, ready } = useSavedSearches();
@@ -24,6 +24,7 @@ export function SavedSearches() {
   }, [ready]);
   const today = localDate(new Date());
   const date = (value: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(value));
+  if (hideWhenEmpty && !searches.length && !removed && !error) return null;
   return <section ref={section} id="saved-searches" className="scroll-mt-20" aria-labelledby="saved-searches-title">
     <div className="flex flex-wrap items-center justify-between gap-3"><h2 id="saved-searches-title" className="flex items-center gap-2 text-xl font-semibold text-slate-950"><Bookmark aria-hidden className="h-5 w-5 text-sky-800" />{t("savedSearches")}</h2><Link href="/plan" className="inline-flex min-h-11 items-center text-sm font-semibold text-sky-800 underline underline-offset-4">{t("newSearch")}</Link></div>
     <p className="mb-4 mt-2 text-sm leading-6 text-slate-500">{t("deviceOnly")} {t("noMonitoring")}</p>

@@ -97,7 +97,13 @@
     "switchToLoginAction": "Anmelden",
     "forgotLink": "Passwort vergessen?",
     "invalidCredentials": "Falsche E-Mail oder falsches Passwort.",
-    "orSeparator": "oder"
+    "orSeparator": "oder",
+    "emailLabel": "E-Mail-Adresse",
+    "passwordLabel": "Passwort",
+    "close": "Schließen",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "requestFailed": "Verbindung momentan nicht möglich. Bitte versuchen Sie es gleich erneut."
   },
   "Badge": {
     "difficulty": {
@@ -291,7 +297,9 @@
     "pagination": "Seiten der Windstationen",
     "previousPage": "Zurück",
     "nextPage": "Weiter",
-    "pageLabel": "Seite {page}"
+    "pageLabel": "Seite {page}",
+    "pageTitle": "Windstationen live",
+    "aboutDirectory": "Netzwerke und stärkster Wind"
   },
   "ForumPage": {
     "title": "Forum",
@@ -724,5 +732,48 @@
     "stationsLoading": "Messstationen werden geladen…",
     "noNearbyStations": "Keine Messstation im Umkreis von 10 km. Die Vorhersagen stehen oben zur Verfügung.",
     "stationsUnavailable": "Die Messstationen sind vorübergehend nicht verfügbar. Bitte versuchen Sie es in Kürze erneut."
+  },
+  "WindChart": {
+    "browse": "Stunden durchsehen",
+    "clear": "Auswahl löschen",
+    "selectHour": "Tippen Sie auf das Diagramm oder wählen Sie eine Stunde für die Details.",
+    "forecast": "Vorhersage",
+    "history": "Verlauf",
+    "wind": "Wind",
+    "gusts": "Böen",
+    "hover": "Vorschau",
+    "selected": "Ausgewählte Stunde",
+    "now": "Jetzt"
+  },
+  "ReadingExperience": {
+    "saveButton": "Später lesen",
+    "savedButton": "Gespeichert",
+    "saveNamed": "Später lesen: {title}",
+    "removeNamed": "Aus meiner Leseliste entfernen: {title}",
+    "myReading": "Meine Leseliste",
+    "saved": "Auf diesem Gerät in der Leseliste gespeichert.",
+    "removed": "Aus der Leseliste entfernt.",
+    "limit": "Du kannst bis zu {count} Beiträge speichern. Entferne einen, um einen weiteren hinzuzufügen.",
+    "error": "Speichern auf diesem Gerät nicht möglich. Prüfe die Browsereinstellungen und versuche es erneut.",
+    "lastReading": "Zuletzt gelesen: {section}",
+    "resume": "Weiterlesen",
+    "explore": "Das Journal entdecken",
+    "deviceOnly": "Auf diesem Gerät gespeichert, auch mit einem Konto.",
+    "loading": "Leseliste wird geladen…",
+    "catalogueError": "Der Katalog ist vorübergehend nicht verfügbar. Deine Leseliste bleibt erhalten.",
+    "retry": "Erneut versuchen",
+    "read": "Lesen",
+    "unavailable": "Dieser Beitrag ist nicht mehr verfügbar. Du kannst ihn aus deiner Liste entfernen.",
+    "undo": "Rückgängig",
+    "restoreError": "Der Beitrag konnte nicht wiederhergestellt werden. Versuche es erneut oder schaffe Platz in der Liste."
+  },
+  "FieldExperience": {
+    "oldMeasurement": "Ältere Messung",
+    "unavailable": "Diese Daten sind vorübergehend nicht verfügbar.",
+    "refreshFailed": "Aktualisierung fehlgeschlagen. Die letzten Daten bleiben sichtbar; beachte ihr Datum.",
+    "retry": "Erneut versuchen",
+    "retrying": "Neuer Versuch…",
+    "mapUnavailable": "Die Karte reagiert derzeit nicht. Versuche es erneut oder öffne die Windstationen.",
+    "openStations": "Windstationen ansehen"
   }
 }

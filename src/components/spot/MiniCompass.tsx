@@ -10,7 +10,7 @@ interface MiniCompassProps {
 
 const toXY = (angleDeg: number, r: number) => {
   const rad = (angleDeg - 90) * (Math.PI / 180);
-  return { x: 80 + r * Math.cos(rad), y: 80 + r * Math.sin(rad) };
+  return { x: Number((80 + r * Math.cos(rad)).toFixed(3)), y: Number((80 + r * Math.sin(rad)).toFixed(3)) };
 };
 
 const cardinals = [
@@ -35,7 +35,7 @@ export function MiniCompass({ point, useKnots }: MiniCompassProps) {
 
   return (
     <div className="flex flex-col items-center gap-2 w-full">
-      <svg viewBox="0 0 160 160" width="152" height="152">
+      <svg viewBox="0 0 160 160" width="152" height="152" role="img" aria-label={`${speedVal} ${unit} · ${dirLabel} ${point.windDirection}°`}>
         {/* Outer ring */}
         <circle
           cx="80"

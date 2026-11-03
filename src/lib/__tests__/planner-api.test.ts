@@ -114,6 +114,22 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 describe("public planner API", () => {
+  it("excludes snowkite from nautical results before requesting forecasts, while retaining water spots", async () => {
+    mocks.findMany.mockResolvedValue([record, { ...record, id: "snow", name: "Le Niremont" }]);
+    const body = await (await get("sport=KITE")).json();
+    expect(body.spots.map((spot: { id: string }) => spot.id)).toEqual([record.id]);
+    expect(body.meta.candidates).toBe(1);
+    expect(mocks.forecasts.mock.calls[0][0].map((spot: { id: string }) => spot.id)).toEqual([record.id]);
+  });
+  it("also excludes a reviewed SNOW_KITE discipline when the name is not in the curated catalogue", async () => {
+    mocks.reviews.mockResolvedValue([{ key: REVIEW_PREFIX + record.id, value: JSON.stringify({
+      version: 1, status: "NEEDS_REVIEW", discipline: "SNOW_KITE", fingerprint: spotFingerprint(record),
+      reviewedAt: "2026-10-22", expiresAt: "2027-01-20", sectors: [], season: "UNKNOWN", months: [], access: "UNKNOWN", notes: { fr: "Snowkite documenté", de: "Snowkite documenté", en: "Snowkite documenté", it: "Snowkite documenté" }, sources: [],
+    }) }]);
+    const body = await (await get("sport=KITE")).json();
+    expect(body.spots).toEqual([]);
+    expect(body.meta.candidates).toBe(0);
+  });
   it("scopes a personal outlook to the requested public spot IDs using the same qualification checks", async () => {
     const res = await get("spotIds=test&sport=KITE");
     expect(mocks.findMany.mock.calls[0][0].where).toEqual({ sportType: "KITE", id: { in: ["test"] } });

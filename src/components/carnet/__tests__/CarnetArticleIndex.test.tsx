@@ -11,6 +11,8 @@ import {
   collectionQuery,
 } from "@/lib/collections";
 
+vi.mock("@/components/carnet/SaveArticleButton", () => ({ SaveArticleButton: () => null }));
+
 vi.mock("@/i18n/navigation", () => ({
   Link: (props: ComponentProps<"a">) => <a {...props} />,
 }));

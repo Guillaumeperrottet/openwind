@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { AccessPageHeader } from "@/components/ui/AccessPageHeader";
 import {
-  ArrowLeft,
   MessageSquare,
   Pin,
   Lock,
@@ -40,35 +40,16 @@ export function CategoryPageClient({ category, topics }: Props) {
   const [showNew, setShowNew] = useState(false);
 
   return (
-    <div className="mx-auto px-4 sm:px-6 lg:px-10 pt-20 pb-12">
-      {/* Breadcrumb */}
-      <Link
-        href="/forum"
-        className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors mb-3"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Forum
-      </Link>
-
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900">
-            {category.name}
-          </h1>
-          {category.description && (
-            <p className="text-xs text-gray-500 mt-0.5">
-              {category.description}
-            </p>
-          )}
-        </div>
+    <div className="ow-access-content">
+      <AccessPageHeader title={category.name} description={category.description ?? undefined} actions={
         <button
           onClick={() => setShowNew(!showNew)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition-colors shrink-0"
+          className="flex items-center gap-1.5 min-h-11 px-3 py-1.5 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition-colors shrink-0"
         >
           <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Nouveau sujet</span>
+          <span>Nouveau sujet</span>
         </button>
-      </div>
+      } />
 
       {showNew && (
         <div className="mb-4 p-4 border border-gray-200 rounded-md bg-white">

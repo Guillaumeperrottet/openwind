@@ -332,6 +332,16 @@ describe("getStationLive", () => {
     expect(mockFetchCurrentWind).toHaveBeenCalledWith(46.5, 6.8);
   });
 
+  it("does not mark an old model slot fresh simply because the request succeeded", async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const modelTime = Date.now() - 2 * 60 * 60 * 1000;
+    mockFetchCurrentWind.mockResolvedValue({ ...openMeteoResult, updatedAt: new Date(modelTime).toISOString() });
+    const result = await getStationLive("VEV", { lat: 46.5, lng: 6.8 });
+    expect(result.source).toBe("openmeteo");
+    expect(result.isFresh).toBe(false);
+    expect(Date.parse(result.staleAt)).toBe(modelTime + 60 * 60 * 1000);
+  });
+
   it("falls back to Open-Meteo when no DB measurement exists", async () => {
     mockFindFirst.mockResolvedValue(null);
 

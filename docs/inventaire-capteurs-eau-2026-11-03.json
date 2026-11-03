@@ -1,0 +1,2271 @@
+{
+  "title": "Inventaire des capteurs de température d’eau pour Openwind",
+  "verified_date_local": "2026-11-03",
+  "timezone": "Europe/Zurich",
+  "scope": "23 guides de lacs et secteurs lacustres Openwind; catalogue Datalakes public et sources publiques complémentaires. Non exhaustif des sondes privées.",
+  "method": {
+    "datalakes_dataset_count": 108,
+    "bafu_active_station_count": 253,
+    "bafu_recent_WT_station_count": 78,
+    "time_window_bafu": "2026-11-03T06:00:00Z à la collecte",
+    "all_sample_times": "UTC sauf indication explicite",
+    "no_external_writes": true,
+    "no_new_integration": true,
+    "licence_method": "Licence attachée au jeu, pas licence du code du fournisseur ni licence générique du portail."
+  },
+  "lakes": [
+    {
+      "guide_slug": "lac-de-la-gruyere",
+      "lake": "Gruyère",
+      "alplakes_1d_key": "gruyere",
+      "status": "aucun_flux_confirme",
+      "candidate_source_ids": [],
+      "secondary_or_excluded_source_ids": [
+        "bafu-2160",
+        "bafu-2467"
+      ],
+      "decision": "Garder le modèle; chercher une sonde lacustre locale et les droits de réutilisation."
+    },
+    {
+      "guide_slug": "lac-leman",
+      "lake": "Léman",
+      "alplakes_1d_key": "geneva",
+      "status": "pilote_local",
+      "candidate_source_ids": [
+        "datalakes-448",
+        "datalakes-597"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "paquis",
+        "bafu-2606"
+      ],
+      "decision": "Priorité spatiale près des stations; profondeur de Buchillon à confirmer."
+    },
+    {
+      "guide_slug": "lac-de-neuchatel",
+      "lake": "Neuchâtel",
+      "alplakes_1d_key": "neuchatel",
+      "status": "historique",
+      "candidate_source_ids": [
+        "datalakes-1339"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "bafu-2369"
+      ],
+      "decision": "Profils historiques; pas de correction en direct."
+    },
+    {
+      "guide_slug": "lac-de-silvaplana",
+      "lake": "Silvaplana",
+      "alplakes_1d_key": "silvaplana",
+      "status": "historique",
+      "candidate_source_ids": [
+        "datalakes-637"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Profils de 2020 uniquement dans le catalogue consulté."
+    },
+    {
+      "guide_slug": "urnersee",
+      "lake": "Urnersee",
+      "alplakes_1d_key": "lucerneurnersee",
+      "status": "aucun_flux_local_confirme",
+      "candidate_source_ids": [],
+      "secondary_or_excluded_source_ids": [
+        "datalakes-1264",
+        "bafu-2056"
+      ],
+      "decision": "Kastanienbaum est dans un autre bassin; Reuss en rivière."
+    },
+    {
+      "guide_slug": "lac-majeur",
+      "lake": "Majeur",
+      "alplakes_1d_key": "maggiore",
+      "status": "pilote_local",
+      "candidate_source_ids": [
+        "datalakes-1333"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Pilote près de Porto Ronco à 1 m."
+    },
+    {
+      "guide_slug": "lac-de-bienne",
+      "lake": "Bienne",
+      "alplakes_1d_key": "biel",
+      "status": "historique",
+      "candidate_source_ids": [
+        "datalakes-1337"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "bafu-2029"
+      ],
+      "decision": "Profils historiques et exutoire à étudier séparément."
+    },
+    {
+      "guide_slug": "lac-de-constance",
+      "lake": "Constance",
+      "alplakes_1d_key": "upperconstance",
+      "status": "acces_et_licence_a_confirmer",
+      "candidate_source_ids": [],
+      "secondary_or_excluded_source_ids": [
+        "bregenz-200337"
+      ],
+      "decision": "Mesures visibles à Bregenz; licence et accès structuré non confirmés."
+    },
+    {
+      "guide_slug": "lac-de-zurich",
+      "lake": "Zurich",
+      "alplakes_1d_key": "lowerzurich",
+      "status": "pilote_prioritaire",
+      "candidate_source_ids": [
+        "zurich-mythenquai",
+        "zurich-tiefenbrunnen"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Deux sites à 1 m, CC0; commencer ici."
+    },
+    {
+      "guide_slug": "lac-de-thoune",
+      "lake": "Thoune",
+      "alplakes_1d_key": "thun",
+      "status": "historique",
+      "candidate_source_ids": [
+        "datalakes-1336"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "bafu-2030"
+      ],
+      "decision": "Profils historiques; exutoire secondaire."
+    },
+    {
+      "guide_slug": "lac-de-morat",
+      "lake": "Morat",
+      "alplakes_1d_key": "murten",
+      "status": "pilote_local",
+      "candidate_source_ids": [
+        "datalakes-956"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Pilote près de la chaîne; adapter profondeur."
+    },
+    {
+      "guide_slug": "lac-des-quatre-cantons",
+      "lake": "Quatre Cantons",
+      "alplakes_1d_key": "lucernekreuztrichterandvitznauerbecken",
+      "status": "pilote_local",
+      "candidate_source_ids": [
+        "datalakes-1264"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "bafu-2152"
+      ],
+      "decision": "Pilote Kastanienbaum; ne pas étendre automatiquement à Urnersee."
+    },
+    {
+      "guide_slug": "lac-de-lugano",
+      "lake": "Lugano",
+      "alplakes_1d_key": "upperlugano / lowerlugano",
+      "status": "pilote_prioritaire",
+      "candidate_source_ids": [
+        "datalakes-1334",
+        "datalakes-1443",
+        "datalakes-1399",
+        "datalakes-1400",
+        "datalakes-1401",
+        "datalakes-1402"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Plusieurs sondes; séparer les bassins et vérifier l’assimilation déjà présente dans la variante du modèle."
+    },
+    {
+      "guide_slug": "walensee",
+      "lake": "Walensee",
+      "alplakes_1d_key": "walensee",
+      "status": "aucun_flux_lacustre_confirme",
+      "candidate_source_ids": [],
+      "secondary_or_excluded_source_ids": [
+        "bafu-2104"
+      ],
+      "decision": "Linth en sortie seulement; garder le modèle pour les plages."
+    },
+    {
+      "guide_slug": "lac-de-joux",
+      "lake": "Joux",
+      "alplakes_1d_key": "joux",
+      "status": "archive",
+      "candidate_source_ids": [
+        "datalakes-643"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Dernier point public vérifié en novembre 2024; pas un flux actuel."
+    },
+    {
+      "guide_slug": "lac-de-zoug",
+      "lake": "Zoug",
+      "alplakes_1d_key": "zug",
+      "status": "profils_periodiques",
+      "candidate_source_ids": [
+        "datalakes-1325",
+        "datalakes-1369"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "zug-aquascope-announcement"
+      ],
+      "decision": "Comparaison ponctuelle; flux continu non confirmé."
+    },
+    {
+      "guide_slug": "lac-de-brienz",
+      "lake": "Brienz",
+      "alplakes_1d_key": "brienz",
+      "status": "historique",
+      "candidate_source_ids": [
+        "datalakes-1335"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "bafu-2457"
+      ],
+      "decision": "Profils historiques; exutoire secondaire."
+    },
+    {
+      "guide_slug": "lac-de-sempach",
+      "lake": "Sempach",
+      "alplakes_1d_key": "sempach",
+      "status": "aucun_flux_confirme",
+      "candidate_source_ids": [],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Garder le modèle."
+    },
+    {
+      "guide_slug": "lac-de-sils",
+      "lake": "Sils",
+      "alplakes_1d_key": "sils",
+      "status": "historique",
+      "candidate_source_ids": [
+        "datalakes-636"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Profils de 2020 uniquement dans le catalogue consulté."
+    },
+    {
+      "guide_slug": "sihlsee",
+      "lake": "Sihlsee",
+      "alplakes_1d_key": "sihlsee",
+      "status": "aucun_flux_recent_confirme",
+      "candidate_source_ids": [],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Campagne 2014–2016 signalée; pas de flux récent confirmé."
+    },
+    {
+      "guide_slug": "lac-d-aegeri",
+      "lake": "Ägeri",
+      "alplakes_1d_key": "aegeri",
+      "status": "pilote_profondeur_2m",
+      "candidate_source_ids": [
+        "datalakes-1077"
+      ],
+      "secondary_or_excluded_source_ids": [
+        "datalakes-1074"
+      ],
+      "decision": "Profileur récent à partir de 2 m; canal de surface immergé manquant."
+    },
+    {
+      "guide_slug": "lac-de-hallwil",
+      "lake": "Hallwil",
+      "alplakes_1d_key": "hallwil",
+      "status": "pilote_local",
+      "candidate_source_ids": [
+        "datalakes-1046"
+      ],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Pilote près de la chaîne; adapter profondeur."
+    },
+    {
+      "guide_slug": "lac-de-sarnen",
+      "lake": "Sarnen",
+      "alplakes_1d_key": "sarnen",
+      "status": "aucun_flux_confirme",
+      "candidate_source_ids": [],
+      "secondary_or_excluded_source_ids": [],
+      "decision": "Garder le modèle."
+    }
+  ],
+  "sources": [
+    {
+      "id": "datalakes-448",
+      "lake": "lac-leman",
+      "name": "LéXPLORE Temperature Chain",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/448",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/448",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/448/y1",
+      "dataset_id": 448,
+      "axis": "y1",
+      "parse_parameter": "surfacetemp",
+      "latitude": 46.5,
+      "longitude": 6.67,
+      "comparison_depth_m": 0.25,
+      "depth_evidence": "Premier capteur du fichier récent; profil à aligner au modèle",
+      "file_min_depth_m": 0.25,
+      "file_max_depth_m": 90.0,
+      "sample": {
+        "time": "2026-11-03T07:10:00.000Z",
+        "value": 11.65555
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "depth",
+          "unit": "m"
+        },
+        {
+          "axis": "z",
+          "parseparameter": "temp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "surfacetemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "bottomtemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "mixed_layer_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "thermocline_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "schmidt_stability",
+          "unit": "kg m-2"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "heat_content",
+          "unit": "J"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-597",
+      "lake": "lac-leman",
+      "name": "Buchillon Field Station",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/597",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/597",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/597/y",
+      "dataset_id": 597,
+      "axis": "y",
+      "parse_parameter": "wt1",
+      "latitude": 46.459,
+      "longitude": 6.399,
+      "comparison_depth_m": null,
+      "depth_evidence": "Canal wt1; profondeur nominale à confirmer dans la documentation du site",
+      "file_min_depth_m": 0.0,
+      "file_max_depth_m": 0.0,
+      "sample": {
+        "time": "2026-11-03T05:00:00.000Z",
+        "value": 13
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "y12",
+          "parseparameter": "time_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y13",
+          "parseparameter": "wt35_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "wt1",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "wt35",
+          "unit": "degC"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "at10",
+          "unit": "degC"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "at7",
+          "unit": "degC"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "sw",
+          "unit": "W/m^2"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "sw_t",
+          "unit": "Wh/m^2"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "rain",
+          "unit": "mm"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "rh",
+          "unit": "%"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "dew_p",
+          "unit": "Deg C"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "wind_speed_max",
+          "unit": "m/s"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "wind_speed",
+          "unit": "m/s"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "wind_dir",
+          "unit": "Deg"
+        },
+        {
+          "axis": "y14",
+          "parseparameter": "wt1_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y15",
+          "parseparameter": "at10_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y16",
+          "parseparameter": "at7_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y17",
+          "parseparameter": "sw_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y18",
+          "parseparameter": "sw_t_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y19",
+          "parseparameter": "rain_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y20",
+          "parseparameter": "rh_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y21",
+          "parseparameter": "dew_p_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y22",
+          "parseparameter": "wind_speed_max_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y23",
+          "parseparameter": "wind_speed_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y24",
+          "parseparameter": "wind_dir_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-956",
+      "lake": "lac-de-morat",
+      "name": "Temperature Monitoring Lake Murten",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/956",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/956",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/956/y1",
+      "dataset_id": 956,
+      "axis": "y1",
+      "parse_parameter": "surfacetemp",
+      "latitude": 46.934,
+      "longitude": 7.077,
+      "comparison_depth_m": 0.5,
+      "depth_evidence": "Premier capteur du fichier récent",
+      "file_min_depth_m": 0.5,
+      "file_max_depth_m": 43.0,
+      "sample": {
+        "time": "2026-11-03T07:00:00.000Z",
+        "value": 11.45025
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "depth",
+          "unit": "m"
+        },
+        {
+          "axis": "z",
+          "parseparameter": "temp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "surfacetemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "bottomtemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "thermocline_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "cond_25m",
+          "unit": "uS/cm"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "cond_40m",
+          "unit": "uS/cm"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "mixed_layer_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "schmidt_stability",
+          "unit": "J m-2"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "heat_content",
+          "unit": "J m-2"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "battery",
+          "unit": "V"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "O2_25m",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "O2_40m",
+          "unit": "mg/L"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1046",
+      "lake": "lac-de-hallwil",
+      "name": "Temperature Monitoring Lake Hallwil",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1046",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1046",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1046/y1",
+      "dataset_id": 1046,
+      "axis": "y1",
+      "parse_parameter": "surfacetemp",
+      "latitude": 47.278450000000014,
+      "longitude": 8.213770000000004,
+      "comparison_depth_m": 0.5,
+      "depth_evidence": "Premier capteur du fichier récent",
+      "file_min_depth_m": 0.5,
+      "file_max_depth_m": 44.0,
+      "sample": {
+        "time": "2026-11-03T07:20:00.000Z",
+        "value": 13.122150000000001
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "depth",
+          "unit": "m"
+        },
+        {
+          "axis": "z",
+          "parseparameter": "temp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "surfacetemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "bottomtemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "cond_25m",
+          "unit": "uS/cm"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "cond_40m",
+          "unit": "uS/cm"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "cond_43m",
+          "unit": "uS/cm"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "O2_25m",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "O2_40m",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "O2_43m",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "mixed_layer_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "thermocline_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y12",
+          "parseparameter": "schmidt_stability",
+          "unit": "J m-2"
+        },
+        {
+          "axis": "y13",
+          "parseparameter": "heat_content",
+          "unit": "J m-2"
+        },
+        {
+          "axis": "y14",
+          "parseparameter": "battery",
+          "unit": "V"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "time_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "z1",
+          "parseparameter": "temp_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1077",
+      "lake": "lac-d-aegeri",
+      "name": "Lake Aegeri Idronaut Depth Time Grid",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1077",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1077",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1077/y1",
+      "dataset_id": 1077,
+      "axis": "y1",
+      "parse_parameter": "surfTemp",
+      "latitude": 47.12485999999994,
+      "longitude": 8.608549999999992,
+      "comparison_depth_m": 2,
+      "depth_evidence": "Premier niveau du fichier récent; modèle à comparer à 2 m",
+      "file_min_depth_m": 2.0,
+      "file_max_depth_m": 79.0,
+      "sample": {
+        "time": "2026-11-03T06:19:03.217Z",
+        "value": 12.509193708418842
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "depth",
+          "unit": "m"
+        },
+        {
+          "axis": "z",
+          "parseparameter": "Temp",
+          "unit": "°C"
+        },
+        {
+          "axis": "z3",
+          "parseparameter": "O2pc",
+          "unit": "%"
+        },
+        {
+          "axis": "z4",
+          "parseparameter": "O2mgL",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "z8",
+          "parseparameter": "Sal",
+          "unit": "PSU"
+        },
+        {
+          "axis": "z9",
+          "parseparameter": "Dens",
+          "unit": "kg/m3"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "surfTemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "bottTemp",
+          "unit": "°C"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "mixed_layer_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "thermocline_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "schmidt_stability",
+          "unit": "kg m-2"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "heat_content",
+          "unit": "J m-2"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "SalTot",
+          "unit": "kg"
+        },
+        {
+          "axis": "z5",
+          "parseparameter": "ChlA",
+          "unit": "ug/L chl-a in acetone"
+        },
+        {
+          "axis": "z6",
+          "parseparameter": "Pethr",
+          "unit": "ug/L chl-a in acetone equivalent"
+        },
+        {
+          "axis": "z7",
+          "parseparameter": "Pchan",
+          "unit": "ug/L chl-a in acetone equivalent"
+        },
+        {
+          "axis": "z1",
+          "parseparameter": "Cond",
+          "unit": "uS/cm"
+        },
+        {
+          "axis": "z2",
+          "parseparameter": "Cond20",
+          "unit": "uS/cm"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1333",
+      "lake": "lac-majeur",
+      "name": "Monitoring buoy in Lake Maggiore (Porto Ronco)",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1333",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1333",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1333/y5",
+      "dataset_id": 1333,
+      "axis": "y5",
+      "parse_parameter": "Temp_1m",
+      "latitude": 46.144,
+      "longitude": 8.731,
+      "comparison_depth_m": 1,
+      "depth_evidence": "Canal explicitement Temp_1m",
+      "file_min_depth_m": 0.5,
+      "file_max_depth_m": 40.0,
+      "sample": {
+        "time": "2026-11-03T06:55:00.000Z",
+        "value": 15.21
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "depth",
+          "unit": "m"
+        },
+        {
+          "axis": "z",
+          "parseparameter": "temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "surface_temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "bottom_temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "mixed_layer_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "thermocline_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "Temp_1m",
+          "unit": "degC"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "Cond_1m",
+          "unit": "uScm-1"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "Cond25_1m",
+          "unit": "uScm-1"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "O2sat_1m",
+          "unit": "%"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "O2mgL_1m",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "pH_1m",
+          "unit": "-"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "Chla_1m",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y12",
+          "parseparameter": "PC_1m",
+          "unit": "RFU"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1334",
+      "lake": "lac-de-lugano",
+      "name": "Monitoring buoy in Upper Lake Lugano (Castagnola)",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1334",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1334",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1334/y5",
+      "dataset_id": 1334,
+      "axis": "y5",
+      "parse_parameter": "Temp_1m",
+      "latitude": 45.9993,
+      "longitude": 8.9803,
+      "comparison_depth_m": 1,
+      "depth_evidence": "Canal explicitement Temp_1m",
+      "file_min_depth_m": 0.5,
+      "file_max_depth_m": 40.0,
+      "sample": {
+        "time": "2026-11-03T06:55:00.000Z",
+        "value": 16.33
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "depth",
+          "unit": "m"
+        },
+        {
+          "axis": "z",
+          "parseparameter": "temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "surface_temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "bottom_temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "mixed_layer_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "thermocline_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "Temp_1m",
+          "unit": "degC"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "Cond_1m",
+          "unit": "uScm-1"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "Cond25_1m",
+          "unit": "uScm-1"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "O2sat_1m",
+          "unit": "%"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "O2mgL_1m",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "pH_1m",
+          "unit": "-"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "Chla_1m",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y12",
+          "parseparameter": "PC_1m",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y13",
+          "parseparameter": "Temp_15m",
+          "unit": "degC"
+        },
+        {
+          "axis": "y14",
+          "parseparameter": "Cond_15m",
+          "unit": "uScm-1"
+        },
+        {
+          "axis": "y15",
+          "parseparameter": "Cond25_15m",
+          "unit": "uScm-1"
+        },
+        {
+          "axis": "y16",
+          "parseparameter": "O2sat_15m",
+          "unit": "%"
+        },
+        {
+          "axis": "y17",
+          "parseparameter": "O2mgL_15m",
+          "unit": "mg/L"
+        },
+        {
+          "axis": "y18",
+          "parseparameter": "pH_15m",
+          "unit": "-"
+        },
+        {
+          "axis": "y19",
+          "parseparameter": "Chla_15m",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y20",
+          "parseparameter": "PC_15m",
+          "unit": "RFU"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1443",
+      "lake": "lac-de-lugano",
+      "name": "Lower Lake Lugano Temperature Chain",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1443",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1443",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1443/y1",
+      "dataset_id": 1443,
+      "axis": "y1",
+      "parse_parameter": "surfacetemp",
+      "latitude": 45.959389,
+      "longitude": 8.892933,
+      "comparison_depth_m": 0.4,
+      "depth_evidence": "Premier capteur du fichier récent",
+      "file_min_depth_m": 0.4,
+      "file_max_depth_m": 90.0,
+      "sample": {
+        "time": "2026-11-03T07:00:00.000Z",
+        "value": 15.9511
+      },
+      "declared_licence": "CC BY 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "depth",
+          "unit": "m"
+        },
+        {
+          "axis": "z",
+          "parseparameter": "temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "surfacetemp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "bottomtemp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "mixed_layer_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "thermocline_depth",
+          "unit": "m"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "schmidt_stability",
+          "unit": "J m-2"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "heat_content",
+          "unit": "J m-2"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1264",
+      "lake": "lac-des-quatre-cantons",
+      "name": "Kastanienbaum Lake Temperature",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1264",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1264",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1264/y",
+      "dataset_id": 1264,
+      "axis": "y",
+      "parse_parameter": "temperature",
+      "latitude": 47.0,
+      "longitude": 8.33,
+      "comparison_depth_m": 0.5,
+      "depth_evidence": "Profondeur du fichier récent; autre bassin que Urnersee",
+      "file_min_depth_m": 0.5,
+      "file_max_depth_m": 0.5,
+      "sample": {
+        "time": "2026-11-03T07:29:16.000Z",
+        "value": 13
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "temperature",
+          "unit": "°C"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "time_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "temperature_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1399",
+      "lake": "lac-de-lugano",
+      "name": "Figino Multiparameter Probe (1m)",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1399",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1399",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1399/y",
+      "dataset_id": 1399,
+      "axis": "y",
+      "parse_parameter": "temp",
+      "latitude": 45.95941,
+      "longitude": 8.893119999999998,
+      "comparison_depth_m": 1,
+      "depth_evidence": "Profondeur nominale dans le titre du jeu",
+      "file_min_depth_m": 0.0,
+      "file_max_depth_m": 0.0,
+      "sample": {
+        "time": "2026-11-03T06:05:00.000Z",
+        "value": 15.998
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "pH",
+          "unit": ""
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "TDS",
+          "unit": "ppm"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "SO2",
+          "unit": "%"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "O2",
+          "unit": "mg/l"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "Cond",
+          "unit": "S m-1"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "Cond25",
+          "unit": "mS/cm"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "Chla",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "ORP",
+          "unit": "mV"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "PC",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y12",
+          "parseparameter": "Cond_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y13",
+          "parseparameter": "TDS_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y14",
+          "parseparameter": "SO2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y15",
+          "parseparameter": "temp_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y16",
+          "parseparameter": "Cond25_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y17",
+          "parseparameter": "Chla_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y18",
+          "parseparameter": "ORP_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y19",
+          "parseparameter": "PC_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "time_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "pH_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y20",
+          "parseparameter": "O2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1400",
+      "lake": "lac-de-lugano",
+      "name": "Magliaso Multiparameter Probe (1m)",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1400",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1400",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1400/y",
+      "dataset_id": 1400,
+      "axis": "y",
+      "parse_parameter": "temp",
+      "latitude": 45.98122,
+      "longitude": 8.895530000000004,
+      "comparison_depth_m": 1,
+      "depth_evidence": "Profondeur nominale dans le titre du jeu",
+      "file_min_depth_m": 0.0,
+      "file_max_depth_m": 0.0,
+      "sample": {
+        "time": "2026-11-03T05:05:00.000Z",
+        "value": 16.064
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "pH",
+          "unit": ""
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "TDS",
+          "unit": "ppm"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "SO2",
+          "unit": "%"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "O2",
+          "unit": "mg/l"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "Cond",
+          "unit": "S m-1"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "Cond25",
+          "unit": "mS/cm"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "Chla",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "ORP",
+          "unit": "mV"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "PC",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "pH_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y12",
+          "parseparameter": "Cond_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y13",
+          "parseparameter": "TDS_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y14",
+          "parseparameter": "SO2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y15",
+          "parseparameter": "temp_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y16",
+          "parseparameter": "Cond25_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "time_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y17",
+          "parseparameter": "Chla_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y18",
+          "parseparameter": "ORP_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y19",
+          "parseparameter": "PC_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y20",
+          "parseparameter": "O2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1401",
+      "lake": "lac-de-lugano",
+      "name": "Riva San Vitale Multiparameter Probe (1m)",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1401",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1401",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1401/y",
+      "dataset_id": 1401,
+      "axis": "y",
+      "parse_parameter": "temp",
+      "latitude": 45.907130000000016,
+      "longitude": 8.97184,
+      "comparison_depth_m": 1,
+      "depth_evidence": "Profondeur nominale dans le titre du jeu",
+      "file_min_depth_m": 0.0,
+      "file_max_depth_m": 0.0,
+      "sample": {
+        "time": "2026-11-03T05:55:00.000Z",
+        "value": 16.018
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "pH",
+          "unit": ""
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "TDS",
+          "unit": "ppm"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "SO2",
+          "unit": "%"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "O2",
+          "unit": "mg/l"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "Cond",
+          "unit": "S m-1"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "Cond25",
+          "unit": "mS/cm"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "Chla",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "ORP",
+          "unit": "mV"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "PC",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "pH_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y12",
+          "parseparameter": "Cond_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y14",
+          "parseparameter": "SO2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y15",
+          "parseparameter": "temp_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y17",
+          "parseparameter": "Chla_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y18",
+          "parseparameter": "ORP_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y19",
+          "parseparameter": "PC_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "time_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y13",
+          "parseparameter": "TDS_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y16",
+          "parseparameter": "Cond25_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y20",
+          "parseparameter": "O2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        }
+      ]
+    },
+    {
+      "id": "datalakes-1402",
+      "lake": "lac-de-lugano",
+      "name": "Vico Morcote Multiparameter Probe (1m)",
+      "kind": "in_situ",
+      "provider": "Datalakes / Eawag et propriétaire du jeu",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1402",
+      "parameters_url": "https://api.datalakes-eawag.ch/datasetparameters/1402",
+      "latest_value_url": "https://api.datalakes-eawag.ch/data/1402/y",
+      "dataset_id": 1402,
+      "axis": "y",
+      "parse_parameter": "temp",
+      "latitude": 45.93783,
+      "longitude": 8.935280000000002,
+      "comparison_depth_m": 1,
+      "depth_evidence": "Profondeur nominale dans le titre du jeu",
+      "file_min_depth_m": 0.0,
+      "file_max_depth_m": 0.0,
+      "sample": {
+        "time": "2026-11-03T06:05:00.000Z",
+        "value": 16.142
+      },
+      "declared_licence": "MIT License",
+      "licence_url": "https://choosealicense.com/licenses/mit/",
+      "citation_instruction": "Please get in touch for citation",
+      "embargo": 0,
+      "anonymous_access_verified": true,
+      "precision_validated": false,
+      "scope": "Pilote près du capteur; pas de correction automatique de tout le lac",
+      "parameters": [
+        {
+          "axis": "x",
+          "parseparameter": "time",
+          "unit": "seconds since 1970-01-01 00:00:00"
+        },
+        {
+          "axis": "y",
+          "parseparameter": "temp",
+          "unit": "degC"
+        },
+        {
+          "axis": "y1",
+          "parseparameter": "pH",
+          "unit": ""
+        },
+        {
+          "axis": "y2",
+          "parseparameter": "TDS",
+          "unit": "ppm"
+        },
+        {
+          "axis": "y3",
+          "parseparameter": "SO2",
+          "unit": "%"
+        },
+        {
+          "axis": "y4",
+          "parseparameter": "O2",
+          "unit": "mg/l"
+        },
+        {
+          "axis": "y5",
+          "parseparameter": "Cond",
+          "unit": "S m-1"
+        },
+        {
+          "axis": "y6",
+          "parseparameter": "Cond25",
+          "unit": "mS/cm"
+        },
+        {
+          "axis": "y7",
+          "parseparameter": "Chla",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y8",
+          "parseparameter": "ORP",
+          "unit": "mV"
+        },
+        {
+          "axis": "y9",
+          "parseparameter": "PC",
+          "unit": "RFU"
+        },
+        {
+          "axis": "y11",
+          "parseparameter": "pH_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y12",
+          "parseparameter": "Cond_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y10",
+          "parseparameter": "time_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y13",
+          "parseparameter": "TDS_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y14",
+          "parseparameter": "SO2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y15",
+          "parseparameter": "temp_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y16",
+          "parseparameter": "Cond25_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y17",
+          "parseparameter": "Chla_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y18",
+          "parseparameter": "ORP_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y19",
+          "parseparameter": "PC_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        },
+        {
+          "axis": "y20",
+          "parseparameter": "O2_qual",
+          "unit": "0 = nothing to report, 1 = more investigation"
+        }
+      ]
+    },
+    {
+      "id": "zurich-mythenquai",
+      "lake": "lac-de-zurich",
+      "name": "Mythenquai",
+      "kind": "in_situ",
+      "provider": "Wasserschutzpolizei Stadt Zürich",
+      "metadata_url": "https://data.stadt-zuerich.ch/dataset/sid_wapo_wetterstationen",
+      "latest_value_url": "https://tecdottir.metaodi.ch/measurements/mythenquai?startDate=2026-11-03&sort=timestamp_utc%20desc&limit=1",
+      "api_documentation": "https://tecdottir.metaodi.ch/docs/",
+      "comparison_depth_m": 1,
+      "depth_evidence": "Profondeur explicitement publiée par la ville",
+      "sample": {
+        "time": "2026-11-03T06:30:00.000Z",
+        "value": 13.1,
+        "unit": "°C",
+        "status": "ok"
+      },
+      "declared_licence": "CC0 (données; logiciel Tecdottir sous MIT)",
+      "anonymous_access_verified": true,
+      "precision_validated": false
+    },
+    {
+      "id": "zurich-tiefenbrunnen",
+      "lake": "lac-de-zurich",
+      "name": "Tiefenbrunnen",
+      "kind": "in_situ",
+      "provider": "Wasserschutzpolizei Stadt Zürich",
+      "metadata_url": "https://data.stadt-zuerich.ch/dataset/sid_wapo_wetterstationen",
+      "latest_value_url": "https://tecdottir.metaodi.ch/measurements/tiefenbrunnen?startDate=2026-11-03&sort=timestamp_utc%20desc&limit=1",
+      "api_documentation": "https://tecdottir.metaodi.ch/docs/",
+      "comparison_depth_m": 1,
+      "depth_evidence": "Profondeur explicitement publiée par la ville",
+      "sample": {
+        "time": "2026-11-03T06:30:00.000Z",
+        "value": 13.8,
+        "unit": "°C",
+        "status": "ok"
+      },
+      "declared_licence": "CC0 (données; logiciel Tecdottir sous MIT)",
+      "anonymous_access_verified": true,
+      "precision_validated": false
+    },
+    {
+      "id": "datalakes-1074",
+      "lake": "lac-d-aegeri",
+      "name": "Surface Temperature Monitoring Lake Aegeri",
+      "kind": "in_situ_missing",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1074",
+      "sample": {
+        "time": "2026-11-03T06:50:59.435Z",
+        "value": null
+      },
+      "skin_sample": {
+        "time": "2026-11-03T06:50:59.435Z",
+        "value": 11.78
+      },
+      "decision": "Do not replace missing immersed-surface temperature with infrared skin temperature. Use profile 1077 at compatible depth."
+    },
+    {
+      "id": "datalakes-1339",
+      "lake": "lac-de-neuchatel",
+      "name": "CTD monitoring Lake Neuchatel by Canton Neuchatel",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1339",
+      "last_time_advertised": "2025-12-11T12:00:00.000Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Contact owner",
+      "depth_range_advertised_m": [
+        0.0,
+        150.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-1337",
+      "lake": "lac-de-bienne",
+      "name": "CTD monitoring Lake Biel by Canton Bern",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1337",
+      "last_time_advertised": "2025-12-10T12:00:00.000Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Contact owner",
+      "depth_range_advertised_m": [
+        0.0,
+        74.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-1336",
+      "lake": "lac-de-thoune",
+      "name": "CTD monitoring Lake Thun by Canton Bern",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1336",
+      "last_time_advertised": "2025-12-08T11:00:00.000Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Contact owner",
+      "depth_range_advertised_m": [
+        0.0,
+        214.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-1335",
+      "lake": "lac-de-brienz",
+      "name": "CTD monitoring Lake Brienz by Canton Bern",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1335",
+      "last_time_advertised": "2025-12-08T11:00:00.000Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Contact owner",
+      "depth_range_advertised_m": [
+        0.0,
+        256.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-643",
+      "lake": "lac-de-joux",
+      "name": "Lac de Joux Temperature Monitoring",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/643",
+      "last_time_advertised": "2024-11-07T08:00:00.000Z",
+      "declared_licence": "Apache License 2.0",
+      "citation_instruction": "Contact Surf Sedimentology Group (nathalie.dubois@eawag.ch)",
+      "depth_range_advertised_m": [
+        0.0,
+        32.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-636",
+      "lake": "lac-de-sils",
+      "name": "Lake Sils CTD Profiles",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/636",
+      "last_time_advertised": "2020-07-07T13:15:10.380Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Please get in touch for citation",
+      "depth_range_advertised_m": [
+        0.0,
+        71.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-637",
+      "lake": "lac-de-silvaplana",
+      "name": "Lake Silvaplana CTD Profiles",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/637",
+      "last_time_advertised": "2020-07-07T14:54:24.664Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Please get in touch for citation",
+      "depth_range_advertised_m": [
+        0.0,
+        77.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-1325",
+      "lake": "lac-de-zoug",
+      "name": "CTD monitoring Lake Zug by Canton Zug",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1325",
+      "last_time_advertised": "2026-10-07T10:00:00.000Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Contact owner",
+      "depth_range_advertised_m": [
+        0.0,
+        196.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "datalakes-1369",
+      "lake": "lac-de-zoug",
+      "name": "CTD profiles in Lake Zug",
+      "kind": "historical_or_periodic_profile",
+      "metadata_url": "https://api.datalakes-eawag.ch/datasets/1369",
+      "last_time_advertised": "2026-05-12T09:04:40.000Z",
+      "declared_licence": "MIT License",
+      "citation_instruction": "Please get in touch for citation",
+      "depth_range_advertised_m": [
+        -1.1377404961634618,
+        200.0
+      ],
+      "live_correction_eligible": false
+    },
+    {
+      "id": "bregenz-200337",
+      "lake": "lac-de-constance",
+      "name": "Bregenz Seepegel 200337",
+      "kind": "in_situ_web_only",
+      "metadata_url": "https://vowis.vorarlberg.at/stationswrapper/bodensee",
+      "depths_m": [
+        0.5,
+        2.5
+      ],
+      "web_sample": {
+        "local_time": "2026-11-03T08:15:00+01:00",
+        "temperature_0_5m_c": 11.1,
+        "temperature_2_5m_c": 11.3
+      },
+      "licence_verified_on_primary_source": false,
+      "automated_data_access_verified": false,
+      "decision": "Clarify redistribution licence and structured access before integration."
+    },
+    {
+      "id": "paquis",
+      "lake": "lac-leman",
+      "name": "Bains des Pâquis",
+      "kind": "in_situ_candidate_unconfirmed",
+      "metadata_url": "https://www.bains-des-paquis.ch/index.php",
+      "depth_m": null,
+      "licence_verified_on_primary_source": false,
+      "automated_data_access_verified": false,
+      "decision": "Potential partner; no automatic extraction proposed."
+    },
+    {
+      "id": "bafu-2030",
+      "lake": "lac-de-thoune",
+      "name": "Aare — Thun",
+      "kind": "river_outlet",
+      "station_no": "2030",
+      "latitude": 46.764560998486296,
+      "longitude": 7.611890487851701,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2030",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2030",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 12.78
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2029",
+      "lake": "lac-de-bienne",
+      "name": "Aare — Brügg, Aegerten",
+      "kind": "river_outlet",
+      "station_no": "2029",
+      "latitude": 47.122043900796236,
+      "longitude": 7.283365080213258,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2029",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2029",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 10.85
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2457",
+      "lake": "lac-de-brienz",
+      "name": "Aare — Ringgenberg, Goldswil",
+      "kind": "river_outlet",
+      "station_no": "2457",
+      "latitude": 46.69393775537055,
+      "longitude": 7.879621634644,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2457",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2457",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 11.49
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2104",
+      "lake": "walensee",
+      "name": "Linth — Weesen, Biäsche",
+      "kind": "river_outlet",
+      "station_no": "2104",
+      "latitude": 47.13160738584986,
+      "longitude": 9.088585877805683,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2104",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2104",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 13.12
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2152",
+      "lake": "lac-des-quatre-cantons",
+      "name": "Reuss — Luzern, Geissmattbrücke",
+      "kind": "river_outlet",
+      "station_no": "2152",
+      "latitude": 47.053937090254706,
+      "longitude": 8.298543621770733,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2152",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2152",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 12.39
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2606",
+      "lake": "lac-leman",
+      "name": "Rhône — Genève, Halle de l'Ile",
+      "kind": "river_outlet",
+      "station_no": "2606",
+      "latitude": 46.20464146427008,
+      "longitude": 6.141561365774866,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2606",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2606",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 12.63
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2369",
+      "lake": "lac-de-neuchatel",
+      "name": "Menthue — Yvonand, La Mauguettaz",
+      "kind": "river_tributary",
+      "station_no": "2369",
+      "latitude": 46.776752531987185,
+      "longitude": 6.724343274220485,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2369",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2369",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 5.41
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2467",
+      "lake": "lac-de-la-gruyere",
+      "name": "Saane — Gümmenen",
+      "kind": "river_downstream_other_reservoirs",
+      "station_no": "2467",
+      "latitude": 46.943654877587164,
+      "longitude": 7.242996903022317,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2467",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2467",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 11.03
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2056",
+      "lake": "urnersee",
+      "name": "Reuss — Seedorf",
+      "kind": "river_tributary",
+      "station_no": "2056",
+      "latitude": 46.88411418616537,
+      "longitude": 8.620545315843982,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2056",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": {
+        "stationNo": "2056",
+        "parameterName": "WT",
+        "timestamp": "2026-11-03T07:40:00Z",
+        "value": 5.98
+      },
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "bafu-2160",
+      "lake": "lac-de-la-gruyere",
+      "name": "Sarine — Broc, Château d'en bas",
+      "kind": "river_tributary",
+      "station_no": "2160",
+      "latitude": 46.602802106209765,
+      "longitude": 7.093034880061015,
+      "metadata_url": "https://www.hydrodaten.admin.ch/fr/seen-und-fluesse/stationen-und-daten/2160",
+      "api_documentation": "https://data.bafu.admin.ch/fr/dataproduct-water-observations",
+      "sample": null,
+      "licence": "Utilisation libre avec indication obligatoire de la source (plateforme OFEV)",
+      "licence_url": "https://data.bafu.admin.ch/fr/lizenz-und-quelle",
+      "eligible_for_lake_beach_correction": false
+    },
+    {
+      "id": "zug-aquascope-announcement",
+      "lake": "lac-de-zoug",
+      "name": "Aquascope Zugersee annoncé par Eawag",
+      "kind": "station_announced_unverified_feed",
+      "metadata_url": "https://www.eawag.ch/de/info/portal/aktuelles/news/pdf/?cHash=e0849921f523fb150491e376bbc0be39&tx_news_pi1%5Bcontroller%5D=News&tx_news_pi1%5Bnews%5D=104661",
+      "discovery_evidence": "Résultat de recherche officiel Eawag annonçant des capteurs de température et oxygène; document non récupérable pendant cet inventaire.",
+      "api_access_verified": false,
+      "licence_verified": false,
+      "decision": "Piste à clarifier; aucune valeur en direct validée."
+    }
+  ],
+  "important_limits": [
+    "Une source candidate ne prouve pas un gain de précision.",
+    "Limiter la correction à un secteur validé et à une profondeur compatible.",
+    "Réserver des observations ou périodes non utilisées pour ajuster la correction.",
+    "La température de peau infrarouge, la température de l’air, une simulation et une mesure en rivière ne sont pas interchangeables.",
+    "Vérifier les drapeaux qualité, la stabilité temporelle, les notices de licence et la citation avant diffusion."
+  ]
+}

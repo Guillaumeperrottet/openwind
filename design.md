@@ -23,6 +23,13 @@ Map commands use one compact row: labeled sport filters, then wind and home icon
 
 One primary treatment: sky 800 with white text. Secondary controls use ink, a quiet surface, and a visible selection. Focus appears immediately. Every icon-only action has an accessible name.
 
+## Navigation
+Four stable destinations share one configuration in `src/lib/navigation.ts`: Carte, Explorer, Planifier, Mon Openwind. Their labels remain visible. At 1024px and above they appear in the header; below 1024px they use a persistent bottom bar. `--mobile-nav-height` follows that same breakpoint so map controls and page content remain clear of it. The logo always opens the explicit map view.
+
+Explorer groups existing places and local guides, stations and webcams, the Carnet and Forum, and spot contributions. A compact section index makes these groups visible before scrolling on mobile. Editorial content available only in French is labelled before navigation. Lake temperature links follow the same availability flag as the lake page itself.
+
+The account menu contains personal shortcuts, sign-in/out, contributions, support and administration when authorised. Public discovery does not require opening it. Preserve global search, language selection, account launch preferences, map context and existing public URLs.
+
 ## Motion
 Still by default. State feedback only; no automatic marketing movement. Reduced-motion users retain all content and controls.
 

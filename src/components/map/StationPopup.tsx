@@ -9,6 +9,9 @@ import { WindProvenance } from "@/components/spot/WindProvenance";
 import { detectNetwork, isNetworkFresh } from "@/lib/stationConstants";
 import { WindHistoryChart } from "@/components/spot/WindHistoryChart";
 import type { HistoryPoint } from "@/types";
+import useSWR from "swr";
+import { fetchClientJson } from "@/lib/fetch-client-json";
+import { RequestFeedback } from "@/components/ui/RequestFeedback";
 import { useStationLive } from "@/lib/useStationLive";
 import { useFavContext } from "@/lib/FavContext";
 
@@ -51,13 +54,20 @@ export function StationPopup({
   onClose,
   onLiveUpdate,
 }: StationPopupProps) {
-  const { data: stationLive } = useStationLive(station.id);
+  const { data: stationLive, error: liveError, isValidating: livePending, refresh: refreshLive } = useStationLive(station.id);
   const { favoriteStationIds, toggleStationFavorite } = useFavContext();
   const isFavorite = favoriteStationIds.has(station.id);
   const t = useTranslations("StationPage");
   const tCommon = useTranslations("Common");
-  const [history, setHistory] = useState<HistoryPoint[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: history, isLoading: loading, error: historyError, isValidating: historyPending, mutate: retryHistory } = useSWR<HistoryPoint[]>(
+    `/api/stations/${encodeURIComponent(station.id)}/history`,
+    async (url: string) => {
+      const points = await fetchClientJson<HistoryPoint[]>(url);
+      if (!Array.isArray(points)) throw new Error("Invalid history");
+      return points;
+    },
+    { keepPreviousData: false, errorRetryCount: 2 },
+  );
   const ref = useRef<HTMLDivElement>(null);
   const [flipBelow, setFlipBelow] = useState(false);
   const [popupH, setPopupH] = useState(0);
@@ -72,25 +82,6 @@ export function StationPopup({
     mobileViewport.addEventListener("change", updateViewport);
     return () => mobileViewport.removeEventListener("change", updateViewport);
   }, []);
-
-  // Fetch 48h history (API now returns combined past + 15-min forecast)
-  useEffect(() => {
-    let cancelled = false;
-    const encodedId = encodeURIComponent(station.id);
-
-    fetch(`/api/stations/${encodedId}/history`)
-      .then((r) => (r.ok ? r.json() : null))
-      .catch(() => null)
-      .then((histData) => {
-        if (cancelled) return;
-        if (Array.isArray(histData)) setHistory(histData);
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [station.id]);
 
   // Measure popup height and flip below if not enough room above
   useEffect(() => {
@@ -169,7 +160,7 @@ export function StationPopup({
   ]);
 
   const chartHistory = useMemo<HistoryPoint[] | null>(() => {
-    if (!history) return history;
+    if (!history) return null;
     const pointTime = new Date(liveUpdatedAt).toISOString().slice(0, 16);
     const currentPoint: HistoryPoint = {
       time: pointTime,
@@ -370,7 +361,7 @@ export function StationPopup({
           </div>
         </div>
       </div>
-      <div className="px-4 pb-3"><WindProvenance compact live={{ source: "station", network: detectNetwork(station.id), stationId: station.id, updatedAt: liveUpdatedAt, isFresh: liveForDisplay?.isFresh ?? isNetworkFresh(station.id, liveUpdatedAt) }} /></div>
+      <div className="px-4 pb-3"><RequestFeedback error={Boolean(liveError)} pending={livePending} hasData onRetry={refreshLive} /><WindProvenance compact live={{ source: "station", network: detectNetwork(station.id), stationId: station.id, updatedAt: liveUpdatedAt, isFresh: liveForDisplay?.isFresh ?? isNetworkFresh(station.id, liveUpdatedAt) }} /></div>
 
       {/* 48h History Chart */}
       <div className="border-t border-gray-100">
@@ -387,6 +378,8 @@ export function StationPopup({
             <div className="flex items-center justify-center h-24 text-xs text-gray-400 animate-pulse">
               {tCommon("loading")}
             </div>
+          ) : historyError && !history ? (
+            <RequestFeedback error pending={historyPending} onRetry={() => { void retryHistory().catch(() => {}); }} />
           ) : chartHistory && chartHistory.length > 0 ? (
             <WindHistoryChart
               history={chartHistory}

@@ -1,3 +1,6 @@
+import { cache } from "react";
+import { forumText, forumTopicSchema } from "@/lib/forum-seo";
+import { jsonLd } from "@/lib/public-seo";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
@@ -8,16 +11,32 @@ interface Props {
   params: Promise<{ locale: string; slug: string; topicId: string }>;
 }
 
+const getTopic = cache(async (topicId: string) => {
+  return await prisma.forumTopic.findUnique({
+    where: { id: topicId },
+    include: {
+      author: { select: { id: true, name: true, avatarUrl: true } },
+      category: { select: { id: true, name: true, slug: true } },
+      spot: { select: { id: true, name: true } },
+      votes: { select: { value: true, userId: true } },
+      posts: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          author: { select: { id: true, name: true, avatarUrl: true } },
+          votes: { select: { value: true, userId: true } },
+        },
+      },
+    },
+  });
+});
+
 export async function generateMetadata({ params }: Props) {
   const { slug, topicId } = await params;
   try {
-    const topic = await prisma.forumTopic.findUnique({
-      where: { id: topicId },
-      select: { title: true, body: true, category: { select: { name: true } } },
-    });
-    if (!topic) return { title: "Sujet introuvable" };
-    const desc =
-      topic.body.length > 155 ? topic.body.slice(0, 152) + "…" : topic.body;
+    const topic = await getTopic(topicId);
+    if (!topic || topic.category.slug !== slug) return { title: "Sujet introuvable", robots: { index: false, follow: true } };
+    const content = forumText(topic.body);
+    const desc = content.length > 155 ? content.slice(0, 152) + "…" : content;
     return {
       title: topic.title,
       description: desc,
@@ -39,22 +58,7 @@ export async function generateMetadata({ params }: Props) {
 export default async function TopicPage({ params }: Props) {
   const { slug, topicId } = await params;
 
-  const topic = await prisma.forumTopic.findUnique({
-    where: { id: topicId },
-    include: {
-      author: { select: { id: true, name: true, avatarUrl: true } },
-      category: { select: { id: true, name: true, slug: true } },
-      spot: { select: { id: true, name: true } },
-      votes: { select: { value: true, userId: true } },
-      posts: {
-        orderBy: { createdAt: "asc" },
-        include: {
-          author: { select: { id: true, name: true, avatarUrl: true } },
-          votes: { select: { value: true, userId: true } },
-        },
-      },
-    },
-  });
+  const topic = await getTopic(topicId);
 
   if (!topic || topic.category.slug !== slug) notFound();
 
@@ -129,6 +133,9 @@ export default async function TopicPage({ params }: Props) {
   const isAdmin = !!authUser && adminIds.includes(authUser.id);
 
   return (
-    <TopicPageClient topic={serialized} categorySlug={slug} isAdmin={isAdmin} />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(forumTopicSchema(serialized, topic.updatedAt.toISOString())) }} />
+      <TopicPageClient topic={serialized} categorySlug={slug} isAdmin={isAdmin} />
+    </>
   );
 }

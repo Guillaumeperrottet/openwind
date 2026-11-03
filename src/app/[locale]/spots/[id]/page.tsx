@@ -1,4 +1,4 @@
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSpotLive } from "@/lib/stationData";
@@ -28,6 +28,8 @@ import {
 } from "@/lib/spot-editorials";
 import { SpotPageClient } from "./SpotPageClient";
 import { getAuthenticatedAdmin } from "@/lib/admin";
+import { WaterTemperature, WaterTemperatureLoading } from "@/components/spot/WaterTemperature";
+import { MORLON_SPOT_ID } from "@/lib/lake-temperature";
 
 // Deduplicated Prisma query: shared across generateMetadata() and SpotPage()
 // within the same request, so the DB is hit only once.
@@ -93,6 +95,9 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function SpotPage({ params }: Props) {
   const { id, locale } = await params;
+  // Local trial on Morlon. Production activation is an explicit deployment choice.
+  const showWaterTemperature = id === MORLON_SPOT_ID &&
+    (process.env.NODE_ENV === "development" || process.env.ALPLAKES_WATER_ENABLED === "true");
 
   // A DB failure must remain a server error, rather than removing a real URL.
   const storedSpot = await getSpot(id);
@@ -144,6 +149,7 @@ export default async function SpotPage({ params }: Props) {
         key={spot.id}
         spot={JSON.parse(JSON.stringify(spot))}
         live={live}
+        waterTemperature={showWaterTemperature ? <Suspense key="water-temperature" fallback={<WaterTemperatureLoading locale={locale} />}><WaterTemperature key="water-temperature-data" locale={locale} /></Suspense> : undefined}
         canEdit={adminResult.status === "fulfilled" && Boolean(adminResult.value)}
         qualification={
           qualificationResult.status === "fulfilled"

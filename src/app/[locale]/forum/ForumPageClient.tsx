@@ -1,5 +1,8 @@
 "use client";
 
+import { AccessPageHeader } from "@/components/ui/AccessPageHeader";
+import { ArticleCorrectionComposer } from "@/components/forum/ArticleCorrectionComposer";
+import type { CorrectionDraft } from "@/lib/article-correction";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -48,28 +51,27 @@ interface CategoryData {
 interface Props {
   categories: CategoryData[];
   isAdmin?: boolean;
+  correctionDraft?: CorrectionDraft | null;
+  correctionUnavailable?: boolean;
 }
 
-export function ForumPageClient({ categories, isAdmin }: Props) {
+export function ForumPageClient({ categories, isAdmin, correctionDraft, correctionUnavailable }: Props) {
   const t = useTranslations("ForumPage");
   const router = useRouter();
   const [showNew, setShowNew] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   return (
-    <div className="mx-auto px-4 sm:px-6 lg:px-10 pt-20 pb-12">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg font-semibold text-gray-900">{t("title")}</h1>
-        {isAdmin && (
+    <div className="ow-access-content">
+      <AccessPageHeader title={t("title")} actions={isAdmin && (
           <button
             onClick={() => setShowNew(!showNew)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-1.5 min-h-11 px-3 py-1.5 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
           >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">{t("newCategory")}</span>
           </button>
-        )}
-      </div>
+        )} />
 
       {showNew && (
         <div className="mb-4 p-4 border border-gray-200 rounded-md bg-white">
@@ -83,6 +85,8 @@ export function ForumPageClient({ categories, isAdmin }: Props) {
         </div>
       )}
 
+      {correctionUnavailable && <p role="status" className="mb-6 text-sm text-slate-600">L’article ou la rubrique a changé. <Link href="/carnet" locale="fr" className="text-sky-800 underline">Retrouver l’article dans le Carnet</Link></p>}
+      {correctionDraft && <ArticleCorrectionComposer draft={correctionDraft} categories={categories} />}
       <div className="divide-y divide-gray-200 border border-gray-200 rounded-md bg-white">
         {categories.map((cat) =>
           editingId === cat.id ? (

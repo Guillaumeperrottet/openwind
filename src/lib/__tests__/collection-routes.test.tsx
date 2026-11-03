@@ -1,3 +1,5 @@
+import { NextIntlClientProvider } from "next-intl";
+import messages from "../../../messages/fr.json";
 import type { ComponentProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -120,7 +122,7 @@ describe("crawlable collection routes", () => {
   it("includes the registry in the Carnet with paginated schema and filtered results", async () => {
     const params = Promise.resolve({ locale: "fr" });
     const props = { params, searchParams: Promise.resolve({ page: "2" }) };
-    const html = renderToStaticMarkup(await CarnetPage(props));
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="fr" timeZone="Europe/Zurich" messages={messages}>{await CarnetPage(props)}</NextIntlClientProvider>);
     expect(schema(html)["@graph"][0].mainEntity.itemListElement).toHaveLength(
       9,
     );
@@ -134,7 +136,7 @@ describe("crawlable collection routes", () => {
       params,
       searchParams: Promise.resolve({ q: "Sarnersee", kind: "guides" }),
     };
-    const filtered = renderToStaticMarkup(await CarnetPage(search));
+    const filtered = renderToStaticMarkup(<NextIntlClientProvider locale="fr" timeZone="Europe/Zurich" messages={messages}>{await CarnetPage(search)}</NextIntlClientProvider>);
     expect(
       schema(filtered)["@graph"][0].mainEntity.itemListElement,
     ).toHaveLength(1);

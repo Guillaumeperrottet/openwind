@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SaveArticleButton } from "./SaveArticleButton";
 import { ArrowRight, CalendarDays, Clock3, MapPin, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { GuideImageCredit } from "@/components/carnet/GuideImageCredit";
@@ -35,6 +36,8 @@ export function CarnetArticleIndex({
         locale="fr"
         query={query}
         label="Rechercher dans le Carnet"
+        placeholder="Un lac, un vent…"
+        compact
       />
       <nav
         aria-label="Types de publications"
@@ -48,13 +51,13 @@ export function CarnetArticleIndex({
               "#collection-results"
             }
             aria-current={query.kind === kind ? "true" : undefined}
-            className={`inline-flex min-h-11 items-center rounded-full border px-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 ${query.kind === kind ? "border-sky-800 bg-sky-800 text-white" : "border-slate-200 text-slate-600 hover:border-sky-600 hover:text-sky-800"}`}
+            className={`inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 ${query.kind === kind ? "border-sky-800 bg-sky-800 text-white" : "border-slate-200 text-slate-600 hover:border-sky-600 hover:text-sky-800"}`}
           >
             {label}
           </Link>
         ))}
       </nav>
-      <p role="status" className="my-6 text-sm text-slate-500">
+      <p role="status" className="my-4 text-sm text-slate-500">
         {result.total ? `${result.start}–${result.end} sur ` : ""}
         {result.total} publication{result.total > 1 ? "s" : ""}
       </p>
@@ -114,18 +117,12 @@ function ArticleCard({
   const readLabel =
     article.kind === "LOCAL_GUIDE" ? "Lire le guide local" : "Lire l’article";
 
-  return (
-    <article
-      aria-labelledby={titleId}
-      className={`group min-w-0 overflow-hidden border border-slate-200 bg-white shadow-sm ${
-        featured ? "grid lg:grid-cols-2" : "flex h-full flex-col"
-      }`}
-    >
+  const cover = (
       <Link
         href={article.href}
         aria-label={`${readLabel} : ${article.title}`}
-        className={`relative block aspect-[16/10] min-w-0 shrink-0 overflow-hidden bg-slate-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-700 ${
-          featured ? "lg:aspect-auto lg:min-h-96" : ""
+        className={`relative block aspect-[16/9] min-w-0 shrink-0 overflow-hidden bg-slate-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-sky-700 ${
+          featured ? "row-start-2 lg:row-start-1 lg:aspect-auto lg:min-h-96" : ""
         }`}
       >
         {article.coverImage ? (
@@ -133,7 +130,7 @@ function ArticleCard({
             src={article.coverImage}
             alt={article.coverAlt || article.title}
             fill
-            loading="lazy"
+            loading={featured ? "eager" : "lazy"}
             sizes={
               featured
                 ? "(max-width: 1023px) 100vw, 50vw"
@@ -152,25 +149,27 @@ function ArticleCard({
           {article.category}
         </span>
       </Link>
-
+  );
+  const credit = (
       <GuideImageCredit
         credit={article.coverCredit}
-        className={`px-6 pt-3 text-slate-500 ${featured ? "lg:col-start-1 lg:row-start-2" : ""}`}
+        className={`px-6 pt-3 text-slate-500 ${featured ? "row-start-3 lg:col-start-1 lg:row-start-2" : ""}`}
       />
-
+  );
+  const body = (
       <div
-        className={`flex min-w-0 flex-1 flex-col p-6 ${
+        className={`flex min-w-0 flex-1 flex-col p-5 ${
           featured
-            ? "sm:p-8 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:p-10 xl:p-12"
+            ? "row-start-1 sm:p-8 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:p-10 xl:p-12"
             : "sm:p-7"
         }`}
       >
         {featured && (
-          <p className="mb-5 text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
             À la une
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600">
           {article.publishedLabel && (
             <span className="inline-flex items-center gap-1.5">
               <CalendarDays
@@ -194,7 +193,7 @@ function ArticleCard({
         <h3
           id={titleId}
           className={`mt-5 font-serif font-semibold leading-tight tracking-[-0.02em] [overflow-wrap:anywhere] ${
-            featured ? "text-3xl sm:text-4xl xl:text-5xl" : "text-3xl"
+            featured ? "text-2xl sm:text-4xl xl:text-5xl" : "text-2xl sm:text-3xl"
           }`}
         >
           <Link
@@ -211,15 +210,27 @@ function ArticleCard({
         >
           {article.excerpt}
         </p>
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
         <Link
           href={article.href}
           aria-label={`${readLabel} : ${article.title}`}
-          className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 border-b border-slate-900 text-sm font-semibold transition hover:border-sky-600 hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-sky-700"
+          className="inline-flex min-h-11 w-fit items-center gap-2 border-b border-slate-900 text-sm font-semibold transition hover:border-sky-600 hover:text-sky-700 focus-visible:outline-2 focus-visible:outline-sky-700"
         >
           {readLabel}
           <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
         </Link>
+          <SaveArticleButton compact article={{ kind: article.kind, slug: article.href.split("/").at(-1)!, title: article.title, readTime: article.readTime }} />
+        </div>
       </div>
+  );
+  return (
+    <article
+      aria-labelledby={titleId}
+      className={`group min-w-0 overflow-hidden border border-slate-200 bg-white shadow-sm ${
+        featured ? "grid lg:grid-cols-2" : "flex h-full flex-col"
+      }`}
+    >
+      {featured ? <>{body}{cover}{credit}</> : <>{cover}{credit}{body}</>}
     </article>
   );
 }

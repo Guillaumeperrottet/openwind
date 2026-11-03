@@ -21,9 +21,16 @@ import {
   SportConditionsDemo,
 } from "./demos";
 
+import { AccessPageHeader } from "@/components/ui/AccessPageHeader";
+import { ACCESS_COPY } from "@/lib/access";
+import { toSiteLocale } from "@/lib/site";
+import { useLocale } from "next-intl";
+
 export default function AboutClient() {
+  const locale = toSiteLocale(useLocale());
   return (
     <div className="bg-white text-slate-900 antialiased selection:bg-blue-200/60">
+      <div className="ow-access-content !pb-0"><AccessPageHeader title={ACCESS_COPY[locale].about} /></div>
       <Hero />
       <SectionMap />
       <SectionNetworks />
@@ -41,7 +48,7 @@ export default function AboutClient() {
 function Hero() {
   const t = useTranslations("AboutPage");
   return (
-    <section className="relative min-h-[88vh] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
+    <section className="relative min-h-[480px] flex flex-col items-center justify-center px-6 py-24 overflow-hidden">
       <WindStreaks />
 
       {/* Floating badge — top-left of the hero */}
@@ -66,7 +73,7 @@ function Hero() {
         <p className="text-sm font-medium text-blue-700/80 tracking-widest uppercase">
           {t("heroTagline")}
         </p>
-        <h1 className="mt-8 flex justify-center">
+        <div className="mt-8 flex justify-center">
           <span className="sr-only">Openwind</span>
           <Image
             src="/logo_noback.png"
@@ -76,7 +83,7 @@ function Hero() {
             priority
             className="w-[92vw] sm:w-2xl lg:w-240 h-auto"
           />
-        </h1>
+        </div>
         <p className="mt-8 text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
           {t("heroDescLine1")}
           <br className="hidden sm:block" />

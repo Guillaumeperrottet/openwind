@@ -1,0 +1,103 @@
+/* Shared wayfinding and entry-page hierarchy, using the spot/station design roles. */
+.ow-access-navigation,.ow-access-content { width: 100%; max-width: var(--ow-container); margin-inline: auto; padding-inline: var(--ow-space-5); font-family: var(--ow-font); color: var(--ow-ink); }
+.ow-access-navigation { padding-block: var(--ow-space-3) var(--ow-space-2); }
+.ow-access-navigation ol { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ow-space-2); color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-access-navigation li { display: inline-flex; align-items: center; gap: var(--ow-space-2); min-width: 0; }
+.ow-access-navigation nav :is(a,span) { display: inline-flex; align-items: center; min-height: var(--ow-control); }
+.ow-access-navigation [aria-current] { color: var(--ow-ink-secondary); }
+.ow-access-navigation a:hover { color: var(--ow-accent); }
+.ow-access-back { display: inline-flex; align-items: center; gap: var(--ow-space-2); min-height: var(--ow-control); max-width: 100%; color: var(--ow-muted); font-size: var(--ow-text-label); }
+.ow-access-back svg { flex-shrink: 0; }
+.ow-access-back span { overflow-wrap: break-word; }
+.ow-access-content { padding-bottom: var(--ow-space-7); }
+.ow-access-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ow-space-5); margin-bottom: var(--ow-space-5); }
+.ow-access-header > div { min-width: 0; }
+.ow-access-header h1,.ow-access-title { font-family: var(--ow-font); font-size: var(--ow-text-page); line-height: 1.2; font-weight: 600; overflow-wrap: break-word; text-wrap: balance; min-width: 0; }
+.ow-access-header p { margin-top: var(--ow-space-3); color: var(--ow-muted); font-size: var(--ow-text-body); line-height: 1.6; max-width: 65ch; }
+.ow-access-header-actions { flex-shrink: 0; max-width: 100%; }
+.ow-access-navigation a:focus-visible,.ow-access-content :is(a,button,input):focus-visible { outline: 2px solid var(--ow-focus); outline-offset: 3px; }
+.ow-access-search { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--ow-space-3); margin-block: var(--ow-space-5); }
+.ow-access-search label { display: grid; flex: 1; min-width: 180px; gap: var(--ow-space-2); color: var(--ow-muted); font-size: var(--ow-text-label); }
+.ow-access-search input { min-height: var(--ow-control); width: 100%; border: 1px solid var(--ow-rule); border-radius: var(--ow-radius-control); padding: var(--ow-space-2) var(--ow-space-3); font-size: var(--ow-text-body); color: var(--ow-ink); }
+.ow-access-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 var(--ow-space-6); }
+.ow-access-list > li { border-bottom: 1px solid var(--ow-rule); }
+.ow-access-list a { display: flex; align-items: center; justify-content: space-between; gap: var(--ow-space-4); min-height: var(--ow-control); padding: var(--ow-space-4) var(--ow-space-2); }
+.ow-access-list h2 { font-size: var(--ow-text-body); font-weight: 600; }
+.ow-access-list p { margin-top: var(--ow-space-1); color: var(--ow-muted); font-size: var(--ow-text-label); }
+.ow-access-list a:hover { background: var(--ow-surface-soft); }
+.ow-access-link { display: inline-flex; align-items: center; min-height: var(--ow-control); gap: var(--ow-space-2); color: var(--ow-accent); font-size: var(--ow-text-label); }
+.ow-access-note { color: var(--ow-muted); font-size: var(--ow-text-label); line-height: 1.6; max-width: 65ch; margin-block: var(--ow-space-4); }
+.ow-temperature-entry { padding-block: var(--ow-space-5); border-block: 1px solid var(--ow-rule); }
+.ow-temperature-entry h2 { font-size: var(--ow-text-title); font-weight: 600; }
+.ow-temperature-reading { margin-block: var(--ow-space-4); font-size: var(--ow-text-measure); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.ow-temperature-reading small { font-size: var(--ow-text-title); color: var(--ow-muted); }
+.ow-temperature-source { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ow-space-4); margin-top: var(--ow-space-4); }
+@media (max-width:639px) {
+  .ow-access-navigation,.ow-access-content { padding-inline: var(--ow-space-4); }
+  .ow-access-header { flex-wrap: wrap; gap: var(--ow-space-3); }
+  .ow-access-list { grid-template-columns: minmax(0,1fr); }
+}
+.ow-access-navigation { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 var(--ow-space-4); }
+.ow-access-place { max-width: var(--ow-container); margin-inline: auto; padding-inline: var(--ow-space-5); margin-bottom: var(--ow-space-5); }
+.ow-place-actions { min-width: 0; font-family: var(--ow-font); color: var(--ow-ink); }
+.ow-place-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--ow-space-2) var(--ow-space-4); margin-bottom: var(--ow-space-3); }
+.ow-place-heading h2 { font-size: var(--ow-text-title); font-weight: 600; }
+.ow-place-heading > div:first-child { min-width: 0; }
+.ow-place-heading strong { display: block; font-size: var(--ow-text-body); font-weight: 600; overflow-wrap: anywhere; }
+.ow-place-heading span { display: block; color: var(--ow-muted); font-size: var(--ow-text-caption); }
+.ow-place-change { display: flex; align-items: center; gap: var(--ow-space-2); }
+.ow-place-change a { display: inline-flex; align-items: center; min-height: var(--ow-control); color: var(--ow-accent); font-size: var(--ow-text-label); }
+.ow-place-change button { display: inline-flex; justify-content: center; align-items: center; min-width: var(--ow-control); min-height: var(--ow-control); color: var(--ow-muted); border-radius: var(--ow-radius-control); cursor: pointer; }
+.ow-place-change button:hover { background: var(--ow-surface-soft); }
+.ow-place-shortcuts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--ow-space-3); }
+.ow-place-shortcuts > a { display: flex; align-items: center; gap: var(--ow-space-3); min-height: 64px; padding: var(--ow-space-3) var(--ow-space-4); background: var(--ow-surface-soft); border-radius: var(--ow-radius-control); color: var(--ow-ink); }
+.ow-place-shortcuts > a:hover { background: var(--ow-accent-soft); }
+.ow-place-shortcuts svg { flex-shrink: 0; color: var(--ow-accent); }
+.ow-place-shortcuts span { min-width: 0; }
+.ow-place-shortcuts strong { display: block; font-size: var(--ow-text-label); font-weight: 600; overflow-wrap: break-word; }
+.ow-place-shortcuts small { display: block; margin-top: var(--ow-space-1); font-size: var(--ow-text-caption); color: var(--ow-muted); }
+.ow-place-actions :is(a,button):focus-visible { outline: 2px solid var(--ow-focus); outline-offset: 3px; }
+.ow-place-actions-compact .ow-place-shortcuts > a { min-height: var(--ow-control); padding-block: var(--ow-space-2); }
+.ow-place-coverage { margin-block: var(--ow-space-4); padding: var(--ow-space-4); border-left: 3px solid var(--ow-accent); background: var(--ow-accent-soft); font-size: var(--ow-text-label); line-height: 1.6; color: var(--ow-ink-secondary); }
+.ow-search-page { padding-top: var(--ow-space-3); }
+.ow-search-filters { display: flex; overflow-x: auto; gap: var(--ow-space-2); margin-block: var(--ow-space-4); }
+.ow-search-filters a { flex-shrink: 0; display: inline-flex; align-items: center; min-height: var(--ow-control); padding: var(--ow-space-2) var(--ow-space-3); border: 1px solid var(--ow-rule); border-radius: var(--ow-radius-control); color: var(--ow-muted); font-size: var(--ow-text-label); }
+.ow-search-filters [aria-current] { color: var(--ow-accent); background: var(--ow-accent-soft); border-color: var(--ow-accent); }
+.ow-search-results li { border-bottom: 1px solid var(--ow-rule); }
+.ow-search-results a { display: flex; align-items: center; justify-content: space-between; gap: var(--ow-space-4); min-height: var(--ow-control); padding: var(--ow-space-4) var(--ow-space-2); }
+.ow-search-results a:hover { background: var(--ow-surface-soft); }
+.ow-search-results div { min-width: 0; }
+.ow-search-results svg { flex-shrink: 0; color: var(--ow-muted); }
+.ow-search-results span { color: var(--ow-accent); font-size: var(--ow-text-caption); }
+.ow-search-results h2 { font-size: var(--ow-text-title); font-weight: 600; overflow-wrap: anywhere; }
+.ow-search-results p { font-size: var(--ow-text-label); color: var(--ow-muted); margin-top: var(--ow-space-1); }
+.ow-search-pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--ow-space-5); margin-top: var(--ow-space-5); font-size: var(--ow-text-label); }
+.ow-search-pagination a { display: inline-flex; align-items: center; min-height: var(--ow-control); color: var(--ow-accent); }
+@media (max-width:639px) {
+  .ow-access-has-back > nav { display: none; }
+  .ow-access-place { padding-inline: var(--ow-space-4); }
+  .ow-place-shortcuts { gap: var(--ow-space-2); }
+  .ow-place-shortcuts > a { flex-direction: column; align-items: center; justify-content: flex-start; gap: var(--ow-space-2); padding: var(--ow-space-3) var(--ow-space-2); text-align: center; }
+  .ow-place-shortcuts small { font-size: var(--ow-text-caption); }
+}
+.ow-place-shortcuts > a[aria-current="page"] { background: var(--ow-accent-soft); box-shadow: inset 0 0 0 1px var(--ow-accent); }
+/* Keep the selected place and all destinations close, leaving room for the reading. */
+@media (max-width:639px) {
+  .ow-access-frame-conditions .ow-access-navigation { padding-block: var(--ow-space-1) 0; }
+  .ow-access-place { margin-bottom: var(--ow-space-3); }
+  .ow-access-place .ow-place-heading { flex-wrap: nowrap; gap: var(--ow-space-2); margin-bottom: var(--ow-space-1); }
+  .ow-access-place .ow-place-heading > div:first-child { flex: 1; }
+  .ow-access-place .ow-place-heading > div:first-child > span { display: none; }
+  .ow-access-place .ow-place-heading strong { font-size: var(--ow-text-label); }
+  .ow-access-place .ow-place-change { flex-shrink: 0; gap: 0; }
+  .ow-access-place .ow-place-change a { font-size: var(--ow-text-caption); }
+  .ow-access-place .ow-place-shortcuts { gap: var(--ow-space-1); }
+  .ow-access-place .ow-place-shortcuts > a { flex-direction: row; justify-content: center; align-items: center; gap: var(--ow-space-1); padding: var(--ow-space-2); min-height: var(--ow-control); }
+  .ow-access-place .ow-place-shortcuts strong { font-size: var(--ow-text-caption); line-height: 1.3; }
+  .ow-access-place .ow-place-shortcuts small { display: none; }
+  .ow-access-place .ow-place-shortcut-unavailable small { display: block; }
+}
+@media (max-width:379px) {
+  .ow-access-place .ow-place-shortcuts > a { padding-inline: var(--ow-space-1); }
+  .ow-access-place .ow-place-shortcuts svg { display: none; }
+}

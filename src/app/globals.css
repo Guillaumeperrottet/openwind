@@ -6,6 +6,10 @@
 @import "tailwindcss";
 @import "../styles/openwind/tokens.css";
 @import "../styles/openwind/base.css";
+@import "../styles/openwind/lake.css";
+@import "../styles/openwind/navigation.css";
+@import "../styles/openwind/explorer.css";
+@import "../styles/openwind/access.css";
 @plugin "@tailwindcss/typography";
 
 :root {
@@ -14,7 +18,7 @@
   --mobile-nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
   :root { --mobile-nav-height: 0px; }
 }
 
@@ -116,3 +120,12 @@ body {
   width: 44px;
   height: 44px;
 }
+
+/* Quiet text-entry focus: a neutral border, without a coloured halo.
+   Choice controls and keyboard focus on links/buttons keep their own states. */
+:is(input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="password"], input[type="url"], input[type="tel"], input[type="number"], input[type="date"], input[type="datetime-local"], input[type="time"], textarea, select):focus {
+  outline: none;
+  box-shadow: none;
+  border-color: var(--ow-muted);
+}
+.ow-global-search form:focus-within { border-color: var(--ow-muted); }

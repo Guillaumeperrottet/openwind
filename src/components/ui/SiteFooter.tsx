@@ -5,6 +5,10 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { GUIDE_COPY, isGuideLocale } from "@/lib/local-guides";
+import { ContextDestination } from "@/components/navigation/ContextDestination";
+import { ACCESS_COPY } from "@/lib/access";
+import { NAVIGATION_COPY } from "@/lib/navigation";
+import { toSiteLocale } from "@/lib/site";
 
 const linkClass =
   "group inline-flex w-fit items-center gap-1.5 text-sm text-slate-300 transition hover:text-white";
@@ -137,6 +141,9 @@ export function SiteFooter() {
                   {t("explore")}
                 </h3>
                 <div className="mt-5 flex flex-col gap-3.5">
+                  <Link href="/explorer" className={linkClass}>
+                    {NAVIGATION_COPY[toSiteLocale(locale)].explore}
+                  </Link>
                   <Link
                     href="/?view=map"
                     prefetch={false}
@@ -144,6 +151,7 @@ export function SiteFooter() {
                   >
                     {t("map")}
                   </Link>
+                  <ContextDestination href={`/${locale}/temperatures`} className={linkClass}>{ACCESS_COPY[toSiteLocale(locale)].temperatures}</ContextDestination>
                   <Link href="/balises" className={linkClass}>
                     {t("stations")}
                   </Link>
@@ -155,9 +163,9 @@ export function SiteFooter() {
                   <Link href="/plan" className={linkClass}>
                     {t("plan")}
                   </Link>
-                  <Link href="/webcams" className={linkClass}>
+                  <ContextDestination href={`/${locale}/webcams`} className={linkClass}>
                     {t("webcams")}
-                  </Link>
+                  </ContextDestination>
                   {locale === "fr" && (
                     <Link href="/carnet" className={linkClass}>
                       {t("carnet")}

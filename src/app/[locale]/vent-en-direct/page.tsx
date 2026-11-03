@@ -1,3 +1,4 @@
+import { AccessPageHeader } from "@/components/ui/AccessPageHeader";
 import { GuideImageCredit } from "@/components/carnet/GuideImageCredit";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -113,22 +114,14 @@ export default async function GuidesPage({ params, searchParams }: Props) {
     },
   };
   return (
-    <div className="mx-auto min-h-screen max-w-6xl px-5 py-12 sm:px-8">
+    <div className="ow-access-content">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
         }}
       />
-      <p className="text-sm font-semibold uppercase tracking-widest text-sky-700">
-        Openwind · Suisse / Schweiz / Svizzera
-      </p>
-      <h1 className="mt-4 max-w-4xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
-        {copy.title}
-      </h1>
-      <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-600">
-        {copy.description}
-      </p>
+      <AccessPageHeader title={copy.title} description={copy.description} />
       <div className="mt-7 flex flex-wrap gap-5 text-sm font-semibold text-sky-700">
         <Link href="/balises">{copy.stations} →</Link>
         <Link href="/?view=map">{copy.map} →</Link>

@@ -6,458 +6,109 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import {
-  Route,
-  Map,
-  Plus,
-  User,
-  LogOut,
-  Star,
-  Search,
-  X,
-  MessagesSquare,
-  Mail,
-  Info,
-  Newspaper,
-  Shield,
-  LayoutDashboard,
-  RadioTower,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Map, Compass, Route, LayoutDashboard, Plus, User, LogOut, Star, Search, X, Mail, Info, Shield } from "lucide-react";
 import { useFavContext } from "@/lib/FavContext";
 import { SearchBar } from "./SearchBar";
-import { isGuideLocale } from "@/lib/local-guides";
+import { PRIMARY_NAVIGATION, NAVIGATION_COPY, navigationSection } from "@/lib/navigation";
+import { toSiteLocale } from "@/lib/site";
+
+const ICONS = { map: Map, explore: Compass, plan: Route, personal: LayoutDashboard };
 
 export function Navbar() {
   const t = useTranslations("Navbar");
   const params = useParams();
-  const currentLocale = (params?.locale as string) ?? "fr";
-  const links = [
-    { href: "/?view=map" as const, label: t("map"), icon: Map },
-    { href: "/plan" as const, label: t("plan"), icon: Route },
-    ...(isGuideLocale(currentLocale)
-      ? [
-          {
-            href: "/vent-en-direct",
-            label: { fr: "Guides", de: "Guides", it: "Guide" }[currentLocale],
-            icon: RadioTower,
-            hideOnMobile: true,
-          },
-        ]
-      : []),
-    ...(currentLocale === "fr"
-      ? [
-          {
-            href: "/carnet" as const,
-            label: "Carnet",
-            icon: Newspaper,
-            hideOnMobile: true,
-          },
-        ]
-      : []),
-  ];
+  const currentLocale = toSiteLocale((params?.locale as string) ?? "fr");
+  const copy = NAVIGATION_COPY[currentLocale];
   const pathname = usePathname();
   const query = useSearchParams();
-  const {
-    user,
-    favoriteSpotIds,
-    favoriteStationIds,
-    preferences,
-    requestAuth,
-    signOut,
-  } = useFavContext();
+  const { user, favoriteSpotIds, favoriteStationIds, preferences, requestAuth, signOut } = useFavContext();
   const favoriteCount = favoriteSpotIds.size + favoriteStationIds.size;
+  const activeSection = navigationSection(pathname, query.get("view"), preferences);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearch, setMobileSearch] = useState(false);
-  const [isAdminState, setIsAdmin] = useState(false);
-  const isAdmin = user ? isAdminState : false;
+  const [adminRole, setAdminRole] = useState<{ userId: string; allowed: boolean } | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const searchButton = useRef<HTMLButtonElement>(null);
+  const isAdmin = Boolean(user && adminRole?.userId === user.id && adminRole.allowed);
 
-  // Resolve admin role server-side for the current authenticated user
   useEffect(() => {
     if (!user) return;
-
     let cancelled = false;
     fetch("/api/admin/me", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data: { isAdmin?: boolean }) => {
-        if (!cancelled) {
-          setIsAdmin(Boolean(data.isAdmin));
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setIsAdmin(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
+      .then(r => r.json())
+      .then((data: { isAdmin?: boolean }) => { if (!cancelled) setAdminRole({ userId: user.id, allowed: Boolean(data.isAdmin) }); })
+      .catch(() => { if (!cancelled) setAdminRole({ userId: user.id, allowed: false }); });
+    return () => { cancelled = true; };
   }, [user]);
 
-  // Close user menu on click outside
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
+    if (!menuOpen && !mobileSearch) return;
+    const outside = (event: PointerEvent) => {
+      if (menuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) setMenuOpen(false);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (menuOpen) { setMenuOpen(false); menuButton.current?.focus(); }
+      if (mobileSearch) { setMobileSearch(false); searchButton.current?.focus(); }
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [menuOpen, mobileSearch]);
 
-  return (
-    <>
-      <header className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center px-3 sm:px-4 bg-white border-b border-gray-100 shadow-sm gap-2">
-        {/* Logo */}
-        <Link
-          href="/?view=map"
-          className="flex items-center shrink-0"
-        >
-          <Image
-            src="/logo_noback.png"
-            alt="Openwind"
-            width={90}
-            height={26}
-            className="h-7 w-auto"
-            style={{ width: 90, height: "auto" }}
-            priority
-          />
-        </Link>
+  const closePanels = () => { setMenuOpen(false); setMobileSearch(false); };
+  const label = (key: (typeof PRIMARY_NAVIGATION)[number]["label"]) => key === "explore" ? copy.explore : t(key);
 
-        {/* Search bar — center, fills available space (hidden on mobile, toggle via icon) */}
-        <div className="hidden sm:block flex-1 max-w-md mx-2 sm:mx-4">
-          <Suspense fallback={null}>
-            <SearchBar
-              favoriteSpotIds={favoriteSpotIds}
-              favoriteStationIds={favoriteStationIds}
-            />
-          </Suspense>
-        </div>
-
-        {/* Nav links + user — pushed right */}
-        <nav className="flex items-center gap-0.5 sm:gap-1 shrink-0 ml-auto">
-          {/* Mobile search toggle */}
-          <button
-            onClick={() => setMobileSearch(true)}
-            className="sm:hidden flex items-center justify-center rounded-lg px-2 py-2 text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors min-w-10 min-h-10"
-            aria-label={t("searchAriaLabel")}
-          >
-            <Search className="h-4 w-4" />
-          </button>
-          {links.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              prefetch={href === "/?view=map" ? false : undefined}
-              aria-label={label}
-              className={cn(
-                "items-center justify-center gap-1.5 rounded-lg px-2 py-2 sm:px-3 sm:py-1.5 text-sm transition-colors min-w-10 min-h-10 sm:min-w-0 sm:min-h-0",
-                "hidden sm:flex",
-                (
-                  href.startsWith("/?")
-                    ? pathname === "/" &&
-                      (query.get("view") === "map" ||
-                        (!query.has("view") &&
-                          preferences?.onboardingCompleted &&
-                          preferences.defaultView === "MAP"))
-                    : pathname === href
-                )
-                  ? "bg-sky-50 text-sky-600"
-                  : "text-gray-500 hover:text-gray-900 hover:bg-gray-50",
-              )}
-            >
-              <Icon
-                className={cn(
-                  "h-4 w-4 shrink-0",
-                  href === "/?view=map" && "lg:hidden",
-                )}
-              />
-              <span className="hidden lg:inline">{label}</span>
-            </Link>
-          ))}
-
-            <Link
-              href="/mon-openwind"
-              aria-label={t("myOpenwind")}
-              className={cn(
-                "hidden min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm transition-colors sm:flex sm:min-h-0 sm:px-3 sm:py-1.5",
-                pathname === "/mon-openwind"
-                  ? "bg-sky-50 text-sky-600"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900",
-              )}
-            >
-              <LayoutDashboard className="h-4 w-4 shrink-0" />
-              <span className="hidden xl:inline">{t("myOpenwind")}</span>
-            </Link>
-
-          <Link
-            href="/spots/new"
-            className="hidden sm:flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors"
-          >
-            <Plus className="h-4 w-4 shrink-0" />
-            <span className="hidden lg:inline">{t("addSpot")}</span>
-          </Link>
-
-          <LanguageSwitcher currentLocale={currentLocale} />
-
-          {/* User avatar / login */}
-          {user ? (
-            <div ref={menuRef} className="relative ml-1">
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label={t("menu")}
-                aria-expanded={menuOpen}
-                className="flex items-center justify-center h-8 w-8 rounded-full overflow-hidden border-2 border-gray-200 hover:border-sky-400 transition-colors"
-              >
-                {user.user_metadata?.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.user_metadata.avatar_url}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <User className="h-4 w-4 text-gray-500" />
-                )}
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden z-50">
-                  <div className="px-3 py-2 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {user.user_metadata?.full_name ?? user.email}
-                    </p>
-                    <p className="text-[11px] text-gray-400 truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                  <div className="py-1">
-                    <Link
-                      href="/mon-openwind"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-sky-50 hover:text-sky-700"
-                    >
-                      <LayoutDashboard className="h-3.5 w-3.5 text-sky-500" />
-                      {t("myOpenwind")}
-                    </Link>
-                    <Link
-                      href="/?view=map&openSearch=1"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-sky-50 hover:text-sky-700"
-                    >
-                      <Star className="h-3.5 w-3.5 text-sky-500" />
-                      {t("favorites", { count: favoriteCount })}
-                    </Link>
-                  </div>
-                  <div className="border-t border-gray-100">
-                    <Link
-                      href="/balises"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <RadioTower className="h-3.5 w-3.5" />
-                      {t("stations")}
-                    </Link>
-                    <Link
-                      href="/forum"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <MessagesSquare className="h-3.5 w-3.5" />
-                      {t("forum")}
-                    </Link>
-                    {currentLocale === "fr" && (
-                      <Link
-                        href="/carnet"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
-                      >
-                        <Newspaper className="h-3.5 w-3.5" />
-                        Carnet
-                      </Link>
-                    )}
-                    <Link
-                      href="/about"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
-                    >
-                      <Info className="h-3.5 w-3.5" />
-                      {t("about")}
-                    </Link>
-                    <Link
-                      href="/spots/new"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      {t("addSpot")}
-                    </Link>
-                  </div>
-                  <div className="border-t border-gray-100">
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-sky-700 hover:bg-sky-50 transition-colors"
-                      >
-                        <Shield className="h-3.5 w-3.5" />
-                        {t("admin")}
-                      </Link>
-                    )}
-                    <Link
-                      href="/about"
-                      onClick={() => setMenuOpen(false)}
-                      className="hidden sm:flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <Info className="h-3.5 w-3.5" />
-                      {t("about")}
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        signOut();
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <LogOut className="h-3.5 w-3.5" />
-                      {t("signOut")}
-                    </button>
-                  </div>
-                  <div className="border-t border-gray-100 px-3 py-2">
-                    <a
-                      href="mailto:hello@openwind.ch"
-                      className="flex items-center gap-2 text-xs text-gray-400 hover:text-sky-500 transition-colors"
-                    >
-                      <Mail className="h-3 w-3" />
-                      hello@openwind.ch
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div ref={menuRef} className="relative ml-1">
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label={t("menu")}
-                aria-expanded={menuOpen}
-                className="flex items-center justify-center h-8 w-8 rounded-full border border-gray-200 text-gray-500 hover:text-gray-900 hover:border-gray-400 transition-colors"
-                title="Menu"
-              >
-                <User className="h-4 w-4" />
-              </button>
-              {menuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden z-50">
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      requestAuth();
-                    }}
-                    className="flex items-center gap-2 w-full px-3 py-2.5 text-sm font-medium text-sky-600 hover:bg-sky-50 transition-colors"
-                  >
-                    <User className="h-3.5 w-3.5" />
-                    {t("signIn")}
-                  </button>
-                  <Link
-                    href="/about"
-                    onClick={() => setMenuOpen(false)}
-                    className="hidden sm:flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
-                  >
-                    <Info className="h-3.5 w-3.5" />
-                    {t("about")}
-                  </Link>
-                  <div className="border-t border-gray-100">
-                    <Link
-                      href="/balises"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <RadioTower className="h-3.5 w-3.5" />
-                      {t("stations")}
-                    </Link>
-                    <Link
-                      href="/forum"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <MessagesSquare className="h-3.5 w-3.5" />
-                      {t("forum")}
-                    </Link>
-                    {currentLocale === "fr" && (
-                      <Link
-                        href="/carnet"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
-                      >
-                        <Newspaper className="h-3.5 w-3.5" />
-                        Carnet
-                      </Link>
-                    )}
-                    <Link
-                      href="/spots/new"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      {t("addSpot")}
-                    </Link>
-                    <Link
-                      href="/about"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors sm:hidden"
-                    >
-                      <Info className="h-3.5 w-3.5" />
-                      {t("about")}
-                    </Link>
-                  </div>
-                  <div className="border-t border-gray-100 px-3 py-2">
-                    <a
-                      href="mailto:hello@openwind.ch"
-                      className="flex items-center gap-2 text-xs text-gray-400 hover:text-sky-500 transition-colors"
-                    >
-                      <Mail className="h-3 w-3" />
-                      hello@openwind.ch
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </nav>
-      </header>
-
-      <nav aria-label={t("myOpenwind")} className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-slate-200 bg-white/95 px-2 backdrop-blur sm:hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        {[
-          { href: "/?view=map", label: t("map"), icon: Map, active: pathname === "/" && query.get("view") === "map" },
-          { href: "/plan", label: t("plan"), icon: Route, active: pathname === "/plan" },
-          { href: "/mon-openwind", label: t("myOpenwind"), icon: LayoutDashboard, active: pathname === "/mon-openwind" },
-        ].map(({ href, label, icon: Icon, active }) => <Link key={href} href={href} prefetch={false} aria-current={active ? "page" : undefined} className={`relative flex h-16 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-semibold focus-visible:outline-2 focus-visible:outline-sky-700 ${active ? "text-sky-800" : "text-slate-500"}`}>
-          <span className="relative"><Icon aria-hidden className="h-5 w-5" />{href === "/mon-openwind" && favoriteCount > 0 && <span className="absolute -right-3 -top-2 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-sky-800 px-1 text-[9px] text-white">{favoriteCount}</span>}</span>{label}
-        </Link>)}
+  return <>
+    <header className="ow-site-header">
+      <Link href="/?view=map" className="ow-site-logo" onClick={closePanels} prefetch={false} aria-label="Openwind">
+        <Image src="/logo_noback.png" alt="" width={90} height={26} className="ow-site-logo-image" priority />
+      </Link>
+      <div className="ow-site-search"><Suspense fallback={null}><SearchBar favoriteSpotIds={favoriteSpotIds} favoriteStationIds={favoriteStationIds} /></Suspense></div>
+      <nav className="ow-primary-navigation" aria-label={copy.primary}>
+        {PRIMARY_NAVIGATION.map(item => {
+          const Icon = ICONS[item.id];
+          return <Link key={item.id} href={item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}><Icon aria-hidden size={18} /><span>{label(item.label)}</span></Link>;
+        })}
       </nav>
-
-      {/* Mobile search — inline in a second row below the navbar */}
-      {mobileSearch && (
-        <div className="fixed top-14 left-0 right-0 z-40 flex items-center h-12 px-3 gap-2 bg-white border-b border-gray-100 shadow-sm sm:hidden">
-          <div className="flex-1">
-            <Suspense fallback={null}>
-              <SearchBar
-                favoriteSpotIds={favoriteSpotIds}
-                favoriteStationIds={favoriteStationIds}
-                autoFocus
-                onNavigate={() => setMobileSearch(false)}
-              />
-            </Suspense>
-          </div>
-          <button
-            onClick={() => setMobileSearch(false)}
-            className="flex items-center justify-center h-8 w-8 rounded-lg text-gray-500 hover:text-gray-900"
-          >
-            <X className="h-4 w-4" />
+      <div className="ow-site-utilities">
+        <button ref={searchButton} type="button" className="ow-mobile-search-toggle" onClick={() => { setMenuOpen(false); setMobileSearch(v => !v); }} aria-label={t("searchAriaLabel")} aria-expanded={mobileSearch} aria-controls="openwind-mobile-search"><Search aria-hidden size={19} /></button>
+        <LanguageSwitcher currentLocale={currentLocale} />
+        <div ref={menuRef} className="ow-account">
+          <button ref={menuButton} type="button" className="ow-account-trigger" onClick={() => { setMobileSearch(false); setMenuOpen(v => !v); }} aria-label={copy.account} aria-expanded={menuOpen} aria-controls="openwind-account-menu">
+            {user?.user_metadata?.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={user.user_metadata.avatar_url} alt="" width={28} height={28} />
+            ) : <User aria-hidden size={19} />}
           </button>
+          {menuOpen && <div id="openwind-account-menu" className="ow-account-panel">
+            {user ? <>
+              <div className="ow-account-identity"><p>{user.user_metadata?.full_name ?? user.email}</p><span>{user.email}</span></div>
+              <Link href="/mon-openwind" onClick={closePanels}><LayoutDashboard aria-hidden size={17} />{t("myOpenwind")}</Link>
+              <Link href="/?view=map&openSearch=1" onClick={() => { setMenuOpen(false); setMobileSearch(window.matchMedia("(max-width: 1023px)").matches); }}><Star aria-hidden size={17} />{t("favorites", { count: favoriteCount })}</Link>
+            </> : <button type="button" onClick={() => { closePanels(); requestAuth(); }}><User aria-hidden size={17} />{t("signIn")}</button>}
+            <div className="ow-account-divider" />
+            <Link href="/spots/new" prefetch={false} onClick={closePanels}><Plus aria-hidden size={17} />{t("addSpot")}</Link>
+            <Link href="/about" onClick={closePanels}><Info aria-hidden size={17} />{t("about")}</Link>
+            {isAdmin && <Link href="/admin" onClick={closePanels}><Shield aria-hidden size={17} />{t("admin")}</Link>}
+            {user && <button type="button" onClick={() => { closePanels(); signOut(); }}><LogOut aria-hidden size={17} />{t("signOut")}</button>}
+            <a href="mailto:hello@openwind.ch"><Mail aria-hidden size={17} />hello@openwind.ch</a>
+          </div>}
         </div>
-      )}
-    </>
-  );
+      </div>
+    </header>
+    <nav className="ow-bottom-navigation" aria-label={copy.primary}>
+      {PRIMARY_NAVIGATION.map(item => {
+        const Icon = ICONS[item.id];
+        return <Link key={item.id} href={item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}>
+          <span className="ow-bottom-icon"><Icon aria-hidden size={20} />{item.id === "personal" && favoriteCount > 0 && <span className="ow-favorite-count">{favoriteCount}</span>}</span><span className="ow-bottom-label">{label(item.label)}</span>
+        </Link>;
+      })}
+    </nav>
+    {mobileSearch && <div id="openwind-mobile-search" className="ow-mobile-search-panel">
+      <div><Suspense fallback={null}><SearchBar favoriteSpotIds={favoriteSpotIds} favoriteStationIds={favoriteStationIds} autoFocus onNavigate={closePanels} /></Suspense></div>
+      <button type="button" onClick={() => { setMobileSearch(false); searchButton.current?.focus(); }} aria-label={copy.closeSearch}><X aria-hidden size={19} /></button>
+    </div>}
+  </>;
 }

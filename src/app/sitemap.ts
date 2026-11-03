@@ -1,3 +1,4 @@
+import { lakePageEnabled } from "@/lib/lake-page-enabled";
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { getStationCatalog } from "@/lib/station-catalog";
@@ -66,7 +67,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]).size / CARNET_PAGE_SIZE,
   );
   return [
-    ...["", "/about", "/plan", "/balises", "/forum"].flatMap((path) =>
+    ...(lakePageEnabled() ? multilingual("/lacs/gruyere") : []),
+    ...["", "/about", "/explorer", "/temperatures", "/webcams", "/plan", "/balises", "/forum"].flatMap((path) =>
       multilingual(path),
     ),
     ...GUIDE_LOCALES.flatMap((locale) =>

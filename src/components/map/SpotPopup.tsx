@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { X, Wind, Waves, ExternalLink, Star } from "lucide-react";
+import { X, Wind, Waves, Snowflake, ExternalLink, Star } from "lucide-react";
 import type { Spot, WindData, WindLive } from "@/types";
+import { RequestFeedback } from "@/components/ui/RequestFeedback";
 import { WindProvenance } from "@/components/spot/WindProvenance";
+import { isSnowkiteSpot } from "@/lib/spot-activity";
 import {
   windArrow,
   windDirectionLabel,
@@ -22,6 +24,9 @@ interface SpotPopupProps {
   wind: WindData | null;
   live: WindLive | null;
   loadingWind: boolean;
+  windError?: boolean;
+  windPending?: boolean;
+  onRetryWind: () => void;
   useKnots?: boolean;
   position: { x: number; y: number };
   onClose: () => void;
@@ -32,6 +37,9 @@ export function SpotPopup({
   wind,
   live,
   loadingWind,
+  windError = false,
+  windPending = false,
+  onRetryWind,
   useKnots = true,
   position,
   onClose,
@@ -159,10 +167,10 @@ export function SpotPopup({
           <Badge className={DIFFICULTY_COLORS[spot.difficulty]}>
             {DIFFICULTY_LABELS[spot.difficulty]}
           </Badge>
-          <Badge className="bg-gray-100 text-gray-600">
-            <Waves className="h-3 w-3 mr-1" />
-            {WATER_LABELS[spot.waterType]}
-          </Badge>
+          {spot.sportType === "KITE" && <Badge className="bg-gray-100 text-gray-600">
+            {isSnowkiteSpot(spot) ? <Snowflake aria-hidden className="h-3 w-3 mr-1" /> : <Waves aria-hidden className="h-3 w-3 mr-1" />}
+            {isSnowkiteSpot(spot) ? "Snowkite" : WATER_LABELS[spot.waterType]}
+          </Badge>}
           <Badge className="bg-gray-100 text-gray-600">
             <Wind className="h-3 w-3 mr-1" />
             {useKnots
@@ -173,6 +181,7 @@ export function SpotPopup({
 
         {/* Wind NOW */}
         <div className="ow-popup-reading">
+          <RequestFeedback error={windError} pending={windPending} hasData={Boolean(wind)} onRetry={onRetryWind} />
           {live && <div className="mb-2"><WindProvenance compact live={live} /></div>}
           {loadingWind ? (
             <div className="text-gray-400 text-xs animate-pulse">

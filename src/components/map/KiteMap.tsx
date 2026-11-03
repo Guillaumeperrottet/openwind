@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo, type ReactNode } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { rememberMapPlace, selectedPlace } from "@/lib/place-store";
+import type { Place } from "@/lib/place";
+import { toSiteLocale } from "@/lib/site";
+import { useTranslations, useLocale } from "next-intl";
 import { Check, ChevronDown, Info, LoaderCircle, TriangleAlert, Wind } from "lucide-react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -14,6 +17,9 @@ import { isNetworkFresh } from "@/lib/stationConstants";
 import { SpotPopup } from "./SpotPopup";
 import { StationPopup } from "./StationPopup";
 import { MapLegend } from "./MapLegend";
+import { fetchClientJson } from "@/lib/fetch-client-json";
+import { RequestFeedback } from "@/components/ui/RequestFeedback";
+import { MAP_SELECTION_STORAGE_KEY, mapSelectionFromStorage, mapViewFromStorage } from "@/lib/map-session";
 import { useSpotLive } from "@/lib/useSpotLive";
 import {
   injectPopupCSS,
@@ -143,6 +149,7 @@ export function KiteMap({
   initialZoom,
 }: KiteMapProps) {
   const tCommon = useTranslations("Common");
+  const placeLocale = toSiteLocale(useLocale());
   const app = useTranslations("AppDesign");
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -186,7 +193,7 @@ export function KiteMap({
   );
   // SWR hook — subscribes/unsubscribes as selectedSpot changes.
   // Replaces fetchWind + re-derivation effect + openMeteoPoll effect.
-  const { data: spotLive, isLoading: loadingWind } = useSpotLive(
+  const { data: spotLive, isLoading: loadingWind, error: spotWindError, isValidating: spotWindPending, refresh: retrySpotWind } = useSpotLive(
     selectedSpot?.id ?? null,
   );
   const selectedWind = useMemo(
@@ -211,8 +218,10 @@ export function KiteMap({
    *  effects can depend on it and fire reliably even when the first
    *  station's timestamp didn't change between polls. */
   const [pollTick, setPollTick] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingStations, setLoadingStations] = useState(false);
+  const [stationsError, setStationsError] = useState(false);
+  const [mapStartupSlow, setMapStartupSlow] = useState(false);
+  const field = useTranslations("FieldExperience");
   const [mapLoaded, setMapLoaded] = useState(false);
   const [focusRequestVersion, setFocusRequestVersion] = useState(0);
   /** true = display speeds in knots (kn), false = km/h */
@@ -233,7 +242,7 @@ export function KiteMap({
   useEffect(() => {
     userIdRef.current = user?.id ?? null;
     const view = preferences?.mapView;
-    if (user && view && restoredAccountViewRef.current !== user.id && !userMovedRef.current && !initialCenter && mapRef.current) {
+    if (user && view && restoredAccountViewRef.current !== user.id && !userMovedRef.current && !pendingFocusRequestRef.current && !returningSelectionRef.current && !initialCenter && mapRef.current) {
       restoredAccountViewRef.current = user.id;
       mapRef.current.jumpTo({ center: view.center, zoom: view.zoom });
     }
@@ -246,6 +255,23 @@ export function KiteMap({
     x: number;
     y: number;
   } | null>(null);
+
+  const contextPlace = useMemo<Place | null>(() => selectedSpot
+    ? { kind: "spot", id: selectedSpot.id, name: selectedSpot.name, lat: selectedSpot.latitude, lng: selectedSpot.longitude }
+    : selectedStation ? { kind: "station", id: selectedStation.id, name: selectedStation.name, lat: selectedStation.lat, lng: selectedStation.lng } : null,
+    [selectedSpot, selectedStation]);
+  useEffect(() => {
+    if (!contextPlace) return;
+    const prior = selectedPlace();
+    if (prior?.kind === contextPlace.kind && prior.id === contextPlace.id && prior.name === contextPlace.name && prior.lat === contextPlace.lat && prior.lng === contextPlace.lng) return;
+    void rememberMapPlace(contextPlace, placeLocale);
+  }, [contextPlace, placeLocale]);
+
+  const returningSelectionRef = useRef(false);
+  const selectedMapItemRef = useRef<MapFocusRequest | null>(null);
+  selectedMapItemRef.current = selectedSpot
+    ? { kind: "spot", id: selectedSpot.id, center: [selectedSpot.longitude, selectedSpot.latitude], zoom: 10 }
+    : selectedStation ? { kind: "station", id: selectedStation.id, center: [selectedStation.lng, selectedStation.lat], zoom: 10 } : null;
 
   const queueFocusRequest = useCallback(
     (request: MapFocusRequest) => {
@@ -476,9 +502,8 @@ export function KiteMap({
   const loadStations = useCallback(async () => {
     setLoadingStations(true);
     try {
-      const res = await fetch("/api/stations");
-      if (!res.ok) throw new Error("fetch failed");
-      const stations: WindStation[] = await res.json();
+      const stations = await fetchClientJson<WindStation[]>("/api/stations");
+      setStationsError(false);
       stationsRef.current = stations;
       renderStations(stations);
       // Bump a counter so re-derivation effects always fire after a poll —
@@ -496,7 +521,10 @@ export function KiteMap({
         renderCurrentSpots();
       }
     } catch {
-      // silently ignore — MeteoSwiss might be temporarily down
+      setStationsError(true);
+      // An unreachable API must not leave old arrows pulsing as recent measurements.
+      renderStations(stationsRef.current);
+      renderCurrentSpots();
     } finally {
       setLoadingStations(false);
     }
@@ -531,31 +559,23 @@ export function KiteMap({
 
     // Restore last map position from localStorage (persists across reloads & browser restarts).
     // Skipped when an explicit initialCenter is provided (e.g. edit mode).
-    let restored: { center: [number, number]; zoom: number } | null = null;
+    let restored: ReturnType<typeof mapViewFromStorage> = null;
     if (!initialCenter && !focusRequest) {
-      try {
-        const saved = localStorage.getItem("map-view");
-        if (saved) {
-          const parsed = JSON.parse(saved) as {
-            center: [number, number];
-            zoom: number;
-          };
-          if (
-            Array.isArray(parsed.center) &&
-            parsed.center.length === 2 &&
-            Number.isFinite(parsed.center[0]) &&
-            Number.isFinite(parsed.center[1]) &&
-            Number.isFinite(parsed.zoom)
-          ) {
-            restored = parsed;
+      try { restored = mapViewFromStorage(localStorage.getItem("map-view")); } catch { /* storage unavailable */ }
+      if (!pickMode) {
+        try {
+          const selection = mapSelectionFromStorage(sessionStorage.getItem(MAP_SELECTION_STORAGE_KEY));
+          if (selection && restored) {
+            pendingFocusRequestRef.current = selection;
+            returningSelectionRef.current = true;
           }
-        }
-      } catch {
-        // ignore corrupted entry
+          sessionStorage.removeItem(MAP_SELECTION_STORAGE_KEY);
+        } catch { /* storage unavailable */ }
       }
     }
 
-    const map = new maplibregl.Map({
+    let map: maplibregl.Map;
+    try { map = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_STYLE,
       center: initialCenter ??
@@ -573,8 +593,14 @@ export function KiteMap({
             },
           }
         : {}),
+      bearing: restored?.bearing ?? 0,
+      pitch: restored?.pitch ?? 0,
       attributionControl: false,
     });
+    } catch {
+      queueMicrotask(() => setMapStartupSlow(true));
+      return;
+    }
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
 
     const geolocate = new maplibregl.GeolocateControl({
@@ -587,7 +613,10 @@ export function KiteMap({
 
     // Geolocation stays available through its control; first launch shows Switzerland.
     let mounted = true;
+    const startupTimer = setTimeout(() => { if (mounted) setMapStartupSlow(true); }, 15_000);
     map.on("load", () => {
+      clearTimeout(startupTimer);
+      setMapStartupSlow(false);
       if (!mounted) return; // effect was cleaned up before load fired
       // Place initial pick marker (e.g. edit mode)
       if (initialCenter && pickMode) {
@@ -879,10 +908,13 @@ export function KiteMap({
 
     // Persist map position to localStorage on every move (survives reloads & browser restarts)
     map.on("moveend", () => {
+      if (pickMode || initialCenter) return;
       const c = map.getCenter();
       const view = {
         center: [c.lng, c.lat] as [number, number],
         zoom: map.getZoom(),
+        bearing: map.getBearing(),
+        pitch: map.getPitch(),
       };
       try {
         localStorage.setItem("map-view", JSON.stringify(view));
@@ -910,11 +942,25 @@ export function KiteMap({
     map.on("rotatestart", markUserMoved);
     map.on("pitchstart", markUserMoved);
 
+    const persistReturn = () => {
+      if (pickMode || initialCenter) return;
+      try {
+        const c = map.getCenter();
+        localStorage.setItem("map-view", JSON.stringify({ center: [c.lng, c.lat], zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() }));
+        const selection = selectedMapItemRef.current ?? pendingFocusRequestRef.current;
+        if (selection?.kind && selection.id) sessionStorage.setItem(MAP_SELECTION_STORAGE_KEY, JSON.stringify({ kind: selection.kind, id: selection.id, lng: selection.center[0], lat: selection.center[1], zoom: map.getZoom(), savedAt: Date.now() }));
+        else sessionStorage.removeItem(MAP_SELECTION_STORAGE_KEY);
+      } catch { /* Navigation still works without storage. */ }
+    };
+    window.addEventListener("pagehide", persistReturn);
     mapRef.current = map;
     // Copy ref value inside the effect so the cleanup reads the correct frame ID
     const pulseRef = pulseFrameRef;
     return () => {
       mounted = false;
+      clearTimeout(startupTimer);
+      window.removeEventListener("pagehide", persistReturn);
+      persistReturn();
       const pulseFrame = pulseRef.current;
       if (pulseFrame !== null) clearTimeout(pulseFrame);
       // Flush any pending debounced map-view save before tearing down
@@ -1337,6 +1383,16 @@ export function KiteMap({
   return (
     <div className="ow-map-workspace">
       <div ref={containerRef} className="ow-map-canvas" />
+      {mapStartupSlow && !mapLoaded && <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-50/95 p-6">
+        <div className="max-w-sm rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-700 shadow-sm">
+          <p role="status">{field("mapUnavailable")}</p>
+          <button type="button" className="ow-primary mt-4 min-h-11" onClick={() => window.location.reload()}>{field("retry")}</button>
+          <Link href="/balises" className="mt-2 flex min-h-11 items-center underline underline-offset-4">{field("openStations")}</Link>
+        </div>
+      </div>}
+      {!pickMode && mapLoaded && stationsError && !selectedSpot && !selectedStation && <div className="absolute bottom-24 left-3 right-3 z-10 sm:right-auto sm:max-w-sm">
+        <RequestFeedback error pending={loadingStations} hasData={stationsRef.current.length > 0} onRetry={() => { void loadStations(); }} />
+      </div>}
 
       <div className="ow-map-toolbar" hidden={pickMode}>
         <div className="ow-sport-filter" role="group" aria-label={app("activity")}>
@@ -1546,6 +1602,9 @@ export function KiteMap({
           spot={selectedSpot}
           wind={selectedWind}
           loadingWind={loadingWind}
+          windError={Boolean(spotWindError)}
+          windPending={spotWindPending}
+          onRetryWind={retrySpotWind}
           useKnots={useKnots}
           position={popupPos}
           onClose={() => {
