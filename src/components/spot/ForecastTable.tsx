@@ -107,8 +107,8 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
   const allPoints = days.flatMap((d) => d.points);
 
   const LABEL_CELL = light
-    ? "sticky left-0 z-10 bg-white text-[11px] text-gray-600 font-semibold px-3 py-2 text-left whitespace-nowrap border-r border-gray-100 select-none"
-    : "sticky left-0 z-10 bg-zinc-900 text-[11px] text-zinc-300 font-semibold px-3 py-2 text-left whitespace-nowrap border-r border-white/10 select-none";
+    ? "ow-forecast-label sticky left-0 z-10 bg-white text-[11px] text-gray-600 font-semibold px-3 py-2 text-left whitespace-nowrap border-r border-gray-100 select-none"
+    : "ow-forecast-label sticky left-0 z-10 bg-zinc-900 text-[11px] text-zinc-300 font-semibold px-3 py-2 text-left whitespace-nowrap border-r border-white/10 select-none";
   const DATA_CELL = light
     ? "text-center text-[11px] font-bold tabular-nums px-1 py-1.5 min-w-[34px] border-b border-gray-50"
     : "text-center text-[11px] font-bold tabular-nums px-1 py-1.5 min-w-[34px] border-b border-white/5";

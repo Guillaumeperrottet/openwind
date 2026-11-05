@@ -106,7 +106,7 @@ export function Navbar() {
       {PRIMARY_NAVIGATION.map(item => {
         const Icon = ICONS[item.id];
         return <Link key={item.id} href={item.id === "plan" ? placePlannerPath(place) : item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}>
-          <span className="ow-bottom-icon"><Icon aria-hidden size={20} />{item.id === "personal" && favoriteCount > 0 && <span className="ow-favorite-count">{favoriteCount}</span>}</span><span className="ow-bottom-label">{label(item.label)}</span>
+          <span className="ow-bottom-icon"><Icon aria-hidden size={20} /></span><span className="ow-bottom-label">{label(item.label)}</span>
         </Link>;
       })}
     </nav>

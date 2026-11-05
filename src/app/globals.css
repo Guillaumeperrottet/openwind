@@ -15,7 +15,8 @@
 :root {
   --background: #ffffff;
   --foreground: #111827;
-  --mobile-nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
+  --mobile-nav-item-height: 56px;
+  --mobile-nav-height: calc(var(--mobile-nav-item-height) + env(safe-area-inset-bottom, 0px) + 1px);
 }
 
 @media (min-width: 1024px) {

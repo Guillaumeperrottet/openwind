@@ -28,11 +28,10 @@
   .ow-site-utilities { margin-left: auto; }
   .ow-mobile-search-toggle { display: flex; align-items: center; justify-content: center; width: var(--ow-control); min-height: var(--ow-control); color: var(--ow-muted); border-radius: var(--ow-radius-control); cursor: pointer; }
   .ow-bottom-navigation { position: fixed; inset: auto 0 0; z-index: 50; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); padding-bottom: env(safe-area-inset-bottom,0px); border-top: 1px solid var(--ow-rule); background: var(--ow-surface); font-family: var(--ow-font); }
-  .ow-bottom-navigation > a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--ow-space-1); height: 64px; padding-inline: var(--ow-space-1); color: var(--ow-muted); }
+  .ow-bottom-navigation > a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; height: var(--mobile-nav-item-height); padding-inline: var(--ow-space-1); color: var(--ow-muted); }
   .ow-bottom-navigation > a[aria-current="page"] { color: var(--ow-accent); }
   .ow-bottom-icon { position: relative; display: inline-flex; }
-  .ow-bottom-label { display: flex; align-items: center; justify-content: center; min-height: 30px; font-size: var(--ow-text-caption); font-weight: 500; line-height: 1.15; text-align: center; }
-  .ow-favorite-count { position: absolute; inset: -8px auto auto 12px; display: flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding-inline: var(--ow-space-1); border-radius: var(--ow-radius-control); background: var(--ow-accent); color: var(--ow-accent-ink); font-size: var(--ow-text-caption); line-height: 1; }
+  .ow-bottom-label { display: flex; align-items: center; justify-content: center; min-height: 26px; font-size: var(--ow-text-caption); font-weight: 500; line-height: 1.15; text-align: center; }
   .ow-mobile-search-panel { position: fixed; inset: 56px 0 auto; z-index: 40; display: flex; align-items: center; gap: var(--ow-space-2); padding: var(--ow-space-2) var(--ow-space-3); border-bottom: 1px solid var(--ow-rule); background: var(--ow-surface); }
   .ow-mobile-search-panel > div { flex: 1; min-width: 0; }
   .ow-mobile-search-panel > button { display: flex; align-items: center; justify-content: center; min-width: var(--ow-control); min-height: var(--ow-control); color: var(--ow-muted); cursor: pointer; }
