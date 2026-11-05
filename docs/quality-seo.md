@@ -102,3 +102,10 @@ Sur la carte mobile, la fenêtre des balises resserre l’en-tête, la mesure, l
 La fermeture extérieure utilise pointerdown, pour distinguer un clic extérieur d’un bouton interne retiré par sa propre action : effacer une heure ne ferme plus la fenêtre. Vérification réelle sur Marsens à 390 × 844 et 320 × 568 : fenêtre de 466 px, contenu de 466 px, sans défilement interne, y=86 à y=552 sur le petit écran. Mesure actuelle, graphique, lecture d’une heure et lien Toutes les données sont simultanément visibles. Contrôle en kts et km/h, sélection au graphique et au clavier, effacement sans fermeture ; boutons, curseur et lien mesurés à 44 px de haut. Sur ordinateur 1280 × 900, graphique de 272 px et présentation complète conservée. Les fenêtres gardent leur défilement de secours si la hauteur disponible ou le texte agrandi l’exige.
 
 Les 867 tests, le typage TypeScript complet, la compilation et le lint sans erreur sont validés (avertissement administratif préexistant). Aucun changement des données.
+
+
+## Retour aux fenêtres de balises précédentes, sans curseur — 5 novembre
+
+À la demande utilisateur, les espacements, la typographie et le graphique précédant la compaction des fenêtres de balises sont restaurés. Le graphique retrouve ses 272 px, avec lecture du détail au contact ou au survol, sans curseur manuel ni bloc de lecture séparé dans la fenêtre de carte. L’option est propre à cet aperçu : les graphiques des fiches complètes conservent leurs commandes. Le correctif des fenêtres hors écran, la marge inférieure de 16 px, la zone de sécurité, les favoris et les liens complets sont conservés.
+
+Vérification locale sur Marsens : détail date/heure, vent, rafales et direction obtenu en cliquant le graphique ; aucun input range dans la fenêtre. À 390 × 844, fenêtre entre y=224 et y=828, graphique de 272 px. À 320 × 568, fenêtre limitée entre y=72 et y=552 avec défilement de secours ; le détail au graphique reste dans l’écran (y=205 à y=315). Les 867 tests, le typage complet, la compilation et le lint sans erreur sont validés (avertissement administratif préexistant). Aucun changement de données.

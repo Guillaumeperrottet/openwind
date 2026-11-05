@@ -15,8 +15,8 @@ interface Props {
   useKnots: boolean;
   /** IANA timezone for display, e.g. "Europe/Zurich" */
   timezone?: string;
-  /** Smaller chart and reading controls for the map preview. */
-  compact?: boolean;
+  /** Map previews use direct chart touch/hover without the separate reading slider. */
+  showReadingControls?: boolean;
 }
 
 export function WindHistoryChart({
@@ -24,7 +24,7 @@ export function WindHistoryChart({
   forecast,
   useKnots,
   timezone = "UTC",
-  compact = false,
+  showReadingControls = true,
 }: Props) {
   const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,13 +54,13 @@ export function WindHistoryChart({
       <div
         ref={containerRef}
         className="relative overflow-hidden"
-        style={{ height: compact ? 134 : 272 }}
+        style={{ height: 272 }}
       />
     );
   }
 
   // ── Layout constants ──────────────────────────────────────────────────────
-  const CHART_H = compact ? 92 : 230;
+  const CHART_H = 230;
   const DAY_H = 22;
   const TIME_H = 20;
   const AXIS_W = 30;
@@ -259,7 +259,7 @@ export function WindHistoryChart({
     }
     if (bestIdx >= 0) {
       setHoveredIdx(bestIdx);
-      if (pin) setSelectedIdx(bestIdx);
+      if (pin && showReadingControls) setSelectedIdx(bestIdx);
       const containerRect = containerRef.current!.getBoundingClientRect();
       setTooltipPos({
         x: clientX - containerRect.left,
@@ -297,7 +297,7 @@ export function WindHistoryChart({
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden select-none${compact ? " ow-history-chart-compact" : ""}`}
+      className="relative overflow-hidden select-none"
       style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
       onMouseLeave={() => setHoveredIdx(null)}
       onTouchEnd={() => setHoveredIdx(null)}
@@ -611,9 +611,9 @@ export function WindHistoryChart({
         />
       </svg>
 
-      <ChartReading compact={compact} point={selectedPoint} time={selectedHistory ? toTZ(selectedHistory.time) : selectedForecast?.time ?? ""} forecast={!!selectedForecast || !!(selectedHistory && toTZ(selectedHistory.time) > nowInTZ)} useKnots={useKnots} index={selectedIdx ?? Math.max(0, filteredHistory.findLastIndex((p) => toTZ(p.time) <= nowInTZ))} count={allPoints.length} onSelect={setSelectedIdx} onClear={() => { setSelectedIdx(null); setHoveredIdx(null); }} />
+      {showReadingControls && <ChartReading point={selectedPoint} time={selectedHistory ? toTZ(selectedHistory.time) : selectedForecast?.time ?? ""} forecast={!!selectedForecast || !!(selectedHistory && toTZ(selectedHistory.time) > nowInTZ)} useKnots={useKnots} index={selectedIdx ?? Math.max(0, filteredHistory.findLastIndex((p) => toTZ(p.time) <= nowInTZ))} count={allPoints.length} onSelect={setSelectedIdx} onClear={() => { setSelectedIdx(null); setHoveredIdx(null); }} />}
       {/* ── Legend ──────────────────────────────────────────────────────── */}
-      <div className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-slate-600 ${compact ? "mt-1 text-[11px] leading-4" : "mt-2 text-sm"}`}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 px-1 text-sm text-slate-600">
         <span className="flex items-center gap-1">
           <span className="inline-block w-3 h-3 border-l-[3px] border-dashed border-orange-400" />
           Maintenant
