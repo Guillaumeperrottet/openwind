@@ -21,9 +21,12 @@ export function parsePlaceRef(ref: string | null): { kind: Place["kind"]; id: st
 }
 export const placeRef = (p: Place) => `${p.kind}:${p.id}`;
 export const hasWater = (p: Place) => p.guideSlug === "lac-de-la-gruyere";
+export function placePlannerPath(place: Place | null) {
+  return place ? `/plan?${new URLSearchParams({ lat: String(place.lat), lng: String(place.lng), place: place.name, radius: "50" })}` : "/plan";
+}
 export function contextualHref(href: string, place: Place | null, locale: SiteLocale) {
   const path = withoutLocale(href);
-  return path === "/webcams" ? placeFeatureHref("webcams", place, locale) : path === "/temperatures" ? placeFeatureHref("water", place, locale) : href;
+  return path === "/plan" && place ? `/${locale}${placePlannerPath(place)}` : path === "/webcams" ? placeFeatureHref("webcams", place, locale) : path === "/temperatures" ? placeFeatureHref("water", place, locale) : href;
 }
 export function placeRouteRef(pathname: string) {
   const path = withoutLocale(pathname);

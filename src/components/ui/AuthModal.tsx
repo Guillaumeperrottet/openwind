@@ -85,7 +85,7 @@ export function AuthModal({ open, onClose, initialMode = "login" }: AuthModalPro
     e.preventDefault();
     setLoading(true); setError(null);
     try {
-      const { error: authError } = await createClient().auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/reset-password` });
+      const { error: authError } = await createClient().auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/reset-password?locale=${locale}` });
       if (authError) setError(authErrorMessage(authError, locale));
       else setResetSent(true);
     } catch (error) { setError(authErrorMessage(error, locale)); }

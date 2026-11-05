@@ -12,12 +12,14 @@ describe("complete search beyond suggestions", () => {
   it("retains all matches for the results page while keeping suggestions bounded", () => {
     expect(rankSearchEntries(entries, "vent")).toHaveLength(45);
     expect(searchEntries(entries, "vent", "discussion")).toHaveLength(10);
-    expect(rankSearchEntries(appSearchEntries("fr"), "", "page")).toHaveLength(11);
+    expect(rankSearchEntries(appSearchEntries("fr"), "", "page")).toHaveLength(10);
   });
   it.each(["fr", "en", "de", "it"] as const)("provides every public functionality in %s", locale => {
     const all = appSearchEntries(locale);
-    for (const path of ["/explorer", "/webcams", "/temperatures", "/plan", "/mon-openwind", "/forum", "/spots/new", "/about"]) expect(all.some(e => e.href === `/${locale}${path}`)).toBe(true);
-    expect(all).toHaveLength(11);
+    for (const path of ["/explorer", "/webcams", "/plan", "/mon-openwind", "/forum", "/spots/new", "/about"]) expect(all.some(e => e.href === `/${locale}${path}`)).toBe(true);
+    expect(all).toHaveLength(10);
+    expect(all.some(e => e.href.endsWith("/temperatures"))).toBe(false);
+    expect(appSearchEntries(locale, true).some(e => e.href.endsWith("/temperatures"))).toBe(true);
   });
   it("paginates all public results, retaining the query and chosen type", async () => {
     const html = renderToStaticMarkup(await SearchPage({ params: Promise.resolve({ locale: "fr" }), searchParams: Promise.resolve({ q: "vent", type: "discussion", page: "2" }) }));

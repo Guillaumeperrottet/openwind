@@ -1,6 +1,9 @@
 import { jsonLd as serializeJsonLd, publicSiteSchema } from "@/lib/public-seo";
+import { AuthFeedback } from "@/components/account/AuthFeedback";
 import { Suspense } from "react";
 import { WebVitals } from "@/components/ui/WebVitals";
+import { PublicFeaturesProvider } from "@/lib/public-features";
+import { lakePageEnabled } from "@/lib/lake-page-enabled";
 import { PlaceObserver } from "@/components/navigation/PlaceObserver";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -131,8 +134,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }}
       />
       <NextIntlClientProvider messages={messages}>
+        <PublicFeaturesProvider water={lakePageEnabled()}>
         <FavProvider>
           <Suspense fallback={null}><PlaceObserver /></Suspense>
+          <Suspense fallback={null}><AuthFeedback /></Suspense>
           <WebVitals />
           <Navbar />
           <main className={`${inter.className} antialiased pt-14`}>
@@ -148,6 +153,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </main>
           <SiteFooter />
         </FavProvider>
+        </PublicFeaturesProvider>
       </NextIntlClientProvider>
       <Analytics />
     </>

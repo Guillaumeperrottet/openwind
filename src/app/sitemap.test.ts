@@ -39,6 +39,7 @@ beforeEach(() => {
 
 describe("current, canonical sitemap", () => {
   it("includes known station identities and only published guide translations", async () => {
+    vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "true");
     const entries = await sitemap();
     const guide = entries.find(
       (entry) =>
@@ -89,7 +90,8 @@ describe("current, canonical sitemap", () => {
 
   it("omits the lake from the sitemap when explicitly disabled", async () => {
     vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "false");
-    expect((await sitemap()).some(entry => entry.url.endsWith("/lacs/gruyere"))).toBe(false);
+    const entries = await sitemap();
+    expect(entries.some(entry => /\/(lacs\/gruyere|temperatures)$/.test(entry.url))).toBe(false);
   });
 
   it("does not publish a successful truncated sitemap after a database error", async () => {

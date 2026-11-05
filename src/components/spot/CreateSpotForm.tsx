@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { contributionDetails, newSpotSchema } from "@/lib/spot-contribution";
 import { useRouter } from "next/navigation";
 import {
   MapPin,
@@ -56,6 +57,7 @@ const schema = z
     hazards: z.string().optional(),
     access: z.string().optional(),
     nearestStationId: z.string().optional(),
+    ...contributionDetails,
   })
   .refine((d) => d.maxWindKmh >= d.minWindKmh, {
     path: ["maxWindKmh"],
@@ -108,9 +110,14 @@ interface Props {
 
 export function CreateSpotForm({ initialData }: Props = {}) {
   const isEditMode = Boolean(initialData);
+  const formSchema = isEditMode ? schema : schema.superRefine((values, ctx) => {
+    const result = newSpotSchema.safeParse(values);
+    if (!result.success) for (const issue of result.error.issues) ctx.addIssue({ code: "custom", path: issue.path, message: issue.message });
+  });
   const router = useRouter();
   const t = useTranslations("CreateSpotForm");
   const tBadge = useTranslations("Badge");
+  const tMonths = useTranslations("Months");
   const tCommon = useTranslations("Common");
   const {
     images,
@@ -156,7 +163,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
     control,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(formSchema),
     defaultValues: initialData
       ? {
           name: initialData.name,
@@ -184,6 +191,9 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           maxWindKmh: 35,
           bestMonths: [],
           bestWindDirections: [],
+          discipline: "WATER_KITE",
+          seasonMode: "MONTHS",
+          sources: { discipline: "", directions: "", season: "", access: "" },
         },
   });
 
@@ -361,7 +371,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
 
       {/* ── RIGHT: Form ──────────────────────────────────────────────────── */}
       <div className="w-full lg:w-120 overflow-y-auto border-l border-gray-100">
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit, () => setError(t("requiredInformation")))} className="p-6 space-y-5">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -381,6 +391,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
             </button>
           </div>
 
+          {!isEditMode && <p className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">{t("completeInformation")}</p>}
           {/* Error banner */}
           {error && (
             <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-600">
@@ -398,7 +409,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                 <div className="flex rounded-lg overflow-hidden border border-gray-200">
                   <button
                     type="button"
-                    onClick={() => field.onChange("KITE")}
+                    onClick={() => { field.onChange("KITE"); if (!isEditMode) setValue("discipline", "WATER_KITE"); }}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                       field.value === "KITE"
                         ? "bg-sky-600 text-white"
@@ -410,7 +421,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => field.onChange("PARAGLIDE")}
+                    onClick={() => { field.onChange("PARAGLIDE"); if (!isEditMode) setValue("discipline", "PARAGLIDE"); }}
                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors ${
                       field.value === "PARAGLIDE"
                         ? "bg-sky-600 text-white"
@@ -429,7 +440,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           <div>
             <label className={labelClass}>{t("name")} *</label>
             <input
-              {...register("name")}
+              {...register("name")} aria-label={t("name")} aria-required={!isEditMode}
               placeholder="Ex: Tarifa Est"
               className={inputClass}
             />
@@ -462,7 +473,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
               <label className={labelClass}>{t("description")}</label>
               {langTab === "fr" && (
                 <textarea
-                  {...register("description")}
+                  {...register("description")} aria-label={t("description")} aria-required={!isEditMode}
                   rows={2}
                   placeholder="Décris le spot, l'ambiance, les conditions..."
                   className={inputClass}
@@ -502,7 +513,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
               <label className={labelClass}>{t("hazards")}</label>
               {langTab === "fr" && (
                 <input
-                  {...register("hazards")}
+                  {...register("hazards")} aria-label={t("hazards")} aria-required={!isEditMode}
                   placeholder="Rochers, courant fort..."
                   className={inputClass}
                 />
@@ -538,7 +549,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
               <label className={labelClass}>{t("access")}</label>
               {langTab === "fr" && (
                 <input
-                  {...register("access")}
+                  {...register("access")} aria-label={t("access")} aria-required={!isEditMode}
                   placeholder="Parking, temps de marche..."
                   className={inputClass}
                 />
@@ -575,7 +586,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
             <div>
               <label className={labelClass}>{t("country")}</label>
               <input
-                {...register("country")}
+                {...register("country")} aria-label={t("country")} aria-required={!isEditMode}
                 placeholder={t("autoFilled")}
                 className={inputClass}
               />
@@ -830,6 +841,10 @@ export function CreateSpotForm({ initialData }: Props = {}) {
             )}
           </div>
 
+          {!isEditMode && sportType === "KITE" && <label className={labelClass}>{t("disciplineLabel")}
+            <select {...register("discipline")} className={`${inputClass} min-h-11 mt-1`}><option value="WATER_KITE">{t("waterKite")}</option><option value="SNOW_KITE">{t("snowKite")}</option></select>
+            {errors.discipline && <span className={errorClass}>{t("requiredInformation")}</span>}
+          </label>}
           {/* Best wind directions */}
           <div>
             <label className={labelClass}>{t("bestWindDirections")}</label>
@@ -846,8 +861,12 @@ export function CreateSpotForm({ initialData }: Props = {}) {
             />
           </div>
 
+          {errors.bestWindDirections && <p role="alert" className={errorClass}>{t("requiredDirections")}</p>}
+          {!isEditMode && <label className={labelClass}>{t("seasonModeLabel")}
+            <select {...register("seasonMode", { onChange: event => { if (event.target.value === "CONDITIONAL") setValue("bestMonths", []); } })} className={`${inputClass} min-h-11 mt-1`}><option value="MONTHS">{t("monthsSeason")}</option><option value="CONDITIONAL">{t("conditionalSeason")}</option></select>
+          </label>}
           {/* Best months */}
-          <div>
+          {(isEditMode || watch("seasonMode") !== "CONDITIONAL") && <div>
             <label className={labelClass}>{t("bestMonths")}</label>
             <Controller
               control={control}
@@ -861,6 +880,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                       <button
                         key={month}
                         type="button"
+                        aria-pressed={selected}
                         onClick={() => {
                           field.onChange(
                             selected
@@ -868,21 +888,35 @@ export function CreateSpotForm({ initialData }: Props = {}) {
                               : [...field.value, val],
                           );
                         }}
-                        className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                        className={`min-h-11 rounded-full px-3 py-2 text-xs font-medium transition-colors ${
                           selected
                             ? "bg-sky-600 text-white"
                             : "bg-gray-100 text-gray-500 hover:text-gray-900"
                         }`}
                       >
-                        {month.slice(0, 3)}
+                        {tMonths(String(i + 1) as Parameters<typeof tMonths>[0])}
                       </button>
                     );
                   })}
                 </div>
               )}
             />
-          </div>
+          </div>}
 
+          {errors.bestMonths && <p role="alert" className={errorClass}>{t("requiredMonths")}</p>}
+          {!isEditMode && watch("seasonMode") === "CONDITIONAL" && <label className={labelClass}>{t("seasonDetailsLabel")}
+            <textarea {...register("seasonDetails")} rows={3} className={`${inputClass} mt-1`} aria-invalid={!!errors.seasonDetails} />
+            <span className="mt-1 block text-xs leading-5 text-slate-500">{t("seasonDetailsHelp")}</span>
+            {errors.seasonDetails && <span className={errorClass}>{t("requiredInformation")}</span>}
+          </label>}
+          {!isEditMode && <fieldset className="space-y-3 rounded-xl border border-slate-200 p-4">
+            <legend className="px-1 text-sm font-semibold">{t("sourcesTitle")}</legend><p className="text-xs leading-5 text-slate-600">{t("sourcesHelp")}</p>
+            {(["discipline", "directions", "season", "access"] as const).map(topic => <label key={topic} className="block text-xs font-medium text-slate-600">{t(`source_${topic}`)}
+              <input type="url" inputMode="url" placeholder="https://…" {...register(`sources.${topic}`)} className={`${inputClass} mt-1 min-h-11`} aria-invalid={!!errors.sources?.[topic]} />
+              {errors.sources?.[topic] && <span className={errorClass}>{t("requiredSource")}</span>}
+            </label>)}
+          </fieldset>}
+          {!isEditMode && [errors.description, errors.access, errors.hazards, errors.country].some(Boolean) && <p role="alert" className={errorClass}>{t("requiredTexts")}</p>}
           {/* Images */}
           <div>
             <label className={labelClass}>{t("imagesMax", { count: 5 })}</label>
@@ -994,7 +1028,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
           )}
 
           <p className="text-[10px] text-gray-400 text-center">
-            Toutes les informations sont publiques et modifiables par tous.
+            {t("publicInformationNotice")}
           </p>
         </form>
       </div>

@@ -53,6 +53,7 @@ export default async function WebcamsPage({ params, searchParams }: Props) {
   if (latNum === null || lngNum === null || !Number.isFinite(latNum) || !Number.isFinite(lngNum) || Math.abs(latNum) > 90 || Math.abs(lngNum) > 180) return <WebcamDirectory locale={toSiteLocale(locale)} query={typeof q === "string" ? q.slice(0, 100).trim() : ""} />;
 
   let webcams: WindyWebcam[] = [];
+  let initialError = true;
 
   if (latNum !== null && lngNum !== null && !isNaN(latNum) && !isNaN(lngNum)) {
     try {
@@ -61,27 +62,32 @@ export default async function WebcamsPage({ params, searchParams }: Props) {
         const url =
           `https://api.windy.com/webcams/api/v3/webcams` +
           `?nearby=${latNum},${lngNum},15` +
-          `&include=location,images,player` +
+          `&include=location,images,player,urls` +
           `&limit=20` +
           `&orderby=distance`;
 
         const res = await fetch(url, {
           headers: { "x-windy-api-key": apiKey },
+          signal: AbortSignal.timeout(8000),
           next: { revalidate: 3600 },
         });
 
         if (res.ok) {
           const data = (await res.json()) as { webcams?: WindyWebcam[] };
-          webcams = data.webcams ?? [];
+          if (!Array.isArray(data.webcams)) throw new Error("Invalid webcam response");
+          webcams = data.webcams;
+          initialError = false;
         }
       }
     } catch {
-      /* Affiche la page vide plutôt que de planter */
+      /* The client offers a retry when the provider is unavailable. */
     }
   }
 
   return (
     <WebcamsClient
+      key={`${latNum},${lngNum}`}
+      initialError={initialError}
       webcams={webcams}
       locationName={locationName}
       lat={latNum}

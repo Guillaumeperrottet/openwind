@@ -72,3 +72,7 @@
   .ow-lake-days li { padding-block: var(--ow-space-2); }
   .ow-lake-legend { gap: var(--ow-space-4); }
 }
+
+@media (max-width: 379px) {
+  .ow-lake-overview { padding-block: var(--ow-space-4); }
+}

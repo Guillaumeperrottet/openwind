@@ -12,6 +12,9 @@ import { SearchBar } from "./SearchBar";
 import { PRIMARY_NAVIGATION, NAVIGATION_COPY, navigationSection } from "@/lib/navigation";
 import { toSiteLocale } from "@/lib/site";
 
+import { useSelectedPlace } from "@/lib/place-store";
+import { placePlannerPath } from "@/lib/place";
+
 const ICONS = { map: Map, explore: Compass, plan: Route, personal: LayoutDashboard };
 
 export function Navbar() {
@@ -20,6 +23,7 @@ export function Navbar() {
   const currentLocale = toSiteLocale((params?.locale as string) ?? "fr");
   const copy = NAVIGATION_COPY[currentLocale];
   const pathname = usePathname();
+  const place = useSelectedPlace();
   const query = useSearchParams();
   const { user, favoriteSpotIds, favoriteStationIds, preferences, requestAuth, signOut } = useFavContext();
   const favoriteCount = favoriteSpotIds.size + favoriteStationIds.size;
@@ -69,7 +73,7 @@ export function Navbar() {
       <nav className="ow-primary-navigation" aria-label={copy.primary}>
         {PRIMARY_NAVIGATION.map(item => {
           const Icon = ICONS[item.id];
-          return <Link key={item.id} href={item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}><Icon aria-hidden size={18} /><span>{label(item.label)}</span></Link>;
+          return <Link key={item.id} href={item.id === "plan" ? placePlannerPath(place) : item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}><Icon aria-hidden size={18} /><span>{label(item.label)}</span></Link>;
         })}
       </nav>
       <div className="ow-site-utilities">
@@ -101,7 +105,7 @@ export function Navbar() {
     <nav className="ow-bottom-navigation" aria-label={copy.primary}>
       {PRIMARY_NAVIGATION.map(item => {
         const Icon = ICONS[item.id];
-        return <Link key={item.id} href={item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}>
+        return <Link key={item.id} href={item.id === "plan" ? placePlannerPath(place) : item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}>
           <span className="ow-bottom-icon"><Icon aria-hidden size={20} />{item.id === "personal" && favoriteCount > 0 && <span className="ow-favorite-count">{favoriteCount}</span>}</span><span className="ow-bottom-label">{label(item.label)}</span>
         </Link>;
       })}

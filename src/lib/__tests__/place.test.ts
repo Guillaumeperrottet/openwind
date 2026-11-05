@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { contextualHref, hasWater, parsePlaceRef, placeFeatureHref, placeRouteRef, validPlace, type Place } from "../place";
+import { contextualHref, placePlannerPath, hasWater, parsePlaceRef, placeFeatureHref, placeRouteRef, validPlace, type Place } from "../place";
 const mocks = vi.hoisted(() => ({ spot: vi.fn(), stations: vi.fn() }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({ prisma: { spot: { findUnique: mocks.spot } } }));
@@ -15,6 +15,13 @@ describe("one precise place through wind, webcams and water", () => {
     expect(webcams.searchParams.get("place")).toBe(`spot:${morlon.id}`);
     expect(placeFeatureHref("wind", morlon, "de")).toBe(`/de/spots/${morlon.id}`);
     expect(placeFeatureHref("water", morlon, "fr")).toContain(`place=spot%3A${morlon.id}`);
+  });
+  it("prepares planning around the current place without overwriting explicit dated searches", () => {
+    const href = new URL(contextualHref("/fr/plan", morlon, "fr"), "https://openwind.ch");
+    expect(href.pathname).toBe("/fr/plan");
+    expect(Object.fromEntries(href.searchParams)).toEqual({ lat: "46.625", lng: "7.08", place: "Morlon", radius: "50" });
+    expect(placePlannerPath(null)).toBe("/plan");
+    expect(contextualHref("/fr/plan?startDate=2026-11-06&sport=PARAGLIDE", morlon, "fr")).toBe("/fr/plan?startDate=2026-11-06&sport=PARAGLIDE");
   });
   it("does not label other lakes as having integrated water data", () => {
     expect(hasWater(morlon)).toBe(true);

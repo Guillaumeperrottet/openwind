@@ -1,40 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
+import { newSpotSchema } from "@/lib/spot-contribution";
+import { submittedSpotReview } from "@/lib/spot-contribution-review";
+import { REVIEW_PREFIX } from "@/lib/planner-review";
+import { localDate } from "@/lib/planner";
 import { requireSpotContributor } from "@/lib/spot-access";
-
-const createSpotSchema = z.object({
-  name: z.string().min(2),
-  description: z.string().optional(),
-  descriptionEn: z.string().optional(),
-  descriptionDe: z.string().optional(),
-  descriptionIt: z.string().optional(),
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
-  country: z.string().optional(),
-  region: z.string().optional(),
-  difficulty: z
-    .enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"])
-    .default("INTERMEDIATE"),
-  waterType: z.enum(["FLAT", "CHOP", "WAVES", "MIXED"]).default("CHOP"),
-  sportType: z.enum(["KITE", "PARAGLIDE"]).default("KITE"),
-  minWindKmh: z.number().int().min(0).max(100).default(15),
-  maxWindKmh: z.number().int().min(0).max(150).default(35),
-  bestMonths: z.array(z.string()).default([]),
-  bestWindDirections: z.array(z.string()).default([]),
-  hazards: z.string().optional(),
-  hazardsEn: z.string().optional(),
-  hazardsDe: z.string().optional(),
-  hazardsIt: z.string().optional(),
-  access: z.string().optional(),
-  accessEn: z.string().optional(),
-  accessDe: z.string().optional(),
-  accessIt: z.string().optional(),
-  nearestStationId: z.string().optional(),
-}).refine((spot) => spot.maxWindKmh >= spot.minWindKmh, {
-  message: "Le vent max doit être ≥ au vent min", path: ["maxWindKmh"],
-});
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -82,7 +53,7 @@ export async function POST(request: NextRequest) {
   if (access.error) return access.error;
 
   const body = await request.json().catch(() => null);
-  const parsed = createSpotSchema.safeParse(body);
+  const parsed = newSpotSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -92,9 +63,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const spot = await prisma.spot.create({
-      data: parsed.data,
-      include: { images: true },
+    const { sources, discipline, seasonMode, seasonDetails, ...data } = parsed.data;
+    const spot = await prisma.$transaction(async tx => {
+      const created = await tx.spot.create({ data, include: { images: true } });
+      const review = submittedSpotReview(created, { ...data, sources, discipline, seasonMode, seasonDetails }, localDate(new Date()));
+      await tx.systemConfig.create({ data: { key: REVIEW_PREFIX + created.id, value: JSON.stringify(review) } });
+      return created;
     });
     for (const locale of ["fr", "de", "it", "en"]) revalidatePath(`/${locale}`);
     revalidatePath("/sitemap.xml");

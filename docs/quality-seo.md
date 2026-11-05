@@ -1,10 +1,10 @@
-# Contrôle qualité et référencement — 3 novembre 2026
+# Contrôle qualité et référencement — 4 novembre 2026
 
 Cette passe prépare la version locale pour publication. Elle ne confirme ni une indexation effective ni un classement Google ou une citation par un assistant IA.
 
 ## Indexation et contenu
 
-- La page `/[locale]/lacs/gruyere` est publique par défaut, possède une adresse canonique et des alternatives FR/EN/DE/IT et figure dans le sitemap. `ALPLAKES_LAKE_PAGE_ENABLED=false` permet de la désactiver : la route répond alors 404, les liens vers le détail sont retirés et le sitemap l’omet.
+- À la demande utilisateur du 4 novembre, les températures redeviennent visibles par défaut : pages, Explorer, recherche, guides, raccourcis, pied de page et sitemap. `ALPLAKES_LAKE_PAGE_ENABLED=false` retire les accès et rend les routes non indexables. Le même interrupteur commande le bloc Morlon ; l’ancienne variable `ALPLAKES_WATER_ENABLED` n’est plus nécessaire. Aucune configuration de production n’a été modifiée.
 - Les températures sont décrites comme des estimations Alplakes / Eawag, modèle Simstrat à 1 m, sans sonde locale. Le crédit et la licence concernent les données amont.
 - Explorer et l’annuaire des températures ont leurs métadonnées de partage et leurs données structurées de collection. L’identité Organization / WebSite utilise des identifiants stables.
 - Les discussions du Forum exposent le texte complet, les auteurs publics, les dates réelles et les réponses imbriquées. Les catégories décrivent les sujets effectivement affichés. Les données structurées n’ajoutent ni identifiants de comptes ni votes individuels. Le JSON est échappé avant insertion dans le HTML.
@@ -25,11 +25,27 @@ Il faut des visites réelles après publication pour établir les performances d
 npm test
 npx tsc --noEmit
 npm run build
-python3 scripts/audit-public-seo.py --base-url http://127.0.0.1:3001 --output /tmp/openwind-seo-audit.json
+python3 scripts/audit-public-seo.py --water-enabled --base-url http://127.0.0.1:3001 --output /tmp/openwind-seo-audit.json
 ```
 
-Le script effectue uniquement des lectures HTTP et contrôle un échantillon de 14 pages : H1, indexation, canonique, langues, identité du site, données structurées et champs essentiels des discussions. Il ne remplace pas le validateur Google ni un audit exhaustif de toutes les URL.
+Le script effectue uniquement des lectures HTTP et contrôle un échantillon de pages publiques et privées : H1, indexation, canonique, langues, identité du site, données structurées et champs essentiels des discussions. Avec `--water-enabled`, il contrôle les températures publiables et les pages de récupération de compte privées. Sans cette option, il contrôle la configuration de secours masquée. Il ne remplace pas le validateur Google ni un audit exhaustif de toutes les URL.
 
 Les URL inexistantes sont exclues de l’indexation. Next.js peut déjà avoir commencé à diffuser le HTML d’une route dynamique du Forum quand il découvre l’absence du sujet : la réponse est alors HTTP 200 avec une page introuvable et `noindex`, selon son fonctionnement documenté. Les routes non reconnues renvoient 404. Ces deux cas ont été contrôlés localement.
 
 Après publication : soumettre ou relire le sitemap dans Search Console, inspecter les nouvelles pages, consulter les rapports d’indexation et de résultats enrichis, puis suivre les Core Web Vitals réels. Aucune garantie de résultat enrichi ou de citation IA : l’accès aux sources, le contenu lisible et la cohérence des informations sont les fondations vérifiables.
+
+## Températures : lecture par Google et les moteurs IA
+
+La page du lac présente un H1 localisé décrivant la température de l’eau, une valeur datée rendue côté serveur, la profondeur, les prévisions, la méthode et l’attribution. Les valeurs ne dépendent pas d’un graphique ou de JavaScript pour être lues. Le JSON-LD relie WebPage et Dataset : créateur Eawag, modèle Simstrat 1D, unité, profondeur, périmètre et licence des données. Aucune date de modification, sonde ou valeur courante n’est inventée dans les métadonnées. Les quatre langues ont des canoniques propres et des hreflang réciproques. Le fichier robots autorise les pages publiques, y compris OAI-SearchBot.
+
+Références officielles : [Google, fonctionnalités IA](https://developers.google.com/search/docs/appearance/ai-features), [Google, Dataset](https://developers.google.com/search/docs/appearance/structured-data/dataset), [OpenAI, robots de recherche](https://developers.openai.com/api/docs/bots). Aucun fichier spécial ne garantit une citation IA. L’indexation reste à contrôler après publication dans Search Console.
+
+Vérification finale locale du 4 novembre : compilation de production et 866 tests réussis ; 27 contrôles HTTP réussis. Les trois robots Googlebot, Bingbot et OAI-SearchBot reçoivent les pages des températures avec leurs métadonnées et la valeur datée en HTML. Les huit URL localisées sont présentes dans le sitemap et autorisées par robots.txt. Vérification visuelle de la page Gruyère et du bloc existant de Morlon. Aucune publication effectuée.
+
+## Finitions mobiles du 5 novembre 2026
+
+Les filtres de réseaux, unités, accès carte et favoris de l’annuaire des balises ont des cibles tactiles d’au moins 44 × 44 px. Le favori conserve son cercle visuel de 32 px et son icône de 16 px ; son centre et l’apparence des cartes restent inchangés. Les boutons d’effacement du planificateur et de la recherche des lacs atteignent aussi 44 px.
+
+Sous 380 px, les en-têtes des pages d’accès utilisent un titre de 24 px et des espacements réduits. La page du lac réduit son espacement vertical avant la mesure. Contrôle dans le navigateur à 320 × 568 et 390 × 844 : pas de débordement horizontal sur les pages vérifiées, cibles mesurées à 44 px, température entièrement visible au-dessus de la navigation à 320 px (bas de la valeur à 442 px, début de navigation à 503 px). Les sources, dates, textes et fonctionnalités sont conservés. Les fichiers des fiches de spots et balises n’ont pas été modifiés par cette finition.
+
+Compilation, 866 tests, quatre tests Python et lint sans erreur validés. Le lint conserve un avertissement préexistant sur une directive inutilisée dans la route administrative de bannière. Ce contrôle responsive ne remplace pas une vérification sur iPhone physique avec Safari, clavier, texte agrandi et VoiceOver. Les compléments de spots et la révision des articles restent des lots préparés : aucun import de contenu en base n’est lancé par le build ou cette publication.

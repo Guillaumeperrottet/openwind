@@ -59,7 +59,7 @@ describe("Explorer remains usable without an account or provider API", () => {
     expect(html).toContain('/fr/vent-en-direct/lac-de-la-gruyere');
     expect(lakePageEnabled()).toBe(false);
   });
-  it("makes the public water page available by default and retains an explicit opt-out", async () => {
+  it("exposes validated coverage by default and keeps an explicit kill switch", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "true");
     expect(lakePageEnabled()).toBe(true);

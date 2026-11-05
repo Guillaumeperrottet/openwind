@@ -65,6 +65,14 @@ describe("water card", () => {
     expect(html).not.toContain("0,0");
     expect(html).not.toContain("<table");
   });
+  it("does not present a forecast as fresh without a recent current estimate", () => {
+    const data = series();
+    const old = { ...data, points: [data.points[0], ...data.points.filter(p => Date.parse(p.time) > now)] };
+    expect(renderToStaticMarkup(<WaterTemperatureCard series={old} initialNow={now} locale="fr" />)).not.toContain("<table");
+    const futureOnly = { ...data, points: data.points.filter(p => Date.parse(p.time) > now) };
+    expect(renderToStaticMarkup(<WaterTemperatureCard series={futureOnly} initialNow={now} locale="fr" />)).not.toContain("<table");
+    expect(renderToStaticMarkup(<WaterTemperatureCard series={data} initialNow={now} locale="fr" />)).toContain("<table");
+  });
 });
 
 vi.mock("server-only", () => ({}));

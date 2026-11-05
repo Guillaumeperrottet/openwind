@@ -42,22 +42,22 @@ export async function GET(request: Request) {
   const lng = searchParams.get("lng");
   const radius = searchParams.get("radius") ?? "15";
 
-  if (!lat || !lng) {
+  if (!lat?.trim() || !lng?.trim()) {
     return NextResponse.json({ error: "lat et lng requis" }, { status: 400 });
   }
 
-  const latNum = parseFloat(lat);
-  const lngNum = parseFloat(lng);
-  const radiusNum = parseInt(radius, 10);
+  const latNum = Number(lat);
+  const lngNum = Number(lng);
+  const radiusNum = Number(radius);
 
   if (
-    isNaN(latNum) ||
-    isNaN(lngNum) ||
+    !Number.isFinite(latNum) ||
+    !Number.isFinite(lngNum) ||
     latNum < -90 ||
     latNum > 90 ||
     lngNum < -180 ||
     lngNum > 180 ||
-    isNaN(radiusNum) ||
+    !Number.isInteger(radiusNum) ||
     radiusNum < 1 ||
     radiusNum > 100
   ) {
@@ -85,16 +85,18 @@ export async function GET(request: Request) {
 
     const res = await fetch(url, {
       headers: { "x-windy-api-key": apiKey },
+      signal: AbortSignal.any([request.signal, AbortSignal.timeout(8000)]),
       next: { revalidate: 3600 }, // Cache 1h — les webcams bougent peu
     });
 
     if (!res.ok) {
-      return NextResponse.json({ webcams: [] });
+      return NextResponse.json({ error: "Webcams indisponibles" }, { status: 502 });
     }
 
     const data = (await res.json()) as { webcams?: WindyWebcam[] };
-    return NextResponse.json({ webcams: data.webcams ?? [] });
+    if (!Array.isArray(data.webcams)) throw new Error("Invalid webcam response");
+    return NextResponse.json({ webcams: data.webcams });
   } catch {
-    return NextResponse.json({ webcams: [] });
+    return NextResponse.json({ error: "Webcams indisponibles" }, { status: 502 });
   }
 }

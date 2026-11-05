@@ -14,6 +14,8 @@
     "wind:tiles:icon-eu": "python3 scripts/build-icon-eu-wind-tiles.py",
     "wind:tiles:publish": "python3 scripts/publish_wind_tiles.py",
     "wind:tiles:test": "python3 -m unittest scripts.test_publish_wind_tiles -v",
+    "spots:audit": "node --import tsx scripts/audit-spot-completeness.ts",
+    "spots:completions:check": "node --import tsx scripts/import-spot-completions.ts",
     "images:import:commons": "node scripts/import-commons-spot-images.mjs",
     "planner:import:swiss": "tsx scripts/import-swiss-planner-profiles.ts",
     "seo:import:neuchatel": "tsx scripts/import-neuchatel-seo.ts"

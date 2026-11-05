@@ -8,9 +8,11 @@ import { PLACE_COPY, hasWater, placeFeatureHref, type PlaceFeature } from "@/lib
 import { selectPlace, useSelectedPlace } from "@/lib/place-store";
 import { toSiteLocale } from "@/lib/site";
 import { MAP_FOCUS_EVENT, MAP_FOCUS_STORAGE_KEY } from "@/lib/mapFocus";
+import { usePublicFeatures } from "@/lib/public-features";
 
 export function PlaceActions({ compact = false, onlySelected = false, id }: { compact?: boolean; onlySelected?: boolean; id?: string }) {
   const place = useSelectedPlace(), locale = toSiteLocale(useLocale()), c = PLACE_COPY[locale];
+  const { water } = usePublicFeatures();
   const path = withoutLocale(usePathname());
   const active = path === "/webcams" ? "webcams" : path === "/temperatures" || path.startsWith("/lacs/") ? "water" : path.startsWith("/vent-en-direct/") ? "wind" : null;
   if (!place && onlySelected) return null;
@@ -20,7 +22,7 @@ export function PlaceActions({ compact = false, onlySelected = false, id }: { co
     <div className="ow-place-heading">{place ? <div><span>{c.current}</span><strong>{place.name}</strong></div> : <h2>{c.conditions}</h2>}
       {place && <div className="ow-place-change"><Link href={`/${locale}/recherche`}>{c.change}</Link><button type="button" onClick={() => selectPlace(null)} aria-label={c.clear}><X size={16} aria-hidden /></button></div>}
     </div>
-    <div className="ow-place-shortcuts">{(["wind", "webcams", "water"] as PlaceFeature[]).map(feature => { const Icon = icons[feature]; return <Link key={feature} className={feature === "water" && place && !hasWater(place) ? "ow-place-shortcut-unavailable" : undefined} aria-label={`${c[feature]} — ${detail[feature]}`} aria-current={active === feature ? "page" : undefined} href={placeFeatureHref(feature, place, locale)} prefetch={false} onClick={() => {
+    <div className={`ow-place-shortcuts${water ? "" : " ow-place-shortcuts-pair"}`}>{(["wind", "webcams", ...(water ? ["water"] : [])] as PlaceFeature[]).map(feature => { const Icon = icons[feature]; return <Link key={feature} className={feature === "water" && place && !hasWater(place) ? "ow-place-shortcut-unavailable" : undefined} aria-label={`${c[feature]} — ${detail[feature]}`} aria-current={active === feature ? "page" : undefined} href={placeFeatureHref(feature, place, locale)} prefetch={false} onClick={() => {
       if (feature === "wind" && place?.kind === "area") {
         const focus = { lat: place.lat, lng: place.lng, zoom: 10 };
         try { sessionStorage.setItem(MAP_FOCUS_STORAGE_KEY, JSON.stringify(focus)); } catch { /* Event still works on the mounted map. */ }

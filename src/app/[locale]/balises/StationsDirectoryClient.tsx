@@ -205,12 +205,12 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
                 <option value="latest">{t("sortLatest")}</option>
                 <option value="name">{t("sortName")}</option>
               </select>
-              <div className="inline-flex h-11 overflow-hidden rounded-lg border border-slate-200 text-xs font-semibold">
+              <div className="inline-flex shrink-0 overflow-hidden rounded-lg border border-slate-200 text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setUseKnots(true)}
                   aria-pressed={useKnots}
-                  className={`px-3 ${useKnots ? "bg-slate-950 text-white" : "bg-white text-slate-500"}`}
+                  className={`min-h-11 min-w-11 px-3 ${useKnots ? "bg-slate-950 text-white" : "bg-white text-slate-500"}`}
                 >
                   kts
                 </button>
@@ -218,7 +218,7 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
                   type="button"
                   onClick={() => setUseKnots(false)}
                   aria-pressed={!useKnots}
-                  className={`border-l border-slate-200 px-3 ${!useKnots ? "bg-slate-950 text-white" : "bg-white text-slate-500"}`}
+                  className={`min-h-11 min-w-11 border-l border-slate-200 px-3 ${!useKnots ? "bg-slate-950 text-white" : "bg-white text-slate-500"}`}
                 >
                   km/h
                 </button>
@@ -226,7 +226,7 @@ export function StationsDirectoryClient({ initialStations, initialQuery }: Props
               <Link
                 href="/?view=map"
                 aria-label={t("map")}
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-700"
               >
                 <MapIcon className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("map")}</span>
@@ -380,7 +380,7 @@ function NetworkButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex h-10 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-semibold ring-1 transition ${
+      className={`flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-semibold ring-1 transition ${
         active
           ? "bg-slate-950 text-white ring-slate-950"
           : "bg-white text-slate-600 ring-slate-200 hover:ring-slate-300"
@@ -425,13 +425,15 @@ function StationDirectoryCard({
         aria-label={isFavorite ? t("removeFavorite") : t("addFavorite")}
         aria-pressed={isFavorite}
         title={isFavorite ? t("removeFavorite") : t("addFavorite")}
-        className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-400 ring-1 ring-slate-200 transition hover:bg-amber-50 hover:text-amber-500 hover:ring-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+        className="group/favorite absolute right-1.5 top-1.5 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
       >
-        <Star
-          className={`h-4 w-4 ${
-            isFavorite ? "fill-amber-400 text-amber-400" : ""
-          }`}
-        />
+        <span aria-hidden="true" className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white ring-1 ring-slate-200 transition group-hover/favorite:bg-amber-50 group-hover/favorite:text-amber-500 group-hover/favorite:ring-amber-200">
+          <Star
+            className={`h-4 w-4 ${
+              isFavorite ? "fill-amber-400 text-amber-400" : ""
+            }`}
+          />
+        </span>
       </button>
       <Link
         href={`/stations/${encodeURIComponent(station.id)}`}

@@ -4,6 +4,8 @@ import { lakeMetadata, lakeSchema, temperatureCollectionSchema } from "@/lib/lak
 import { forumCategorySchema, forumText, forumTopicSchema } from "@/lib/forum-seo";
 import { vitalPayload, vitalsContext } from "@/lib/core-web-vitals";
 import { SITE_URL } from "@/lib/site";
+import { LAKE_PAGE_COPY } from "@/lib/lake-page-copy";
+import { ALPLAKES_GRUYERE } from "@/lib/lake-temperature";
 
 describe("public identity and safe structured content", () => {
   it("escapes script boundaries without changing the content", () => {
@@ -42,6 +44,22 @@ describe("lake coverage is indexable and accurately attributed", () => {
     const closed = temperatureCollectionSchema("fr", false)["@graph"][0];
     expect(open).toMatchObject({ mainEntity: { numberOfItems: 1, itemListElement: [{ item: { url: `${SITE_URL}/fr/lacs/gruyere` } }] } });
     expect(closed).toMatchObject({ mainEntity: { itemListElement: [{ item: { url: "https://www.alplakes.eawag.ch/gruyere" } }] } });
+  });
+  it.each(["fr", "en", "de", "it"] as const)("describes the model dataset using the visible method and attribution in %s", locale => {
+    const graph = lakeSchema(locale)["@graph"];
+    const dataset = graph.find(node => node["@type"] === "Dataset");
+    expect(dataset).toMatchObject({
+      "@id": `${SITE_URL}/${locale}/lacs/gruyere#dataset`,
+      license: ALPLAKES_GRUYERE.licence,
+      creator: { name: "Eawag" }, measurementTechnique: "Simstrat (1D)",
+      isBasedOn: { url: ALPLAKES_GRUYERE.page },
+      variableMeasured: { unitText: "°C", description: LAKE_PAGE_COPY[locale].depth },
+    });
+    expect(dataset?.description).toContain(LAKE_PAGE_COPY[locale].explanation);
+    expect(dataset?.description).toContain(LAKE_PAGE_COPY[locale].sourceNote);
+    expect(dataset).not.toHaveProperty("dateModified");
+    expect(dataset).not.toHaveProperty("measurement");
+    expect(graph[0]).toMatchObject({ mainEntity: { "@id": dataset?.["@id"] } });
   });
 });
 

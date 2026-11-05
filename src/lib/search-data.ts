@@ -14,6 +14,7 @@ import { LOCAL_GUIDES } from "./local-guides";
 import { NETWORK_LABELS } from "./stationConstants";
 import { previewCarnetRevision } from "./carnet-preview";
 import { isSnowkiteSpot, spotActivityLabel } from "./spot-activity";
+import { lakePageEnabled } from "./lake-page-enabled";
 
 function lakeTerms(id: string, kind: "spot" | "station") {
   return LOCAL_GUIDES.filter((guide) =>
@@ -81,10 +82,11 @@ async function getPublicData() {
 export async function getSearchEntries(
   locale: SiteLocale,
 ): Promise<{ entries: SearchEntry[]; partial: boolean }> {
-  const entries = [...guideSearchEntries(locale), ...appSearchEntries(locale)];
+  const enabled = lakePageEnabled();
+  const entries = [...guideSearchEntries(locale), ...appSearchEntries(locale, enabled)];
   const water = ACCESS_COPY[locale];
   const waterGuide = LOCAL_GUIDES.find(g => g.slug === "lac-de-la-gruyere");
-  entries.push({ id: "water-gruyere", kind: "water", title: `${water.temperatures} · ${water.gruyere}`, subtitle: water.waterModel, href: `/${locale}/temperatures?place=lake:lac-de-la-gruyere`, terms: `temperature eau water wasser acqua gruyere greyerzersee Simstrat Alplakes Eawag ${waterGuide?.aliases?.join(" ") ?? ""} ${waterGuide?.stations.map(s => s.name).join(" ") ?? ""}` });
+  if (enabled) entries.push({ id: "water-gruyere", kind: "water", title: `${water.temperatures} · ${water.gruyere}`, subtitle: water.waterModel, href: `/${locale}/temperatures?place=lake:lac-de-la-gruyere`, terms: `temperature eau water wasser acqua gruyere greyerzersee Simstrat Alplakes Eawag ${waterGuide?.aliases?.join(" ") ?? ""} ${waterGuide?.stations.map(s => s.name).join(" ") ?? ""}` });
   try {
     const { spots, stations, articles, categories, topics } = await getPublicData();
     const copy = SEARCH_COPY[locale];

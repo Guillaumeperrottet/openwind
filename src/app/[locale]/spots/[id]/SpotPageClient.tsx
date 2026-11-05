@@ -1,9 +1,7 @@
 "use client";
 
-import { QualificationPanel } from "@/components/plan/QualificationPanel";
-import type { PlannerQualification } from "@/lib/planner-review";
-import { plannerUiCopy } from "@/lib/planner-ui-copy";
-import { toSiteLocale } from "@/lib/site";
+import { normalizeSpotMonths } from "@/lib/spot-months";
+
 import {
   useState,
   useEffect,
@@ -210,7 +208,6 @@ interface Props {
   canEdit?: boolean;
   live: WindLive | null;
   initialForecast?: FullForecast | null;
-  qualification?: PlannerQualification;
   waterTemperature?: ReactNode;
   children?: ReactNode;
 }
@@ -233,7 +230,6 @@ export function SpotPageClient({
   canEdit = false,
   live: initialLive,
   initialForecast = null,
-  qualification,
   waterTemperature,
   children,
 }: Props) {
@@ -450,7 +446,7 @@ export function SpotPageClient({
   const tMonths = useTranslations("Months");
   const { difficultyLabel, waterLabel } = useBadgeLabels();
 
-  const bestMonthLabels = spot.bestMonths
+  const bestMonthLabels = normalizeSpotMonths(spot.bestMonths)
     .map((m) => {
       const n = parseInt(m);
       return n >= 1 && n <= 12
@@ -637,22 +633,6 @@ export function SpotPageClient({
         <section className="ow-spot-information" aria-labelledby="spot-information-title">
           <h2 id="spot-information-title" className="text-xl font-semibold">{app("spotInformation")}</h2>
           <div className="ow-spot-info-grid"><div>
-            <details className="ow-qualification">
-              <summary className="flex min-h-11 cursor-pointer items-center text-xs font-semibold text-slate-700">
-                {
-                  plannerUiCopy[toSiteLocale(locale)].status[
-                    qualification?.status ?? "MISSING"
-                  ]
-                }{" "}
-                {" / "}{plannerUiCopy[toSiteLocale(locale)].details}
-              </summary>
-              <div className="pb-3">
-                <QualificationPanel
-                  qualification={qualification}
-                  locale={toSiteLocale(locale)}
-                />
-              </div>
-            </details>
             {/* Toggle infos détaillées */}
             <button
               type="button"

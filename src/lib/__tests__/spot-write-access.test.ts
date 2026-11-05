@@ -2,13 +2,14 @@ import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
-  getUser: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(),
+  getUser: vi.fn(), transaction: vi.fn(), createReview: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(),
   images: vi.fn(), deleteImages: vi.fn(), createImage: vi.fn(), upload: vi.fn(), remove: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ auth: { getUser: mocks.getUser } }) }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
+  $transaction: mocks.transaction,
   spot: { findUnique: mocks.findUnique, create: mocks.create, update: mocks.update, delete: mocks.delete },
   spotImage: { findMany: mocks.images, deleteMany: mocks.deleteImages, create: mocks.createImage },
 } }));
@@ -27,7 +28,15 @@ function request(method: string, body: unknown = {}) {
     method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
   });
 }
-const input = { name: "Lac test", latitude: 46.8, longitude: 6.7 };
+const input = {
+  name: "Lac test", latitude: 46.8, longitude: 6.7, country: "Suisse", sportType: "KITE", discipline: "WATER_KITE",
+  description: "Une description locale suffisamment détaillée du lieu de pratique et de ses particularités.",
+  difficulty: "ADVANCED", waterType: "CHOP", minWindKmh: 15, maxWindKmh: 35,
+  bestMonths: ["5", "6", "7"], bestWindDirections: ["N", "NNE"], seasonMode: "MONTHS",
+  access: "Accès par la zone de mise à l’eau autorisée, sous réserve des consignes affichées sur place.",
+  hazards: "Présence de baigneurs et variations du vent à vérifier avant chaque départ.",
+  sources: { discipline: "https://club.example/spot", directions: "https://club.example/spot", season: "https://club.example/spot", access: "https://club.example/spot" },
+};
 const asUser = (id: string | null, error: unknown = null) => mocks.getUser.mockResolvedValue({ data: { user: id ? { id } : null }, error });
 
 beforeEach(() => {
@@ -35,7 +44,9 @@ beforeEach(() => {
   vi.stubEnv("ADMIN_USER_IDS", "admin");
   asUser("member");
   mocks.findUnique.mockResolvedValue({ id: "spot-1", minWindKmh: 15, maxWindKmh: 35 });
-  mocks.create.mockResolvedValue({ id: "spot-1" });
+  mocks.create.mockResolvedValue({ ...input, id: "spot-1" });
+  mocks.createReview.mockResolvedValue({});
+  mocks.transaction.mockImplementation(async callback => callback({ spot: { create: mocks.create }, systemConfig: { create: mocks.createReview } }));
   mocks.update.mockResolvedValue({ id: "spot-1" });
   mocks.images.mockResolvedValue([]);
   mocks.upload.mockResolvedValue({ error: null });
@@ -50,9 +61,28 @@ describe("spot write authorization", () => {
     expect((await POST(request("POST", input))).status).toBe(401);
     expect(mocks.create).not.toHaveBeenCalled();
   });
-  it("allows a verified account to create a spot", async () => {
+  it("allows a verified account to create a complete spot and retains its sources for review", async () => {
     expect((await POST(request("POST", input))).status).toBe(201);
     expect(mocks.create).toHaveBeenCalledOnce();
+    const stored = JSON.parse(mocks.createReview.mock.calls[0][0].data.value);
+    expect(stored.status).toBe("NEEDS_REVIEW");
+    expect(stored.sources[0].covers).toEqual(["discipline", "directions", "season", "access"]);
+    expect(mocks.create.mock.calls[0][0].data).not.toHaveProperty("sources");
+  });
+  it.each(["description", "hazards", "access", "sources", "discipline", "country"])("rejects an authenticated creation missing %s", async field => {
+    const data = { ...input, [field]: undefined };
+    expect((await POST(request("POST", data))).status).toBe(400);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+  it("rejects a complete-looking submission without directions or season", async () => {
+    expect((await POST(request("POST", { ...input, bestWindDirections: [] }))).status).toBe(400);
+    expect((await POST(request("POST", { ...input, bestMonths: [] }))).status).toBe(400);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+  it("does not return success if storing the documentary submission fails", async () => {
+    mocks.createReview.mockRejectedValueOnce(new Error("write failed"));
+    expect((await POST(request("POST", input))).status).toBe(500);
+    expect(mocks.transaction).toHaveBeenCalledOnce();
   });
   it.each([null, "member"])("denies edits and deletion for %s before any catalogue read", async (id) => {
     asUser(id);

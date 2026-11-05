@@ -45,4 +45,12 @@ La lecture principale garde le dernier pas de modèle antérieur à l’heure pr
 
 Les plages quotidiennes précisent les heures couvertes et ne sont pas affichées comme prévisions récentes si le dernier pas actuel a plus de six heures. Les explications rappellent qu’une colonne unique ne décrit pas les différences entre plages et qu’aucune correction locale ni sonde en direct n’est utilisée. Le pilote de Zurich n’est pas transposé à la Gruyère.
 
-La passe qualité du 3 novembre prépare cette page à une publication indexable : elle est désormais activée par défaut, avec canonique, alternatives linguistiques et présence au sitemap. `ALPLAKES_LAKE_PAGE_ENABLED=false` reste un interrupteur pour désactiver la route et retirer ses liens d’accès ainsi que ses entrées du sitemap, indépendamment de `ALPLAKES_WATER_ENABLED`. Rien n’a été poussé ni configuré en production. Le lien source pointe vers la page officielle vérifiée `https://www.alplakes.eawag.ch/gruyere`. Voir `docs/quality-seo.md` pour les contrôles.
+La passe qualité du 3 novembre prépare cette page à une publication indexable : elle est désormais activée par défaut, avec canonique, alternatives linguistiques et présence au sitemap. `ALPLAKES_LAKE_PAGE_ENABLED=false` reste un interrupteur pour désactiver la route et retirer ses liens d’accès ainsi que ses entrées du sitemap, avec le même interrupteur que le bloc Morlon. Rien n’a été poussé ni configuré en production. Le lien source pointe vers la page officielle vérifiée `https://www.alplakes.eawag.ch/gruyere`. Voir `docs/quality-seo.md` pour les contrôles.
+
+### État actuel au 4 novembre 2026 : réactivation autorisée, toujours locale
+
+La nouvelle demande utilisateur rétablit la visibilité des températures. Elles sont actives par défaut. `ALPLAKES_LAKE_PAGE_ENABLED=false` reste le seul interrupteur commun aux pages, à l’indexation, aux liens et au bloc Morlon ; l’ancienne variable `ALPLAKES_WATER_ENABLED` n’intervient plus. Aucune configuration de production ni publication n’est effectuée.
+
+Vérification API du 4 novembre à 09:53 UTC : couverture annoncée jusqu’au 8 novembre ; 14,817 °C pour le pas du 4 novembre à 07:00:02 UTC à 1 m, trois jours de prévision disponibles. Ces chiffres documentent la vérification et ne servent jamais de secours en cas de panne. Les deux surfaces masquent les prévisions lorsque l’estimation actuelle est ancienne ou absente.
+
+La lecture principale des pages dédiées est rendue avec le document, sans attendre une révélation côté navigateur. H1 explicite dans les quatre langues, données structurées Dataset fidèles à la méthode visible, canoniques et hreflang préparent la découverte par les moteurs. Voir `docs/quality-seo.md` pour les contrôles et leurs limites.

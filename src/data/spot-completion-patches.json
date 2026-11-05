@@ -1,0 +1,1708 @@
+[
+  {
+    "id": "cmnr312220004ijf6l2oobbhb",
+    "name": "Yvonand",
+    "previousFingerprint": "7b30b726d68a0ffa9d32fb63a2d553f5f8fb6c2fc0aef83aad875a6b3e1bf3c4",
+    "checkedAt": "2026-11-04",
+    "source": {
+      "title": "Association Romande de Kitesurf — Yvonand",
+      "url": "https://www.kitesurf.ch/yvonand"
+    },
+    "fields": {
+      "hazards": "Arbres au bord du départ, zone déventée côté plagistes, baigneurs et bateaux. Respecter la réserve ornithologique et les bouées jaunes.",
+      "hazardsEn": "Trees beside the launch, wind shadow near the swimming area, swimmers and boats. Respect the bird reserve and yellow buoys.",
+      "hazardsDe": "Bäume am Start, Windschatten beim Badebereich, Schwimmer und Boote. Vogelschutzgebiet und gelbe Bojen respektieren.",
+      "hazardsIt": "Alberi presso la partenza, zona coperta dal vento vicino ai bagnanti e passaggio di barche. Rispettare riserva ornitologica e boe gialle."
+    }
+  },
+  {
+    "id": "cmnr30vtl0003ijf6ylndlqlf",
+    "name": "Portalban",
+    "previousFingerprint": "ca5b1db02f83995dabc383eec5d10f8f5990fa2e513ef0e306c65de956b6c1ff",
+    "checkedAt": "2026-11-04",
+    "source": {
+      "title": "Swisskite — règles de Portalban",
+      "url": "https://www.swisskite.club/les-vents"
+    },
+    "fields": {
+      "hazards": "Baigneurs et fréquentation estivale. Préparer et décoller uniquement dans les zones désignées ; ne pas entrer dans la réserve de la Grande Cariçaie.",
+      "hazardsEn": "Swimmers and busy summer conditions. Prepare and launch only in designated areas; do not enter the Grande Cariçaie nature reserve.",
+      "hazardsDe": "Badegäste und starker Sommerbetrieb. Nur in bezeichneten Bereichen vorbereiten und starten; das Naturschutzgebiet Grande Cariçaie nicht befahren.",
+      "hazardsIt": "Bagnanti e affollamento estivo. Preparare e decollare soltanto nelle zone designate; non entrare nella riserva della Grande Cariçaie."
+    },
+    "additionalSources": [
+      {
+        "title": "OFEV / GeoAdmin — point actuel de Portalban, tolérance nulle",
+        "url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/identify?geometry=6.949%2C46.918&geometryType=esriGeometryPoint&layers=all%3Ach.bafu.bundesinventare-vogelreservate&tolerance=0&sr=4326&lang=fr&returnGeometry=false"
+      },
+      {
+        "title": "OFEV — Réserve Chevroux jusqu’à Portalban, fiche no 5",
+        "url": "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr5.pdf"
+      }
+    ],
+    "reason": "Le club documente une zone de kite, mais le point enregistré intersecte le secteur I interdit de la réserve. Vérifier et distinguer le départ autorisé avant de maintenir une recommandation.",
+    "previousReview": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "ca5b1db02f83995dabc383eec5d10f8f5990fa2e513ef0e306c65de956b6c1ff",
+      "reviewedAt": "2026-10-22",
+      "expiresAt": "2027-01-20",
+      "sectors": [
+        {
+          "from": 225,
+          "to": 315
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Le planificateur retient uniquement le secteur SW–NW décrit par Swisskite, plutôt que la Bise mentionnée dans le catalogue. Vérifier les zones de départ estivales, de baignade et de réserve. Niveau et stationnement non validés.",
+        "de": "Der Planer verwendet nur den von Swisskite beschriebenen Sektor SW–NW statt der Bise im Katalog. Sommerliche Startzonen, Badebereiche und Naturschutz prüfen. Niveau und Parkangaben nicht bestätigt.",
+        "it": "Il pianificatore usa solo il settore SW–NW descritto da Swisskite, invece della Bise indicata nel catalogo. Verificare zone estive di partenza, balneazione e riserva. Livello e parcheggi non convalidati.",
+        "en": "The planner uses only the SW–NW sector documented by Swisskite, rather than the Bise mentioned in the catalogue. Check summer launch zones, swimming areas and the nature reserve. Difficulty and parking are unverified."
+      },
+      "sources": [
+        {
+          "title": "Swisskite — vents SW à NW",
+          "url": "https://www.swisskite.club/kopie-von-les-r%C3%A9gles",
+          "covers": [
+            "discipline",
+            "directions"
+          ]
+        },
+        {
+          "title": "Swisskite — zones et règles locales",
+          "url": "https://www.swisskite.club/les-vents",
+          "covers": [
+            "season",
+            "access"
+          ]
+        }
+      ]
+    },
+    "review": {
+      "version": 1,
+      "status": "NEEDS_REVIEW",
+      "discipline": "WATER_KITE",
+      "fingerprint": "797737ea5d4bf3bb9f0695b5e7d24339d0b5ce0deea6ffa8f631ec2e2ea31612",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [
+        {
+          "from": 225,
+          "to": 315
+        }
+      ],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Le club confirme un départ réglementé, mais le repère actuel croise le secteur I OROEM no 5. Vérifier la localisation du départ autorisé avant toute recommandation.",
+        "de": "Der Club bestätigt einen geregelten Start, doch der aktuelle Punkt liegt im WZVV-Sektor I, Objekt 5. Erlaubten Start vor Empfehlungen lokalisieren.",
+        "it": "Il club conferma una partenza regolamentata, ma il punto attuale interseca il settore I OROEM, oggetto 5. Verificare la partenza autorizzata prima di raccomandare.",
+        "en": "The club confirms a regulated launch, but the current marker intersects OROEM sector I, object 5. Verify the authorised launch location before recommending."
+      },
+      "sources": [
+        {
+          "title": "Swisskite — vents SW à NW",
+          "url": "https://www.swisskite.club/kopie-von-les-r%C3%A9gles",
+          "covers": [
+            "discipline",
+            "directions"
+          ]
+        },
+        {
+          "title": "Swisskite — zones et règles locales",
+          "url": "https://www.swisskite.club/les-vents",
+          "covers": [
+            "season",
+            "access"
+          ]
+        },
+        {
+          "title": "OFEV / GeoAdmin — point actuel de Portalban, tolérance nulle",
+          "url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/identify?geometry=6.949%2C46.918&geometryType=esriGeometryPoint&layers=all%3Ach.bafu.bundesinventare-vogelreservate&tolerance=0&sr=4326&lang=fr&returnGeometry=false",
+          "covers": [
+            "access"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "cmnr46jjd0000i5f6q521m974",
+    "name": "Cudrefin",
+    "previousFingerprint": "3191b1a3a7564d64781cfc79eb9ffdbf52348dc0933bd85932c258508f1bd5cb",
+    "checkedAt": "2026-11-04",
+    "source": {
+      "title": "Association Romande de Kitesurf — Cudrefin",
+      "url": "https://www.kitesurf.ch/cudrefin"
+    },
+    "fields": {
+      "hazards": "Zone de gonflage extrêmement restreinte entre les bateaux. Dévent au départ par vent d’est ; respecter les couloirs et le panneau local.",
+      "hazardsEn": "Very limited kite preparation space between boats. Wind shadow at the launch in easterly wind; follow the corridors and local signs.",
+      "hazardsDe": "Sehr enger Vorbereitungsbereich zwischen Booten. Windschatten beim Start bei Ostwind; markierte Wege und lokale Tafeln beachten.",
+      "hazardsIt": "Spazio di preparazione molto ristretto fra le barche. Partenza coperta dal vento da est; rispettare corridoi e cartelli locali."
+    }
+  },
+  {
+    "name": "Makkum",
+    "source": {
+      "title": "Nederlandse Kitesurf Vereniging — Makkum",
+      "url": "https://kitesurfvereniging.nl/kitespot/makkum/"
+    },
+    "additionalSources": [
+      {
+        "title": "Commune Súdwest-Fryslân — sites de kite",
+        "url": "https://sudwestfryslan.nl/onderwerp/kitesurflessen-geven/"
+      }
+    ],
+    "reason": "Le calendrier d’été contredit l’ouverture hivernale publiée. Mois renseignés comme période autorisée, sans statistique de vent.",
+    "fields": {
+      "description": "Baie peu profonde de l’IJsselmeer, ouverte au kite d’octobre à avril, dans la zone désignée.",
+      "descriptionEn": "Shallow IJsselmeer bay, open for kiting October–April within the designated area.",
+      "descriptionDe": "Flache IJsselmeerbucht. Kiten ist von Oktober bis April in der ausgewiesenen Zone erlaubt.",
+      "descriptionIt": "Baia poco profonda dell’IJsselmeer, aperta al kite da ottobre ad aprile nella zona indicata.",
+      "hazards": "Windsurfeurs, chenal navigable au nord et peu d’espace pour décoller.",
+      "hazardsEn": "Windsurfers, a navigation channel to the north and limited launch space.",
+      "hazardsDe": "Windsurfer, Fahrwasser im Norden und wenig Platz zum Starten.",
+      "hazardsIt": "Windsurfisti, canale navigabile a nord e spazio ridotto per decollare.",
+      "access": "Départ au nord-ouest de la baie. Par vent d’ouest, mise à l’eau avant le décollage.",
+      "accessEn": "Launch in the northwest of the bay. In westerly wind, enter the water before launching.",
+      "accessDe": "Start im Nordwesten der Bucht. Bei Westwind vor dem Start ins Wasser gehen.",
+      "accessIt": "Partenza a nord-ovest della baia. Con vento da ovest, entrare in acqua prima del decollo.",
+      "bestMonths": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "10",
+        "11",
+        "12"
+      ],
+      "bestWindDirections": [
+        "N",
+        "NW",
+        "W",
+        "SW",
+        "S"
+      ]
+    },
+    "id": "cmnpsrwkm001yhaf6ef2inyz8",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "dcea768badb91b72b3af763d42951ff00c9bf5c4bee69a42f710088cb152d53f",
+    "previousValues": {
+      "description": "Makkum sur l’IJsselmeer offre un flat parfait protégé par la digue d’Afsluitdijk. Eau peu profonde, idéal débutants et freestyle. Vent régulier de SW/W.",
+      "descriptionEn": "Makkum on the IJsselmeer offers a perfect flat protected by the Afsluitdijk dike. Shallow water, ideal for beginners and freestyle. Steady wind SW/W.",
+      "descriptionDe": "Makkum am IJsselmeer bietet eine perfekte Ebene, die vom Afsluitdijk-Deich geschützt ist. Flaches Wasser, ideal für Anfänger und Freistil. Gleichmäßiger Wind SW/W.",
+      "descriptionIt": "Makkum sull'IJsselmeer offre un piano perfettamente protetto dalla diga dell'Afsluitdijk. Acque poco profonde, ideale per principianti e freestyle. Vento costante ov/ovest.",
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "access": "Makkum, Frise. 1h30 au nord d’Amsterdam.",
+      "accessEn": "Makkum, Friesland. 1h30 north of Amsterdam.",
+      "accessDe": "Makkum, Friesland. 1:30 nördlich von Amsterdam.",
+      "accessIt": "Makkum, Frisia. 1:30 a nord di Amsterdam.",
+      "bestMonths": [
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September"
+      ],
+      "bestWindDirections": [
+        "SW",
+        "WSW",
+        "W",
+        "SSW"
+      ]
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "a87d77cba98c6d30fb6215f95e467430b6eaec311d9f5258cb6aa71d569e6fc7",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [
+        {
+          "from": 180,
+          "to": 0
+        }
+      ],
+      "season": "MONTHS",
+      "months": [
+        1,
+        2,
+        3,
+        4,
+        10,
+        11,
+        12
+      ],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Revue de la discipline, des orientations, de la saison et des accès publiés. Difficulté et seuils de vent du catalogue non certifiés ; vérifier la signalisation sur place.",
+        "de": "Prüfung veröffentlichter Sportart, Windrichtungen, Saison und Zugänge. Katalog-Schwierigkeit und Windgrenzen sind nicht bestätigt; Beschilderung vor Ort prüfen.",
+        "it": "Revisione di attività, direzioni, stagione e accessi pubblicati. Difficoltà e soglie del catalogo non certificate; verificare i cartelli sul posto.",
+        "en": "Review of published activity, wind directions, season and access. Catalogue difficulty and wind thresholds are not certified; check signs on site."
+      },
+      "sources": [
+        {
+          "title": "Nederlandse Kitesurf Vereniging — Makkum",
+          "url": "https://kitesurfvereniging.nl/kitespot/makkum/",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        }
+      ]
+    },
+    "previousReview": null
+  },
+  {
+    "name": "Hindeloopen",
+    "source": {
+      "title": "Nederlandse Kitesurf Vereniging — Hindeloopen",
+      "url": "https://kitesurfvereniging.nl/kitespot/hindeloopen/"
+    },
+    "additionalSources": [
+      {
+        "title": "Office du tourisme — spot de Hindeloopen",
+        "url": "https://www.waterlandvanfriesland.nl/nl/locaties/617173448/kitesurfspot-hindeloopen"
+      }
+    ],
+    "reason": "Compléter les risques, préciser le départ au-delà des poteaux et reprendre les orientations publiées par la fédération.",
+    "fields": {
+      "hazards": "Poteaux près du bord, banc de sable puis profondeur soudaine. Préparation sur la digue tant que l’aménagement annoncé n’est pas réalisé.",
+      "hazardsEn": "Posts near shore, a sandbank and sudden depth beyond it. Prepare on the dyke until the announced beach works are completed.",
+      "hazardsDe": "Pfähle am Ufer, Sandbank und dahinter plötzlich tiefes Wasser. Bis zum angekündigten Strandausbau auf dem Deich vorbereiten.",
+      "hazardsIt": "Pali vicino alla riva, banco di sabbia e profondità improvvisa oltre il banco. Prepararsi sull’argine fino alla sistemazione annunciata.",
+      "access": "Zone kite au-delà de la rangée de poteaux ; rejoindre l’eau avant de décoller vers le large.",
+      "accessEn": "Kite area beyond the row of posts; enter the water before launching towards the open lake.",
+      "accessDe": "Kitezone jenseits der Pfahlreihe; vor dem Start Richtung offenes Wasser ins Wasser gehen.",
+      "accessIt": "Zona kite oltre la fila di pali; entrare in acqua prima di decollare verso il lago aperto.",
+      "bestWindDirections": [
+        "NW",
+        "W",
+        "SW",
+        "S"
+      ]
+    },
+    "id": "cmnpsrwm70020haf6bldb9b03",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "33cfbc831d0f768c80fddc90a10b90fd3d7ea2e684da813dbbdb1040ad3ef6b0",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "access": "Hindeloopen, Frise. 1h45 au nord d’Amsterdam.",
+      "accessEn": "Hindeloopen, Friesland. 1h45 north of Amsterdam.",
+      "accessDe": "Hindeloopen, Friesland. 1:45 nördlich von Amsterdam.",
+      "accessIt": "Hindeloopen, Frisia. 1:45 a nord di Amsterdam.",
+      "bestWindDirections": [
+        "SW",
+        "WSW",
+        "W",
+        "SSW",
+        "S"
+      ]
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "0c337432e4b9d33065f06297ffc72d4daa66ed8c5dfd61dec7666aea705519c1",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [
+        {
+          "from": 180,
+          "to": 315
+        }
+      ],
+      "season": "MONTHS",
+      "months": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Revue de la discipline, des orientations, de la saison et des accès publiés. Difficulté et seuils de vent du catalogue non certifiés ; vérifier la signalisation sur place.",
+        "de": "Prüfung veröffentlichter Sportart, Windrichtungen, Saison und Zugänge. Katalog-Schwierigkeit und Windgrenzen sind nicht bestätigt; Beschilderung vor Ort prüfen.",
+        "it": "Revisione di attività, direzioni, stagione e accessi pubblicati. Difficoltà e soglie del catalogo non certificate; verificare i cartelli sul posto.",
+        "en": "Review of published activity, wind directions, season and access. Catalogue difficulty and wind thresholds are not certified; check signs on site."
+      },
+      "sources": [
+        {
+          "title": "Nederlandse Kitesurf Vereniging — Hindeloopen",
+          "url": "https://kitesurfvereniging.nl/kitespot/hindeloopen/",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        }
+      ]
+    },
+    "previousReview": null
+  },
+  {
+    "name": "Brouwersdam",
+    "source": {
+      "title": "Nederlandse Kitesurf Vereniging — Brouwersdam",
+      "url": "https://kitesurfvereniging.nl/kitespot/brouwersdam/"
+    },
+    "reason": "Distinguer la zone de départ kitefoil immédiatement profonde des secteurs peu profonds et reprendre les orientations NKV.",
+    "fields": {
+      "hazards": "Eau peu profonde sur de longues distances. La zone de départ kitefoil est immédiatement profonde et réservée aux foils.",
+      "hazardsEn": "Shallow water extends a long way. The kitefoil launch area is immediately deep and reserved for foils.",
+      "hazardsDe": "Über weite Strecken flaches Wasser. Die Kitefoil-Startzone ist sofort tief und Foils vorbehalten.",
+      "hazardsIt": "Acqua bassa per lunghi tratti. La partenza kitefoil è subito profonda e riservata ai foil.",
+      "bestWindDirections": [
+        "N",
+        "NW",
+        "W",
+        "SW"
+      ]
+    },
+    "id": "cmnpsrwjt001xhaf6w2cuxkv8",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "0149c094e2ddf8ff037c12b812cbaa2434849306084d1dcb1776dbb629c029b3",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "bestWindDirections": [
+        "SW",
+        "WSW",
+        "W",
+        "SSW"
+      ]
+    },
+    "review": {
+      "version": 1,
+      "status": "DOCUMENTED",
+      "discipline": "WATER_KITE",
+      "fingerprint": "c0f9d9a05f6ef3877ec8c6b9242a31b71d939c96a0474d81e96f22ee83f72887",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [
+        {
+          "from": 225,
+          "to": 0
+        }
+      ],
+      "season": "MONTHS",
+      "months": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Revue de la discipline, des orientations, de la saison et des accès publiés. Difficulté et seuils de vent du catalogue non certifiés ; vérifier la signalisation sur place.",
+        "de": "Prüfung veröffentlichter Sportart, Windrichtungen, Saison und Zugänge. Katalog-Schwierigkeit und Windgrenzen sind nicht bestätigt; Beschilderung vor Ort prüfen.",
+        "it": "Revisione di attività, direzioni, stagione e accessi pubblicati. Difficoltà e soglie del catalogo non certificate; verificare i cartelli sul posto.",
+        "en": "Review of published activity, wind directions, season and access. Catalogue difficulty and wind thresholds are not certified; check signs on site."
+      },
+      "sources": [
+        {
+          "title": "Nederlandse Kitesurf Vereniging — Brouwersdam",
+          "url": "https://kitesurfvereniging.nl/kitespot/brouwersdam/",
+          "covers": [
+            "discipline",
+            "directions",
+            "season",
+            "access"
+          ]
+        }
+      ]
+    },
+    "previousReview": null
+  },
+  {
+    "name": "Camber Sands",
+    "source": {
+      "title": "Rother District Council — Camber Sands",
+      "url": "https://www.rother.gov.uk/leisure-and-events/beaches-and-coastline/camber-sands/"
+    },
+    "reason": "La commune impose une restriction autour de la pleine mer. Les données de marée ne sont pas évaluées par le planificateur.",
+    "fields": {
+      "hazards": "Pas de kite pendant les trois heures avant et après pleine mer. Courants, épis, rochers et zone militaire à drapeaux rouges.",
+      "hazardsEn": "No kiting during the three hours before and after high tide. Currents, groynes, rocks and military red-flag restrictions.",
+      "hazardsDe": "Drei Stunden vor und nach Hochwasser nicht kiten. Strömungen, Buhnen, Felsen und militärische Sperren bei roten Flaggen beachten.",
+      "hazardsIt": "Niente kite nelle tre ore prima e dopo l’alta marea. Correnti, pennelli, rocce e restrizioni militari con bandiere rosse.",
+      "access": "Utiliser la zone kite signalée à Broomhill ; assurance responsabilité civile obligatoire.",
+      "accessEn": "Use the signed kite area at Broomhill; third-party liability insurance is required.",
+      "accessDe": "Die ausgeschilderte Kitezone bei Broomhill nutzen; Haftpflichtversicherung erforderlich.",
+      "accessIt": "Usare la zona kite segnalata a Broomhill; assicurazione di responsabilità civile obbligatoria."
+    },
+    "id": "cmnpsrwuh002ahaf6jel4lniq",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "8ada0e822a609d1451a25715ed8552a66f7e12161ec20ea6a69a71b9ec29440a",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "access": "Camber, East Sussex. 1h30 au sud-est de Londres.",
+      "accessEn": "Camber, East Sussex. 1h30 south-east of London.",
+      "accessDe": "Camber, Ost-Sussex. 1:30 Uhr südöstlich von London.",
+      "accessIt": "Camber, East Sussex. 1:30 a sud-est di Londra."
+    },
+    "review": {
+      "version": 1,
+      "status": "NEEDS_REVIEW",
+      "discipline": "WATER_KITE",
+      "fingerprint": "a8bbb92008dffeefee17b671487c531ff0d9a983ced1e396219dcc512df6d164",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [
+        {
+          "from": 180,
+          "to": 270
+        }
+      ],
+      "season": "UNKNOWN",
+      "months": [],
+      "access": "CONDITIONAL",
+      "notes": {
+        "fr": "Les contraintes de marée ne sont pas évaluées par Openwind. Validation complémentaire nécessaire avant toute recommandation.",
+        "de": "Openwind wertet die Gezeitenbedingungen nicht aus. Vor Empfehlungen ist eine zusätzliche Prüfung nötig.",
+        "it": "Openwind non valuta i vincoli di marea. Serve un’ulteriore verifica prima dei suggerimenti.",
+        "en": "Openwind does not evaluate tidal constraints. Further validation is required before recommendations."
+      },
+      "sources": [
+        {
+          "title": "Rother District Council — Camber Sands",
+          "url": "https://www.rother.gov.uk/leisure-and-events/beaches-and-coastline/camber-sands/",
+          "covers": [
+            "discipline",
+            "directions",
+            "access"
+          ]
+        }
+      ]
+    },
+    "previousReview": null
+  },
+  {
+    "name": "Hayling Island",
+    "source": {
+      "title": "Bristol Kite Club — Hayling Island",
+      "url": "https://www.bristolkite.com/kite-spots/hayling-island"
+    },
+    "additionalSources": [
+      {
+        "title": "Langstone Harbour Board — windsurfing and kites",
+        "url": "https://www.langstoneharbour.org.uk/windsurfing-and-kites"
+      },
+      {
+        "title": "Hayling Island — kitesurfing",
+        "url": "https://hayling.co.uk/watersports/kitesurfing/"
+      }
+    ],
+    "reason": "Préciser les obstacles et l’espace réduit à marée haute ; distinguer les plages kite du port protégé.",
+    "fields": {
+      "hazards": "Marée haute : plage réduite et shore-break. Blocs, épis et rochers immergés vers l’est ; confirmer le créneau avec les pratiquants locaux.",
+      "hazardsEn": "High tide reduces beach space and increases shore-break. Blocks, groynes and submerged rocks lie to the east; confirm timing locally.",
+      "hazardsDe": "Bei Hochwasser wenig Strand und Shorebreak. Östlich liegen Blöcke, Buhnen und untergetauchte Felsen; Zeitfenster vor Ort klären.",
+      "hazardsIt": "Alta marea: spiaggia ridotta e shore-break. A est blocchi, pennelli e rocce sommerse; confermare la finestra con i praticanti locali.",
+      "access": "Utiliser les zones kite signalées du front de mer. Ne pas entrer dans Langstone Harbour sans accord de l’autorité portuaire.",
+      "accessEn": "Use the signed seafront kite areas. Do not enter Langstone Harbour without the harbour authority’s consent.",
+      "accessDe": "Die ausgeschilderten Kitezonen an der Küste nutzen. Langstone Harbour nicht ohne Zustimmung der Hafenbehörde befahren.",
+      "accessIt": "Usare le zone kite segnalate sul lungomare. Non entrare a Langstone Harbour senza il consenso dell’autorità portuale."
+    },
+    "id": "cmnpsrwva002bhaf61696zuak",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "b1c8b258502999529d03727be9600757d7b7f9d4ee013666a571fef47d3171b5",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "access": "Île Hayling, Hampshire. 1h30 au sud-ouest de Londres.",
+      "accessEn": "Hayling Island, Hampshire. 1h30 southwest of London.",
+      "accessDe": "Hayling Island, Hampshire. 1:30 Uhr südwestlich von London.",
+      "accessIt": "Isola Hayling, Hampshire. 1:30 a sud-ovest di Londra."
+    }
+  },
+  {
+    "name": "Scheveningen",
+    "source": {
+      "title": "Jumpteam Scheveningen — wind- en kitesurfregels",
+      "url": "https://www.jumpteam.nl/vereniging/wind-en-kitesurfregels/"
+    },
+    "reason": "Reprendre le zonage du club local autour du brise-lames 42 et du chenal portuaire.",
+    "fields": {
+      "hazards": "Brise-lames 42, zone des surfeurs et chenal portuaire. Laisser libre le passage du bateau de secours sur la plage.",
+      "hazardsEn": "Breakwater 42, the surfing area and the harbour channel. Keep the rescue boat’s beach access clear.",
+      "hazardsDe": "Buhne 42, Wellenreiterzone und Hafenfahrwasser. Die Strandzufahrt für das Rettungsboot freihalten.",
+      "hazardsIt": "Pennello 42, zona dei surfisti e canale portuale. Lasciare libero il passaggio della barca di soccorso sulla spiaggia.",
+      "access": "Départ au nord du brise-lames 42. Par vent du nord, remonter vers De Naald ; rester hors du chenal et de la zone surf.",
+      "accessEn": "Launch north of breakwater 42. With northerly wind, walk towards De Naald; stay outside the harbour channel and surfing area.",
+      "accessDe": "Nördlich von Buhne 42 starten. Bei Nordwind Richtung De Naald gehen; Hafenfahrwasser und Wellenreiterzone meiden.",
+      "accessIt": "Partenza a nord del pennello 42. Con vento da nord, avanzare verso De Naald; evitare canale portuale e zona surf."
+    },
+    "id": "cmnpsrwlf001zhaf6hbid8bkk",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "4797caa9f9ecc8be5191c2c05de68c982407550f8a4558e6ae3cde3fbfc6156d",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "access": "Plage de Scheveningen, La Haye. Transport en commun depuis le centre-ville.",
+      "accessEn": "Scheveningen Beach, The Hague. Public transportation from downtown.",
+      "accessDe": "Scheveningen Beach, Den Haag. Öffentliche Verkehrsmittel aus der Innenstadt.",
+      "accessIt": "Scheveningen Beach, L'Aia. Trasporti pubblici dal centro."
+    }
+  },
+  {
+    "name": "Beauduc",
+    "source": {
+      "title": "Lilikitesurf — spot de Beauduc",
+      "url": "https://www.lilikitesurf.com/spot-de-kitesurf-beauduc/"
+    },
+    "additionalSources": [
+      {
+        "title": "Parc naturel régional de Camargue — Beauduc",
+        "url": "https://www.parc-camargue.fr/beauduc.html"
+      },
+      {
+        "title": "Parc de Camargue — protection de la pointe de Beauduc",
+        "url": "https://www.parc-camargue.fr/visiteurs.html"
+      }
+    ],
+    "reason": "Distinguer le vent de sud-est offshore et les restrictions d’accès du site protégé.",
+    "fields": {
+      "hazards": "Vent de sud-est offshore fortement déconseillé. Respecter les zones d’herbiers et de nidification protégées.",
+      "hazardsEn": "Offshore southeasterly wind is strongly discouraged. Respect protected seagrass and bird-nesting areas.",
+      "hazardsDe": "Ablandiger Südostwind wird deutlich abgeraten. Geschützte Seegras- und Vogelbrutbereiche respektieren.",
+      "hazardsIt": "Vento da sud-est offshore fortemente sconsigliato. Rispettare le aree protette di fanerogame e nidificazione.",
+      "access": "Vérifier l’accès à la piste et le gabarit de 2,08 m. Stationnement dans l’aire prévue ; circulation motorisée sur la plage interdite.",
+      "accessEn": "Check track access and the 2.08 m width barrier. Use the designated parking area; motor vehicles are prohibited on the beach.",
+      "accessDe": "Pistenzugang und 2,08-m-Breitenbegrenzung prüfen. Auf dem vorgesehenen Platz parken; keine Motorfahrzeuge am Strand.",
+      "accessIt": "Verificare l’accesso alla pista e il limite di larghezza di 2,08 m. Usare il parcheggio previsto; vietati i veicoli sulla spiaggia."
+    },
+    "id": "cmnr47yez0005i5f6gxv21eix",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "79d6d4e8553ab202548f15faa8fd341c8ad6408dfbe9cb4d25bd5cd7140b8c73",
+    "previousValues": {
+      "hazards": "",
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "access": "Piste de Beauduc depuis Salin-de-Giraud (~15 km de piste). Accès réglementé, se renseigner.",
+      "accessEn": "Beauduc slope from Salin-de-Giraud (~15 km of slope). Regulated access, inquire.",
+      "accessDe": "Beauduc-Hang von Salin-de-Giraud (~15 km Hang). Regulierter Zugang, erkundige dich.",
+      "accessIt": "Pendio di Beauduc da Salin-de-Giraud (~15 km di pendio). Accesso regolamentato, informati."
+    }
+  },
+  {
+    "name": "Naxos – Mikri Vigla",
+    "source": {
+      "title": "Naxos Kitelife — conditions de pratique et FAQ",
+      "url": "https://naxoskitelife.com/faq/"
+    },
+    "additionalSources": [
+      {
+        "title": "Thalasea Sports — spot de Mikri Vigla",
+        "url": "https://thalaseasports.com/spot-infos/"
+      }
+    ],
+    "reason": "Écarter les orientations est et est-nord-est signalées comme turbulentes par l’école locale.",
+    "fields": {
+      "hazards": "Vent d’est ou d’est-nord-est turbulent : les séances peuvent être annulées. Le vent du sud ne convient pas aux séances sur l’eau.",
+      "hazardsEn": "Easterly or east-northeasterly wind is turbulent and may cancel sessions. Southerly wind is unsuitable for on-water sessions.",
+      "hazardsDe": "Ost- und Ostnordostwind sind turbulent; Kurse können ausfallen. Südwind eignet sich nicht für Einheiten auf dem Wasser.",
+      "hazardsIt": "Vento da est o est-nord-est turbolento: le sessioni possono essere annullate. Il vento da sud non è adatto alle sessioni in acqua.",
+      "bestWindDirections": [
+        "NW",
+        "N"
+      ]
+    },
+    "id": "cmnpsrwe6001qhaf621m8daqi",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "e37ae0cee04d9a2dd63054473181fa77b56a89958322074b2024f36631fbae0a",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null,
+      "bestWindDirections": [
+        "N",
+        "NNW",
+        "NNE",
+        "NW"
+      ]
+    }
+  },
+  {
+    "name": "Lac de Joux",
+    "source": {
+      "title": "Vaud Tourisme — lacs gelés à la Vallée de Joux",
+      "url": "https://www.vaud.ch/tourisme/activites/lacs-geles-a-la-vallee-de-joux/"
+    },
+    "additionalSources": [
+      {
+        "title": "Vallée de Joux Tourisme — état quotidien du lac",
+        "url": "https://www.myvalleedejoux.ch/fr/Z14759/info-neige-etat-des-pistes"
+      }
+    ],
+    "reason": "L’accès au lac gelé dépend de son ouverture réelle et des consignes du jour ; une date hivernale ne suffit pas.",
+    "fields": {
+      "access": "Consulter l’état du lac et son ouverture auprès de Vallée de Joux Tourisme ; respecter le balisage et les consignes avant d’accéder à la glace.",
+      "accessEn": "Check the lake’s condition and opening with Vallée de Joux Tourism; follow signs and safety instructions before entering the ice.",
+      "accessDe": "Zustand und Freigabe bei Vallée de Joux Tourisme prüfen; vor Betreten des Eises Markierungen und Sicherheitsvorgaben beachten.",
+      "accessIt": "Verificare condizioni e apertura del lago con Vallée de Joux Tourisme; rispettare segnaletica e istruzioni prima di accedere al ghiaccio."
+    },
+    "id": "cmnpsrv4t0008haf6wb2u0lgc",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "50a911d129716227e1b02311de7586444414dfd7d964c406bab588dffdcba496",
+    "previousValues": {
+      "access": null,
+      "accessEn": null,
+      "accessDe": null,
+      "accessIt": null
+    }
+  },
+  {
+    "id": "cmnpsruyx0001haf6x0f0m7v2",
+    "name": "Boiron / Lake Geneva",
+    "source": {
+      "title": "Association Romande de Kitesurf — Le Boiron",
+      "url": "https://www.kitesurf.ch/le-boiron"
+    },
+    "reason": "Risques décrits par l’association locale : obstacles, déventes et voisinage de la réserve ; aucune ouverture automatique aux recommandations.",
+    "fields": {
+      "hazards": "Arbres et déventes derrière la pointe ; départ très engagé par Bise. Préserver la réserve du Sentier de la Truite et laisser libres les bouées et le ponton du pêcheur.",
+      "hazardsEn": "Trees and wind shadows behind the point; launching in Bise is demanding. Keep clear of the Sentier de la Truite reserve and the fisher’s buoys and pontoon.",
+      "hazardsDe": "Bäume und Windabdeckung hinter der Landspitze; Start bei Bise sehr anspruchsvoll. Das Reservat Sentier de la Truite sowie Bojen und Steg des Fischers freihalten.",
+      "hazardsIt": "Alberi e zone senza vento dietro la punta; partenza molto impegnativa con Bise. Rispettare la riserva Sentier de la Truite e lasciare liberi boe e pontile del pescatore."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "38db258111eb5ba6bc15b5e60da2b2edacb91468c6a01232f956f8337badfe06",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnpsrvy40017haf6gjtfrqd2",
+    "name": "Fréjus – Saint-Aygulf",
+    "source": {
+      "title": "Office de tourisme de Fréjus — Spots de kitesurf",
+      "url": "https://www.frejus.fr/decouvrir/les-plages/spots-de-kitesurf/"
+    },
+    "reason": "Précision des deux départs saisonniers sans confondre Saint-Aygulf en hiver avec l’embouchure de l’Argens en été. Les orientations restent à vérifier séparément.",
+    "fields": {
+      "access": "Hiver : Saint-Aygulf, entre dernière digue et Bambusa, hors balisage de baignade. Été : zone de l’Argens depuis la Base Nature ; position variable avec la rivière.",
+      "accessEn": "Winter: Saint-Aygulf, between the last groyne and Bambusa, outside swimming buoy season. Summer: Argens zone from Base Nature; location varies with the river.",
+      "accessDe": "Winter: Saint-Aygulf zwischen letzter Mole und Bambusa, außerhalb der Badebojen-Saison. Sommer: Argens-Zone ab Base Nature; Lage abhängig vom Fluss.",
+      "accessIt": "Inverno: Saint-Aygulf tra ultima diga e Bambusa, fuori stagione balneare segnalata. Estate: zona Argens dalla Base Nature; posizione variabile con il fiume.",
+      "hazards": "Baigneurs et zones saisonnières à respecter. Vérifier le balisage avant de préparer l’aile.",
+      "hazardsEn": "Respect swimmers and seasonal zones. Check the buoy markings before rigging.",
+      "hazardsDe": "Badende und saisonale Zonen beachten. Markierungen vor dem Aufbau prüfen.",
+      "hazardsIt": "Rispettare bagnanti e zone stagionali. Controllare le boe prima di preparare l’ala."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "d755885db89470a85f09e77dd00eeb8fe606886ea9f347d2cd650f25522c47ba",
+    "previousValues": {
+      "access": "Plage de Saint-Aygulf, Fréjus, Var.",
+      "accessEn": "Saint-Aygulf beach, Fréjus, Var.",
+      "accessDe": "Saint-Aygulf-Strand, Fréjus, Var.",
+      "accessIt": "Spiaggia di Saint-Aygulf, Fréjus, Var.",
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnr47y4n0003i5f6j2tgkc8p",
+    "name": "Port-Saint-Louis – Carteau",
+    "source": {
+      "title": "Office de tourisme — Plan de réglementation du kite à Carteau (arrêté cité de 2012)",
+      "url": "https://www.portsaintlouis-tourisme.fr/images/pdf/reglementation-pratique-du-kite-a-carteau.pdf"
+    },
+    "additionalSources": [
+      {
+        "title": "Office de tourisme — Les plages",
+        "url": "https://www.portsaintlouis-tourisme.fr/fr/se-ressourcer-port-saint-louis/la-mer/les-plages"
+      }
+    ],
+    "reason": "Risques identifiés sur le plan officiel publié, qui cite un arrêté de 2012. Confirmer la réglementation actuelle et la position du départ avant de valider le profil.",
+    "fields": {
+      "hazards": "Pêche professionnelle, chenaux et bouées de plongeurs : rester à distance des opérations et respecter les passages. Vérifier sur le plan local les zones protégées et les secteurs interdits.",
+      "hazardsEn": "Professional fishing, navigation channels and divers’ buoys: keep clear of operations and respect passageways. Check the local map for protected and prohibited areas.",
+      "hazardsDe": "Berufsfischerei, Fahrwasser und Taucherbojen: Abstand zu Arbeiten halten und Durchfahrten respektieren. Schutz- und Verbotszonen auf dem örtlichen Plan prüfen.",
+      "hazardsIt": "Pesca professionale, canali e boe dei sub: mantenere le distanze dalle operazioni e rispettare i passaggi. Verificare sul piano locale le aree protette e vietate."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "3817a30bb4f8b4309c71ceaedcb9331f1e1568a6d22cc1ba1747b47488db2977",
+    "previousValues": {
+      "hazards": "",
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnpsrvtw0012haf6y1i584sc",
+    "name": "Port-Saint-Louis-du-Rhône – Napoléon",
+    "source": {
+      "title": "Office de tourisme — Plan de réglementation du kite plage Napoléon (arrêté cité de 2012)",
+      "url": "https://www.portsaintlouis-tourisme.fr/images/pdf/reglementation-pratique-du-kite-plage-napoleon.pdf"
+    },
+    "reason": "Complément limité aux contraintes lisibles sur le plan officiel. Le plan cite un arrêté de 2012 : ne pas lever le statut à vérifier ni déduire un accès sans restriction.",
+    "fields": {
+      "hazards": "Respecter les secteurs de baignade, les pêcheurs et les zones hachurées interdites du plan local. Des secteurs liés à la chasse ferment d’octobre à décembre ; vérifier le périmètre et les consignes actuelles.",
+      "hazardsEn": "Respect swimming areas, anglers and the hatched prohibited zones on the local map. Some hunting sectors close from October to December; check their boundaries and current instructions.",
+      "hazardsDe": "Badebereiche, Angler und schraffierte Verbotszonen des örtlichen Plans beachten. Einzelne Jagdsektoren sind Oktober bis Dezember gesperrt; Grenzen und aktuelle Vorgaben prüfen.",
+      "hazardsIt": "Rispettare bagnanti, pescatori e zone tratteggiate vietate sul piano locale. Alcuni settori di caccia chiudono da ottobre a dicembre; verificare perimetri e indicazioni attuali."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "018375895cba0a75408551b3ac7c3f10f23374e62a3593870e746071b68d4744",
+    "previousValues": {
+      "hazards": "",
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnpsrw1e001bhaf6d13xwbk9",
+    "name": "La Palme",
+    "source": {
+      "title": "La Palme — Les sports de glisse et les spots",
+      "url": "https://decouvrir.la-palme.fr/?us_portfolio=sports-de-glisse-spots"
+    },
+    "additionalSources": [
+      {
+        "title": "PNR de la Narbonnaise — Charte Natura 2000 La Palme",
+        "url": "https://pole-lagunes.org/ftp/web/fiches-lagunes/LR/Etang_Salses_Leucate_La_Palme/Charte%20Natura%202000%20La%20Palme.pdf"
+      }
+    ],
+    "reason": "Préciser le départ du Salin, le zonage Natura 2000 et les filets, sans assimiler l’ouverture d’une navette à une autorisation annuelle du kite.",
+    "fields": {
+      "access": "Rejoindre l’étang par l’accès du Salin de La Palme et le stationnement réglementé. Utiliser la zone de glisse balisée ; le spot des Vignes est réservé à la planche à voile.",
+      "accessEn": "Reach the lagoon through the Salin de La Palme access and regulated parking. Use the marked riding zone; the Vignes spot is for windsurfing only.",
+      "accessDe": "Zufahrt zum Teich über Salin de La Palme und geregelte Parkplätze. Markierte Sportzone nutzen; der Spot Vignes ist nur für Windsurfer.",
+      "accessIt": "Accedere allo stagno dal Salin de La Palme e dai parcheggi regolamentati. Usare la zona sportiva segnalata; lo spot Vignes è riservato al windsurf.",
+      "hazards": "Rester dans la zone balisée, à distance des filets de pêche et des espaces de tranquillité des oiseaux. Ne pas créer de nouveaux accès à travers les berges protégées.",
+      "hazardsEn": "Stay within the marked zone, clear of fishing nets and bird refuge areas. Do not create new access routes through protected banks.",
+      "hazardsDe": "In der markierten Zone bleiben, Fischernetze und Vogelruhezonen meiden. Keine neuen Zugänge durch geschützte Ufer schaffen.",
+      "hazardsIt": "Restare nella zona segnalata, lontano da reti da pesca e aree di quiete degli uccelli. Non creare nuovi accessi attraverso le sponde protette."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "014b463adc243c44acd3ea1893b3516160203554b07b4ff5a2663d6f35ab67e9",
+    "previousValues": {
+      "access": "La Palme, Aude. Accès par la D709 depuis Leucate ou Sigean.",
+      "accessEn": "La Palme, Aude. Access via the D709 from Leucate or Sigean.",
+      "accessDe": "La Palme, Aude. Zugang über die D709 von Leucate oder Sigean aus.",
+      "accessIt": "La Palme, Aude. Accesso tramite la D709 da Leucate o Sigean.",
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnr3187j0005ijf6haxrfoo4",
+    "name": "Neuchâtel – Nid-du-Crô",
+    "source": {
+      "title": "Let’s Kite — observations de terrain au Nid du Crô",
+      "url": "https://lets-kite.com/fr/spots/83/kitesurf/nid-du-cro"
+    },
+    "additionalSources": [
+      {
+        "title": "Association Romande de Kitesurf — ressource de spots recommandée",
+        "url": "https://www.kitesurf.ch/spots"
+      }
+    ],
+    "reason": "Observations de terrain du guide recommandé par l’association romande, limitées aux obstacles et usagers ; pas de validation automatique de l’accès.",
+    "fields": {
+      "hazards": "Mise à l’eau technique sur de grandes dalles rocheuses ; les vagues peuvent rabattre vers le bord. Baigneurs et promeneurs fréquentent la pelouse. La baie sous la piscine est déventée.",
+      "hazardsEn": "Technical water entry over large rock slabs; waves can push riders back ashore. Swimmers and walkers use the lawn. The bay below the swimming pool is wind-shadowed.",
+      "hazardsDe": "Technischer Wassereinstieg über große Felsplatten; Wellen können zum Ufer zurückdrängen. Badende und Spaziergänger nutzen die Wiese. Die Bucht unter dem Schwimmbad liegt im Windschatten.",
+      "hazardsIt": "Ingresso tecnico su grandi lastre rocciose; le onde possono respingere verso riva. Bagnanti e pedoni frequentano il prato. La baia sotto la piscina è senza vento regolare."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "1cc317ddec0a095a48a60f812d931f5da4ed52aa7f27ce617193bfdfa2a202ba",
+    "previousValues": {
+      "hazards": "",
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnpsrv6h000ahaf6dom2q6jp",
+    "name": "Le Niremont",
+    "source": {
+      "title": "Let’s Kite — observations de terrain au Niremont",
+      "url": "https://lets-kite.com/fr/spots/55/snowkite/le-niremont"
+    },
+    "additionalSources": [
+      {
+        "title": "Association Romande de Kitesurf — ressource de spots recommandée",
+        "url": "https://www.kitesurf.ch/spots"
+      }
+    ],
+    "reason": "Piquets, barbelés et brouillard signalés par le guide local recommandé. Le statut à vérifier est conservé ; ni l’enneigement ni l’autorisation ne sont déduits du calendrier.",
+    "fields": {
+      "hazards": "Piquets et clôtures à barbelés sur le terrain. Le brouillard peut arriver rapidement et persister : ne pas s’engager sans visibilité ni connaissance du lieu. Vérifier l’enneigement avant toute pratique.",
+      "hazardsEn": "Posts and barbed-wire fences on the terrain. Fog can arrive quickly and persist: do not proceed without visibility and local knowledge. Check snow cover before riding.",
+      "hazardsDe": "Pfosten und Stacheldrahtzäune im Gelände. Nebel kann rasch aufziehen und bleiben: ohne Sicht und Ortskenntnis nicht starten. Schneelage vor der Nutzung prüfen.",
+      "hazardsIt": "Pali e recinzioni di filo spinato sul terreno. La nebbia può arrivare rapidamente e persistere: non partire senza visibilità e conoscenza del luogo. Verificare l’innevamento."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "a7d47920567ffb56d03bef4dad0c74c3fe97bb07ac6ec4dba074923db50a4986",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnpsrv5n0009haf6khec6xpk",
+    "name": "Semsales",
+    "source": {
+      "title": "Let’s Kite — observations de terrain à Semsales",
+      "url": "https://lets-kite.com/fr/spots/48/snowkite/semsales"
+    },
+    "additionalSources": [
+      {
+        "title": "Association Romande de Kitesurf — ressource de spots recommandée",
+        "url": "https://www.kitesurf.ch/spots"
+      }
+    ],
+    "reason": "Autoroute et lignes haute tension signalées par le guide local recommandé. Leurs secteurs doivent être repérés sur place ; aucun accès ni enneigement n’est présumé.",
+    "fields": {
+      "hazards": "Autoroute et lignes électriques haute tension à proximité du secteur de pratique : les repérer avant de déployer une aile et garder une grande distance. Vérifier les limites du terrain et l’enneigement.",
+      "hazardsEn": "A motorway and high-voltage power lines border the riding area: locate them before rigging and keep well clear. Check field boundaries and snow cover.",
+      "hazardsDe": "Autobahn und Hochspannungsleitungen liegen nahe am Gelände: vor dem Aufbau lokalisieren und großen Abstand halten. Grundstücksgrenzen und Schneelage prüfen.",
+      "hazardsIt": "Autostrada e linee ad alta tensione vicino all’area: individuarle prima di preparare l’ala e mantenere ampia distanza. Verificare confini del terreno e innevamento."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "cc6d07e0753d622e59f41d8561a2e3030de7760dea7a414c79ba5bd6d6a0b57c",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnr30fo50001ijf6m6ll3seq",
+    "name": "Gletterens",
+    "source": {
+      "title": "OFEV — Réserve Chevroux jusqu’à Portalban, fiche no 5",
+      "url": "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr5.pdf"
+    },
+    "reason": "Le point actuel intersecte le secteur I de la réserve fédérale. Remplacer la présentation de départ pour débutants ; emplacement et éventuel départ extérieur au refuge à confirmer.",
+    "additionalSources": [
+      {
+        "title": "OFEV / GeoAdmin — contrôle du point de Gletterens, tolérance nulle",
+        "url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/identify?geometry=6.934%2C46.91&geometryType=esriGeometryPoint&layers=all%3Ach.bafu.bundesinventare-vogelreservate&tolerance=0&sr=4326&lang=fr&returnGeometry=false"
+      }
+    ],
+    "fields": {
+      "description": "Secteur de Gletterens, voisin de la réserve Chevroux–Portalban. Le départ kite n’est pas confirmé à cet emplacement.",
+      "descriptionEn": "Gletterens area beside the Chevroux–Portalban reserve. A kite launch has not been confirmed at this location.",
+      "descriptionDe": "Gebiet Gletterens beim Reservat Chevroux–Portalban. An diesem Standort ist kein Kite-Einstieg bestätigt.",
+      "descriptionIt": "Settore di Gletterens vicino alla riserva Chevroux–Portalban. In questo punto non è confermata una partenza kite.",
+      "access": "Ne pas se mettre à l’eau au repère actuel : il se trouve dans un secteur protégé interdit aux sports nautiques.",
+      "accessEn": "Do not launch at the current marker: it lies in a protected sector closed to water sports.",
+      "accessDe": "Am aktuellen Kartenpunkt nicht starten: Er liegt in einem für Wassersport gesperrten Schutzsektor.",
+      "accessIt": "Non entrare in acqua al punto indicato: si trova in un settore protetto vietato agli sport nautici.",
+      "hazards": "Refuge ornithologique : navigation et baignade interdites toute l’année dans le secteur I. Respecter ses limites.",
+      "hazardsEn": "Bird refuge: navigation and swimming are prohibited year-round in sector I. Respect its boundaries.",
+      "hazardsDe": "Vogelrefugium: Schifffahrt und Baden sind im Sektor I ganzjährig verboten. Grenzen beachten.",
+      "hazardsIt": "Rifugio ornitologico: navigazione e balneazione vietate tutto l’anno nel settore I. Rispettarne i limiti."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "30f2325240006a45740aad3027169d839277d4fec92e78e6b6f67f2b870b99ba",
+    "previousValues": {
+      "description": "Spot familial sur la rive sud du lac de Neuchâtel. Eau plate et peu profonde, parfait pour les débutants. Bonne zone de mise à l’eau sur herbe et sable. Fonctionne principalement en Bise.",
+      "descriptionEn": "Family spot on the south shore of Lake Neuchâtel. Flat, shallow water, perfect for beginners. Good launching area on grass and sand. Works mainly in Bise.",
+      "descriptionDe": "Familienstandort am Südufer des Neuchâtelsees. Flaches, flaches Wasser, perfekt für Anfänger. Guter Startplatz auf Gras und Sand. Arbeitet hauptsächlich in Bise.",
+      "descriptionIt": "Posto per famiglie sulla riva sud del Lago Neuchâtel. Acqua piatta e poco profonda, perfetta per i principianti. Buon punto di partenza su erba e sabbia. Lavora principalmente a Bise.",
+      "access": "Petit parking près de la plage, accès gratuit.",
+      "accessEn": "Small parking near the beach, free access.",
+      "accessDe": "Kleiner Parkplatz in Strandnähe, kostenloser Zugang.",
+      "accessIt": "Piccolo parcheggio vicino alla spiaggia, accesso gratuito.",
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    },
+    "review": {
+      "version": 1,
+      "status": "NEEDS_REVIEW",
+      "discipline": "WATER_KITE",
+      "fingerprint": "88aa3bf9441d3d05edc5b4b6d85c23126d41ec47e6f79dde287c311d3afcb180",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [],
+      "season": "UNKNOWN",
+      "months": [],
+      "access": "CLOSED",
+      "notes": {
+        "fr": "Le point enregistré intersecte le secteur I OROEM no 5. Aucun départ autorisé n’est confirmé à ce point ; vérifier la localisation avant toute recommandation.",
+        "de": "Der gespeicherte Punkt liegt im WZVV-Sektor I, Objekt 5. Kein erlaubter Start dort bestätigt; Standort vor Empfehlungen prüfen.",
+        "it": "Il punto registrato interseca il settore I OROEM, oggetto 5. Nessuna partenza autorizzata confermata qui; verificare la posizione prima di raccomandare.",
+        "en": "The stored point intersects OROEM sector I, object 5. No authorised launch is confirmed at that point; verify the location before any recommendation."
+      },
+      "sources": [
+        {
+          "title": "OFEV — Réserve Chevroux jusqu’à Portalban, fiche no 5",
+          "url": "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr5.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ]
+    },
+    "previousReview": null
+  },
+  {
+    "id": "cmnr326wd0008ijf6i49dqsv8",
+    "name": "Salavaux",
+    "source": {
+      "title": "OFEV — Réserve de Salavaux, fiche no 115",
+      "url": "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr115.pdf"
+    },
+    "additionalSources": [
+      {
+        "title": "OFEV — dispositions de protection OROEM",
+        "url": "https://www.bafu.admin.ch/fr/reserves-doiseaux-deau-et-de-migrateurs"
+      }
+    ],
+    "reason": "La fiche fédérale et le principe OROEM ne justifient pas la promesse de zone kite débutant. Le point enregistré ne correspond pas à un départ confirmé : ne pas le déplacer par supposition.",
+    "fields": {
+      "description": "Le secteur de Salavaux comprend une réserve d’oiseaux d’eau. La présence d’une plage ne confirme pas un départ de kitesurf autorisé.",
+      "descriptionEn": "The Salavaux area includes a waterbird reserve. The presence of a beach does not confirm an authorised kite launch.",
+      "descriptionDe": "Zum Gebiet Salavaux gehört ein Wasservogelreservat. Ein Strand bestätigt keinen zugelassenen Kite-Einstieg.",
+      "descriptionIt": "Il settore di Salavaux comprende una riserva di uccelli acquatici. Una spiaggia non conferma una partenza kite autorizzata.",
+      "access": "Aucun couloir de départ kite n’est confirmé pour cette fiche. Vérifier le périmètre fédéral et les autorisations locales avant de se déplacer.",
+      "accessEn": "No kite launch corridor is confirmed for this record. Check the federal boundary and local permissions before travelling.",
+      "accessDe": "Für diesen Eintrag ist kein Kite-Startkorridor bestätigt. Bundesperimeter und örtliche Bewilligungen vor der Anreise prüfen.",
+      "accessIt": "Nessun corridoio di partenza kite confermato per questa scheda. Verificare perimetro federale e autorizzazioni locali prima di partire.",
+      "hazards": "Le kitesurf est interdit dans le périmètre OROEM de Salavaux. Une absence de bouées ne suffit pas à établir une autorisation.",
+      "hazardsEn": "Kitesurfing is prohibited within the Salavaux OROEM reserve. Missing buoys do not establish permission.",
+      "hazardsDe": "Im WZVV-Perimeter Salavaux ist Kitesurfen verboten. Fehlende Bojen begründen keine Erlaubnis.",
+      "hazardsIt": "Il kitesurf è vietato nel perimetro OROEM di Salavaux. L’assenza di boe non implica un’autorizzazione."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "7c54b8246c54069e0d004a7209f6c236d83ef5a38c6ba6c6656fc20e3b0ce6e5",
+    "previousValues": {
+      "description": "Le spot principal du lac de Morat. Eau plate et peu profonde, idéal pour l’apprentissage et le foil. Très bon en Bise (NE). Zone de kite bien délimitée à côté du Centre Nautique.",
+      "descriptionEn": "The main spot on Lake Murten. Flat, shallow water, ideal for learning and foiling. Very good in Bise (NE). Well demarcated kite area next to the Nautical Center.",
+      "descriptionDe": "Der Hauptpunkt am Lake Murten. Flaches, flaches Wasser, ideal zum Lernen und Foilen. Sehr gut in Bise (NE). Gut abgegrenztes Drachengebiet neben dem Nautical Center.",
+      "descriptionIt": "Il punto principale sul Lago Murten. Acqua piatta e poco profonda, ideale per l'apprendimento e il foil. Molto buono a Bise (NE). Area ben delimitata degli aquiloni accanto al Centro Nautico.",
+      "access": "Parking au Centre Nautique de Salavaux, mise à l’eau sur la plage.",
+      "accessEn": "Parking at the Salavaux Nautical Center, launch on the beach.",
+      "accessDe": "Parken am Salavaux Nautical Center, Start am Strand.",
+      "accessIt": "Parcheggio al Centro Nautico di Salavaux, imbarcazione sulla spiaggia.",
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    },
+    "review": {
+      "version": 1,
+      "status": "NEEDS_REVIEW",
+      "discipline": "WATER_KITE",
+      "fingerprint": "b845516b98f6bdd3fc9e38805cdacbd1f4e13a278ca3f75273dd8a1889a4681d",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [],
+      "season": "UNKNOWN",
+      "months": [],
+      "access": "UNKNOWN",
+      "notes": {
+        "fr": "Le repère du catalogue ne prouve ni le départ ni son autorisation. La réserve fédérale de Salavaux interdit le kite ; localisation à confronter aux règles cantonales et communales.",
+        "de": "Der Katalogpunkt bestätigt weder Start noch Erlaubnis. Im Bundesreservat Salavaux ist Kiten verboten; Lage mit kantonalen und kommunalen Regeln abgleichen.",
+        "it": "Il punto del catalogo non prova né la partenza né il permesso. La riserva federale di Salavaux vieta il kite; verificare posizione e regole cantonali e comunali.",
+        "en": "The catalogue marker proves neither a launch nor permission. The Salavaux federal reserve prohibits kiting; reconcile the location with cantonal and municipal rules."
+      },
+      "sources": [
+        {
+          "title": "OFEV — Réserve de Salavaux, fiche no 115",
+          "url": "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr115.pdf",
+          "covers": [
+            "access"
+          ]
+        }
+      ]
+    },
+    "previousReview": null
+  },
+  {
+    "id": "cmnpsrv0k0003haf6tfpg8h7y",
+    "name": "Promenthoux / Lake Geneva",
+    "source": {
+      "title": "OFEV — Pointe de Promenthoux, fiche no 117",
+      "url": "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr117.pdf"
+    },
+    "reason": "La fenêtre avril–septembre est une disposition particulière de cette réserve ; elle ne s’applique pas à l’ensemble du Léman comme l’affirmait le texte précédent.",
+    "fields": {
+      "hazards": "Dans la réserve de la Pointe de Promenthoux, le kite est autorisé du 1er avril au 30 septembre. Cette exception est locale ; confirmer séparément le départ autorisé.",
+      "hazardsEn": "In the Pointe de Promenthoux reserve, kiting is permitted from 1 April to 30 September. This is a local exception; confirm the authorised launch separately.",
+      "hazardsDe": "Im Reservat Pointe de Promenthoux ist Kiten vom 1. April bis 30. September erlaubt. Diese Ausnahme gilt örtlich; erlaubten Startplatz separat klären.",
+      "hazardsIt": "Nella riserva della Pointe de Promenthoux il kite è ammesso dal 1° aprile al 30 settembre. L’eccezione è locale; verificare separatamente la partenza autorizzata."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "b82a82312a635e9822a2591c2cf438fc95a0b0f7be686a3fa874b64b28057b9d",
+    "previousValues": {
+      "hazards": "Le kitesurf n’est autorisé du 1er avril au 30 septembre que sur le lac Léman.",
+      "hazardsEn": "Kitesurfing permitted April 1 – September 30 only on Lake Geneva.",
+      "hazardsDe": "Kitesurfen ist vom 1. April bis 30. September nur auf dem Genfersee erlaubt.",
+      "hazardsIt": "Il kitesurf è consentito solo dal 1° aprile al 30 settembre sul Lago di Ginevra."
+    }
+  },
+  {
+    "id": "cmnpsrv83000chaf6psuej2ki",
+    "name": "La Brévine",
+    "source": {
+      "title": "AirOne — sites de snowkite dans le Jura neuchâtelois",
+      "url": "https://www.airone.ch/kiteski/spot-kiteski-ou-snowkite/"
+    },
+    "reason": "L’école confirme la pratique régionale et la nécessité de vérifier la glace. Ne pas assimiler un lac gelé à un terrain utilisable ni inventer un parking ou une permission sur une parcelle.",
+    "fields": {
+      "description": "Snowkite dans la vallée selon l’enneigement. Le lac des Taillères nécessite de vérifier l’état de la glace.",
+      "descriptionEn": "Valley snowkiting depends on snow cover. Lake Taillères requires checking ice conditions.",
+      "descriptionDe": "Snowkiten im Tal hängt von der Schneelage ab. Am Lac des Taillères den Eiszustand prüfen.",
+      "descriptionIt": "Snowkite in valle secondo l’innevamento. Al lago dei Taillères occorre verificare il ghiaccio.",
+      "access": "Confirmer l’accès au terrain choisi. Avant d’aller sur le lac des Taillères gelé, se renseigner localement sur la glace.",
+      "accessEn": "Confirm access to the chosen ground. Before entering frozen Lake Taillères, obtain local information about the ice.",
+      "accessDe": "Zugang zum gewählten Gelände klären. Vor Betreten des gefrorenen Lac des Taillères örtliche Eisinformationen einholen.",
+      "accessIt": "Confermare l’accesso al terreno scelto. Prima di entrare sul lago dei Taillères gelato, informarsi localmente sul ghiaccio.",
+      "hazards": "Le gel visible ne garantit pas une glace utilisable. L’enneigement et l’état de la glace ne sont pas évalués par la prévision de vent.",
+      "hazardsEn": "Visible freezing does not guarantee usable ice. Wind forecasts do not assess snow cover or ice conditions.",
+      "hazardsDe": "Sichtbares Eis garantiert keine Tragfähigkeit. Windvorhersagen beurteilen weder Schneelage noch Eiszustand.",
+      "hazardsIt": "Il gelo visibile non garantisce ghiaccio utilizzabile. Le previsioni del vento non valutano innevamento o condizioni del ghiaccio."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "e4975797f238d5e86b47465cb42309c2de08cd38a8159d332333a122691858d2",
+    "previousValues": {
+      "description": "La Brévine détient des records de température — connus sous le nom de « Sibérie de la Suisse ». Son plateau ouvert à 1000 m offre de grands espaces ouverts pour la snowkite. Le lac des Taillières est également une option de cheval lorsqu’il est gelé, bien qu’il puisse devenir très fréquenté en hiver.",
+      "descriptionEn": "La Brévine holds temperature records — known as the 'Siberia of Switzerland'. Its open plateau at 1000 m offers large open spaces for snowkiting. The Lac des Taillières is also a riding option when frozen, though it can get very busy in winter.",
+      "descriptionDe": "La Brévine hält Temperaturrekorde – bekannt als das 'Sibirien der Schweiz'. Das offene Plateau auf 1000 m bietet große Freiflächen zum Snowkiting. Der Lac des Taillières ist ebenfalls eine Möglichkeit, wenn er gefroren ist, obwohl er im Winter sehr belebt werden kann.",
+      "descriptionIt": "La Brévine detiene i record di temperatura — conosciuti come la 'Siberia della Svizzera'. Il suo altopiano aperto a 1000 m offre ampi spazi aperti per il snowkiteing. Il Lac des Taillières è anche un'opzione da cavalcare quando è ghiacciato, anche se può diventare molto affollato in inverno.",
+      "access": null,
+      "accessEn": null,
+      "accessDe": null,
+      "accessIt": null,
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    },
+    "review": {
+      "version": 1,
+      "status": "NEEDS_REVIEW",
+      "discipline": "SNOW_KITE",
+      "fingerprint": "d2734b5cfc117def876f64e84cb02ee470e9f3daf7899c3257df41a03aa54058",
+      "reviewedAt": "2026-11-04",
+      "expiresAt": "2027-02-02",
+      "sectors": [],
+      "season": "CONDITIONAL",
+      "months": [],
+      "access": "UNKNOWN",
+      "notes": {
+        "fr": "Snowkite régional confirmé par l’école, mais parcelle de départ et permissions non établies. Enneigement et glace à vérifier localement ; aucune recommandation de kite sur l’eau.",
+        "de": "Regionales Snowkiten von der Schule bestätigt, Startparzelle und Bewilligungen ungeklärt. Schnee und Eis örtlich prüfen; keine Empfehlung für Wasserkiten.",
+        "it": "Snowkite regionale confermato dalla scuola, ma terreno di partenza e permessi non stabiliti. Verificare neve e ghiaccio localmente; nessuna raccomandazione di kite sull’acqua.",
+        "en": "Regional snowkiting confirmed by the school, but the launch parcel and permissions are not established. Check snow and ice locally; no water-kiting recommendation."
+      },
+      "sources": [
+        {
+          "title": "AirOne — sites de snowkite dans le Jura neuchâtelois",
+          "url": "https://www.airone.ch/kiteski/spot-kiteski-ou-snowkite/",
+          "covers": [
+            "access"
+          ]
+        }
+      ]
+    },
+    "previousReview": null
+  },
+  {
+    "id": "cmvjx4i35000008l6i05pzwrc",
+    "name": "Plage de La Tène",
+    "source": {
+      "title": "Commune de Laténa — plages de La Tène et Hauterive",
+      "url": "https://commune-latena.ch/page/nos-plages"
+    },
+    "additionalSources": [
+      {
+        "title": "Respect Grandeur Nature — accès officiels et zones protégées",
+        "url": "https://www.respectgrandeurnature-neuch.ch/milieux/rendez-vous-au-bordu/"
+      }
+    ],
+    "reason": "La commune confirme une plage de baignade, sans confirmer de départ kite. Retirer les affirmations météorologiques non sourcées et distinguer l’accès public de l’autorisation nautique.",
+    "fields": {
+      "description": "Plage de sable et pelouse, utilisée pour la baignade. Départ kite à confirmer.",
+      "descriptionEn": "Sandy beach and lawn used for swimming. Kite launch unconfirmed.",
+      "descriptionDe": "Sandstrand mit Wiese zum Baden. Kite-Start noch nicht bestätigt.",
+      "descriptionIt": "Spiaggia sabbiosa e prato per la balneazione. Partenza kite da confermare.",
+      "access": "Plage communale de La Tène ; départ kite à confirmer avec la commune.",
+      "accessEn": "La Tène municipal beach; confirm kite launch permission with the municipality.",
+      "accessDe": "Gemeindestrand La Tène; Kite-Start mit der Gemeinde abklären.",
+      "accessIt": "Spiaggia comunale di La Tène; verificare la partenza kite con il Comune.",
+      "hazards": "Baigneurs et pédalos ; préserver leurs espaces. Les zones protégées voisines imposent de vérifier les limites de navigation.",
+      "hazardsEn": "Swimmers and pedal boats: keep their areas clear. Nearby protected zones require checking navigation boundaries.",
+      "hazardsDe": "Badende und Pedalos: Bereiche freihalten. Wegen benachbarter Schutzgebiete die Navigationsgrenzen prüfen.",
+      "hazardsIt": "Bagnanti e pedalò: rispettarne gli spazi. Le vicine aree protette richiedono di verificare i limiti di navigazione."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "4656c552d9e36cd296f35c03a69f7f565fbaf0fbd8dd90543e034436645fc9ac",
+    "previousValues": {
+      "description": "Le spot de la plage de La Tène est l'un des lieux incontournables pour la pratique du kitesurf et des sports de glisse sur le lac de Neuchâtel\n\nLe lac bénéficie de vents réguliers, notamment le Joran (un vent thermique de secteur Sud-Ouest/Nord-Ouest qui se lève généralement l'après-midi) et le vent.",
+      "descriptionEn": null,
+      "descriptionDe": null,
+      "descriptionIt": null,
+      "access": "",
+      "accessEn": null,
+      "accessDe": null,
+      "accessIt": null,
+      "hazards": "",
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnr31fo80006ijf6d6k4fr08",
+    "name": "Hauterive NE",
+    "source": {
+      "title": "Commune de Laténa — plage d’Hauterive",
+      "url": "https://commune-latena.ch/page/nos-plages"
+    },
+    "reason": "Risques de cohabitation étayés par la commune. Cette information de baignade ne valide pas un décollage kite.",
+    "fields": {
+      "hazards": "Baigneurs, radeau et pédalos : préserver leurs espaces. Départ kite non confirmé.",
+      "hazardsEn": "Swimmers, raft and pedal boats: keep their areas clear. Kite launch unconfirmed.",
+      "hazardsDe": "Badende, Floß und Pedalos: Bereiche freihalten. Kite-Start nicht bestätigt.",
+      "hazardsIt": "Bagnanti, zattera e pedalò: rispettarne gli spazi. Partenza kite non confermata."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "c07a219a212644283ba5257813fb0d4422c6c3396fa85b2663d469b4ea4b5100",
+    "previousValues": {
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnr30p5d0002ijf6366oi6lz",
+    "name": "Cheyres",
+    "source": {
+      "title": "Estavayer-le-Lac Région — accès et usages de la plage de Cheyres",
+      "url": "https://fribourg.ch/fr/estavayer-payerne/plages/plage-de-cheyres/"
+    },
+    "additionalSources": [
+      {
+        "title": "Grande Cariçaie — navigation et secteurs protégés",
+        "url": "https://grande-caricaie.ch/fr/visiter/navigateurs-et-baigneurs/"
+      }
+    ],
+    "reason": "L’accès par la gare et les usages de baignade sont confirmés ; la description touristique ne confirme pas une mise à l’eau kite. Ne pas transformer l’ouverture du parking en calendrier de pratique.",
+    "fields": {
+      "access": "Rejoindre la plage à pied par la Route du Port depuis la gare de Cheyres. Parking payant sous la gare ; confirmer séparément le départ kite autorisé.",
+      "accessEn": "Walk to the beach along Route du Port from Cheyres station. Paid parking below the station; confirm an authorised kite launch separately.",
+      "accessDe": "Vom Bahnhof Cheyres zu Fuß über Route du Port zum Strand. Kostenpflichtiger Parkplatz unterhalb des Bahnhofs; erlaubten Kite-Einstieg gesondert klären.",
+      "accessIt": "Dalla stazione di Cheyres raggiungere la spiaggia a piedi lungo Route du Port. Parcheggio a pagamento sotto la stazione; verificare separatamente la partenza kite.",
+      "hazards": "Plage de baignade avec ponton flottant, paddles et port voisin. Respecter les usagers et les refuges lacustres de la Grande Cariçaie balisés en jaune.",
+      "hazardsEn": "Swimming beach with a floating pontoon, paddleboards and a nearby harbour. Respect other users and the Grande Cariçaie lake refuges marked by yellow buoys.",
+      "hazardsDe": "Badestrand mit Schwimmponton, SUP und benachbartem Hafen. Andere Nutzer und gelb markierte See-Refugien der Grande Cariçaie respektieren.",
+      "hazardsIt": "Spiaggia balneare con pontile galleggiante, SUP e porto vicino. Rispettare gli altri utenti e i rifugi lacustri della Grande Cariçaie segnalati in giallo."
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "317c6e84cd9fa155e349391c9eb2fc30dfb55cd595980d1a95d97b1d73887a45",
+    "previousValues": {
+      "access": "Parking au bord du lac, zone de mise à l’eau sur herbe.",
+      "accessEn": "Lakeside parking, grass-based boat launch area.",
+      "accessDe": "Parkplätze am See, grasbasierter Bootsanlegeplatz.",
+      "accessIt": "Parcheggio sul lago, area di varo per barche in erba.",
+      "hazards": null,
+      "hazardsEn": null,
+      "hazardsDe": null,
+      "hazardsIt": null
+    }
+  },
+  {
+    "id": "cmnpsrx4e002mhaf6b2ci5prq",
+    "name": "Moléson",
+    "source": {
+      "title": "Club de Vol Libre de la Gruyère — site du Moléson",
+      "url": "https://www.vlgruyere.ch/site-du-moleson/"
+    },
+    "reason": "Le point vise le sommet, que le gestionnaire réserve aux pilotes confirmés. Corriger la présentation de site débutant à Plan-Francey et le niveau associé ; distinguer les décollages.",
+    "fields": {
+      "description": "Sommet vers 2 000 m : décollages difficiles réservés aux pilotes confirmés.",
+      "descriptionEn": "Summit around 2,000 m: difficult launches for experienced pilots.",
+      "descriptionDe": "Gipfel um 2.000 m: schwierige Startplätze für erfahrene Piloten.",
+      "descriptionIt": "Vetta attorno ai 2.000 m: decolli difficili per piloti esperti.",
+      "access": "Depuis Moléson-Village : funiculaire puis téléphérique, ou à pied.",
+      "accessEn": "Funicular and cable car from Moléson-Village, or on foot.",
+      "accessDe": "Standseilbahn und Luftseilbahn ab Moléson-Village oder zu Fuß.",
+      "accessIt": "Funicolare e funivia da Moléson-Village, oppure a piedi.",
+      "hazards": "Non volable en Bise. Sommet exposé ; neige/glace au déco NW. Vérifier DABS et espace aérien.",
+      "hazardsEn": "Not flyable in Bise. Exposed summit; snow/ice at the NW launch. Check DABS and airspace.",
+      "hazardsDe": "Bei Bise nicht fliegbar. Exponierter Gipfel; Schnee/Eis am NW-Start. DABS und Luftraum prüfen.",
+      "hazardsIt": "Non volabile con Bise. Vetta esposta; neve/ghiaccio al decollo NW. Verificare DABS e spazio aereo.",
+      "difficulty": "ADVANCED",
+      "bestWindDirections": [
+        "SE",
+        "S",
+        "SW",
+        "W",
+        "NW"
+      ]
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "6dd8e4af2b2f3297b59d1aa2d81d7f28fae56a3009db6e0c32243f5aff9b535e",
+    "previousValues": {
+      "description": "Site école très fréquenté en Gruyère. Décollage au Plan-Francey (~1520 m) accessible par téléphérique. Atterrissage aux Sciernes-d’Albeuve (900 m). Conditions calmes le matin, thermiques modérés l’après-midi. Idéal pour les débutants et biplaces.",
+      "descriptionEn": "Very popular school site in Gruyère. Take-off at Plan-Francey (~1520 m) accessible by cable car. Landing at Sciernes-d'Albeuve (900 m). Calm conditions in the morning, moderate thermals in the afternoon. Ideal for beginners and tandems.",
+      "descriptionDe": "Sehr beliebter Schulstandort in Gruyère. Start in Plan-Francey (~1520 m), erreichbar mit der Seilbahn. Landung bei Sciernes-d'Albeuve (900 m). Ruhige Bedingungen am Morgen, mäßige Thermik am Nachmittag. Ideal für Anfänger und Tandems.",
+      "descriptionIt": "Sito scolastico molto popolare a Gruyère. Decollo a Plan-Francey (~1520 m) accessibile tramite funivia. Sbarco a Sciernes-d'Albeuve (900 m). Condizioni calme al mattino, temperature moderate nel pomeriggio. Ideale per principianti e tandem.",
+      "access": "Téléphérique Moléson depuis Moléson-Village. Sortie autoroute Bulle.",
+      "accessEn": "Moléson cable car from Moléson-Village. Exit the Bulle motorway.",
+      "accessDe": "Moléson-Seilbahn von Moléson-Village. Verlassen Sie die Bulle-Autobahn.",
+      "accessIt": "Funivia Moléson da Moléson-Village. Esci dall'autostrada Bulle.",
+      "hazards": "Lignes électriques près de l’atterrissage. Brise de vallée variable. Site très fréquenté le week-end — vigilance au décollage.",
+      "hazardsEn": "Power lines near the landing. Variable valley breeze. Very busy site on weekends — vigilance at take-off.",
+      "hazardsDe": "Stromleitungen in der Nähe des Treppenabschlags. Variable Talbrise. Sehr belebter Standort am Wochenende – Wachsamkeit beim Start.",
+      "hazardsIt": "Linee elettriche vicino al pianerottolo. Brezza variabile della valle. Cantiere molto affollato nei fine settimana — attenzione al decollo.",
+      "difficulty": "BEGINNER",
+      "bestWindDirections": [
+        "W",
+        "NW",
+        "WNW",
+        "SW"
+      ]
+    }
+  },
+  {
+    "id": "cmnpsrxb4002uhaf62kjgr3l9",
+    "name": "Engelberg – Brunni",
+    "source": {
+      "title": "FSVL — panneau officiel du site d’Engelberg",
+      "url": "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Engelberg.pdf"
+    },
+    "reason": "La fiche mélange un point de vallée et des orientations nord. Le panneau distingue Tümpfeli S/SE et Härzlisee W ; le repère et le choix précis du départ restent à vérifier.",
+    "fields": {
+      "description": "Deux départs distincts : Tümpfeli, exposé sud/sud-est, et Härzlisee, exposé ouest. Choisir selon les conditions.",
+      "descriptionEn": "Two distinct launches: Tümpfeli faces south/southeast, Härzlisee faces west. Choose according to conditions.",
+      "descriptionDe": "Zwei verschiedene Starts: Tümpfeli Süd/Südost, Härzlisee West. Nach Bedingungen wählen.",
+      "descriptionIt": "Due decolli distinti: Tümpfeli esposto sud/sud-est, Härzlisee esposto ovest. Scegliere secondo le condizioni.",
+      "access": "Remontées du Brunni, puis marche vers le départ choisi. Vérifier leur exploitation.",
+      "accessEn": "Brunni lifts, then walk to the chosen launch. Check lift operation.",
+      "accessDe": "Brunnibahnen, dann zu Fuß zum gewählten Start. Bahnbetrieb prüfen.",
+      "accessIt": "Impianti del Brunni, poi a piedi al decollo scelto. Verificare il servizio.",
+      "hazards": "Ne pas voler par foehn ou vent fort en altitude. Nombreux câbles dans la vallée ; vérifier obstacles, espaces aériens et DABS.",
+      "hazardsEn": "Do not fly in foehn or strong upper winds. Numerous valley cables; check obstacles, airspace and DABS.",
+      "hazardsDe": "Bei Föhn oder starkem Höhenwind nicht fliegen. Viele Seile im Tal; Hindernisse, Lufträume und DABS prüfen.",
+      "hazardsIt": "Non volare con favonio o forte vento in quota. Numerosi cavi in valle; verificare ostacoli, spazi aerei e DABS.",
+      "bestWindDirections": [
+        "S",
+        "SE",
+        "W"
+      ]
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "098d9be4f391ffb1c5846a9f4132097dfe9460cb9f3699e023a58e83cea2232a",
+    "previousValues": {
+      "description": "Décollage depuis le Brunni (1860 m), face à la vallée d’Engelberg et au Titlis. Site école et biplaces très populaire. Thermiques réguliers le long des pentes boisées. Atterrissage au fond de la vallée (1000 m).",
+      "descriptionEn": "Take-off from the Brunni (1860 m), facing the Engelberg valley and the Titlis. Very popular school and two-seater site. Regular thermals along the wooded slopes. Landing at the bottom of the valley (1000 m).",
+      "descriptionDe": "Start von der Brunni (1860 m), mit Blick auf das Engelbergtal und den Titlis. Sehr beliebte Schule und Zweisitzer-Platz. Regelmäßige Thermik entlang der bewaldeten Hänge. Landung am Talgrund (1000 m).",
+      "descriptionIt": "Decollo dal Brunni (1860 m), rivolto verso la valle dell'Engelberg e il Titlis. Scuola molto popolare e area per biposto. Regolare impianti termici lungo i pendii boscosi. Atterraggio sul fondo della valle (1000 m).",
+      "access": "Télécabine Engelberg–Brunni. Engelberg accessible en train depuis Lucerne (45 min).",
+      "accessEn": "Engelberg–Brunni gondola. Engelberg can be reached by train from Lucerne (45 min).",
+      "accessDe": "Engelberg–Brunner-Gondel. Engelberg ist mit dem Zug von Luzern aus erreichbar (45 Minuten).",
+      "accessIt": "Gondola Engelberg–Brunni. Engelberg è raggiungibile in treno da Lucerna (45 min).",
+      "hazards": "Câble du téléphérique Brunni. Confluence de brises de vallée variables. Foehn de sud possible.",
+      "hazardsEn": "Cable of the Brunni cable car. Confluence of variable valley breezes. Southern foehn possible.",
+      "hazardsDe": "Seil der Bńni-Seilbahn. Zusammenfluss variabler Talbrisen. Südlicher Foehn möglich.",
+      "hazardsIt": "Funivia della funivia di Brunni. Confluenza di brezze variabili della valle. Possibile foehn meridionale.",
+      "bestWindDirections": [
+        "N",
+        "NW",
+        "NNW",
+        "NNE"
+      ]
+    }
+  },
+  {
+    "id": "cmnpsrxg10030haf6zb9qtg6a",
+    "name": "Lucerne – Pilatus",
+    "source": {
+      "title": "FSVL — panneau officiel du site du Pilatus",
+      "url": "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Pilatus.pdf"
+    },
+    "reason": "Le repère correspond au Kulm. Ses directions officielles sont S/SW/W ; ne pas lui attribuer les orientations de Klimsen ni un départ non documenté au Tomlishorn.",
+    "fields": {
+      "description": "Pilatus Kulm : décollage difficile à 2 059 m, orienté sud à ouest. Les départs de Klimsen ont d’autres orientations.",
+      "descriptionEn": "Pilatus Kulm: a difficult launch at 2,059 m, facing south to west. The Klimsen launches have different orientations.",
+      "descriptionDe": "Pilatus Kulm: schwieriger Start auf 2.059 m, Süd- bis Westausrichtung. Die Klimsen-Startplätze haben andere Ausrichtungen.",
+      "descriptionIt": "Pilatus Kulm: decollo difficile a 2.059 m, orientato da sud a ovest. I decolli di Klimsen hanno altri orientamenti.",
+      "hazards": "Rotors et turbulences liés au relief et aux bâtiments. Maîtrise du parapente indispensable. Vérifier les CTR/TMA voisines, accords de vol et restrictions du DABS.",
+      "hazardsEn": "Terrain and buildings cause rotors and turbulence. Strong canopy control is essential. Check nearby CTR/TMA, flight agreements and DABS restrictions.",
+      "hazardsDe": "Gelände und Gebäude erzeugen Rotoren und Turbulenzen. Sehr gute Schirmkontrolle nötig. Benachbarte CTR/TMA, Flugvereinbarungen und DABS-Einschränkungen prüfen.",
+      "hazardsIt": "Rilievi ed edifici creano rotori e turbolenze. Ottimo controllo della vela indispensabile. Verificare CTR/TMA vicine, accordi di volo e restrizioni DABS.",
+      "bestWindDirections": [
+        "S",
+        "SW",
+        "W"
+      ]
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "d5b067c9fbde37c114e5388a26f1c88edd9239e060aee7ccc971891abe4366b3",
+    "previousValues": {
+      "description": "Le Pilatus (2128 m) domine Lucerne et le lac des Quatre-Cantons. Décollage au Kulm ou Tomlishorn — arêtes rocheuses spectaculaires. Vol thermique et soaring alpin avec 1700 m de dénivelé. Atterrissage à Kriens ou Alpnachstad (~440 m).",
+      "descriptionEn": "Le Pilatus (2128 m) domine Lucerne et le lac des Quatre-Cantons. Décollage au Kulm ou Tomlishorn — arêtes rocheuses spectaculaires. Vol thermique et soaring alpin avec 1700 m de dénivelé. Atterrissage à Kriens ou Alpnachstad (~440 m).",
+      "descriptionDe": "Le Pilatus (2128 m) domine Lucerne et le lac des Quatre-Cantons. Décollage au Kulm ou Tomlishorn — arêtes rocheuses spectaculaires. Vol thermique et soaring alpin avec 1700 m de dénivelé. Atterrissage à Kriens ou Alpnachstad (~440 m).",
+      "descriptionIt": "Le Pilatus (2128 m) domine Lucerne et le lac des Quatre-Cantons. Décollage au Kulm ou Tomlishorn — arêtes rocheuses spectaculaires. Vol thermique et soaring alpin avec 1700 m de dénivelé. Atterrissage à Kriens ou Alpnachstad (~440 m).",
+      "hazards": "Terrain très alpin, arêtes exposées au vent. Câbles du train à crémaillère (le plus raide du monde). Espace aérien militaire. Foehn et cisaillements fréquents.",
+      "hazardsEn": "Terrain très alpin, arêtes exposées au vent. Câbles du train à crémaillère (le plus raide du monde). Airspace militaire. Foehn et cisaillements fréquents.",
+      "hazardsDe": "Terrain très alpin, arêtes exposées au vent. Câbles du train à crémaillère (le plus raide du monde). Luftraummilitär. Foehn et cisaillements fréquents.",
+      "hazardsIt": "Terrain très alpin, arêtes exposées au vent. Câbles du train à crémaillère (le plus raide du monde). Spazio aereo militare. Foehn et cisaillements fréquents.",
+      "bestWindDirections": [
+        "N",
+        "NW",
+        "NNW",
+        "W"
+      ]
+    }
+  },
+  {
+    "id": "cmnpsrx3m002lhaf6s1n9co5f",
+    "name": "Niesen",
+    "source": {
+      "title": "Air Base Flyers / Flugbasis — site de vol du Niesen",
+      "url": "https://flugbasis.ch/air-base-flyers-dein-gleitschirmclub/fluggebiet/"
+    },
+    "additionalSources": [
+      {
+        "title": "Niesenbahn — accès et transport des parapentes",
+        "url": "https://www.niesen.ch/erlebnisse/gleitschirmfliegen/"
+      }
+    ],
+    "reason": "Le club déconseille les composantes nord, pourtant seules indiquées dans le catalogue. Reprendre les orientations des départs officiels sud et ouest et leurs risques spécifiques.",
+    "fields": {
+      "access": "Niesenbahn depuis Mülenen, puis sentier balisé : environ 5 minutes au départ sud, 10 minutes au départ ouest. Vérifier l’exploitation du funiculaire.",
+      "accessEn": "Niesenbahn from Mülenen, then marked trail: about 5 minutes to the south launch, 10 to the west launch. Check funicular operation.",
+      "accessDe": "Niesenbahn ab Mülenen, dann markierter Weg: etwa 5 Minuten zum Südstart, 10 zum Weststart. Bahnbetrieb prüfen.",
+      "accessIt": "Niesenbahn da Mülenen, poi sentiero segnalato: circa 5 minuti al decollo sud, 10 a quello ovest. Verificare l’esercizio della funicolare.",
+      "hazards": "Départs officiels déconseillés avec composante nord. De mai à août, entre 11 h et 16 h, la brise de vallée peut dépasser la crête.",
+      "hazardsEn": "Official launches are not recommended in northerly winds. From May to August, between 11:00 and 16:00, valley wind can spill over the ridge.",
+      "hazardsDe": "Offizielle Starts bei Nordkomponenten nicht empfohlen. Von Mai bis August zwischen 11 und 16 Uhr kann Talwind den Grat überspülen.",
+      "hazardsIt": "Decolli ufficiali sconsigliati con componente nord. Da maggio ad agosto, tra le 11 e le 16, il vento di valle può superare la cresta.",
+      "bestWindDirections": [
+        "SE",
+        "S",
+        "SW",
+        "W"
+      ]
+    },
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "32e5ffda6c33268fbe57ea78f1841a5a6b6e5437957b4b4ce8967eb12227f6ca",
+    "previousValues": {
+      "access": "Funiculaire Niesenbahn depuis Mülenen. Gare CFF Mülenen (ligne BLS Spiez–Brig).",
+      "accessEn": "Niesenbahn funicular from Mülenen. SBB station Mülenen (BLS Spiez–Brig line).",
+      "accessDe": "Niesenbahn-Standseilbahn von Mülenen. SBB-Station Mülenen (BLS Spiez–Brig-Linie).",
+      "accessIt": "Funicolare Niesenbahn da Mülenen. Stazione SBB Mülenen (linea BLS Spiez–Brig).",
+      "hazards": "Câble du funiculaire — rester à distance. Turbulences côté nord par vent de sud. Foehn. Vol croisière requis car sommet isolé.",
+      "hazardsEn": "Funicular cable — stay at a distance. Turbulence on the north side with a southerly wind. Foehn. Cruising flight required because of the isolated summit.",
+      "hazardsDe": "Kabelseil – auf Abstand bleiben. Turbulenzen auf der Nordseite mit südlichem Wind. Foehn. Kreuzfahrtflug ist wegen des isolierten Gipfels erforderlich.",
+      "hazardsIt": "Cavo funicolare — resta a distanza. Turbolenza sul lato nord con vento da sud. Foehn. Volo di crociera richiesto a causa della vetta isolata.",
+      "bestWindDirections": [
+        "N",
+        "NE",
+        "NNW",
+        "NNE"
+      ]
+    }
+  },
+  {
+    "name": "Rochers-de-Naye",
+    "source": {
+      "title": "FSVL / RNVL — panneau du site des Rochers de Naye",
+      "url": "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Rocher_de_Naye.pdf"
+    },
+    "reason": "Remplacer les altitudes, atterrissages et dangers non établis par les indications du panneau fédéral ; ne pas qualifier automatiquement le repère approximatif.",
+    "fields": {
+      "description": "Départ sud des Rochers de Naye à 1 980 m : parapente orienté est à sud-ouest.",
+      "descriptionEn": "Rochers de Naye southern launch at 1,980 m: east to southwest for paragliders.",
+      "descriptionDe": "Südstart Rochers de Naye auf 1.980 m: Gleitschirme starten bei Ost bis Südwest.",
+      "descriptionIt": "Decollo sud dei Rochers de Naye a 1.980 m: parapendio da est a sud-ovest.",
+      "access": "Accès par le chemin de fer Montreux–Rochers de Naye.",
+      "accessEn": "Access by the Montreux–Rochers de Naye railway.",
+      "accessDe": "Zugang mit der Bahn Montreux–Rochers de Naye.",
+      "accessIt": "Accesso con la ferrovia Montreux–Rochers de Naye.",
+      "hazards": "Vent ouest à nord-ouest dangereux. À Noville : approche parapente à droite, zone restreinte à respecter.",
+      "hazardsEn": "West to northwest wind is dangerous. At Noville: right-hand paraglider circuit; respect the restricted area.",
+      "hazardsDe": "West- bis Nordwestwind gefährlich. Noville: Rechtsvolte für Gleitschirme; Sperrzone beachten.",
+      "hazardsIt": "Vento da ovest a nord-ovest pericoloso. Noville: circuito destro per parapendii; rispettare la zona limitata.",
+      "bestWindDirections": [
+        "E",
+        "SE",
+        "S",
+        "SW"
+      ]
+    },
+    "id": "cmnpsrx9e002shaf6ammqtjkj",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "6cb9f5ec6042feb537d608f35f3efd4b0bc13c86b374b230796e009f58529a9a",
+    "previousValues": {
+      "description": "Décollage alpin à 2042 m au-dessus de Montreux avec vue plongeante sur le Léman. Train à crémaillère depuis Montreux. Vol soaring le long des falaises, thermiques de pente côté sud. Atterrissage à Montreux ou Villeneuve (~375 m).",
+      "descriptionEn": "Décollage alpin à 2042 m au-dessus de Montreux avec vue plongeante sur le Léman. Train à crémaillère depuis Montreux. Vol soaring le long des falaises, thermiques de pente côté sud. Atterrissage à Montreux ou Villeneuve (~375 m).",
+      "descriptionDe": "Décollage alpin à 2042 m au-dessus de Montreux avec vue plongeante sur le Léman. Train à crémaillère depuis Montreux. Vol soaring le long des falaises, thermiques de pente côté sud. Atterrissage à Montreux ou Villeneuve (~375 m).",
+      "descriptionIt": "Décollage alpin à 2042 m au-dessus de Montreux avec vue plongeante sur le Léman. Train à crémaillère depuis Montreux. Vol soaring le long des falaises, thermiques de pente côté sud. Atterrissage à Montreux ou Villeneuve (~375 m).",
+      "access": "Train à crémaillère MOB depuis Montreux (50 min). Pas de route carrossable.",
+      "accessEn": "Train à crémaillère MOB depuis Montreux (50 min). Pas de route carrossable.",
+      "accessDe": "Train à crémaillère MOB depuis Montreux (50 min). Pas de route carrossable.",
+      "accessIt": "Train à crémaillère MOB depuis Montreux (50 min). Pas de route carrossable.",
+      "hazards": "Brise de lac forte l’après-midi, turbulences en terrain rocheux. Train à crémaillère — rester hors de la voie. Impossible.",
+      "hazardsEn": "Brise de lac forte l'après-midi, turbulences en terrain rocheux. Train à crémaillère — rester hors de la voie. Foehn possible.",
+      "hazardsDe": "Brise de lac forte l'après-midi, turbulences en terrain rocheux. Train à crémaillère — rester hors de la voie. Foehn möglich.",
+      "hazardsIt": "Brise de lac forte l'après-midi, turbulences en terrain rocheux. Train à crémaillère — restare hors de la voie. Possibile.",
+      "bestWindDirections": [
+        "S",
+        "SW",
+        "SSW",
+        "SE"
+      ]
+    }
+  },
+  {
+    "name": "Grindelwald – First",
+    "source": {
+      "title": "FSVL / Jungfrau-Tächi — Grindelwald, juin 2024",
+      "url": "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Grindelwald.pdf"
+    },
+    "reason": "Corriger altitude et accès et remplacer les dangers incomplets par les contraintes locales publiées ; les mois préférés ne deviennent pas une autorisation annuelle.",
+    "fields": {
+      "description": "Décollage de First à 2 120 m, orienté est à sud-ouest. Atterrissages distincts à Grund et Bodmi.",
+      "descriptionEn": "First launch at 2,120 m faces east to southwest, with separate landing areas at Grund and Bodmi.",
+      "descriptionDe": "First-Startplatz auf 2.120 m, Ost bis Südwest; getrennte Landeplätze Grund und Bodmi.",
+      "descriptionIt": "Decollo First a 2.120 m, da est a sud-ovest; atterraggi separati a Grund e Bodmi.",
+      "access": "Télécabine Grindelwald–First, puis cinq minutes à pied depuis la station supérieure.",
+      "accessEn": "Grindelwald–First gondola, then a five-minute walk from the upper station.",
+      "accessDe": "Gondelbahn Grindelwald–First, danach fünf Minuten zu Fuss ab Bergstation.",
+      "accessIt": "Cabinovia Grindelwald–First, poi cinque minuti a piedi dalla stazione superiore.",
+      "hazards": "Grund : clôture et vent de vallée. Bodmi : câbles, bâtiments, turbulences. Vérifier le DABS et les règles locales de chasse.",
+      "hazardsEn": "Grund: fence and valley wind. Bodmi: cables, buildings, turbulence. Check DABS and local hunting arrangements.",
+      "hazardsDe": "Grund: Zaun und Talwind. Bodmi: Kabel, Gebäude, Turbulenzen. DABS und lokale Jagdvereinbarung prüfen.",
+      "hazardsIt": "Grund: recinzione e vento di valle. Bodmi: cavi, edifici, turbolenze. Verificare DABS e accordi locali sulla caccia.",
+      "bestWindDirections": [
+        "E",
+        "SE",
+        "S",
+        "SW"
+      ]
+    },
+    "id": "cmnpsrx1z002jhaf6b536fyf5",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "9f6cd9ad2f2f0207f0fb0e5b2ae2d5ee4e72286c5086a6bd285198b028951e05",
+    "previousValues": {
+      "description": "Décollage à 2168 m depuis la station du téléphérique First. Vue spectaculaire sur la face nord de l’Eiger. Vol thermique le long des crêtes, atterrissage à Grindelwald (1034 m). Très fréquenté en été, vols biplaces populaires.",
+      "descriptionEn": "Décollage à 2168 m depuis la station du téléphérique First. Vue spectaculaire sur la face nord de l'Eiger. Vol thermique le long des crêtes, atterrissage à Grindelwald (1034 m). Très fréquenté en été, vols biplaces populaires.",
+      "descriptionDe": "Décollage à 2168 m depuis la station du téléphérique First. Vue spectaculaire sur la face nord de l'Eiger. Vol thermique le long des crêtes, atterrissage à Grindelwald (1034 m). Très fréquenté en été, vols biplaces populaires.",
+      "descriptionIt": "Décollage à 2168 m depuis la station du téléphérique First. Vue spectaculaire sur la face nord de l'Eiger. Vol thermique le long des crêtes, atterrissage à Grindelwald (1034 m). Très fréquenté en été, vols biplaces populaires.",
+      "access": "Téléphérique First depuis Grindelwald. Parking à la gare de Grindelwald.",
+      "accessEn": "Téléphérique First depuis Grindelwald. Parking à la gare de Grindelwald.",
+      "accessDe": "Téléphérique First depuis Grindelwald. Parken à la gare de Grindelwald.",
+      "accessIt": "Téléphérique First depuis Grindelwald. Parcheggio alla gare di Grindelwald.",
+      "hazards": "Turbulences en rotor derrière les crêtes. Câble du téléphérique. Impossible. Restrictions d’espace aérien.",
+      "hazardsEn": "Turbulences en rotor derrière les crêtes. Câble du téléphérique. Foehn possible. Airspace restrictions.",
+      "hazardsDe": "Turbulences en rotor derrière les crêtes. Câble du téléphérique. Foehn möglich. Luftraumbeschränkungen.",
+      "hazardsIt": "Turbulences en rotor derrière les crêtes. Câble du téléphérique. Possibile. Restrizioni dello spazio aereo.",
+      "bestWindDirections": [
+        "N",
+        "NW",
+        "NNW",
+        "NNE"
+      ]
+    }
+  },
+  {
+    "name": "Flumserberg – Prodkamm",
+    "source": {
+      "title": "FSVL / Gleitschirmclub Spitzmeilen — Flumserberg, septembre 2023",
+      "url": "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Flumserberg.pdf"
+    },
+    "reason": "Le panneau distingue Prodkamm de Maschgenkamm et Schönhalde : corriger altitude et difficulté, préciser carte de vol et dangers sans approuver le point du catalogue.",
+    "fields": {
+      "description": "Prodkamm : décollage à 1 969 m, de difficulté moyenne, orienté ouest à nord-est.",
+      "descriptionEn": "Prodkamm launch is at 1,969 m, rated intermediate, facing west through north to northeast.",
+      "descriptionDe": "Prodkamm: Startplatz auf 1.969 m, mittelschwer, West über Nord bis Nordost.",
+      "descriptionIt": "Prodkamm: decollo a 1.969 m, difficoltà media, da ovest attraverso nord a nord-est.",
+      "access": "Accès en car postal et remontées mécaniques. Carte journalière ou annuelle de vol obligatoire.",
+      "accessEn": "Access by PostBus and lifts. A daily or annual flying permit is required.",
+      "accessDe": "Zugang per Postauto und Bergbahn. Tages- oder Jahreskarte zum Fliegen erforderlich.",
+      "accessIt": "Accesso con autopostale e impianti. Obbligatoria la tessera di volo giornaliera o annuale.",
+      "hazards": "Ne pas voler par foehn. Effet de tuyère à la sortie du Schilstal ; respecter les zones de tranquillité et le bétail.",
+      "hazardsEn": "Do not fly in foehn. Venturi effect at the Schilstal exit; respect wildlife rest zones and livestock.",
+      "hazardsDe": "Bei Föhn nicht fliegen. Düseneffekt am Schilstalausgang; Wildruhezonen und Alpvieh beachten.",
+      "hazardsIt": "Non volare con favonio. Effetto Venturi all’uscita della Schilstal; rispettare zone faunistiche e bestiame.",
+      "bestWindDirections": [
+        "W",
+        "NW",
+        "N",
+        "NE"
+      ],
+      "difficulty": "INTERMEDIATE"
+    },
+    "id": "cmnpsrxgv0031haf6qkznnzle",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "abcc64de3a9caadcdaa463c8f44b3d359848ff863308e1e567ce91e08323bb3d",
+    "previousValues": {
+      "description": "Décollage à 1570 m au-dessus du Walensee. Site école réputé de Suisse orientale, pente régulière et brise de lac fiable. Atterrissage à Flums (460 m). Vue panoramique sur les Churfirsten et le lac de Walenstadt.",
+      "descriptionEn": "Take-off at 1570 m above the Walensee. Renowned school site in Eastern Switzerland, regular slope and reliable lake breeze. Landing at Flums (460 m). Panoramic view of the Churfirsten and Lake Walen.",
+      "descriptionDe": "Start auf 1570 m über dem Walensee. Renommiertes Schulgelände in der Ostschweiz, gleichmäßiger Hang und zuverlässige Seebrise. Landung bei Flums (460 m). Panoramablick auf den Churfirsten und den Walensee.",
+      "descriptionIt": "Decollo a 1570 m sopra la Walensee. Sito scolastico rinomato nella Svizzera orientale, pendenza regolare e brezza lacustre affidabile. Sbarco a Flums (460 m). Vista panoramica del Churfirsten e del Lago Walen.",
+      "access": "Télécabine Flumserberg depuis Tannenbodenalp. 1h en voiture de Zurich, gare CFF Flums.",
+      "accessEn": "Flumserberg gondola lift from Tannenbodenalp. 1 hour by car from Zurich, SBB station Flums.",
+      "accessDe": "Flumserberg-Gondellift von Tannenbodenalp. Eine Autostunde von Zürich aus, SBB-Station Flums.",
+      "accessIt": "Seggiovia Flumserberg da Tannenbodenalp. A 1 ora in auto da Zurigo, stazione SBB Flums.",
+      "hazards": "Brise de vallée du Seeztal variable. Câbles de remontées mécaniques. Lignes électriques en approche. Le trafic de biplaces est important.",
+      "hazardsEn": "Variable Seeztal valley breeze. Ski lift cables. Power lines approaching. Two-seater traffic is important.",
+      "hazardsDe": "Variable Seeztal-Talbrise. Skiliftseile. Stromleitungen nähern sich. Zweisitzer-Verkehr ist wichtig.",
+      "hazardsIt": "Brezza variabile della valle di Seeztal. Cavi della seggiovia. Linee elettriche in avvicinamento. Il traffico a due posti è importante.",
+      "bestWindDirections": [
+        "N",
+        "NW",
+        "NNW",
+        "NNE"
+      ],
+      "difficulty": "BEGINNER"
+    }
+  },
+  {
+    "name": "Charmey – Vounetse",
+    "source": {
+      "title": "Club de Vol Libre de la Gruyère — site de Charmey",
+      "url": "https://www.vlgruyere.ch/site-de-charmey/"
+    },
+    "reason": "Distinguer les deux décollages de Vounetz du repère actuel proche de l’atterrissage ; corriger accès et contraintes, sans déplacer de coordonnées ni valider un départ unique.",
+    "fields": {
+      "description": "Vounetz : décollage sud-ouest à 1 611 m et nord-est à 1 617 m. Ce dernier est difficile.",
+      "descriptionEn": "Vounetz has a southwest launch at 1,611 m and a difficult northeast launch at 1,617 m.",
+      "descriptionDe": "Vounetz: Südweststart auf 1.611 m und schwieriger Nordoststart auf 1.617 m.",
+      "descriptionIt": "Vounetz: decollo sud-ovest a 1.611 m e difficile decollo nord-est a 1.617 m.",
+      "access": "Télécabine de Charmey ou marche. Le repère actuel est proche de l’atterrissage « Sur la Grande Fin ».",
+      "accessEn": "Charmey gondola or walking. The current marker is near the “Sur la Grande Fin” landing field.",
+      "accessDe": "Charmey-Gondelbahn oder zu Fuss. Der aktuelle Marker liegt nahe dem Landeplatz « Sur la Grande Fin ».",
+      "accessIt": "Cabinovia di Charmey o a piedi. Il segnaposto attuale è vicino all’atterraggio « Sur la Grande Fin ».",
+      "hazards": "Câbles au sud-ouest, rouleaux au nord-est ; aucun décollage sur piste. Quitter le pré après atterrissage ; plier au parking. Vérifier le DABS.",
+      "hazardsEn": "Cables southwest, rotor northeast; no launches on ski runs. Leave the landing meadow; pack at the parking area. Check DABS.",
+      "hazardsDe": "Südwest: Kabel; Nordost: Rotoren. Keine Pistenstarts. Landewiese verlassen, am Parkplatz packen. DABS prüfen.",
+      "hazardsIt": "Cavi a sud-ovest, rotori a nord-est; non decollare sulle piste. Lasciare il prato, ripiegare al parcheggio. Verificare DABS.",
+      "bestWindDirections": [
+        "SW",
+        "NE"
+      ]
+    },
+    "id": "cmnpsrx57002nhaf6038tgdu4",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "0bc69971fd331a4c5ff9fbabd354e86a440d402f3f3652fedcf2b6b336e67a03",
+    "previousValues": {
+      "description": "Site école populaire en Gruyère. Décollage à Vounetse (~1500 m) au-dessus de Charmey, atterrissage dans la plaine de Charmey (~880 m). Conditions thermiques régulières l’après-midi. Terrain dégagé et spacieux, idéal pour la progression.",
+      "descriptionEn": "Popular school site in Gruyère. Take-off at Vounetse (~1500 m) above Charmey, landing in the plain of Charmey (~880 m). Regular thermal conditions in the afternoon. Open and spacious grounds, ideal for progression.",
+      "descriptionDe": "Beliebter Schulstandort in Gruyère. Start in Vounetse (~1500 m) oberhalb von Charmey, Landung in der Ebene von Charmey (~880 m). Regelmäßige thermische Bedingungen am Nachmittag. Offene und großzügige Anlagen, ideal für den Fortschritt.",
+      "descriptionIt": "Sito scolastico molto popolare a Gruyère. Decollo a Vounetse (~1500 m) sopra Charmey, atterraggio nella pianura di Charmey (~880 m). Condizioni termiche regolari nel pomeriggio. Spazi aperti e spaziosi, ideali per la progressione.",
+      "access": "Depuis Bulle, route de Charmey (15 min). Montée à pied ou navette depuis le village.",
+      "accessEn": "From Bulle, route de Charmey (15 min). Walk up or shuttle bus from the village.",
+      "accessDe": "Von Bulle, Route de Charmey (15 Min.). Gehen Sie zu Fuß oder nehmen Sie den Shuttlebus vom Dorf aus.",
+      "accessIt": "Da Bulle, route de Charmey (15 min). Sali a piedi o prendi il bus navetta dal villaggio.",
+      "hazards": "Brise de vallée parfois soutenue en fin d’après-midi. Lignes électriques en fond de vallée près de l’atterrissage.",
+      "hazardsEn": "Valley breeze sometimes sustained at the end of the afternoon. Power lines at the bottom of the valley near the landing.",
+      "hazardsDe": "Talbrise hielt sich manchmal am Ende des Nachmittags aufrecht. Stromleitungen am Fuße des Tals nahe dem Treppenabsatz.",
+      "hazardsIt": "A volte si sente una brezza di valle che si prolunga a fine pomeriggio. Linee elettriche sul fondo della valle vicino al pianerottolo.",
+      "bestWindDirections": [
+        "W",
+        "NW",
+        "SW",
+        "WNW"
+      ]
+    }
+  },
+  {
+    "name": "Locarno – Cardada",
+    "source": {
+      "title": "FSVL / Club Volo Libero Ticino — Cimetta et Cimino",
+      "url": "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Cimetta.pdf"
+    },
+    "reason": "La fiche confond altitude de Cardada et départs Cimetta/Cimino : distinguer les deux départs et préciser les contraintes de l’atterrissage de Locarno sans déplacer le repère ni qualifier automatiquement le secteur.",
+    "fields": {
+      "description": "Le secteur Cardada dessert deux départs distincts : Cimetta à 1 620 m et Cimino à 1 660 m.",
+      "descriptionEn": "The Cardada area serves two separate launches: Cimetta at 1,620 m and Cimino at 1,660 m.",
+      "descriptionDe": "Im Gebiet Cardada liegen zwei getrennte Startplätze: Cimetta auf 1.620 m und Cimino auf 1.660 m.",
+      "descriptionIt": "Il comprensorio Cardada serve due decolli distinti: Cimetta a 1.620 m e Cimino a 1.660 m.",
+      "access": "Funiculaire, téléphérique puis télésiège ; vérifier les horaires des remontées.",
+      "accessEn": "Funicular, cable car, then chairlift; check lift schedules.",
+      "accessDe": "Standseilbahn, Luftseilbahn und Sessellift; Betriebszeiten prüfen.",
+      "accessIt": "Funicolare, funivia e seggiovia; verificare gli orari degli impianti.",
+      "hazards": "Garder ses distances des remontées. Atterrissage de Locarno en plage : niveau du lac à vérifier, fermeture hivernale.",
+      "hazardsEn": "Keep clear of lifts. Locarno beach landing: check lake level; closed in winter.",
+      "hazardsDe": "Abstand zur Bergbahn halten. Strandlandung Locarno: Wasserstand beachten; im Winter geschlossen.",
+      "hazardsIt": "Mantenere distanza dagli impianti. Atterraggio sulla spiaggia di Locarno: verificare il livello del lago; chiuso in inverno."
+    },
+    "id": "cmnpsrxf8002zhaf6jhb7mflt",
+    "checkedAt": "2026-11-04",
+    "previousFingerprint": "94dcb8e31d015fea831ffb696edf9f734ecf4e5b96b9ec10c1c65582de0b554e",
+    "previousValues": {
+      "description": "Décollage à 1332 m depuis Cardada-Cimetta au-dessus de Locarno et du Lac Majeur. Climat tessinois doux — saison de vol très longue. Vol soaring face sud avec vue sur les îles de Brissago. Atterrissage au Lido de Locarno (~197 m).",
+      "descriptionEn": "Take-off at 1332 m from Cardada-Cimetta over Locarno and Lake Maggiore. Mild climate in Ticino – very long flying season. Soaring flight south facing with views of the Brissago Islands. Landing at the Lido di Locarno (~197 m).",
+      "descriptionDe": "Start auf 1332 m von Cardada-Cimetta über Locarno und den Lago Maggiore. Mildes Klima im Tessin – sehr lange Flugsaison. Hoher Flug nach Süden mit Blick auf die Brissago-Inseln. Landung am Lido di Locarno (~197 m).",
+      "descriptionIt": "Decollo a 1332 m da Cardada-Cimetta sopra Locarno e il Lago Maggiore. Clima mite nel Ticino – stagione di volo molto lunga. Volare volando verso sud con vista sulle Isole Brissago. Atterraggio al Lido di Locarno (~197 m).",
+      "access": "Télécabine depuis Orselina (au-dessus de Locarno). Funicolare da Locarno.",
+      "accessEn": "Gondola lift from Orselina (above Locarno). Funicolare da Locarno.",
+      "accessDe": "Gondellift von Orselina (oberhalb von Locarno). Funicolare da Locarno.",
+      "accessIt": "Telecabina da Orselina (sopra Locarno). Funicolare da Locarno.",
+      "hazards": "Brise de lac du Verbano parfois forte. Câble de la télécabine Orselina–Cardada. Airspace de Locarno-Magadino (aérodrome militaire/civil). Thermiques marqués l’après-midi.",
+      "hazardsEn": "Lake breeze of Verbano sometimes strong. Cable of the Orselina–Cardada gondola. Locarno-Magadino Airspace (military/civil airfield). Thermals marked in the afternoon.",
+      "hazardsDe": "Die Seebrise von Verbano ist manchmal stark. Kabel der Orselina–Cardada-Gondel. Locarno-Magadino-Luftraum (militärischer/ziviler Flugplatz). Thermik am Nachmittag markiert.",
+      "hazardsIt": "La brezza lacustre di Verbano a volte è forte. Cavo della gondola Orselina–Cardada. Spazio aereo Locarno-Magadino (aeroporto militare/civile). Le termiche segnate nel pomeriggio."
+    }
+  }
+]

@@ -29,8 +29,8 @@ const topicLabels = {
   season: "Saison",
   access: "Accès",
 };
-export function PlannerReviewEditor() {
-  const [query, setQuery] = useState("");
+export function PlannerReviewEditor({ initialQuery = "" }: { initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const [rows, setRows] = useState<Row[]>([]);
   const [selected, setSelected] = useState<Row | null>(null);
   const [review, setReview] = useState<PlannerReview | null>(null);

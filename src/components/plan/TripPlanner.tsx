@@ -152,7 +152,7 @@ export function TripPlanner({
       params.set("locale", locale);
       try {
         const res = await fetch(`/api/plan?${params}`, {
-          signal: controller.signal,
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]),
         });
         const data = await res.json();
         if (controller.signal.aborted) return;
@@ -193,7 +193,6 @@ export function TripPlanner({
     lastUrl.current = urlKey;
     const params = new URLSearchParams(urlKey),
       criteria = parsePlannerCriteria(params, today);
-    if (!params.has("startDate")) return;
     if (!criteria) {
       setError(c.invalid);
       return;
@@ -208,6 +207,19 @@ export function TripPlanner({
               `${criteria.lat.toFixed(3)}, ${criteria.lng.toFixed(3)}`,
           }
         : null;
+    if (!params.has("startDate")) {
+      request.current?.abort();
+      setLoading(false);
+      setRadius(criteria.radius);
+      setPlace(restored);
+      setQuery(restored?.name || "");
+      setResponse(null);
+      setApplied(null);
+      setSelected(null);
+      setError("");
+      setDirty(false);
+      return;
+    }
     setStartDate(criteria.startDate);
     setEndDate(criteria.endDate);
     setSport(criteria.sport);
@@ -251,7 +263,7 @@ export function TripPlanner({
       try {
         const res = await fetch(
           `/api/plan/locations?${new URLSearchParams({ q: query.trim(), locale })}`,
-          { signal: controller.signal },
+          { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12_000)]) },
         );
         const data = await res.json();
         if (controller.signal.aborted) return;
@@ -501,7 +513,7 @@ export function TripPlanner({
                       setDirty(true);
                       document.getElementById("planner-city")?.focus();
                     }}
-                    className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                    className="absolute right-0.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
                   >
                     <X size={17} />
                   </button>

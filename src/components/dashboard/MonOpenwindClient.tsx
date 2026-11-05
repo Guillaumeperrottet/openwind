@@ -273,6 +273,7 @@ export function MonOpenwindClient({ initialData }: Props) {
 
   useEffect(() => {
     trackEvent("mon_openwind_viewed", {
+      audience: "account",
       favorite_count: favoriteSpots.length + favoriteStations.length,
       favorite_spot_count: favoriteSpots.length,
       favorite_station_count: favoriteStations.length,

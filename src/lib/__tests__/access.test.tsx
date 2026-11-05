@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { accessRoute, journeyKey, safeReturnPath } from "../access";
 import { WebcamDirectory } from "@/components/ui/WebcamDirectory";
 import { TemperatureDirectoryReading } from "@/components/lake/TemperatureDirectoryReading";
-import TemperaturesPage from "@/app/[locale]/temperatures/page";
+import TemperaturesPage, { generateMetadata as temperatureMetadata } from "@/app/[locale]/temperatures/page";
 import WebcamsPage, { generateMetadata as webcamMetadata } from "@/app/[locale]/webcams/page";
 
 vi.mock("next-intl", () => ({ useLocale: () => "fr" }));
@@ -90,12 +90,21 @@ describe("useful entry pages without invented observations", () => {
     expect(result.type).toBe(WebcamDirectory);
     expect(fetcher).not.toHaveBeenCalled();
   });
-  it("uses the official source when the local lake page is disabled in production", async () => {
-    vi.stubEnv("NODE_ENV", "production"); vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "false");
-    const html = renderToStaticMarkup(await TemperaturesPage({ params: Promise.resolve({ locale: "fr" }) }));
-    expect(html).not.toContain('href="/fr/lacs/gruyere"');
-    expect(html).toContain("https://www.alplakes.eawag.ch/gruyere");
-    expect(html).toContain("CC BY 4.0");
+  it("resets the webcam gallery when client navigation changes coordinates and exposes upstream failures", async () => {
+    vi.stubEnv("WINDY_WEBCAMS_API_KEY", "test");
+    const fetcher = vi.fn().mockResolvedValue(Response.json({ webcams: [] })); vi.stubGlobal("fetch", fetcher);
+    const params = Promise.resolve({ locale: "fr" });
+    const first = await WebcamsPage({ params, searchParams: Promise.resolve({ lat: "46.63", lng: "7.08" }) });
+    const next = await WebcamsPage({ params, searchParams: Promise.resolve({ lat: "46.51", lng: "6.67" }) });
+    expect(first.key).not.toBe(next.key); expect(first.props.initialError).toBe(false);
+    fetcher.mockResolvedValueOnce(Response.json({}, { status: 503 }));
+    expect((await WebcamsPage({ params, searchParams: Promise.resolve({ lat: "46.51", lng: "6.67" }) })).props.initialError).toBe(true);
+  });
+  it("makes unvalidated temperatures unavailable and non-indexable", async () => {
+    vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "false");
+    const params = Promise.resolve({ locale: "fr" });
+    await expect(TemperaturesPage({ params })).rejects.toThrow("404");
+    expect((await temperatureMetadata({ params })).robots).toMatchObject({ index: false });
   });
   it("shows absence rather than zero, preserves real zero and hides obsolete estimates", () => {
     const now = Date.parse("2026-11-03T08:00Z");

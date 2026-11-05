@@ -14,6 +14,7 @@ export const SEARCH_KINDS = [
   "discussion",
 ] as const;
 export type SearchKind = (typeof SEARCH_KINDS)[number];
+export const visibleSearchKinds = (water = false) => SEARCH_KINDS.filter(kind => water || kind !== "water");
 export interface SearchEntry {
   id: string;
   kind: SearchKind;
@@ -270,10 +271,10 @@ export const SEARCH_COPY = {
 
 
 /** All public app destinations remain discoverable even during a database outage. */
-export function appSearchEntries(locale: SiteLocale): SearchEntry[] {
+export function appSearchEntries(locale: SiteLocale, water = false): SearchEntry[] {
   const c = ACCESS_COPY[locale], p = PLACE_COPY[locale];
   const pages: [string, string, string, string][] = [
-    ["explorer", c.explorer, "lieux conditions decouvrir discover entdecken esplora", c.waterIntro],
+    ["explorer", c.explorer, "lieux conditions decouvrir discover entdecken esplora", p.searchHelp],
     ["balises", c.stations, "vent mesure direct meteo wind stations capteurs", p.allWind],
     ["webcams", c.webcams, "camera cameras regarder images live", c.choose],
     ["temperatures", c.temperatures, "eau water wasser acqua temperature temperatures alplakes eawag", c.waterCoverage],
@@ -285,5 +286,5 @@ export function appSearchEntries(locale: SiteLocale): SearchEntry[] {
     ["spots/new", c.contribute, "ajouter creer contribuer contribution nouveau spot compte", c.contribute],
     ["about", c.about, "a propos contact open source sources donnees projet openwind", c.about],
   ];
-  return pages.map(([path, title, terms, subtitle]) => ({ id: `page-${path}`, kind: "page", title, subtitle, terms, href: `/${(path === "carnet" || path === "vent-en-direct") && locale === "en" ? "fr" : locale}/${path}` }));
+  return pages.filter(([path]) => water || path !== "temperatures").map(([path, title, terms, subtitle]) => ({ id: `page-${path}`, kind: "page", title, subtitle, terms, href: `/${(path === "carnet" || path === "vent-en-direct") && locale === "en" ? "fr" : locale}/${path}` }));
 }

@@ -1,3 +1,4 @@
+import { lakePageEnabled } from "@/lib/lake-page-enabled";
 import { ACCESS_COPY } from "@/lib/access";
 import { createHash } from "node:crypto";
 import { articleReading } from "@/lib/article-reading";
@@ -170,16 +171,6 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
           </nav>
         </div>
         <div className="mt-5"><SaveArticleButton article={readingArticle} /><ArticleReadingProgress article={readingArticle} revision={revision} headings={headings} /></div>
-        {locale === "fr" && (
-          <div className="mt-6">
-            <ArticleShare
-              title={translation.title}
-              text={translation.description}
-              url={url}
-              articleSlug={definition.slug}
-            />
-          </div>
-        )}
         <nav
           aria-label={copy.navigation}
           className="mt-8 flex flex-wrap gap-3 text-sm font-semibold text-sky-800"
@@ -382,7 +373,7 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
         <section className="mt-14 rounded-3xl bg-sky-700 p-7 text-white">
           <h2 className="text-2xl font-bold">{copy.plan}</h2>
           <div className="mt-5 flex flex-wrap gap-5 font-semibold">
-            {definition.slug === "lac-de-la-gruyere" && <Link href="/temperatures" className="underline underline-offset-4">{ACCESS_COPY[locale].temperatures} →</Link>}
+            {lakePageEnabled() && definition.slug === "lac-de-la-gruyere" && <Link href="/temperatures" className="underline underline-offset-4">{ACCESS_COPY[locale].temperatures} →</Link>}
             <Link href="/plan" className="underline underline-offset-4">
               {copy.plan} →
             </Link>
@@ -401,6 +392,16 @@ export function LocalGuideTemplate({ data }: { data: LocalGuideData }) {
             </Link>
           </div>
         </section>
+        {locale === "fr" && (
+          <div className="mt-6">
+            <ArticleShare
+              title={translation.title}
+              text={translation.description}
+              url={url}
+              articleSlug={definition.slug}
+            />
+          </div>
+        )}
         {data.relatedArticles.length > 0 && (
           <div className="mt-14">
             <RelatedArticles articles={data.relatedArticles} />

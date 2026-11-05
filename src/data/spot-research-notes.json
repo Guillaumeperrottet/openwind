@@ -1,0 +1,249 @@
+[
+  {
+    "ids": [
+      "cmo5momum000004le482ujwoj"
+    ],
+    "topic": "Localisation et accès à préciser",
+    "note": "Le point est à Saint-Aubin-Sauges en Suisse, pas à Saint-Aubin-sur-Mer en France. Les résultats homonymes français ne sont pas applicables. Aucune source locale suffisante pour le départ kite n’a été trouvée dans cette recherche.",
+    "sources": []
+  },
+  {
+    "ids": [
+      "cmts8lbhm028n04jokdc3fpzw",
+      "cmts8iaon028m04joeuaiw69a",
+      "cmts8fu1o028l04jobdwvxva4",
+      "cmts8fqdw028k04jop0qk8hm6"
+    ],
+    "topic": "Doublons et descriptions contradictoires",
+    "note": "Quatre fiches Monteynard se situent dans le même secteur. Trois partagent exactement les mêmes coordonnées ; les descriptions divergent sur le vent thermique nord ou sud. Identifier précisément chaque départ avant de documenter les orientations. Aucune fusion ni suppression automatique.",
+    "sources": [
+      "https://www.trieves-vercors.fr/activites/277604_lake-monteynard-nautical-base/"
+    ]
+  },
+  {
+    "ids": [
+      "cmnr47y4n0003i5f6j2tgkc8p",
+      "cmnpsrvtw0012haf6y1i584sc",
+      "cmnwvcoba000004juju8pghvf"
+    ],
+    "topic": "Plans anciens et départs à situer précisément",
+    "note": "Les plans publiés par l’office de tourisme citent des arrêtés de 2012. Les risques lisibles sont repris, mais les secteurs hachurés et les accès doivent être rapprochés des coordonnées exactes et des règles actuelles avant validation. La Gracieuse reste sans orientation validée ; aucune pratique à 360° n’est approuvée.",
+    "sources": [
+      "https://www.portsaintlouis-tourisme.fr/images/pdf/reglementation-pratique-du-kite-plage-napoleon.pdf",
+      "https://www.portsaintlouis-tourisme.fr/images/pdf/reglementation-pratique-du-kite-a-carteau.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnr47y0y0002i5f66ou441v0"
+    ],
+    "topic": "Plage familiale : départ kite à confirmer",
+    "note": "L’office de tourisme décrit Olga comme une petite plage de baignade. Cela ne confirme pas le départ kite décrit dans le catalogue. Ne pas y reporter les permissions de Carteau ou de Napoléon.",
+    "sources": [
+      "https://www.portsaintlouis-tourisme.fr/fr/se-ressourcer-port-saint-louis/la-mer/les-plages"
+    ]
+  },
+  {
+    "ids": [
+      "cmnr47xwq0001i5f6azgnapnb"
+    ],
+    "topic": "Commune et réglementation à vérifier",
+    "note": "Le Cavaou relève de Fos-sur-Mer. Les cartes de Port-Saint-Louis ne sont pas applicables. Retrouver le plan de balisage et l’arrêté communal actuel ; ne pas reprendre une fermeture estivale approximative d’un agrégateur.",
+    "sources": [
+      "https://www.fossurmer.fr/app/uploads/2023/03/1_a_RAPPORT_PRESENTATION.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnvzmuj2000104i9sn34l0tq"
+    ],
+    "topic": "Accès piéton et autorisation nautique distincts",
+    "note": "Le Département indique un accès annuel au site naturel des Dosses, sans établir le périmètre d’un départ kite. Le balisage nautique, les horaires et les éventuelles restrictions restent à vérifier avant de remplir la saison ou d’approuver le profil.",
+    "sources": [
+      "https://www.ledepartement66.fr/dossier/le-site-des-dosses/"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrwuh002ahaf6jel4lniq",
+      "cmnpsrwva002bhaf61696zuak"
+    ],
+    "topic": "Marées : contrainte non évaluée par le planificateur",
+    "note": "Les sources locales imposent de prendre en compte la marée et les zones de départ. Les données préparées ne rendent pas ces spots recommandables automatiquement. Les indications de Hayling sur les horaires de marée demandent une confirmation locale.",
+    "sources": [
+      "https://www.rother.gov.uk/leisure-and-events/beaches-and-coastline/camber-sands/",
+      "https://www.bristolkite.com/kite-spots/hayling-island"
+    ]
+  },
+  {
+    "ids": [
+      "cmnr30fo50001ijf6m6ll3seq",
+      "cmnr30vtl0003ijf6ylndlqlf"
+    ],
+    "topic": "Repères dans un secteur OROEM interdit : localisation à confirmer",
+    "note": "Le service fédéral identify, avec coordonnées WGS84 et tolérance nulle, place les deux repères actuels dans la partie I de l’objet 5. La fiche fédérale y interdit les sports nautiques. Le club de Portalban décrit bien un départ réglementé, qui doit être distingué de ce repère ; aucune nouvelle coordonnée n’est inventée. Une revue à vérifier est préparée, y compris pour Portalban actuellement documenté. Elle n’est pas encore appliquée à la base.",
+    "sources": [
+      "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr5.pdf",
+      "https://www.swisskite.club/les-vents",
+      "https://docs.geo.admin.ch/access-data/identify-features.html"
+    ]
+  },
+  {
+    "ids": [
+      "cmnr326wd0008ijf6i49dqsv8"
+    ],
+    "topic": "Départ et localisation non établis",
+    "note": "La réserve Salavaux n’autorise pas le kite. Le repère du catalogue n’intersecte pas cette réserve au test ponctuel, mais cette absence ne prouve ni un départ ni une permission. La présentation d’un départ débutant est corrigée dans le lot préparé. Confronter le nom, le départ précis et les limites cantonales avant toute qualification.",
+    "sources": [
+      "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr115.pdf",
+      "https://www.bafu.admin.ch/fr/reserves-doiseaux-deau-et-de-migrateurs"
+    ]
+  },
+  {
+    "ids": [
+      "cmvjx4i35000008l6i05pzwrc",
+      "cmnr31fo80006ijf6d6k4fr08",
+      "cmnr30p5d0002ijf6366oi6lz"
+    ],
+    "topic": "Accès public à une plage distinct d’un départ kite",
+    "note": "Les sources communales et touristiques documentent les accès et les usagers. Elles ne confirment pas un couloir de départ kite. Les risques de cohabitation sont préparés ; la fiche reste sans approbation automatique.",
+    "sources": [
+      "https://commune-latena.ch/page/nos-plages",
+      "https://fribourg.ch/fr/estavayer-payerne/plages/plage-de-cheyres/"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrv79000bhaf6tec7hcyy"
+    ],
+    "topic": "Source automatique écartée",
+    "note": "Le guide trouvé pour Les Alpettes signale lui-même une fiche générée automatiquement et non vérifiée par un pratiquant. Il ne sert pas de preuve pour remplir les dangers. Les itinéraires de randonnée du CAS ne prouvent pas davantage un terrain de snowkite autorisé.",
+    "sources": [
+      "https://lets-kite.com/en/spots/56/snowkite/les-alpettes"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrv3z0007haf6tdrdbzmr"
+    ],
+    "topic": "Terrain exact de snowkite à identifier",
+    "note": "La position et la description générales au Brassus ne suffisent pas à identifier une parcelle de départ. Les documents sur le lac de Joux ou les Rousses ne sont pas transposés à ce terrain terrestre. Accès, obstacles et accord du propriétaire restent à documenter.",
+    "sources": [
+      "https://www.airone.ch/kiteski/spot-kiteski-ou-snowkite/"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsruzr0002haf63qwep8qj"
+    ],
+    "topic": "Départ de Corseaux non confirmé",
+    "note": "Les offres de SUP ou de wingfoil à Corseaux-Plage ne confirment pas un départ de kitesurf au repère enregistré. La fenêtre avril–septembre de Promenthoux n’est pas applicable à tout le Léman. Confirmer le lieu et la réglementation locale avant de compléter les risques spécifiques.",
+    "sources": [
+      "https://api3.geo.admin.ch/featureattachments/ch.bafu.bundesinventare-vogelreservate/objectsheets/2023revision/nr117.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrx4e002mhaf6b2ci5prq"
+    ],
+    "topic": "Distinguer les décollages avant de qualifier le vol",
+    "note": "Les clubs gestionnaires et panneaux FSVL permettent de corriger les orientations et contraintes. Chaque départ a ses propres coordonnées et conditions. Les corrections restent sans approbation automatique ; les plages de vent et les conditions dynamiques doivent encore être validées.",
+    "sources": [
+      "https://www.vlgruyere.ch/site-du-moleson/"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrxb4002uhaf62kjgr3l9"
+    ],
+    "topic": "Distinguer les décollages avant de qualifier le vol",
+    "note": "Les clubs gestionnaires et panneaux FSVL permettent de corriger les orientations et contraintes. Chaque départ a ses propres coordonnées et conditions. Les corrections restent sans approbation automatique ; les plages de vent et les conditions dynamiques doivent encore être validées.",
+    "sources": [
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Engelberg.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrxg10030haf6zb9qtg6a"
+    ],
+    "topic": "Distinguer les décollages avant de qualifier le vol",
+    "note": "Les clubs gestionnaires et panneaux FSVL permettent de corriger les orientations et contraintes. Chaque départ a ses propres coordonnées et conditions. Les corrections restent sans approbation automatique ; les plages de vent et les conditions dynamiques doivent encore être validées.",
+    "sources": [
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Pilatus.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrx3m002lhaf6s1n9co5f"
+    ],
+    "topic": "Distinguer les décollages avant de qualifier le vol",
+    "note": "Les clubs gestionnaires et panneaux FSVL permettent de corriger les orientations et contraintes. Chaque départ a ses propres coordonnées et conditions. Les corrections restent sans approbation automatique ; les plages de vent et les conditions dynamiques doivent encore être validées.",
+    "sources": [
+      "https://flugbasis.ch/air-base-flyers-dein-gleitschirmclub/fluggebiet/"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrx57002nhaf6038tgdu4"
+    ],
+    "topic": "Repère d’atterrissage et deux décollages distincts",
+    "note": "Le repère du catalogue à Charmey est proche de l’atterrissage Sur la Grande Fin. Le club décrit Vounetz sud-ouest facile et Vounetz nord-est difficile, avec deux coordonnées distinctes. Les textes et orientations sont corrigés dans le lot préparé ; aucune coordonnée ni difficulté unique n’est déduite pour qualifier automatiquement ce point.",
+    "sources": [
+      "https://www.vlgruyere.ch/site-de-charmey/"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrx9e002shaf6ammqtjkj",
+      "cmnpsrx1z002jhaf6b536fyf5",
+      "cmnpsrxgv0031haf6qkznnzle"
+    ],
+    "topic": "Départs publiés et repères approximatifs à rapprocher",
+    "note": "Les panneaux fédéraux permettent de corriger les altitudes, accès, dangers et orientations. Les coordonnées du catalogue ne correspondent pas exactement aux décollages officiels. Aucune nouvelle coordonnée ni approbation du planificateur n’est appliquée. Pour Prodkamm, la difficulté moyenne remplace l’étiquette débutant ; le passage annuel ne remplace pas les mois préférés par une permission permanente.",
+    "sources": [
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Rocher_de_Naye.pdf",
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Grindelwald.pdf",
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Flumserberg.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrx10002ihaf6d0fcrozf"
+    ],
+    "topic": "Orientations favorables contradictoires au Niederhorn",
+    "note": "Le panneau FSVL de mars 2024 préconise un vent faible au Niederhorn et avertit de turbulences par nord-ouest et de l’exposition aux vents forts d’altitude. Le catalogue présente justement nord-ouest comme favorable. Aucune autre orientation n’est inventée pour remplacer ce champ ; une qualification locale reste nécessaire avant une correction complète et une recommandation. La limite aérienne unique à 2500 m du catalogue ne doit pas servir de règle : consulter carte aérienne et DABS actuels.",
+    "sources": [
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Interlaken.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrxcq002whaf6m4j0rf7j"
+    ],
+    "topic": "Départ Oeschinen à identifier avant de transposer une saison",
+    "note": "Le panneau FSVL distingue Fule Hung, un départ sud-ouest au sud de la station supérieure, du terrain d’atterrissage Oeschinensee. Il indique septembre–avril pour Fule Hung et un risque de sous-le-vent en été. Le repère actuel proche du lac ne correspond pas à ce décollage et le catalogue décrit mai–septembre. Confirmer le départ visé et les consignes actuelles du club avant toute modification des mois ou orientations ; aucune transposition automatique.",
+    "sources": [
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Kandersteg_A4.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrx61002ohaf6o3usub3d"
+    ],
+    "topic": "Kaiseregg absent des départs listés sur le panneau régional",
+    "note": "Le panneau Plaffeien-Schwarzsee décrit notamment Riggisalp, Hohmattli et Schwyberg, sans établir le décollage Kaiseregg de cette fiche. Leurs accès, orientations et dangers ne sont pas transposés au Kaiseregg.",
+    "sources": [
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Plaffeien_2014.pdf"
+    ]
+  },
+  {
+    "ids": [
+      "cmnpsrxf8002zhaf6jhb7mflt"
+    ],
+    "topic": "Cardada, Cimetta et Cimino à distinguer",
+    "note": "Le panneau régional distingue Cimetta (1620 m, sud–sud-sud-est) de Cimino (1660 m, sud-ouest–sud-sud-ouest). Le lot corrige les textes et l’accès ainsi que la fermeture hivernale de l’atterrissage plage de Locarno. Le repère Cardada n’est pas déplacé et ne devient pas un décollage précisément qualifié.",
+    "sources": [
+      "https://www.shv-fsvl.ch/fileadmin/files/redakteure/Allgemein/Sicherheit/SHVInfotafeln/Cimetta.pdf"
+    ]
+  }
+]

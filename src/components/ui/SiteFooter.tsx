@@ -9,6 +9,7 @@ import { ContextDestination } from "@/components/navigation/ContextDestination";
 import { ACCESS_COPY } from "@/lib/access";
 import { NAVIGATION_COPY } from "@/lib/navigation";
 import { toSiteLocale } from "@/lib/site";
+import { usePublicFeatures } from "@/lib/public-features";
 
 const linkClass =
   "group inline-flex w-fit items-center gap-1.5 text-sm text-slate-300 transition hover:text-white";
@@ -17,6 +18,7 @@ export function SiteFooter() {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations("Footer");
+  const { water } = usePublicFeatures();
 
   // The admin has its own shell. Discovery pages share the public footer.
   if (pathname.startsWith("/admin")) return null;
@@ -151,7 +153,7 @@ export function SiteFooter() {
                   >
                     {t("map")}
                   </Link>
-                  <ContextDestination href={`/${locale}/temperatures`} className={linkClass}>{ACCESS_COPY[toSiteLocale(locale)].temperatures}</ContextDestination>
+                  {water && <ContextDestination href={`/${locale}/temperatures`} className={linkClass}>{ACCESS_COPY[toSiteLocale(locale)].temperatures}</ContextDestination>}
                   <Link href="/balises" className={linkClass}>
                     {t("stations")}
                   </Link>
@@ -160,9 +162,9 @@ export function SiteFooter() {
                       {GUIDE_COPY[locale].guides}
                     </Link>
                   )}
-                  <Link href="/plan" className={linkClass}>
+                  <ContextDestination href={`/${locale}/plan`} className={linkClass}>
                     {t("plan")}
-                  </Link>
+                  </ContextDestination>
                   <ContextDestination href={`/${locale}/webcams`} className={linkClass}>
                     {t("webcams")}
                   </ContextDestination>

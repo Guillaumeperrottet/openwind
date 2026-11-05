@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { X, Star } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
 
 export function FavoriteFeedback({ notice, preferencesError, onDismiss, onRetryPreferences }: {
@@ -12,23 +12,26 @@ export function FavoriteFeedback({ notice, preferencesError, onDismiss, onRetryP
   onDismiss: () => void;
   onRetryPreferences: () => unknown;
 }) {
+  const pathname = usePathname();
+  const hideSuccess = notice === "savedLocally" && pathname === "/mon-openwind";
   const t = useTranslations("PersonalExperience");
   const { user, requestSignup, retryFavorites } = useFavContext();
   useEffect(() => {
-    if (notice !== "savedLocally") return;
+    if (notice !== "savedLocally" || preferencesError) return;
+    if (hideSuccess) { queueMicrotask(onDismiss); return; }
     const timer = setTimeout(onDismiss, 12000);
     return () => clearTimeout(timer);
-  }, [notice, onDismiss]);
-  if (!notice && !preferencesError) return null;
+  }, [notice, onDismiss, hideSuccess, preferencesError]);
+  if ((!notice || hideSuccess) && !preferencesError) return null;
   return (
     <aside className="fixed inset-x-3 z-[150] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:left-auto sm:right-6" style={{ bottom: "calc(var(--mobile-nav-height) + 16px)" }} aria-label={t("feedback")}>
       <div className="flex items-start gap-3">
         <Star aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-sky-800" />
-        <p role="status" className="flex-1 text-sm leading-6 text-slate-800">{t(notice ?? "preferencesError")}</p>
-        <button type="button" aria-label={t("close")} onClick={onDismiss} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-slate-100"><X aria-hidden className="h-4 w-4" /></button>
+        <p role="status" className="flex-1 text-sm leading-6 text-slate-800">{t(preferencesError ? "preferencesError" : notice ?? "preferencesError")}</p>
+        <button type="button" aria-label={t("close")} onClick={onDismiss} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-slate-100"><X aria-hidden className="h-4 w-4" /></button>
       </div>
       <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 pl-8 text-sm font-semibold text-sky-800">
-        {notice === "savedLocally" && <Link onClick={onDismiss} href="/mon-openwind" className="inline-flex min-h-11 items-center underline underline-offset-4">{t("seeFavorites")}</Link>}
+        {notice === "savedLocally" && !preferencesError && <Link onClick={onDismiss} href="/mon-openwind" className="inline-flex min-h-11 items-center underline underline-offset-4">{t("seeFavorites")}</Link>}
         {notice === "localLimit" && !user && <button onClick={requestSignup} className="min-h-11">{t("sync")}</button>}
         {(preferencesError || ((notice === "syncError" || notice === "favoriteError") && user)) && <button onClick={() => {
           if (preferencesError) void onRetryPreferences();

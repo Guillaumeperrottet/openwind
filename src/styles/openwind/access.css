@@ -81,6 +81,7 @@
   .ow-place-shortcuts small { font-size: var(--ow-text-caption); }
 }
 .ow-place-shortcuts > a[aria-current="page"] { background: var(--ow-accent-soft); box-shadow: inset 0 0 0 1px var(--ow-accent); }
+.ow-place-shortcuts-pair { grid-template-columns: repeat(2,minmax(0,1fr)); }
 /* Keep the selected place and all destinations close, leaving room for the reading. */
 @media (max-width:639px) {
   .ow-access-frame-conditions .ow-access-navigation { padding-block: var(--ow-space-1) 0; }
@@ -98,6 +99,11 @@
   .ow-access-place .ow-place-shortcut-unavailable small { display: block; }
 }
 @media (max-width:379px) {
+  .ow-access-navigation { padding-block: var(--ow-space-1) 0; }
+  .ow-access-place { margin-bottom: var(--ow-space-2); }
+  .ow-access-header { gap: var(--ow-space-2); margin-bottom: var(--ow-space-3); }
+  .ow-access-header h1,.ow-access-title { font-size: 1.5rem; }
+  .ow-access-header p { margin-top: var(--ow-space-2); font-size: var(--ow-text-label); line-height: 1.5; }
   .ow-access-place .ow-place-shortcuts > a { padding-inline: var(--ow-space-1); }
   .ow-access-place .ow-place-shortcuts svg { display: none; }
 }

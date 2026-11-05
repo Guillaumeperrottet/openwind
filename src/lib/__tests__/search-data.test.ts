@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   spots: vi.fn(),
   articles: vi.fn(),
@@ -15,7 +15,9 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/station-catalog", () => ({ getStationCatalog: mocks.stations }));
 
+afterEach(() => vi.unstubAllEnvs());
 beforeEach(() => {
+  vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "false");
   vi.resetModules();
   vi.clearAllMocks();
   mocks.categories.mockResolvedValue([{ id: "cat", name: "Aide", slug: "aide", description: "Questions" }]);
@@ -50,10 +52,15 @@ describe("public search index boundaries", () => {
     const { searchEntries } = await import("../search");
     const { entries } = await getSearchEntries("fr");
     expect(searchEntries(entries, "favoris").some(e => e.href === "/fr/mon-openwind")).toBe(true);
-    expect(searchEntries(entries, "temperature eau").some(e => e.kind === "water")).toBe(true);
+    expect(searchEntries(entries, "temperature eau").some(e => e.kind === "water")).toBe(false);
     expect(searchEntries(entries, "trouver balise", "discussion").some(e => e.href === "/fr/forum/aide/topic")).toBe(true);
     expect(mocks.topics).toHaveBeenCalledWith({ select: { id: true, title: true, category: { select: { slug: true, name: true } } }, orderBy: [{ pinned: "desc" }, { createdAt: "desc" }] });
     expect(entries.some(e => e.href.includes("admin"))).toBe(false);
+  });
+  it("indexes water whenever public coverage is enabled", async () => {
+    vi.stubEnv("ALPLAKES_LAKE_PAGE_ENABLED", "true");
+    const { getSearchEntries } = await import("../search-data");
+    expect((await getSearchEntries("fr")).entries.some(e => e.kind === "water")).toBe(true);
   });
   it("keeps the snowkite activity explicit in public search results", async () => {
     mocks.spots.mockResolvedValue([{ id: "snow", name: "Le Niremont", country: "Suisse", region: "Fribourg", latitude: 46.6, longitude: 7, sportType: "KITE" }]);

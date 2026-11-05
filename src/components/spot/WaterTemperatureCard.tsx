@@ -33,7 +33,7 @@ export function WaterTemperatureCard({ series, initialNow, locale, lakeHref }: {
     <details className="ow-water-details">
       <summary>{c.details}</summary>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{c.explanation}</p>
-      {view.days.length > 0 && <div className="mt-4 max-w-xl">
+      {view.current && !view.stale && view.days.length > 0 && <div className="mt-4 max-w-xl">
         <h3 className="text-sm font-semibold text-slate-900">{c.forecast}</h3>
         <table className="mt-2 w-full text-left text-sm">
           <caption className="caption-bottom pt-2 text-left text-xs leading-5 text-slate-600">{c.forecastNote}</caption>

@@ -19,7 +19,7 @@ Le contexte est limité aux 40 dernières destinations dans la session du naviga
 
 ## Températures et webcams
 
-`/temperatures` présente la couverture réelle : Gruyère, modèle Simstrat à 1 m, source Alplakes/Eawag et licence CC BY 4.0. Le chargement réutilise le cache Alplakes existant. Une absence ne devient jamais 0 °C. La page détaillée du lac est activée par défaut ; `ALPLAKES_LAKE_PAGE_ENABLED=false` la désactive et le répertoire propose alors la source officielle.
+`/temperatures` présente la couverture réelle : Gruyère, modèle Simstrat à 1 m, source Alplakes/Eawag et licence CC BY 4.0. Le chargement réutilise le cache Alplakes existant. Une absence ne devient jamais 0 °C. Les températures sont visibles par défaut à la demande utilisateur du 4 novembre, dans toutes les entrées existantes. `ALPLAKES_LAKE_PAGE_ENABLED=false` les retire des liens, de la recherche et du sitemap et désactive leurs routes. Le bloc Morlon utilise le même interrupteur.
 
 `/webcams` sans coordonnées présente les lieux du catalogue des guides, avec recherche. Une sélection ouvre la galerie existante et permet de revenir à la liste filtrée. Les liens depuis une fiche de spot ou de balise conservent leur retour explicite. Les rayons et le lecteur existants sont conservés. Le répertoire peut être indexé ; ses recherches et galeries géographiques restent exclues de l’indexation.
 
@@ -45,3 +45,15 @@ Les articles enregistrés passent après les favoris, recherches et modules du t
 Le contexte des pages de conditions devient une rangée compacte sur mobile : lieu, changement de lieu et trois destinations restent accessibles. Explorer conserve sa présentation de découverte. Les précisions restent dans les noms accessibles et l’absence de couverture de l’eau reste visible. Les écrans de moins de 380 px privilégient les libellés aux icônes décoratives.
 
 Les commandes de réorganisation et de sélection du tableau de bord, les alertes et les actions de connexion disposent de cibles de 44 px. Les erreurs d’authentification utilisent les codes du fournisseur pour donner un message explicatif en FR/EN/DE/IT ; une erreur inconnue reçoit un message générique. Les détails techniques du serveur ne sont jamais affichés dans ces messages. La page existante de renouvellement du mot de passe utilise aussi ce traitement en français et libère son état de chargement en cas d’erreur réseau.
+
+La navigation Planifier conserve le lieu consulté (coordonnées et rayon initial de 50 km), sans lancer de recherche automatiquement. Une recherche enregistrée ou datée conserve ses propres critères.
+
+## Qualité des informations des spots — 4 novembre 2026
+
+La création exige désormais une description, un pays, les accès et restrictions, les risques connus, les orientations précises, la saison (mois ou conditions locales) et des sources HTTPS pour la discipline, les orientations, la saison et les accès. La validation est partagée entre formulaire et API. La fiche et son dossier documentaire sont créés dans la même transaction. Les sources d’un contributeur sont conservées avec le statut `NEEDS_REVIEW` : leur présence ne vaut pas approbation éditoriale et ne déclenche pas de recommandation automatique. La distinction kite sur l’eau / snowkite est explicite. Les écrans de consultation des spots et balises sont conservés.
+
+`npm run spots:audit -- --output /tmp/openwind-spots.json` réalise un inventaire en lecture seule. Il reconnaît les mois historiques en toutes lettres pour distinguer un format ancien d’une vraie absence. Le 4 novembre : 181 spots, 96 avec au moins une lacune, 10 profils documentés actuels, 3 revues en attente et 168 sans dossier documentaire. Ces compteurs décrivent deux dimensions différentes (champs et vérification des sources).
+
+Trois compléments de risques en FR/EN/DE/IT ont été préparés pour Yvonand, Portalban et Cudrefin à partir des pages des associations locales. `npm run spots:completions:check` vérifie leurs identités et empreintes sans écriture. L’application des données est distincte, avec `--apply`, sauvegarde et transaction ; elle n’a pas été exécutée. Un changement récent, une traduction existante ou une revue concurrente bloque l’import. Les statuts et dates documentaires ne sont pas renouvelés automatiquement.
+
+Le remplissage exhaustif reste à faire source par source. Aucun profil manquant n’est déclaré documenté par défaut. Les points nécessitant une clarification (Salavaux, La Tène, Saint-Aubin-Sauges et les quatre fiches Monteynard) sont consignés dans `src/data/spot-research-notes.json`. Aucune fusion, suppression, modification de température ni publication ne fait partie de cette passe.

@@ -6,10 +6,10 @@ import { DEFAULT_OG_IMAGE, HOME_SEO, localizedAlternates, localizedUrl, type Sit
 import { breadcrumbSchema, ORGANIZATION_ID, WEBSITE_ID } from "./public-seo";
 
 export const LAKE_SEO = {
-  fr: { title: "Température de l’eau du lac de la Gruyère et prévisions", description: "Consultez la température estimée du lac de la Gruyère à 1 m, son évolution et les prévisions Alplakes / Eawag. Modèle Simstrat, sans sonde locale." },
-  en: { title: "Lake Gruyère water temperature and forecast", description: "See the estimated water temperature of Lake Gruyère at 1 m depth, trends and Alplakes / Eawag forecasts. Simstrat model, without a local sensor." },
-  de: { title: "Wassertemperatur Greyerzersee und Prognose", description: "Geschätzte Wassertemperatur des Greyerzersees in 1 m Tiefe, Verlauf und Alplakes-/Eawag-Prognosen. Simstrat-Modell, ohne lokale Sonde." },
-  it: { title: "Temperatura dell’acqua del lago della Gruyère e previsioni", description: "Temperatura stimata del lago della Gruyère a 1 m, andamento e previsioni Alplakes / Eawag. Modello Simstrat, senza sonda locale." },
+  fr: { heading: "Température de l’eau du lac de la Gruyère", title: "Température de l’eau du lac de la Gruyère et prévisions", description: "Consultez la température estimée du lac de la Gruyère à 1 m, son évolution et les prévisions Alplakes / Eawag. Modèle Simstrat, sans sonde locale." },
+  en: { heading: "Lake Gruyère water temperature", title: "Lake Gruyère water temperature and forecast", description: "See the estimated water temperature of Lake Gruyère at 1 m depth, trends and Alplakes / Eawag forecasts. Simstrat model, without a local sensor." },
+  de: { heading: "Wassertemperatur des Greyerzersees", title: "Wassertemperatur Greyerzersee und Prognose", description: "Geschätzte Wassertemperatur des Greyerzersees in 1 m Tiefe, Verlauf und Alplakes-/Eawag-Prognosen. Simstrat-Modell, ohne lokale Sonde." },
+  it: { heading: "Temperatura dell’acqua del lago della Gruyère", title: "Temperatura dell’acqua del lago della Gruyère e previsioni", description: "Temperatura stimata del lago della Gruyère a 1 m, andamento e previsioni Alplakes / Eawag. Modello Simstrat, senza sonda locale." },
 } as const;
 
 export const TEMPERATURE_SEO = {
@@ -31,9 +31,20 @@ export function lakeSchema(locale: SiteLocale) {
   const c = ACCESS_COPY[locale], copy = LAKE_SEO[locale], url = localizedUrl(locale, "/lacs/gruyere");
   return { "@context": "https://schema.org", "@graph": [
     { "@type": "WebPage", "@id": `${url}#webpage`, url, name: copy.title, description: copy.description, inLanguage: locale, isPartOf: { "@id": WEBSITE_ID }, publisher: { "@id": ORGANIZATION_ID },
-      about: { "@type": "Place", name: c.gruyere }, citation: [ALPLAKES_GRUYERE.page],
+      mainEntity: { "@id": `${url}#dataset` }, about: { "@type": "Place", name: c.gruyere }, citation: [ALPLAKES_GRUYERE.page],
       // This licence belongs to the upstream data, not to the entire Openwind page.
       isBasedOn: { "@type": "CreativeWork", name: "Alplakes / Eawag – Simstrat", url: ALPLAKES_GRUYERE.page, license: ALPLAKES_GRUYERE.licence },
+    },
+    { "@type": "Dataset", "@id": `${url}#dataset`, url, name: copy.title,
+      description: `${copy.description} ${LAKE_PAGE_COPY[locale].explanation} ${LAKE_PAGE_COPY[locale].sourceNote}`,
+      inLanguage: locale, license: ALPLAKES_GRUYERE.licence,
+      creator: { "@type": "Organization", name: "Eawag", url: "https://www.eawag.ch/" },
+      publisher: { "@id": ORGANIZATION_ID },
+      isBasedOn: { "@type": "Dataset", name: "Alplakes / Eawag – Simstrat, Gruyère", url: ALPLAKES_GRUYERE.page },
+      spatialCoverage: { "@type": "Place", name: c.gruyere },
+      measurementTechnique: "Simstrat (1D)",
+      variableMeasured: { "@type": "PropertyValue", name: LAKE_PAGE_COPY[locale].reading, unitText: "°C", description: LAKE_PAGE_COPY[locale].depth },
+      mainEntityOfPage: { "@id": `${url}#webpage` },
     },
     breadcrumbSchema([{ name: c.explorer, url: localizedUrl(locale, "/explorer") }, { name: c.temperatures, url: localizedUrl(locale, "/temperatures") }, { name: c.gruyere, url }]),
   ] };

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import {
   SEARCH_COPY,
-  SEARCH_KINDS,
+  visibleSearchKinds,
   type SearchKind,
   type SearchResponse,
   type SearchResult,
@@ -34,6 +34,8 @@ import { returnTitle } from "@/lib/access";
 import { toSiteLocale } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
 import { useFavContext } from "@/lib/favorite-context";
+import { usePublicFeatures } from "@/lib/public-features";
+import { fetchClientJson } from "@/lib/fetch-client-json";
 
 const ICONS = {
   lake: Waves,
@@ -61,6 +63,8 @@ export function GlobalSearch({
   const place = useSelectedPlace();
   const destination = (href: string) => contextualHref(href, place, locale);
   const context = useFavContext();
+  const { water } = usePublicFeatures();
+  const searchKinds = visibleSearchKinds(water);
   const favoriteSpotIds = suppliedSpotIds ?? context.favoriteSpotIds;
   const favoriteStationIds = suppliedStationIds ?? context.favoriteStationIds;
   const locale = toSiteLocale(useLocale());
@@ -94,7 +98,7 @@ export function GlobalSearch({
   const data = settled.key === key ? settled.data : undefined;
   const error = settled.key === key && settled.error;
   const loading = open && settled.key !== key;
-  const groups = [...SEARCH_KINDS].sort((a, b) => {
+  const groups = [...searchKinds].sort((a, b) => {
     const position = (kind: SearchKind) => { const index = data?.results.findIndex(result => result.kind === kind) ?? -1; return index < 0 ? Number.MAX_SAFE_INTEGER : index; };
     return position(a) - position(b);
   });
@@ -112,11 +116,7 @@ export function GlobalSearch({
     const timer = setTimeout(
       async () => {
         try {
-          const response = await fetch(`/api/search?${key}`, {
-            signal: controller.signal,
-          });
-          if (!response.ok) throw new Error("Search unavailable");
-          const data: SearchResponse = await response.json();
+          const data = await fetchClientJson<SearchResponse>(`/api/search?${key}`, controller.signal);
           if (!controller.signal.aborted) setSettled({ key, data });
         } catch {
           if (!controller.signal.aborted) setSettled({ key, error: true });
@@ -280,7 +280,7 @@ export function GlobalSearch({
             aria-label={copy.label}
             className="flex gap-1 overflow-x-auto border-b border-slate-100 p-2"
           >
-            {["", ...SEARCH_KINDS].map((type) => (
+            {["", ...searchKinds].map((type) => (
               <button
                 type="button"
                 key={type}

@@ -67,8 +67,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]).size / CARNET_PAGE_SIZE,
   );
   return [
-    ...(lakePageEnabled() ? multilingual("/lacs/gruyere") : []),
-    ...["", "/about", "/explorer", "/temperatures", "/webcams", "/plan", "/balises", "/forum"].flatMap((path) =>
+    ...(lakePageEnabled() ? [...multilingual("/lacs/gruyere"), ...multilingual("/temperatures")] : []),
+    ...["", "/about", "/explorer", "/webcams", "/plan", "/balises", "/forum"].flatMap((path) =>
       multilingual(path),
     ),
     ...GUIDE_LOCALES.flatMap((locale) =>

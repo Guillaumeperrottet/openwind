@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Star, ArrowRight, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PersonalBrief } from "./PersonalBrief";
@@ -10,6 +10,7 @@ import { SavedSearches } from "./SavedSearches";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useFavContext } from "@/lib/FavContext";
 import { useWindUnits } from "@/lib/useWindUnits";
+import { trackEvent } from "@/lib/analytics";
 import type { SportFilter } from "@/lib/user-preferences";
 
 type Catalogue = {
@@ -30,6 +31,12 @@ export function GuestOpenwind() {
   const [loaded, setLoaded] = useState("");
   const key = new URLSearchParams({ spots: [...favoriteSpotIds].join(","), stations: [...favoriteStationIds].join(",") }).toString();
   const count = favoriteSpotIds.size + favoriteStationIds.size;
+  const viewed = useRef(false);
+  useEffect(() => {
+    if (viewed.current || authLoading || !favoritesReady || user) return;
+    viewed.current = true;
+    trackEvent("mon_openwind_viewed", { audience: "guest", favorite_count: count, favorite_spot_count: favoriteSpotIds.size, favorite_station_count: favoriteStationIds.size });
+  }, [authLoading, favoritesReady, user, count, favoriteSpotIds, favoriteStationIds]);
 
   // This component was rendered for a guest on the server. Refresh after import
   // completes so the authenticated dashboard includes the newly merged favorites.
@@ -40,7 +47,7 @@ export function GuestOpenwind() {
   useEffect(() => {
     if (!count || user) return;
     const controller = new AbortController();
-    fetch(`/api/favorites/preview?${key}`, { signal: controller.signal, cache: "no-store" })
+    fetch(`/api/favorites/preview?${key}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12_000)]), cache: "no-store" })
       .then(async (res) => {
         if (!res.ok) throw new Error("Catalogue unavailable");
         const data: Catalogue = await res.json();

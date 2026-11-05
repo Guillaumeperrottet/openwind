@@ -13,12 +13,9 @@ import {
 } from "@/lib/seo";
 import {
   SITE_URL,
-  toSiteLocale,
   localizedAlternates,
   localizedUrl,
 } from "@/lib/site";
-import { qualificationsFor } from "@/lib/planner-review-store";
-import { localDate } from "@/lib/planner";
 import { SpotEditorial } from "@/components/spot/SpotEditorial";
 import { editorialDisplayCopy } from "@/lib/neuchatel-seo-import";
 import {
@@ -30,6 +27,7 @@ import { SpotPageClient } from "./SpotPageClient";
 import { getAuthenticatedAdmin } from "@/lib/admin";
 import { WaterTemperature, WaterTemperatureLoading } from "@/components/spot/WaterTemperature";
 import { MORLON_SPOT_ID } from "@/lib/lake-temperature";
+import { lakePageEnabled } from "@/lib/lake-page-enabled";
 
 // Deduplicated Prisma query: shared across generateMetadata() and SpotPage()
 // within the same request, so the DB is hit only once.
@@ -95,9 +93,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function SpotPage({ params }: Props) {
   const { id, locale } = await params;
-  // Local trial on Morlon. Production activation is an explicit deployment choice.
-  const showWaterTemperature = id === MORLON_SPOT_ID &&
-    (process.env.NODE_ENV === "development" || process.env.ALPLAKES_WATER_ENABLED === "true");
+  const showWaterTemperature = id === MORLON_SPOT_ID && lakePageEnabled();
 
   // A DB failure must remain a server error, rather than removing a real URL.
   const storedSpot = await getSpot(id);
@@ -119,12 +115,10 @@ export default async function SpotPage({ params }: Props) {
       ? { citation: editorial.sources.map((source) => source.url) }
       : {}),
   };
-  const today = localDate(new Date());
-  const [liveResult, forecastResult, qualificationResult, adminResult] =
+  const [liveResult, forecastResult, adminResult] =
     await Promise.allSettled([
       getSpotLive(spot.id),
       fetchFullForecast(spot.latitude, spot.longitude),
-      qualificationsFor([spot], today, today, today, toSiteLocale(locale)),
       getAuthenticatedAdmin(),
     ]);
   const live = liveResult.status === "fulfilled" ? liveResult.value : null;
@@ -151,11 +145,6 @@ export default async function SpotPage({ params }: Props) {
         live={live}
         waterTemperature={showWaterTemperature ? <Suspense key="water-temperature" fallback={<WaterTemperatureLoading locale={locale} />}><WaterTemperature key="water-temperature-data" locale={locale} /></Suspense> : undefined}
         canEdit={adminResult.status === "fulfilled" && Boolean(adminResult.value)}
-        qualification={
-          qualificationResult.status === "fulfilled"
-            ? qualificationResult.value.get(spot.id)
-            : undefined
-        }
         initialForecast={
           forecastResult.status === "fulfilled" ? forecastResult.value : null
         }
