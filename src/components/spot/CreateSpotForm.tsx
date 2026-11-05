@@ -346,7 +346,7 @@ export function CreateSpotForm({ initialData }: Props = {}) {
   return (
     <div
       className="flex flex-col lg:flex-row bg-white text-gray-900"
-      style={{ height: "calc(100dvh - 56px - var(--mobile-nav-height))" }}
+      style={{ height: "calc(100dvh - 56px)" }}
     >
       {/* ── LEFT: Map ────────────────────────────────────────────────────── */}
       <div className="lg:flex-1 h-64 lg:h-full relative">

@@ -256,10 +256,10 @@ export function StationPopup({
     ? {
         position: "fixed",
         left: "50%",
-        bottom: "calc(var(--mobile-nav-height) + 16px)",
+        bottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
         transform: "translateX(-50%)",
         zIndex: 100,
-        maxHeight: "calc(100dvh - var(--mobile-nav-height) - 88px)",
+        maxHeight: "calc(100dvh - 88px - env(safe-area-inset-bottom, 0px))",
       }
     : {
         position: "fixed",

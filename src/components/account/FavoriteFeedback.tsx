@@ -24,7 +24,7 @@ export function FavoriteFeedback({ notice, preferencesError, onDismiss, onRetryP
   }, [notice, onDismiss, hideSuccess, preferencesError]);
   if ((!notice || hideSuccess) && !preferencesError) return null;
   return (
-    <aside className="fixed inset-x-3 z-[150] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:left-auto sm:right-6" style={{ bottom: "calc(var(--mobile-nav-height) + 16px)" }} aria-label={t("feedback")}>
+    <aside className="fixed inset-x-3 z-[150] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl sm:left-auto sm:right-6" style={{ bottom: "calc(16px + env(safe-area-inset-bottom, 0px))" }} aria-label={t("feedback")}>
       <div className="flex items-start gap-3">
         <Star aria-hidden className="mt-0.5 h-5 w-5 shrink-0 text-sky-800" />
         <p role="status" className="flex-1 text-sm leading-6 text-slate-800">{t(preferencesError ? "preferencesError" : notice ?? "preferencesError")}</p>

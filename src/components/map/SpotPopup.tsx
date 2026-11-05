@@ -93,7 +93,7 @@ export function SpotPopup({
     ? {
         position: "fixed",
         left: "50%",
-        bottom: "calc(var(--mobile-nav-height) + 16px)",
+        bottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
         transform: "translateX(-50%)",
         zIndex: 100,
       }

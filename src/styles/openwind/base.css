@@ -62,7 +62,7 @@ html, body { overflow-x: clip; }
 .ow-map-workspace .maplibregl-ctrl-top-right { top: var(--ow-space-1); right: var(--ow-space-1); }
 .ow-map-workspace .maplibregl-ctrl-attrib { max-width: 55%; margin-bottom: 72px; font-size: 11px; color: var(--ow-muted) !important; background: var(--ow-surface) !important; }
 .ow-map-workspace .maplibregl-ctrl-attrib a { color: var(--ow-muted) !important; }
-.ow-map-popup { width: 380px; max-width: calc(100% - 24px); max-height: calc(100dvh - 88px); overflow-y: auto; border: 0; border-radius: var(--ow-radius-panel); background: var(--ow-surface); box-shadow: var(--ow-elevation); }
+.ow-map-popup { width: 380px; max-width: calc(100% - 24px); max-height: calc(100dvh - 88px - env(safe-area-inset-bottom, 0px)); overflow-y: auto; border: 0; border-radius: var(--ow-radius-panel); background: var(--ow-surface); box-shadow: var(--ow-elevation); }
 .ow-map-popup :is(button, a) { min-height: var(--ow-control); }
 .ow-map-popup button { min-width: var(--ow-control); }
 .ow-map-popup h3 { font-size: var(--ow-text-title); font-weight: 600; line-height: 1.3; }
