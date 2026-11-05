@@ -15,6 +15,8 @@ interface Props {
   useKnots: boolean;
   /** IANA timezone for display, e.g. "Europe/Zurich" */
   timezone?: string;
+  /** Smaller chart and reading controls for the map preview. */
+  compact?: boolean;
 }
 
 export function WindHistoryChart({
@@ -22,6 +24,7 @@ export function WindHistoryChart({
   forecast,
   useKnots,
   timezone = "UTC",
+  compact = false,
 }: Props) {
   const locale = useLocale();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,13 +54,13 @@ export function WindHistoryChart({
       <div
         ref={containerRef}
         className="relative overflow-hidden"
-        style={{ height: 272 }}
+        style={{ height: compact ? 134 : 272 }}
       />
     );
   }
 
   // ── Layout constants ──────────────────────────────────────────────────────
-  const CHART_H = 230;
+  const CHART_H = compact ? 92 : 230;
   const DAY_H = 22;
   const TIME_H = 20;
   const AXIS_W = 30;
@@ -294,7 +297,7 @@ export function WindHistoryChart({
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden select-none"
+      className={`relative overflow-hidden select-none${compact ? " ow-history-chart-compact" : ""}`}
       style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
       onMouseLeave={() => setHoveredIdx(null)}
       onTouchEnd={() => setHoveredIdx(null)}
@@ -608,9 +611,9 @@ export function WindHistoryChart({
         />
       </svg>
 
-      <ChartReading point={selectedPoint} time={selectedHistory ? toTZ(selectedHistory.time) : selectedForecast?.time ?? ""} forecast={!!selectedForecast || !!(selectedHistory && toTZ(selectedHistory.time) > nowInTZ)} useKnots={useKnots} index={selectedIdx ?? Math.max(0, filteredHistory.findLastIndex((p) => toTZ(p.time) <= nowInTZ))} count={allPoints.length} onSelect={setSelectedIdx} onClear={() => { setSelectedIdx(null); setHoveredIdx(null); }} />
+      <ChartReading compact={compact} point={selectedPoint} time={selectedHistory ? toTZ(selectedHistory.time) : selectedForecast?.time ?? ""} forecast={!!selectedForecast || !!(selectedHistory && toTZ(selectedHistory.time) > nowInTZ)} useKnots={useKnots} index={selectedIdx ?? Math.max(0, filteredHistory.findLastIndex((p) => toTZ(p.time) <= nowInTZ))} count={allPoints.length} onSelect={setSelectedIdx} onClear={() => { setSelectedIdx(null); setHoveredIdx(null); }} />
       {/* ── Legend ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 px-1 text-sm text-slate-600">
+      <div className={`flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-slate-600 ${compact ? "mt-1 text-[11px] leading-4" : "mt-2 text-sm"}`}>
         <span className="flex items-center gap-1">
           <span className="inline-block w-3 h-3 border-l-[3px] border-dashed border-orange-400" />
           Maintenant

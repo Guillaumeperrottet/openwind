@@ -289,3 +289,24 @@ html, body { overflow-x: clip; }
 .ow-water-details > summary { display: list-item; width: fit-content; min-height: var(--ow-control); padding-block: var(--ow-space-3); color: var(--ow-accent); font-size: var(--ow-text-label); cursor: pointer; }
 .ow-water-details a:focus-visible, .ow-water-details > summary:focus-visible { outline: 2px solid var(--ow-accent); outline-offset: 4px; border-radius: 4px; }
 .ow-water-pending { display: flex; align-items: center; min-height: 145px; }
+
+/* The map preview keeps current conditions and the full history on one surface. */
+.ow-chart-reading-compact { margin-top: 4px; padding-top: 4px; }
+.ow-chart-reading-compact output { min-height: 36px; font-size: 12px; line-height: 18px; }
+@media (max-width: 767px) {
+  .ow-station-popup .ow-station-popup-header { gap: 4px; padding: 4px 12px; }
+  .ow-station-popup h3 { font-size: 15px; line-height: 18px; }
+  .ow-station-popup .ow-station-popup-meta,.ow-station-popup .ow-station-popup-description { font-size: 11px; line-height: 14px; }
+  .ow-station-popup .ow-station-popup-description { -webkit-line-clamp: 1; }
+  .ow-station-popup .ow-station-popup-wind { gap: 8px; padding: 6px 12px; }
+  .ow-station-popup-wind > svg { width: 32px; height: 32px; }
+  .ow-station-popup .ow-station-popup-speed { font-size: 22px; line-height: 24px; }
+  .ow-station-popup-wind .text-xs { font-size: 12px; line-height: 16px; }
+  .ow-station-popup .ow-station-popup-source { padding: 0 12px 6px; }
+  .ow-station-popup-source > div,.ow-station-popup-source p { font-size: 11px; line-height: 16px; }
+  .ow-station-popup .ow-station-popup-history-heading { padding: 4px 12px; line-height: 16px; }
+  .ow-station-popup .ow-station-popup-last-update { display: none; }
+  .ow-station-popup .ow-station-popup-chart { padding: 0 6px 4px; }
+  .ow-station-popup .ow-station-popup-footer { gap: 8px; padding: 2px 12px; }
+  .ow-station-popup-footer > span { font-size: 11px; line-height: 16px; }
+}

@@ -102,14 +102,12 @@ export function StationPopup({
       }
     };
     window.addEventListener("keydown", handleKey);
-    // Delay adding click listener so the opening click doesn't immediately close
-    const timer = setTimeout(() => {
-      window.addEventListener("click", handleClick);
-    }, 0);
+    // Check containment before an action can remove its own button (e.g. clear reading).
+    // The map opens the popup on click, after the opening pointerdown has already fired.
+    window.addEventListener("pointerdown", handleClick);
     return () => {
       window.removeEventListener("keydown", handleKey);
-      window.removeEventListener("click", handleClick);
-      clearTimeout(timer);
+      window.removeEventListener("pointerdown", handleClick);
     };
   }, [onClose]);
 
@@ -277,21 +275,21 @@ export function StationPopup({
     <div
       ref={ref}
       style={style}
-      className="ow-map-popup"
+      className="ow-map-popup ow-station-popup"
     >
       {/* Header */}
-      <div className="flex items-start justify-between px-4 pt-3 pb-2 border-b border-gray-100">
-        <div>
+      <div className="ow-station-popup-header flex items-start justify-between px-4 pt-3 pb-2 border-b border-gray-100">
+        <div className="min-w-0">
           <h3 className="font-bold text-gray-900 text-sm leading-tight">
             {station.name}
           </h3>
-          <p className="text-[10px] text-gray-500 mt-0.5">
+          <p className="ow-station-popup-meta text-[10px] text-gray-500 mt-0.5">
             {isPioupiou
               ? station.id.replace("piou-", "Pioupiou #")
               : `${station.id} · ${station.altitudeM} m alt.`}
           </p>
           {station.description && (
-            <p className="text-[10px] text-gray-500 mt-0.5 italic line-clamp-2">
+            <p className="ow-station-popup-description text-[10px] text-gray-500 mt-0.5 italic line-clamp-2">
               {station.description}
             </p>
           )}
@@ -323,7 +321,7 @@ export function StationPopup({
       </div>
 
       {/* Wind info row */}
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="ow-station-popup-wind flex items-center gap-3 px-4 py-3">
         <svg aria-hidden="true" width="40" height="40" viewBox="0 0 40 40" className="shrink-0">
           <circle
             cx="20"
@@ -349,7 +347,7 @@ export function StationPopup({
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
             <span
-              className="text-2xl font-bold tabular-nums"
+              className="ow-station-popup-speed text-2xl font-bold tabular-nums"
               style={{ color: "var(--ow-ink)" }}
             >
               {primary}
@@ -361,19 +359,19 @@ export function StationPopup({
           </div>
         </div>
       </div>
-      <div className="px-4 pb-3"><RequestFeedback error={Boolean(liveError)} pending={livePending} hasData onRetry={refreshLive} /><WindProvenance compact live={{ source: "station", network: detectNetwork(station.id), stationId: station.id, updatedAt: liveUpdatedAt, isFresh: liveForDisplay?.isFresh ?? isNetworkFresh(station.id, liveUpdatedAt) }} /></div>
+      <div className="ow-station-popup-source px-4 pb-3"><RequestFeedback error={Boolean(liveError)} pending={livePending} hasData onRetry={refreshLive} /><WindProvenance compact live={{ source: "station", network: detectNetwork(station.id), stationId: station.id, updatedAt: liveUpdatedAt, isFresh: liveForDisplay?.isFresh ?? isNetworkFresh(station.id, liveUpdatedAt) }} /></div>
 
       {/* 48h History Chart */}
       <div className="border-t border-gray-100">
-        <div className="flex items-center justify-between px-4 py-2">
+        <div className="ow-station-popup-history-heading flex items-center justify-between px-4 py-2">
           <span className="text-xs font-semibold text-gray-700">
             {t("history48h")}
           </span>
-          <span className="text-[9px] text-gray-400">
+          <span className="ow-station-popup-last-update text-[9px] text-gray-400">
             {t("lastUpdate", { time })}
           </span>
         </div>
-        <div className="px-2 pb-2">
+        <div className="ow-station-popup-chart px-2 pb-2">
           {loading ? (
             <div className="flex items-center justify-center h-24 text-xs text-gray-400 animate-pulse">
               {tCommon("loading")}
@@ -382,6 +380,7 @@ export function StationPopup({
             <RequestFeedback error pending={historyPending} onRetry={() => { void retryHistory().catch(() => {}); }} />
           ) : chartHistory && chartHistory.length > 0 ? (
             <WindHistoryChart
+              compact={isMobile}
               history={chartHistory}
               useKnots={useKnots}
               timezone="Europe/Zurich"
@@ -395,7 +394,7 @@ export function StationPopup({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
+      <div className="ow-station-popup-footer flex items-center justify-between px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
         <span className="text-[10px] text-gray-400">
           {sourceLabel} · {t("everyN", { freq: sourceFreq })}
         </span>
