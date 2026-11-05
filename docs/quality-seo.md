@@ -63,3 +63,12 @@ Vérification dans le navigateur à 320 et 390 px : colonne à 76 px, heures à 
 À la demande utilisateur, la colonne fixe est ramenée de 76 à 48 px et les heures de 34 à 26 px sous 640 px. Les libellés mobiles utilisent des abréviations traduites en quatre langues et affichent les unités sur une ligne séparée. Le texte complet reste l’intitulé accessible de chaque en-tête de ligne ; le libellé visuel abrégé est masqué aux technologies d’assistance pour éviter une lecture en double. Les en-têtes complets restent visibles sur ordinateur.
 
 Vérification navigateur : 11 créneaux entiers à 390 px, huit à 320 px, libellés allemands sans débordement, noms accessibles complets Vent/Rafales conservés ; sur ordinateur, données à 46 px et intitulés complets. Les 867 tests, dont la vérification des lignes de vagues et de leurs unités, le typage TypeScript complet, le build et le lint sans erreur sont validés.
+
+
+## Carte mobile affinée et grille plus dense — 5 novembre
+
+Sous 640 px, le sélecteur de carte passe de 272 × 52 à 225 × 44 px, avec un fond visible de 32 px de haut. Les commandes natives gardent leurs cibles de 44 px avec des surfaces visuelles réduites. Les boutons de légende et de planification passent à un texte de 12 px et à des fonds de 32 px, sans réduire leur zone tactile. Le bandeau partenaire occupe 45 px bordure comprise, avec son texte complet conservé dans le lien et son titre. Attribution cartographique, filtres, légende, accueil, zoom et géolocalisation restent disponibles.
+
+La grille des prévisions passe à 42 px pour les libellés et 24 px par créneau : neuf créneaux entiers à 320 px, douze à 390 px. Les abréviations françaises et allemandes contrôlées ne débordent pas ; les unités et les intitulés accessibles sont conservés. Sur ordinateur, les heures restent à 46 px et les intitulés complets restent visibles.
+
+Vérification locale navigateur à 320 et 390 px : pas de débordement horizontal sur la carte, commandes principales mesurées à au moins 44 × 44 px, filtres et ouverture/fermeture de légende fonctionnels. Les 867 tests, le typage TypeScript complet, la compilation et le lint sans erreur sont validés (un avertissement administratif préexistant). Aucun changement de données ni import en base.
