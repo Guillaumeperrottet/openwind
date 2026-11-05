@@ -15,15 +15,7 @@
 :root {
   --background: #ffffff;
   --foreground: #111827;
-  --mobile-nav-item-height: 56px;
-  --mobile-nav-height: calc(var(--mobile-nav-item-height) + env(safe-area-inset-bottom, 0px) + 1px);
 }
-
-@media (min-width: 1024px) {
-  :root { --mobile-nav-height: 0px; }
-}
-
-main { padding-bottom: var(--mobile-nav-height); }
 
 * {
   box-sizing: border-box;

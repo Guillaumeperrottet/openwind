@@ -72,3 +72,10 @@ Sous 640 px, le sélecteur de carte passe de 272 × 52 à 225 × 44 px, avec un 
 La grille des prévisions passe à 42 px pour les libellés et 24 px par créneau : neuf créneaux entiers à 320 px, douze à 390 px. Les abréviations françaises et allemandes contrôlées ne débordent pas ; les unités et les intitulés accessibles sont conservés. Sur ordinateur, les heures restent à 46 px et les intitulés complets restent visibles.
 
 Vérification locale navigateur à 320 et 390 px : pas de débordement horizontal sur la carte, commandes principales mesurées à au moins 44 × 44 px, filtres et ouverture/fermeture de légende fonctionnels. Les 867 tests, le typage TypeScript complet, la compilation et le lint sans erreur sont validés (un avertissement administratif préexistant). Aucun changement de données ni import en base.
+
+
+## Retour à la navigation haute sur mobile — 5 novembre
+
+À la demande utilisateur, la barre de navigation fixe du bas est retirée. Sur mobile et tablette, Carte, Explorer, Planifier et Mon Openwind sont accessibles dans le menu en haut à droite, pour les visiteurs connectés ou non. La recherche reste accessible dans l’en-tête. La destination active, les liens tenant compte du lieu, les accès au compte et la fermeture avec Échap sont conservés. La navigation ordinateur conserve ses quatre liens dans l’en-tête.
+
+La réserve de 57 px au bas des pages est supprimée ; la carte occupe la hauteur de la fenêtre moins les 56 px de l’en-tête. Sa zone de sécurité inférieure est conservée. Vérification navigateur à 320 × 568, 390 × 844 et 1280 × 900 : menu sans débordement, liens de 44 px, passage vers Explorer, recherche et fermeture au clavier fonctionnels. À 390 × 844, la carte et son bandeau occupent 788 px, du bas de l’en-tête au bas de la fenêtre. Les 867 tests, le typage complet, le build et le lint sans erreur passent (avertissement administratif préexistant). Aucun changement des données.

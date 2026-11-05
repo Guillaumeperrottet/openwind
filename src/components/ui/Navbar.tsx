@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { Map, Compass, Route, LayoutDashboard, Plus, User, LogOut, Star, Search, X, Mail, Info, Shield } from "lucide-react";
+import { Map, Compass, Route, LayoutDashboard, Plus, User, Menu, LogOut, Star, Search, X, Mail, Info, Shield } from "lucide-react";
 import { useFavContext } from "@/lib/FavContext";
 import { SearchBar } from "./SearchBar";
 import { PRIMARY_NAVIGATION, NAVIGATION_COPY, navigationSection } from "@/lib/navigation";
@@ -80,16 +80,23 @@ export function Navbar() {
         <button ref={searchButton} type="button" className="ow-mobile-search-toggle" onClick={() => { setMenuOpen(false); setMobileSearch(v => !v); }} aria-label={t("searchAriaLabel")} aria-expanded={mobileSearch} aria-controls="openwind-mobile-search"><Search aria-hidden size={19} /></button>
         <LanguageSwitcher currentLocale={currentLocale} />
         <div ref={menuRef} className="ow-account">
-          <button ref={menuButton} type="button" className="ow-account-trigger" onClick={() => { setMobileSearch(false); setMenuOpen(v => !v); }} aria-label={copy.account} aria-expanded={menuOpen} aria-controls="openwind-account-menu">
+          <button ref={menuButton} type="button" className="ow-account-trigger" onClick={() => { setMobileSearch(false); setMenuOpen(v => !v); }} aria-label={t("menu")} title={copy.account} aria-expanded={menuOpen} aria-controls="openwind-account-menu">
+            <Menu aria-hidden size={19} className="ow-mobile-menu-icon" />
             {user?.user_metadata?.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.user_metadata.avatar_url} alt="" width={28} height={28} />
-            ) : <User aria-hidden size={19} />}
+              <img src={user.user_metadata.avatar_url} alt="" width={28} height={28} className="ow-account-avatar" />
+            ) : <User aria-hidden size={19} className="ow-account-avatar" />}
           </button>
           {menuOpen && <div id="openwind-account-menu" className="ow-account-panel">
+            <nav className="ow-mobile-navigation" aria-label={copy.primary}>
+              {PRIMARY_NAVIGATION.map(item => {
+                const Icon = ICONS[item.id];
+                return <Link key={item.id} href={item.id === "plan" ? placePlannerPath(place) : item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}><Icon aria-hidden size={17} />{label(item.label)}</Link>;
+              })}
+            </nav>
             {user ? <>
               <div className="ow-account-identity"><p>{user.user_metadata?.full_name ?? user.email}</p><span>{user.email}</span></div>
-              <Link href="/mon-openwind" onClick={closePanels}><LayoutDashboard aria-hidden size={17} />{t("myOpenwind")}</Link>
+              <Link href="/mon-openwind" className="ow-desktop-account-link" onClick={closePanels}><LayoutDashboard aria-hidden size={17} />{t("myOpenwind")}</Link>
               <Link href="/?view=map&openSearch=1" onClick={() => { setMenuOpen(false); setMobileSearch(window.matchMedia("(max-width: 1023px)").matches); }}><Star aria-hidden size={17} />{t("favorites", { count: favoriteCount })}</Link>
             </> : <button type="button" onClick={() => { closePanels(); requestAuth(); }}><User aria-hidden size={17} />{t("signIn")}</button>}
             <div className="ow-account-divider" />
@@ -102,14 +109,6 @@ export function Navbar() {
         </div>
       </div>
     </header>
-    <nav className="ow-bottom-navigation" aria-label={copy.primary}>
-      {PRIMARY_NAVIGATION.map(item => {
-        const Icon = ICONS[item.id];
-        return <Link key={item.id} href={item.id === "plan" ? placePlannerPath(place) : item.href} prefetch={false} onClick={closePanels} aria-current={activeSection === item.id ? "page" : undefined}>
-          <span className="ow-bottom-icon"><Icon aria-hidden size={20} /></span><span className="ow-bottom-label">{label(item.label)}</span>
-        </Link>;
-      })}
-    </nav>
     {mobileSearch && <div id="openwind-mobile-search" className="ow-mobile-search-panel">
       <div><Suspense fallback={null}><SearchBar favoriteSpotIds={favoriteSpotIds} favoriteStationIds={favoriteStationIds} autoFocus onNavigate={closePanels} /></Suspense></div>
       <button type="button" onClick={() => { setMobileSearch(false); searchButton.current?.focus(); }} aria-label={copy.closeSearch}><X aria-hidden size={19} /></button>
