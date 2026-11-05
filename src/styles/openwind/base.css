@@ -23,6 +23,7 @@ html, body { overflow-x: clip; }
 .ow-map-workspace { position: relative; width: 100%; height: 100%; min-height: 0; }
 .ow-map-canvas { width: 100%; height: 100%; }
 .ow-map-toolbar { position: absolute; inset: var(--ow-space-4) auto auto var(--ow-space-4); z-index: 10; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0; width: min(272px, calc(100% - 72px)); background: var(--ow-surface); border-radius: var(--ow-radius-panel); box-shadow: var(--ow-elevation); padding: var(--ow-space-1); }
+.ow-sport-select { display: none; }
 .ow-sport-filter { display: grid; grid-template-columns: repeat(3, minmax(var(--ow-control), 1fr)); gap: 0; }
 .ow-sport-filter button { display: flex; align-items: center; justify-content: center; gap: var(--ow-space-1); min-height: var(--ow-control); min-width: var(--ow-control); padding-inline: var(--ow-space-1); border-radius: var(--ow-radius-control); color: var(--ow-muted); font-size: var(--ow-text-caption); font-weight: 500; white-space: nowrap; }
 .ow-sport-filter button[aria-pressed="true"] { color: var(--ow-accent); background: var(--ow-accent-soft); }
@@ -147,7 +148,12 @@ html, body { overflow-x: clip; }
 /* Smaller visible surfaces on phones; the interactive controls keep 44px targets. */
 @media (max-width: 639px) {
   .ow-map-frame { padding-bottom: env(safe-area-inset-bottom,0px); }
-  .ow-map-toolbar { inset: 8px auto auto 8px; width: min(225px,calc(100% - 68px)); padding: 0; border-radius: 8px; background: transparent; box-shadow: none; }
+  .ow-map-toolbar { inset: 8px auto auto 8px; width: min(165px,calc(100% - 68px)); padding: 0; border-radius: 8px; background: transparent; box-shadow: none; }
+  .ow-sport-filter { display: none; }
+  .ow-sport-select { position: relative; display: block; height: 44px; min-width: 44px; }
+  .ow-sport-select > span { display: flex; align-items: center; justify-content: center; gap: 4px; height: 32px; margin: 6px 3px; padding-inline: 4px; border-radius: 6px; background: var(--ow-accent-soft); color: var(--ow-accent); font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .ow-sport-select select { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; font-size: 16px; cursor: pointer; }
+  .ow-sport-select:has(select:focus-visible) { outline: 2px solid var(--ow-focus); outline-offset: 2px; border-radius: 6px; }
   .ow-map-toolbar::before { content: ""; position: absolute; inset: 6px 0; z-index: -1; pointer-events: none; border-radius: 8px; background: var(--ow-surface); box-shadow: 0 2px 10px rgb(15 23 42 / 0.12); }
   .ow-map-toolbar :is(.ow-sport-filter button,.ow-layer-toggle,.ow-map-home) { position: relative; isolation: isolate; background: transparent; font-size: 12px; }
   .ow-map-toolbar :is(.ow-sport-filter button,.ow-layer-toggle)[aria-pressed="true"]::before { content: ""; position: absolute; inset: 6px 3px; z-index: -1; pointer-events: none; border-radius: 6px; background: var(--ow-accent-soft); }

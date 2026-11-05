@@ -79,3 +79,10 @@ Vérification locale navigateur à 320 et 390 px : pas de débordement horizonta
 À la demande utilisateur, la barre de navigation fixe du bas est retirée. Sur mobile et tablette, Carte, Explorer, Planifier et Mon Openwind sont accessibles dans le menu en haut à droite, pour les visiteurs connectés ou non. La recherche reste accessible dans l’en-tête. La destination active, les liens tenant compte du lieu, les accès au compte et la fermeture avec Échap sont conservés. La navigation ordinateur conserve ses quatre liens dans l’en-tête.
 
 La réserve de 57 px au bas des pages est supprimée ; la carte occupe la hauteur de la fenêtre moins les 56 px de l’en-tête. Sa zone de sécurité inférieure est conservée. Vérification navigateur à 320 × 568, 390 × 844 et 1280 × 900 : menu sans débordement, liens de 44 px, passage vers Explorer, recherche et fermeture au clavier fonctionnels. À 390 × 844, la carte et son bandeau occupent 788 px, du bas de l’en-tête au bas de la fenêtre. Les 867 tests, le typage complet, le build et le lint sans erreur passent (avertissement administratif préexistant). Aucun changement des données.
+
+
+## Sélecteur d’activité replié sur mobile — 5 novembre
+
+Sous 640 px, le bandeau affiche seulement l’activité choisie dans un sélecteur natif (Tous, Kite ou Parapente), avec une flèche et le libellé court Para. Les options conservent leurs noms complets accessibles et le même réglage d’activité partagé. Vent et Accueil restent à côté. Le bandeau passe de 225 à 165 px de large, avec une cible de sélection de 76 × 44 px et un fond visible de 32 px de haut. Le champ natif utilise une police de 16 px derrière le libellé visuel compact. Sur ordinateur, les trois boutons précédents restent visibles.
+
+Contrôle navigateur à 320, 390 et 1280 px : choix des trois activités, libellé réduit, conservation du choix après rechargement, absence de débordement et présentation ordinateur conservée. Les 867 tests, le typage TypeScript complet, la compilation et le lint sans erreur passent (un avertissement administratif préexistant). Aucun changement de données en base.

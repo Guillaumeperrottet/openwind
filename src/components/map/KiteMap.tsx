@@ -1395,6 +1395,15 @@ export function KiteMap({
       </div>}
 
       <div className="ow-map-toolbar" hidden={pickMode}>
+        <div className="ow-sport-select">
+          <span aria-hidden="true">{sportFilter === "PARAGLIDE" ? app("paraShort") : app(sportFilter)}<ChevronDown size={12} /></span>
+          <select aria-label={app("activity")} title={app(sportFilter)} value={sportFilter} onChange={(event) => {
+            const value = event.target.value;
+            if (value === "ALL" || value === "KITE" || value === "PARAGLIDE") setSportFilter(value);
+          }}>
+            {(["ALL", "KITE", "PARAGLIDE"] as const).map(value => <option key={value} value={value}>{app(value)}</option>)}
+          </select>
+        </div>
         <div className="ow-sport-filter" role="group" aria-label={app("activity")}>
           {(["ALL", "KITE", "PARAGLIDE"] as const).map((v) => <button type="button" key={v} aria-label={app(v)} title={app(v)} aria-pressed={sportFilter === v} onClick={() => setSportFilter(v)}>
             {v === "PARAGLIDE" ? app("paraShort") : app(v)}
