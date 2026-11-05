@@ -115,14 +115,6 @@ html, body { overflow-x: clip; }
 .ow-forecast-scroll thead :is(td, th) { padding-block: var(--ow-space-3); }
 .ow-forecast-scroll th[scope="row"] { font-size: var(--ow-text-label); color: var(--ow-ink-secondary); padding: var(--ow-space-3) var(--ow-space-4); }
 .ow-forecast-scroll td { min-width: 46px; padding-block: var(--ow-space-3); }
-/* Keep the measurements dominant on phones, with a narrow pinned row label. */
-@media (max-width: 639px) {
-  .ow-forecast-scroll :is(td,th),.ow-forecast-scroll .ow-forecast-muted { font-size: 12px; }
-  .ow-forecast-scroll th.ow-forecast-label { width: 76px; min-width: 76px; max-width: 76px; padding: 6px; white-space: normal; overflow-wrap: break-word; line-height: 1.2; font-size: 11px; vertical-align: middle; }
-  .ow-forecast-scroll th.ow-forecast-label .ow-forecast-muted { font-size: inherit; }
-  .ow-forecast-scroll thead :is(td,th) { padding-block: 6px; }
-  .ow-forecast-scroll td { min-width: 34px; padding-block: 6px; }
-}
 .ow-forecast-source { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--ow-space-4); margin-bottom: var(--ow-space-4); }
 .ow-forecast-source p { font-size: var(--ow-text-caption); color: var(--ow-muted); }
 .ow-station-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ow-space-4); }
@@ -187,6 +179,19 @@ html, body { overflow-x: clip; }
 .ow-caption, .ow-muted { color: var(--ow-muted); font-size: var(--ow-text-caption); }
 .ow-forecast-scroll .ow-forecast-muted { color: var(--ow-muted); font-size: var(--ow-text-caption); }
 .ow-forecast-scroll[data-tone="dark"] .ow-forecast-muted { color: var(--ow-on-dark-muted); }
+/* Dense mobile reading: full row names remain available to assistive technology. */
+.ow-forecast-label-compact { display: none; }
+@media (max-width: 639px) {
+  .ow-forecast-scroll :is(td,th),.ow-forecast-scroll .ow-forecast-muted { font-size: 11px; line-height: 1.2; }
+  .ow-forecast-scroll th.ow-forecast-label { width: 48px; min-width: 48px; max-width: 48px; padding: 4px 3px; white-space: normal; overflow-wrap: break-word; line-height: 1.15; font-size: 10px; vertical-align: middle; }
+  .ow-forecast-scroll th.ow-forecast-label .ow-forecast-muted { font-size: inherit; }
+  .ow-forecast-label-full { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .ow-forecast-label-compact,.ow-forecast-label-unit { display: block; }
+  .ow-forecast-label-unit { margin-top: 1px; font-weight: 400; }
+  .ow-forecast-scroll thead :is(td,th) { padding: 3px 1px; }
+  .ow-forecast-scroll td { min-width: 26px; padding: 4px 1px; }
+}
+
 .ow-caption.ow-warning-text { color: var(--ow-warning); }
 
 .ow-water-preview { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--ow-space-5); padding-block: var(--ow-space-4); border-bottom: 1px solid var(--ow-rule); }

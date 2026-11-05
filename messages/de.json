@@ -518,7 +518,17 @@
     "legendVeryStrong": "Sehr stark",
     "legendExtreme": "Extrem",
     "legendDanger": "Gefahr",
-    "timezone": "Zeitzone:"
+    "timezone": "Zeitzone:",
+    "compact": {
+      "wind": "Wind",
+      "gusts": "Böen",
+      "direction": "Richt.",
+      "temp": "Temp.",
+      "clouds": "Wolken",
+      "precip": "Regen",
+      "waves": "Wellen",
+      "wavePeriod": "Per."
+    }
   },
   "WebcamsPage": {
     "backTo": "Zurück zu {name}",

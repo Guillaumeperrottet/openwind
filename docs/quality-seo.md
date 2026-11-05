@@ -57,3 +57,9 @@ Sous 640 px, la colonne fixe des libellés des prévisions détaillées mesure 7
 La barre de navigation mobile passe de 64 à 56 px par destination, avec la zone de sécurité et une réserve de contenu calculée sur la même hauteur. Le compteur de favoris est retiré de Mon Openwind dans la barre : il ne représentait pas des notifications à lire. Les favoris restent disponibles dans le compte et Mon Openwind.
 
 Vérification dans le navigateur à 320 et 390 px : colonne à 76 px, heures à 34 px, libellés allemands sans débordement, colonne fixe pendant le défilement, barre à 57 px bordure comprise et réserve de contenu identique. Contrôle ordinateur à 1280 px : colonnes horaires à 46 px et navigation ordinateur conservée. Les 866 tests, la vérification TypeScript complète, le build et le lint sans erreur passent.
+
+## Densité renforcée du tableau mobile — 5 novembre
+
+À la demande utilisateur, la colonne fixe est ramenée de 76 à 48 px et les heures de 34 à 26 px sous 640 px. Les libellés mobiles utilisent des abréviations traduites en quatre langues et affichent les unités sur une ligne séparée. Le texte complet reste l’intitulé accessible de chaque en-tête de ligne ; le libellé visuel abrégé est masqué aux technologies d’assistance pour éviter une lecture en double. Les en-têtes complets restent visibles sur ordinateur.
+
+Vérification navigateur : 11 créneaux entiers à 390 px, huit à 320 px, libellés allemands sans débordement, noms accessibles complets Vent/Rafales conservés ; sur ordinateur, données à 46 px et intitulés complets. Les 867 tests, dont la vérification des lignes de vagues et de leurs unités, le typage TypeScript complet, le build et le lint sans erreur sont validés.

@@ -102,6 +102,11 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
   const speed = (kmh: number) => useKnots ? roundKnots(kmh) : Math.round(kmh);
   const unit = useKnots ? "kts" : "km/h";
   const windLabel = (key: "wind" | "gusts") => t(key).replace(/\((?:kn|kts)\)/g, `(${unit})`);
+  type RowKey = "wind" | "gusts" | "direction" | "temp" | "clouds" | "precip" | "waves" | "wavePeriod";
+  const rowLabel = (key: RowKey, units?: string) => {
+    const full = key === "wind" || key === "gusts" ? windLabel(key) : t(key);
+    return <><span className="ow-forecast-label-full">{full}</span><span className="ow-forecast-label-compact" aria-hidden="true">{t(`compact.${key}`)}{units && <span className="ow-forecast-label-unit">{units}</span>}</span></>;
+  };
   const points = filterEvery3h(forecast.hourly);
   const days = groupByDay(points, locale);
   const allPoints = days.flatMap((d) => d.points);
@@ -171,7 +176,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
           <tbody>
             {/* Wind speed (knots) */}
             <tr>
-              <th scope="row" className={LABEL_CELL}>{windLabel("wind")}</th>
+              <th scope="row" className={LABEL_CELL}>{rowLabel("wind", unit)}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -186,7 +191,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Gusts (knots) */}
             <tr>
-              <th scope="row" className={LABEL_CELL}>{windLabel("gusts")}</th>
+              <th scope="row" className={LABEL_CELL}>{rowLabel("gusts", unit)}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -201,7 +206,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Wind direction (SVG arrows) */}
             <tr>
-              <th scope="row" className={LABEL_CELL}>{t("direction")}</th>
+              <th scope="row" className={LABEL_CELL}>{rowLabel("direction")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -215,7 +220,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Temperature */}
             <tr>
-              <th scope="row" className={LABEL_CELL}>{t("temp")}</th>
+              <th scope="row" className={LABEL_CELL}>{rowLabel("temp", "°C")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -229,7 +234,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Cloud cover */}
             <tr>
-              <th scope="row" className={LABEL_CELL}>{t("clouds")}</th>
+              <th scope="row" className={LABEL_CELL}>{rowLabel("clouds", "%")}</th>
               {allPoints.map((pt, i) => (
                 <td
                   key={i}
@@ -242,7 +247,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
 
             {/* Precipitation */}
             <tr>
-              <th scope="row" className={LABEL_CELL}>{t("precip")}</th>
+              <th scope="row" className={LABEL_CELL}>{rowLabel("precip", "mm")}</th>
               {allPoints.map((pt, i) => {
                 const hasPrecip = pt.precipMmh >= 0.1;
                 return (
@@ -265,7 +270,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
             {forecast.hasWaves && (
               <>
                 <tr>
-                  <th scope="row" className={LABEL_CELL}>{t("waves")}</th>
+                  <th scope="row" className={LABEL_CELL}>{rowLabel("waves", "m")}</th>
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}
@@ -276,7 +281,7 @@ export function ForecastTable({ forecast, light = true, source }: Props) {
                   ))}
                 </tr>
                 <tr>
-                  <th scope="row" className={LABEL_CELL}>{t("wavePeriod")}</th>
+                  <th scope="row" className={LABEL_CELL}>{rowLabel("wavePeriod", "s")}</th>
                   {allPoints.map((pt, i) => (
                     <td
                       key={i}

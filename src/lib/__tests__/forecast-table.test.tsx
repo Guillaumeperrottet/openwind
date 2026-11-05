@@ -53,10 +53,25 @@ describe("accessible, attributed hourly forecasts", () => {
       expect(html).toContain(messages.ForecastSources.global);
       expect(html).toContain(messages.ForecastTable.wind.replace("(kn)", "(kts)"));
       expect(html).toContain(messages.ForecastTable.gusts.replace("(kn)", "(kts)"));
+      for (const key of ["wind", "gusts", "direction", "temp", "clouds", "precip"] as const) {
+        expect(html).toContain(messages.ForecastTable.compact[key]);
+      }
       expect(html.match(/scope="row"/g)).toHaveLength(6);
       expect(html).toContain(`aria-label="${messages.ForecastTable.caption}"`);
       expect(html).toContain("Open-Meteo · CC BY 4.0");
       expect(html).not.toContain(messages.ForecastTable.legendGood);
     },
   );
+  it("retains complete coastal row names and units alongside compact labels", () => {
+    const coastal = { ...forecast, hasWaves: true, hourly: forecast.hourly.map(point => ({ ...point, waveHeightM: 1.3, wavePeriodS: 7 })) };
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="fr" messages={fr} timeZone="Europe/Zurich"><Units useKnots={false}>
+      <ForecastWithToggle forecast={coastal} spotId="coast" lat={46.8} lng={6.7} />
+    </Units></NextIntlClientProvider>);
+    expect(html).toContain("Vent (km/h)");
+    expect(html).toContain("Rafales (km/h)");
+    expect(html).toContain("Vagues (m)");
+    expect(html).toContain("Période (s)");
+    expect(html.match(/scope="row"/g)).toHaveLength(8);
+    expect(html).toContain("1.3");
+  });
 });
