@@ -48,6 +48,7 @@ describe("lake coverage is indexable and accurately attributed", () => {
   it.each(["fr", "en", "de", "it"] as const)("describes the model dataset using the visible method and attribution in %s", locale => {
     const graph = lakeSchema(locale)["@graph"];
     const dataset = graph.find(node => node["@type"] === "Dataset");
+    if (!dataset || !("variableMeasured" in dataset)) throw new Error("Expected a model Dataset");
     expect(dataset).toMatchObject({
       "@id": `${SITE_URL}/${locale}/lacs/gruyere#dataset`,
       license: ALPLAKES_GRUYERE.licence,
