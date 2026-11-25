@@ -22,5 +22,8 @@
       "typecheck": true,
       "lint": true
     }
-  ]
+  ],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6IndlYmJpbmctY2kiLCJleHAiOjQxMDI0NDQ4MDB9.test-signature-for-isolated-ci-only"
+  }
 }
