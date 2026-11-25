@@ -41,7 +41,7 @@ jobs:
           node-version: "22"
       - name: Locked dependencies, tests, build and startup
         id: application
-        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@946fd9b4f56a17027477e4c4fc0bda7d0313b685
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@587134e5df878a81c576e0acd0670a030a6874ba
   attest:
     name: Webbing / Attestation
     if: github.event_name == 'pull_request'
