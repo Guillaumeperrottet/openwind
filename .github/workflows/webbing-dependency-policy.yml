@@ -1,4 +1,5 @@
 name: Webbing Dependency Policy
+run-name: ${{ github.event.inputs.approve_manual == 'true' && format('Webbing validation {0}', inputs.approval_id) || 'Webbing dependency policy' }}
 on:
   workflow_run:
     workflows: ["Webbing Dependency Checks", "CI", "CI/CD Tests & Build", "CI/CD Pipeline", "Quality", "Vérifications Webbing", "Check Prisma Drift", "Preview Deployment"]
@@ -11,11 +12,24 @@ on:
       pull_request:
         description: Optional pull request number
         required: false
+      approve_manual:
+        description: Confirm a manual approval bound to the two tested commits
+        type: boolean
+        default: false
+      expected_head:
+        description: Exact dependency commit approved in Webbing
+        type: string
+      expected_base:
+        description: Exact tested base commit approved in Webbing
+        type: string
+      approval_id:
+        description: Webbing approval request UUID
+        type: string
 permissions:
   contents: write
   pull-requests: write
   checks: read
-  statuses: read
+  statuses: write
   actions: read
 concurrency:
   group: webbing-dependency-merges
@@ -26,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@8749180b46fe1f60a7743219c6c2e7a1ff98c95f
+      - uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@eae79039bb5354e86465c489ae1a0dfd6449350e
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           enabled: ${{ vars.WEBBING_DEPENDENCY_AUTOMERGE || 'false' }}
