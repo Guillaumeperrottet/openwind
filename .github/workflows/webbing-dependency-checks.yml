@@ -1,0 +1,64 @@
+name: Webbing Dependency Checks
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+permissions:
+  contents: read
+concurrency:
+  group: webbing-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    name: Webbing / Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      head: ${{ steps.application.outputs.head }}
+      base: ${{ steps.application.outputs.base }}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: webbing_ci
+          POSTGRES_DB: webbing_ci_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "22"
+      - name: Locked dependencies, tests, build and startup
+        id: application
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@946fd9b4f56a17027477e4c4fc0bda7d0313b685
+  attest:
+    name: Webbing / Attestation
+    if: github.event_name == 'pull_request'
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+        env:
+          TESTED_HEAD: ${{ needs.quality.outputs.head }}
+          TESTED_BASE: ${{ needs.quality.outputs.base }}
+        with:
+          script: |
+            const head = process.env.TESTED_HEAD;
+            const base = process.env.TESTED_BASE;
+            if (!/^[0-9a-f]{40}$/.test(head) || !/^[0-9a-f]{40}$/.test(base)) throw new Error('Invalid tested revision');
+            if (context.payload.pull_request.head.sha !== head) throw new Error('Pull request changed');
+            await github.rest.repos.createCommitStatus({ ...context.repo, sha: head, state: 'success', context: 'Webbing / Base testée', description: `base:${base}` });

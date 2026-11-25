@@ -1,0 +1,32 @@
+name: Webbing Dependency Policy
+on:
+  workflow_run:
+    workflows: ["Webbing Dependency Checks", "CI", "CI/CD Tests & Build", "CI/CD Pipeline", "Quality", "Vérifications Webbing", "Check Prisma Drift", "Preview Deployment"]
+    types: [completed]
+  check_run:
+    types: [completed]
+  status:
+  workflow_dispatch:
+    inputs:
+      pull_request:
+        description: Optional pull request number
+        required: false
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: read
+concurrency:
+  group: webbing-dependency-merges
+  cancel-in-progress: false
+jobs:
+  policy:
+    name: Webbing / Dependency policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@946fd9b4f56a17027477e4c4fc0bda7d0313b685
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          enabled: ${{ vars.WEBBING_DEPENDENCY_AUTOMERGE || 'false' }}

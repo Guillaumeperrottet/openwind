@@ -1,0 +1,26 @@
+{
+  "applications": [
+    {
+      "directory": ".",
+      "manager": "pnpm",
+      "tests": [
+        [
+          "pnpm",
+          "exec",
+          "vitest",
+          "run"
+        ],
+        [
+          "python3",
+          "-m",
+          "unittest",
+          "scripts.test_publish_wind_tiles",
+          "-v"
+        ]
+      ],
+      "database": true,
+      "typecheck": true,
+      "lint": true
+    }
+  ]
+}
