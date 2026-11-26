@@ -1,20 +1,37 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: "/"
+    directories:
+      - /
     schedule:
       interval: weekly
       day: monday
       time: "08:00"
       timezone: Europe/Zurich
-    open-pull-requests-limit: 5
-    rebase-strategy: auto
+    open-pull-requests-limit: 1
+    rebase-strategy: disabled
     groups:
-      compatible-updates:
-        update-types: [minor, patch]
+      weekly-batch:
+        patterns:
+          - "*"
+      security-batch:
+        applies-to: security-updates
+        patterns:
+          - "*"
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+      time: "08:00"
+      timezone: Europe/Zurich
+    open-pull-requests-limit: 1
+    rebase-strategy: disabled
+    groups:
+      weekly-actions:
+        patterns:
+          - "*"
+      security-actions:
+        applies-to: security-updates
+        patterns:
+          - "*"

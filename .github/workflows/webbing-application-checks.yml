@@ -1,0 +1,51 @@
+name: Webbing Application Checks
+"on":
+  pull_request:
+    paths-ignore:
+      - .github/**
+      - scripts/dependencies/**
+      - "**/*.md"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - .github/**
+      - scripts/dependencies/**
+      - "**/*.md"
+permissions:
+  contents: read
+concurrency:
+  group: webbing-application-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    name: Webbing / Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      head: ${{ steps.application.outputs.head }}
+      base: ${{ steps.application.outputs.base }}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: webbing_ci
+          POSTGRES_DB: webbing_ci_test
+        ports:
+          - "5432:5432"
+        options: "--health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "22"
+      - name: Locked dependencies, tests, build and startup
+        id: application
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
+    if: (github.event_name != 'pull_request' && github.event_name != 'pull_request_target') || github.event.pull_request.user.login != 'dependabot[bot]'

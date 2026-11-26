@@ -1,18 +1,47 @@
 name: Webbing Dependency Checks
+run-name: Webbing tests ${{ inputs.request_id }} · #${{ inputs.pull_request }}
 on:
-  pull_request:
-  push:
-    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      pull_request:
+        description: Dependency proposal to test
+        required: true
+      expected_head:
+        description: Exact dependency commit shown in Webbing
+        required: true
+      expected_base:
+        description: Exact current default-branch commit
+        required: true
+      request_id:
+        description: Webbing test request UUID
+        required: true
 permissions:
   contents: read
 concurrency:
-  group: webbing-checks-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: webbing-manual-tests-${{ inputs.pull_request }}
+  cancel-in-progress: false
 jobs:
-  quality:
-    name: Webbing / Quality
+  resolve:
+    name: Webbing / Resolve manual request
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    outputs:
+      head: ${{ steps.resolve.outputs.head }}
+      base: ${{ steps.resolve.outputs.base }}
+    steps:
+      - id: resolve
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-resolve@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+  quality:
+    name: Webbing / Manual application tests
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
     outputs:
       head: ${{ steps.application.outputs.head }}
       base: ${{ steps.application.outputs.base }}
@@ -32,7 +61,18 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ needs.resolve.outputs.head }}
+          fetch-depth: 0
           persist-credentials: false
+      - name: Merge the exact current base and dependency revisions locally
+        env:
+          TEST_HEAD: ${{ needs.resolve.outputs.head }}
+          TEST_BASE: ${{ needs.resolve.outputs.base }}
+        run: |
+          git cat-file -e "${TEST_HEAD}^{commit}"
+          git cat-file -e "${TEST_BASE}^{commit}"
+          git checkout --detach "$TEST_BASE"
+          git -c core.hooksPath=/dev/null -c user.name=Webbing-CI -c user.email=ci@example.invalid merge --no-ff --no-edit "$TEST_HEAD"
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
         with:
           version: 10.8.1
@@ -41,24 +81,39 @@ jobs:
           node-version: "22"
       - name: Locked dependencies, tests, build and startup
         id: application
-        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@8749180b46fe1f60a7743219c6c2e7a1ff98c95f
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
   attest:
-    name: Webbing / Attestation
-    if: github.event_name == 'pull_request'
-    needs: quality
+    name: Webbing / Manual test result
+    if: always() && needs.resolve.result == 'success'
+    needs: [resolve, quality]
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     permissions:
       contents: read
+      pull-requests: read
+      checks: write
       statuses: write
+      actions: read
     steps:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
         env:
+          EXPECTED_HEAD: ${{ needs.resolve.outputs.head }}
+          EXPECTED_BASE: ${{ needs.resolve.outputs.base }}
           TESTED_HEAD: ${{ needs.quality.outputs.head }}
           TESTED_BASE: ${{ needs.quality.outputs.base }}
+          TEST_RESULT: ${{ needs.quality.result }}
         with:
           script: |
-            const head = process.env.TESTED_HEAD;
-            const base = process.env.TESTED_BASE;
+            const head = process.env.EXPECTED_HEAD, base = process.env.EXPECTED_BASE;
             if (!/^[0-9a-f]{40}$/.test(head) || !/^[0-9a-f]{40}$/.test(base)) throw new Error('Invalid tested revision');
-            if (context.payload.pull_request.head.sha !== head) throw new Error('Pull request changed');
-            await github.rest.repos.createCommitStatus({ ...context.repo, sha: head, state: 'success', context: 'Webbing / Base testée', description: `base:${base}` });
+            const passed = process.env.TEST_RESULT === 'success' && process.env.TESTED_HEAD === head && process.env.TESTED_BASE === base;
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.checks.create({ ...context.repo, head_sha: head, name: 'Webbing / Quality', status: 'completed', conclusion: passed ? 'success' : 'failure', details_url: url, output: {title: passed ? 'Manual tests passed' : 'Manual tests failed', summary: `Tested merge with base ${base}.`} });
+            await github.rest.repos.createCommitStatus({ ...context.repo, sha: head, state: passed ? 'success' : 'failure', context: 'Webbing / Base testée', description: `base:${base}`, target_url: url });
+            if (!passed) throw new Error('Application tests did not succeed on the requested revisions.');
+      - name: Read all checks without merging
+        if: needs.quality.result == 'success'
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          enabled: 'false'

@@ -1,43 +1,35 @@
 name: CI
-
-on:
+"on":
   pull_request:
-    branches: [main]
+    branches:
+      - main
   push:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
   lint-and-typecheck:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
         with:
           version: 10
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - run: pnpm install --frozen-lockfile
-
       - name: Generate Prisma Client
         run: pnpm exec prisma generate
-
       - name: TypeScript
         run: pnpm exec tsc --noEmit
-
       - name: ESLint
         run: pnpm lint
-
       - name: Unit tests
         run: pnpm test
-
       - name: Wind publisher tests
         run: python -m unittest scripts.test_publish_wind_tiles -v
+    if: (github.event_name != 'pull_request' && github.event_name != 'pull_request_target') || github.event.pull_request.user.login != 'dependabot[bot]'
