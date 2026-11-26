@@ -1,5 +1,5 @@
 name: Webbing Dependency Checks
-run-name: Webbing tests ${{ inputs.request_id }} · #${{ inputs.pull_request }}
+run-name: "Webbing tests ${{ inputs.request_id }} · #${{ inputs.pull_request }}"
 on:
   workflow_dispatch:
     inputs:
