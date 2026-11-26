@@ -78,7 +78,7 @@ jobs:
           version: 10.8.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
-          node-version: "22"
+          node-version: "24"
       - name: Locked dependencies, tests, build and startup
         id: application
         uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@91fec7fb4fbd2943915587a9b5bc8049d07ef8c2
