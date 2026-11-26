@@ -34,7 +34,7 @@ jobs:
       base: ${{ steps.resolve.outputs.base }}
     steps:
       - id: resolve
-        uses: Guillaumeperrottet/webbing/.github/actions/dependency-resolve@91fec7fb4fbd2943915587a9b5bc8049d07ef8c2
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-resolve@d887d2a91cbb1acf0544f0f3a2d5aefb71b5c123
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
   quality:
