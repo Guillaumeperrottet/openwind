@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import { windProtocolHandler } from "@/lib/windProtocol";
+import * as maplibregl from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { BitmapLayer, LineLayer } from "@deck.gl/layers";
 import {
@@ -273,27 +274,9 @@ async function initializeOmProtocol(): Promise<{
 
   if (!omProtocolRegistered) {
     const settings = omSettings;
-    maplibregl.addProtocol("om", async (params, abortController) => {
-      // The current Open-Meteo reader can emit unhandled AbortErrors while a
-      // shared range read is cancelled by one of many obsolete MapLibre tiles.
-      // Let the shared read finish and rely on MapLibre to discard its response;
-      // the reader deduplicates and caches that work for the replacement view.
-      const readController = new AbortController();
-      try {
-        return await om.omProtocol(params, readController, settings);
-      } catch (error) {
-        // MapLibre legitimately aborts obsolete tiles during pans and model
-        // switches. Treat those cancellations as empty responses instead of
-        // surfacing noisy runtime errors to the application.
-        if (
-          abortController.signal.aborted ||
-          (error instanceof DOMException && error.name === "AbortError")
-        ) {
-          return { data: null };
-        }
-        throw error;
-      }
-    });
+    maplibregl.addProtocol("om", windProtocolHandler((params, readController) =>
+      om.omProtocol(params, readController, settings)
+    ));
     omProtocolRegistered = true;
   }
 

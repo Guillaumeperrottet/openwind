@@ -1,4 +1,4 @@
-import type maplibregl from "maplibre-gl";
+import type * as maplibregl from "maplibre-gl";
 import { OPENWIND_WIND_PALETTE_KTS } from "@/lib/windPalette";
 
 function windAccentStepExpression(

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import maplibregl, { type Map as MlMap } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Wind } from "lucide-react";
 import type { WindStation } from "@/lib/stations";
@@ -22,7 +22,7 @@ const MAP_STYLE =
  */
 export default function LiveMiniMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<MlMap | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [stations, setStations] = useState<WindStation[] | null>(null);
   const [unlocked, setUnlocked] = useState(false);

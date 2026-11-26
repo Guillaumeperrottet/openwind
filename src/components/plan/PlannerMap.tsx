@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { selectRecommendations, type PlannerResult } from "@/lib/planner";
 import type { SiteLocale } from "@/lib/site";

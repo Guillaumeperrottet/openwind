@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import maplibregl, { type Map as MapLibreMap } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
   Activity,
@@ -165,13 +165,13 @@ function useNetworkMonitor() {
 }
 
 export function WindComparisonClient() {
-  const mapsRef = useRef<Partial<Record<ComparisonProvider, MapLibreMap>>>({});
+  const mapsRef = useRef<Partial<Record<ComparisonProvider, maplibregl.Map>>>({});
   const synchronizingRef = useRef(false);
   const [reloadKey, setReloadKey] = useState(0);
   const network = useNetworkMonitor();
 
   const registerMap = useCallback(
-    (provider: ComparisonProvider, map: MapLibreMap | null) => {
+    (provider: ComparisonProvider, map: maplibregl.Map | null) => {
       if (map) mapsRef.current[provider] = map;
       else delete mapsRef.current[provider];
     },
@@ -293,11 +293,11 @@ function ComparisonMap({
   subtitle: string;
   icon: typeof Activity;
   network: NetworkStats;
-  onMapReady: (provider: ComparisonProvider, map: MapLibreMap | null) => void;
+  onMapReady: (provider: ComparisonProvider, map: maplibregl.Map | null) => void;
   onCameraChange: (provider: ComparisonProvider, camera: CameraState) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const wind = useWindOverlay(mapRef, true, mapLoaded, provider);
 

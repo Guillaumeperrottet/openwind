@@ -7,7 +7,7 @@ import type { Place } from "@/lib/place";
 import { toSiteLocale } from "@/lib/site";
 import { useTranslations, useLocale } from "next-intl";
 import { Check, ChevronDown, Info, LoaderCircle, TriangleAlert, Wind } from "lucide-react";
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { io, type Socket } from "socket.io-client";
 import type { Spot } from "@/types";
