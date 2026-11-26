@@ -26,15 +26,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     permissions:
-      contents: read
-      pull-requests: read
+      contents: write
+      pull-requests: write
       statuses: write
     outputs:
       head: ${{ steps.resolve.outputs.head }}
       base: ${{ steps.resolve.outputs.base }}
     steps:
       - id: resolve
-        uses: Guillaumeperrottet/webbing/.github/actions/dependency-resolve@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-resolve@91fec7fb4fbd2943915587a9b5bc8049d07ef8c2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
   quality:
@@ -81,7 +81,10 @@ jobs:
           node-version: "22"
       - name: Locked dependencies, tests, build and startup
         id: application
-        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-ci@91fec7fb4fbd2943915587a9b5bc8049d07ef8c2
+        env:
+          WEBBING_CI_HEAD: ${{ needs.resolve.outputs.head }}
+          WEBBING_CI_BASE: ${{ needs.resolve.outputs.base }}
   attest:
     name: Webbing / Manual test result
     if: always() && needs.resolve.result == 'success'
@@ -113,7 +116,7 @@ jobs:
             if (!passed) throw new Error('Application tests did not succeed on the requested revisions.');
       - name: Read all checks without merging
         if: needs.quality.result == 'success'
-        uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
+        uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@91fec7fb4fbd2943915587a9b5bc8049d07ef8c2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           enabled: 'false'

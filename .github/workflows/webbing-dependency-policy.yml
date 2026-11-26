@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@a62d2d07766fdeb48af8c35a197dd4bde4e8ddff
+      - uses: Guillaumeperrottet/webbing/.github/actions/dependency-policy@91fec7fb4fbd2943915587a9b5bc8049d07ef8c2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           enabled: 'false'
